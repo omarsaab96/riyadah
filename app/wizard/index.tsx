@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
 const accountTypes = [
@@ -12,12 +13,16 @@ const accountTypes = [
 ];
 
 export default function WizardStep1() {
+    const { formData, updateFormData } = useRegistration();
     const router = useRouter();
-    const [selected, setSelected] = useState<string | null>(null);
+    const [selected, setSelected] = useState<string | null>(formData.type || null);
 
-    const handleNext=()=>{
-        console.log(selected)
-        router.push('/wizard/step2')
+    const handleNext = () => {
+        if (selected) {
+            updateFormData({ type: selected });
+            console.log(formData)
+            router.push('/wizard/step2');
+        }
     }
 
     return (
@@ -153,7 +158,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingBottom:80
+        paddingBottom: 80
     },
     accountOption: {
         borderWidth: 1,
@@ -166,12 +171,12 @@ const styles = StyleSheet.create({
         width: (width - 60) / 2,
         position: 'relative',
         height: 160,
-        fontFamily:'Manrope'
+        fontFamily: 'Manrope'
     },
     accountOptionSelected: {
         borderColor: '#FF4000',
         backgroundColor: '#FFE6D8',
-        fontFamily:'Manrope'
+        fontFamily: 'Manrope'
     },
     accountText: {
         fontSize: 18,

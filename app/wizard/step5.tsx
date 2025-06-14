@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
 const genders = [
@@ -10,15 +11,59 @@ const genders = [
 
 export default function WizardStep5() {
     const router = useRouter();
-    const [bio, setBio] = useState('');
-    const [selectedGender, setSelectedGender] = useState<string | null>(null);
+    const { formData, updateFormData } = useRegistration();
+    const [bio, setBio] = useState<string | null>(formData.bio || null);
+    const [selectedGender, setSelectedGender] = useState<string | null>(formData.gender || null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
+    const handleNext = async () => {
+        if (!selectedGender) {
+            return;
+        }
+        setLoading(true);
+        setError(null);
 
-    const handleNext = () => {
-        console.log("bio:", bio)
-        console.log("gender:", selectedGender)
-        router.replace('/profile')
-    }
+        try {
+            updateFormData({
+                bio: bio,
+                gender: selectedGender,
+            });
+
+            // Combine all data from registration context
+            const newUserData = {
+                ...formData,
+                bio: bio,
+                gender: selectedGender,
+            };
+
+            console.log('Submitting user data:', newUserData); // for debugging
+
+            const response = await fetch('http://10.0.2.2:5000/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newUserData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            console.log('User created:', result);
+
+            router.replace('/profile');
+        } catch (err) {
+            console.error('User creation failed:', err);
+            setError('Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     return (
         <View style={styles.container}>
@@ -31,20 +76,25 @@ export default function WizardStep5() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>
-                        About You
+                        {!loading ? 'About You' : 'Creating account'}
                     </Text>
-                    <Text style={styles.pageDesc}>
-                        Tell us more about you
-                    </Text>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {!loading && <Text style={styles.pageDesc}>Tell us more about you</Text>}
+                        {loading && (
+                            <ActivityIndicator size="small" color="#ffffff" style={{ transform: [{ scale: 1.25 }] }} />
+                        )}
+                    </View>
+
                 </View>
 
                 <Text style={styles.ghostText}>
-                    About
+                    {!loading && 'About'}
                 </Text>
 
             </View>
 
-            <ScrollView style={styles.form}>
+            {!loading && <ScrollView style={styles.form}>
                 {/* <View style={styles.inputEntity}>
                     <Text style={styles.label}>Profile picture</Text>
 
@@ -86,8 +136,9 @@ export default function WizardStep5() {
                     />
                 </View>
             </ScrollView>
+            }
 
-            <View style={styles.fixedBottomSection}>
+            {!loading && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
                     <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
                     <View style={styles.loginButton}>
@@ -96,6 +147,15 @@ export default function WizardStep5() {
                     <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                 </TouchableOpacity>
             </View>
+            }
+
+            {loading && (
+                <Text style={{ paddingHorizontal: 20, fontFamily: 'Manrope', marginBottom: 10 }}></Text>
+            )}
+
+            {error && (
+                <Text style={{ position: 'absolute', bottom: 80, left: 20, color: 'red', marginBottom: 10, textAlign: 'center' }}>{error}</Text>
+            )}
         </View>
     );
 }
@@ -219,7 +279,7 @@ const styles = StyleSheet.create({
     form: {
         paddingLeft: 20,
         paddingRight: 20,
-        paddingBottom:80
+        paddingBottom: 80
     },
     textarea: {
         fontSize: 14,

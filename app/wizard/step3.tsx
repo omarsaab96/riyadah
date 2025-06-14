@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
 const accountTypes = [
@@ -13,12 +14,16 @@ const accountTypes = [
 
 export default function WizardStep3() {
     const router = useRouter();
-    const [selected, setSelected] = useState<string | null>(null);
     const [keyword, setKeyword] = useState('');
+    const { formData, updateFormData } = useRegistration();
+    const [selected, setSelected] = useState<string | null>(formData.sport || null);
 
     const handleNext = () => {
-        console.log(selected)
-        router.push('/wizard/step4')
+        if(selected){
+            updateFormData({ sport: selected });
+            console.log(formData)
+            router.push('/wizard/step4')
+        }
     }
 
     return (

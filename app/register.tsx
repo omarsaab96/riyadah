@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import CountryPicker from 'react-native-country-picker-modal';
-
+import { useRegistration } from '../context/registration';
 
 import {
   Dimensions,
@@ -16,22 +16,29 @@ import {
 const { width } = Dimensions.get('window');
 
 export default function Register() {
+  const { formData, updateFormData } = useRegistration();
   const router = useRouter();
-  const [countryCode, setCountryCode] = useState('US');
+  const [countryCode, setCountryCode] = useState('LB');
   const [callingCode, setCallingCode] = useState('1');
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState<string | null>(formData.name || null);
+  const [email, setEmail] = useState<string | null>(formData.email || null);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(formData.phone || null);
+  const [password, setPassword] = useState<string | null>(formData.password || null);
   const [agreed, setAgreed] = useState(false);
 
   const handleRegister = () => {
-    console.log('Name:', name);
-    console.log('Email:', email);
-    console.log('Phone:', phoneNumber);
-    console.log('Password:', password);
-    router.replace('/wizard');
+    if (name != null && email != null && phoneNumber != null && password != null && agreed) {
+      updateFormData({
+        name: name,
+        email: email,
+        phone: phoneNumber,
+        password: password,
+        country:countryCode
+      });
+      console.log(formData)
+      router.replace('/wizard');
+    }
   };
 
   const toggleCheckbox = () => {
@@ -97,7 +104,7 @@ export default function Register() {
             }}
           />
           <TextInput
-            style={[styles.input,styles.phoneInput]}
+            style={[styles.input, styles.phoneInput]}
             placeholder="Phone number"
             keyboardType="phone-pad"
             value={phoneNumber}
@@ -214,18 +221,18 @@ const styles = StyleSheet.create({
   phoneContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width:'100%',
+    width: '100%',
     marginBottom: 16,
     backgroundColor: '#F4F4F4',
     borderRadius: 10,
-    padding:15,
-    paddingTop:0,
-    paddingBottom:0,
+    padding: 15,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   phoneInput: {
     marginBottom: 0,
-    flexGrow:1,
-    backgroundColor:'transparent'
+    flexGrow: 1,
+    backgroundColor: 'transparent'
   },
   passwordInput: {
     letterSpacing: 1,

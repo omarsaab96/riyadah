@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
 const featuredClubs = [
@@ -13,17 +14,30 @@ const featuredClubs = [
 
 export default function WizardStep4() {
     const router = useRouter();
-    const [selected, setSelected] = useState<string | null>(null);
     const [keyword, setKeyword] = useState('');
-    const [independent, setIndependent] = useState(false);
+    const { formData, updateFormData } = useRegistration();
+    const [independent, setIndependent] = useState<boolean>(formData.club == 'independent' ? true : false);
+    const [selected, setSelected] = useState<string | null>(formData.club != 'independent' ? formData.club : null);
+
 
     const toggleCheckbox = () => {
         setIndependent(prev => !prev);
     };
 
     const handleNext = () => {
-        console.log(selected)
-        router.push('/wizard/step5')
+        if (!independent && !selected) {
+            return;
+        }
+        if (independent) {
+            updateFormData({ club: 'independent' });
+            console.log(formData)
+            router.push('/wizard/step5')
+            setSelected(null)
+        } else {
+            updateFormData({ club: selected });
+            console.log(formData)
+            router.push('/wizard/step5')
+        }
     }
 
     return (

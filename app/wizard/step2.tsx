@@ -1,17 +1,19 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
 
 export default function WizardStep2() {
     const router = useRouter();
+    const { formData, updateFormData } = useRegistration();
 
-    const [day, setDay] = useState('');
-    const [month, setMonth] = useState('');
-    const [year, setYear] = useState('');
+    const [day, setDay] = useState<string | null>(formData.dob?.day || null);
+    const [month, setMonth] = useState<string | null>(formData.dob?.month || null);
+    const [year, setYear] = useState<string | null>(formData.dob?.year || null);
     const [showParentEmail, setShowParentEmail] = useState(false);
-    const [parentEmail, setParentEmail] = useState('');
+    const [parentEmail, setParentEmail] = useState<string | null>(formData.parentEmail || null);
 
 
     const dayRef = useRef(null);
@@ -25,10 +27,10 @@ export default function WizardStep2() {
     }, []);
 
     useEffect(() => {
-        const isComplete = day.length === 2 && month.length === 2 && year.length === 4;
+        const isComplete = day?.length === 2 && month?.length === 2 && year?.length === 4;
         if (!isComplete) return;
 
-        const dob = `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
         const age = calculateAge(dob);
 
         if (age < 18) {
@@ -53,9 +55,35 @@ export default function WizardStep2() {
     };
 
     const handleNext = () => {
-        console.log('dateOfBirth:', day+"-"+month+"-"+year)
-        console.log('Parent email:', parentEmail)
-        router.push('/wizard/step3');
+        const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
+        const age = calculateAge(dob);
+
+        if (age < 18 && parentEmail != "") {
+            updateFormData({
+                dob: {
+                    day: day,
+                    month: month,
+                    year: year
+                },
+                parentEmail: parentEmail
+            });
+            console.log(formData)
+            router.push('/wizard/step3');
+        } else if (age >= 18) {
+            updateFormData({
+                dob: {
+                    day: day,
+                    month: month,
+                    year: year
+                },
+                parentEmail: null
+            });
+
+            console.log(formData)
+            router.push('/wizard/step3');
+        }
+
+
     };
 
     return (
