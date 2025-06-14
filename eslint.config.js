@@ -5,6 +5,7 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
+    assets: ['./assets/fonts/'],
     ignores: ['dist/*'],
   },
 ]);
