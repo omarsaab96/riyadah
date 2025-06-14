@@ -39,7 +39,7 @@ export default function WizardStep5() {
 
             console.log('Submitting user data:', newUserData); // for debugging
 
-            const response = await fetch('http://10.0.2.2:5000/api/users', {
+            const response = await fetch('https://riyadah.onrender.com/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
