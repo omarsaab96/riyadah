@@ -1,40 +1,25 @@
-import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Animated,
     Dimensions,
     Image,
+    ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
-import CountryFlag from "react-native-country-flag";
 
 
 const { width } = Dimensions.get('window');
 const router = useRouter();
 
 
-export default function Profile() {
-    const scrollY = useRef(new Animated.Value(0)).current;
+export default function EditProfile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
-
-
-    const headerHeight = scrollY.interpolate({
-        inputRange: [0, 300],
-        outputRange: [300, 175],
-        extrapolate: 'clamp',
-    });
-    const logoOpacity = scrollY.interpolate({
-        inputRange: [0, 300],
-        outputRange: [1, 0],
-        extrapolate: 'clamp',
-    });
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -90,72 +75,29 @@ export default function Profile() {
         console.log("User: ", user)
     }, [user]);
 
-    const handleEdit = async () => {
-        router.replace('/editProfile');
-        console.log('Edit clicked');
-    };
+    const handleCancel = () => {
+        console.log("Cancel clicked")
+    }
 
-    const handleShareProfile = async () => {
-        console.log('share clicked');
-    };
-
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december']
-
-    //graph data
-    const data = [
-        { label: 'Attack', value: 90 },
-        { label: 'Defense', value: 40 },
-        { label: 'Speed', value: 70 },
-        { label: 'Stamina', value: 35 },
-        { label: 'Skill', value: 80 }
-    ];
-
-    const getProfileProgress = () => {
-        const totalFields = 20;
-
-        let filledFields = 0;
-
-        if (user.name) filledFields++;
-        if (user.email) filledFields++;
-        if (user.phone) filledFields++;
-        if (user.country) filledFields++;
-        if (user.password) filledFields++;
-        if (user.dob?.day && user.dob?.month && user.dob?.year) filledFields++;
-        if (user.parentEmail) filledFields++;
-        if (user.type) filledFields++;
-        if (user.sport) filledFields++;
-        if (user.club) filledFields++;
-        if (user.gender) filledFields++;
-        if (user.bio) filledFields++;
-        if (user.height) filledFields++;
-        if (user.weight) filledFields++;
-        if (user.agreed === true) filledFields++;
-        if (user.highlights && user.highlights.length > 0) filledFields++;
-        if (user.stats && user.stats.length > 0) filledFields++;
-        if (user.achievements && user.achievements.length > 0) filledFields++;
-        if (user.events && user.events.length > 0) filledFields++;
-        if (user.skills && user.skills.length > 0) filledFields++;
-
-        const progress = Math.round((filledFields / totalFields) * 100);
-
-        return progress;
-    };
+    const handleSave = () => {
+        console.log("Save clicked")
+    }
 
     return (
         <View style={styles.container}>
-            {user && <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
-                <Animated.Image
+            {user && <View style={styles.pageHeader}>
+                <Image
                     source={require('../assets/logo_white.png')}
-                    style={[styles.logo, { opacity: logoOpacity }]}
+                    style={styles.logo}
                     resizeMode="contain"
                 />
 
                 <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>{user.name}</Text>
-                    <Text style={styles.pageDesc}>{user.sport} player</Text>
+                    <Text style={styles.pageTitle}>Edit profile</Text>
+                    <Text style={styles.pageDesc}>Change your data</Text>
                 </View>
 
-                <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>
+                <Text style={styles.ghostText}>Edit Prof</Text>
 
                 <View style={styles.profileImage}>
                     <Image
@@ -164,204 +106,67 @@ export default function Profile() {
                         resizeMode="contain"
                     />
                 </View>
-            </Animated.View>
+            </View>
             }
 
-            {user && <Animated.ScrollView
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
-
-
+            {user && <ScrollView>
                 <View style={styles.contentContainer}>
-
-                    {userId == user.id && 
-                        <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={() => router.replace('/editProfile')}>
-                            <View style={styles.profileProgressPercentage}>
-                                <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
-                            </View>
-                            <View style={styles.profileProgressTextSection}>
-                                <Text style={styles.profileProgressText}>Complete your profile now</Text>
-                                <Image
-                                    style={styles.profileProgressImg}
-                                    source={require('../assets/rightArrow.png')}
-                                    resizeMode="contain"
-                                />
-                            </View>
-                        </TouchableOpacity>}
-
                     <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Bio
                         </Text>
-                        {user.bio ? (
-                            <Text style={styles.paragraph}>
-                                {user.bio}
-                            </Text>
-                        ) : (
-                            <Text style={styles.paragraph}>-</Text>
-                        )}
-
-                    </View>
-
-                    <View style={styles.profileSection}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Country
                             </Text>
-                            {user.country ? (
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <View style={{ marginRight: 8 }}>
-                                        <CountryFlag isoCode={user.country} size={14} />
-                                    </View>
-                                    <Text style={styles.paragraph}>
-                                        {user.country}
-                                    </Text>
-                                </View>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Team/club
                             </Text>
-                            {user.club ? (
-                                <View>
-                                    <Text style={styles.paragraph}>{user.club}</Text>
-                                </View>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Date of Birth
                             </Text>
-                            {(user.dob.day && user.dob.month && user.dob.year) ? (
-                                <View>
-                                    <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>
-                                </View>
-                            ) : (
-                                <View>
-                                    <Text style={styles.paragraph}>-</Text>
-                                </View>
-                            )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
-                            <View>
-                                {user.height ? (
-                                    <Text style={styles.paragraph}>{user.height} m</Text>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Weight
                             </Text>
-                            <View>
-                                {user.weight ? (
-                                    <Text style={styles.paragraph}>{user.weight} Kg</Text>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>
                         </View>
-                    </View>
-
-                    <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Highlights
                         </Text>
-                        {user.highlights ? (
-                            <Text style={styles.paragraph}>{user.highlights}</Text>
-                        ) : (
-                            <Text style={styles.paragraph}>-</Text>
-                        )}
-
-                    </View>
-
-                    <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Stats
                         </Text>
-                        {user.stats ? (
-                            <Text style={styles.paragraph}>{user.stats}</Text>
-                        ) : (
-                            <Text style={styles.paragraph}>-</Text>
-                        )}
-                    </View>
-
-                    <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Achievements
                         </Text>
-                        {user.achievements ? (
-                            <Text style={styles.paragraph}>{user.achievements}</Text>
-                        ) : (
-                            <Text style={styles.paragraph}>-</Text>
-                        )}
-                    </View>
-
-                    <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Upcoming Events
                         </Text>
-                        {user.events ? (
-                            <Text style={styles.paragraph}>{user.events}</Text>
-                        ) : (
-                            <Text style={styles.paragraph}>-</Text>
-                        )}
-                    </View>
-
-                    <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Skills
                         </Text>
-                        <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
-                            {user.skills ? (
-                                <RadarChart
-                                    data={data}
-                                    maxValue={100}
-                                    gradientColor={{
-                                        startColor: '#FF9432',
-                                        endColor: '#FFF8F1',
-                                        count: 5,
-                                    }}
-                                    stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
-                                    strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
-                                    strokeOpacity={[1, 1, 1, 1, 0.13]}
-                                    labelColor="#111111"
-                                    dataFillColor="#FF9432"
-                                    dataFillOpacity={0.8}
-                                    dataStroke="#FF4000"
-                                    dataStrokeWidth={2}
-                                    isCircle
-                                />) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
-
-                        </View>
                     </View>
 
-                    {userId == user.id && <View style={[styles.profileSection, styles.profileActions]}>
-                        <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Edit profile</Text>
+                    <View style={[styles.profileSection, styles.profileActions]}>
+                        <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Cancel</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={handleShareProfile} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Share Profile</Text>
+                        <TouchableOpacity onPress={handleSave} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Save</Text>
                         </TouchableOpacity>
-                    </View>}
+                    </View>
                 </View>
-            </Animated.ScrollView>
+            </ScrollView>
             }
 
             <View style={styles.navBar}>
@@ -382,7 +187,7 @@ export default function Profile() {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/profile')}>
-                    <Image source={require('../assets/profile.png')} style={styles.activeIcon} />
+                    <Image source={require('../assets/profile.png')} style={styles.icon} />
                 </TouchableOpacity>
             </View>
         </View>

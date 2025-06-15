@@ -19,11 +19,11 @@ const userSchema = new mongoose.Schema({
     bio: String,
     height: Number||null,
     weight: Number||null,
-    highlights: any,
-    stats: any,
-    achievements: any,
-    events: any,
-    skills: any
+    highlights: String,
+    stats: String,
+    achievements: String,
+    events: String,
+    skills: String
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
