@@ -17,8 +17,8 @@ export default function WizardStep4() {
     const router = useRouter();
     const [keyword, setKeyword] = useState('');
     const { formData, updateFormData } = useRegistration();
-    const [independent, setIndependent] = useState<boolean>(formData.club == 'independent' ? true : false);
-    const [selected, setSelected] = useState<string | null>(formData.club != 'independent' ? formData.club : null);
+    const [independent, setIndependent] = useState<boolean>(formData.club == 'Independent' ? true : false);
+    const [selected, setSelected] = useState<string | null>(formData.club != 'Independent' ? formData.club : null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -43,7 +43,7 @@ export default function WizardStep4() {
             return;
         }
         if (independent) {
-            updateFormData({ club: 'independent' });
+            updateFormData({ club: 'Independent' });
             console.log(formData)
             router.push('/wizard/step5')
             setSelected(null)

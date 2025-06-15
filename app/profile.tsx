@@ -22,6 +22,7 @@ const router = useRouter();
 export default function Profile() {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [userId, setUserId] = useState(null);
+    const [user, setUser] = useState(null);
 
 
     const headerHeight = scrollY.interpolate({
@@ -43,27 +44,61 @@ export default function Profile() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                // const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                //     headers: { Authorization: `Bearer ${token}` }
+                // });
 
-                if (response.ok) {
-                    const user = await response.json();
-                    console.log('User info:', user);
-                }else{
-                    console.error('API error')
+                // if (response.ok) {
+                //     const user = await response.json();
+                //     setUser(user)
+                // } else {
+                //     console.error('API error')
+                // }
+
+                const u = {
+                    "id": "684ec2ddc15b465ac1228ae4",
+                    "name": "Omar Saab",
+                    "email": "omar",
+                    "phone": "dsa",
+                    "country": "LB",
+                    "password": "123",
+                    "dob": {
+                        "day": "01",
+                        "month": "09",
+                        "year": "1996"
+                    },
+                    "parentEmail": "kj",
+                    "type": "Club",
+                    "sport": "Basketball",
+                    "club": "Independent",
+                    "gender": "Male",
+                    "bio": null,
+                    "height": null,
+                    "weight": null,
+                    "createdAt": "2025-06-15T12:55:57.944Z",
+                    "updatedAt": "2025-06-15T12:55:57.944Z",
+                    "__v": 0
                 }
+                setUser(u);
             }
         };
 
         fetchUser();
     }, []);
 
-    const handleLogout = async () => {
-        await SecureStore.deleteItemAsync('userToken');
-        router.replace('/')
-        console.log('Token deleted');
+    useEffect(() => {
+        console.log("User: ", user)
+    }, [user]);
+    
+    const handleEdit = async () => {
+        console.log('Edit clicked');
     };
+
+    const handleShareProfile = async () => {
+        console.log('share clicked');
+    };
+
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december']
 
     //graph data
     const data = [
@@ -76,7 +111,7 @@ export default function Profile() {
 
     return (
         <View style={styles.container}>
-            <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
+            {user && <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
                 <Animated.Image
                     source={require('../assets/logo_white.png')}
                     style={[styles.logo, { opacity: logoOpacity }]}
@@ -84,11 +119,11 @@ export default function Profile() {
                 />
 
                 <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Cristiano Ronaldo</Text>
-                    <Text style={styles.pageDesc}>Football player</Text>
+                    <Text style={styles.pageTitle}>{user.name}</Text>
+                    <Text style={styles.pageDesc}>{user.sport} player</Text>
                 </View>
 
-                <Text style={styles.ghostText}>Ronaldo</Text>
+                <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>
 
                 <View style={styles.profileImage}>
                     <Image
@@ -98,8 +133,9 @@ export default function Profile() {
                     />
                 </View>
             </Animated.View>
+            }
 
-            <Animated.ScrollView
+            {user && <Animated.ScrollView
                 onScroll={Animated.event(
                     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                     { useNativeDriver: false }
@@ -111,9 +147,14 @@ export default function Profile() {
                         <Text style={styles.title}>
                             Bio
                         </Text>
-                        <Text style={styles.paragraph}>
-                            I train to be the best. Every match is a chance to prove myself again. Success doesn't come by chance — it comes from relentless hard work, sacrifice, and passion for the game.
-                        </Text>
+                        {user.bio ? (
+                            <Text style={styles.paragraph}>
+                                {user.bio}
+                            </Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+
                     </View>
 
                     <View style={styles.profileSection}>
@@ -121,35 +162,55 @@ export default function Profile() {
                             <Text style={styles.title}>
                                 Country
                             </Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <View style={{ marginRight: 8 }}>
-                                    <CountryFlag isoCode="PT" size={14} />
+                            {user.country ? (
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{ marginRight: 8 }}>
+                                        <CountryFlag isoCode={user.country} size={14} />
+                                    </View>
+                                    <Text style={styles.paragraph}>
+                                        {user.country}
+                                    </Text>
                                 </View>
-                                <Text style={styles.paragraph}>Portugal</Text>
-                            </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Team/club
                             </Text>
-                            <View>
-                                <Text style={styles.paragraph}>Al Nassr FC</Text>
-                            </View>
+                            {user.club ? (
+                                <View>
+                                    <Text style={styles.paragraph}>{user.club}</Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Date of Birth
                             </Text>
-                            <View>
-                                <Text style={styles.paragraph}>February 5, 1985</Text>
-                            </View>
+                            {(user.dob.day && user.dob.month && user.dob.year) ? (
+                                <View>
+                                    <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>
+                                </View>
+                            ) : (
+                                <View>
+                                    <Text style={styles.paragraph}>-</Text>
+                                </View>
+                            )}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
                             <View>
-                                <Text style={styles.paragraph}>1.87 m</Text>
+                                {user.height ? (
+                                    <Text style={styles.paragraph}>{user.height} m</Text>
+                                ) : (
+                                    <Text style={styles.paragraph}>-</Text>
+                                )}
                             </View>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -157,7 +218,11 @@ export default function Profile() {
                                 Weight
                             </Text>
                             <View>
-                                <Text style={styles.paragraph}>83 kg</Text>
+                                {user.weight ? (
+                                    <Text style={styles.paragraph}>{user.weight} Kg</Text>
+                                ) : (
+                                    <Text style={styles.paragraph}>-</Text>
+                                )}
                             </View>
                         </View>
                     </View>
@@ -166,86 +231,88 @@ export default function Profile() {
                         <Text style={styles.title}>
                             Highlights
                         </Text>
-                        <Text style={styles.paragraph}>
-                            5x Ballon d'Or Winner{'\n'}
-                            UEFA Champions League Titles: 5{'\n'}
-                            European Championship Winner (2016){'\n'}
-                            Nations League Winner (2019){'\n'}
-                            Most Goals in UEFA Champions League History{'\n'}
-                            850+ Career Goals
-                        </Text>
+                        {user.highlights ? (
+                            <Text style={styles.paragraph}>{user.highlights}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+
                     </View>
 
                     <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Stats
                         </Text>
-                        <Text style={styles.paragraph}>
-                            Matches Played: 41{'\n'}
-                            Goals: 35{'\n'}
-                            Assists: 12{'\n'}
-                            Shots on Target: 72%{'\n'}
-                            Pass Accuracy: 83%
-                        </Text>
+                        {user.stats ? (
+                            <Text style={styles.paragraph}>{user.stats}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
                     </View>
 
                     <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Achievements
                         </Text>
-                        <Text style={styles.paragraph}>
-                            FIFA Player of the Year{'\n'}
-                            Top Scorer in 4 Major European Leagues{'\n'}
-                            100+ International Goals for Portugal{'\n'}
-                            Golden Boot Winner - Euro 2020
-                        </Text>
+                        {user.achievements ? (
+                            <Text style={styles.paragraph}>{user.achievements}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
                     </View>
 
                     <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Upcoming Events
                         </Text>
-                        <Text style={styles.paragraph}>
-                            June 10: Friendly Match vs Brazil{'\n'}
-                            July 4: Champions League Qualifier{'\n'}
-                            August 20: League Opener
-                        </Text>
+                        {user.events ? (
+                            <Text style={styles.paragraph}>{user.events}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
                     </View>
 
                     <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Skills
                         </Text>
-                        <View style={{ alignItems: 'center' }}>
-                            <RadarChart
-                                data={data}
-                                maxValue={100}
-                                gradientColor={{
-                                    startColor: '#FF9432',
-                                    endColor: '#FFF8F1',
-                                    count: 5,
-                                }}
-                                stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
-                                strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
-                                strokeOpacity={[1, 1, 1, 1, 0.13]}
-                                labelColor="#111111"
-                                dataFillColor="#FF9432"
-                                dataFillOpacity={0.8}
-                                dataStroke="#FF4000"
-                                dataStrokeWidth={2}
-                                isCircle
-                            />
+                        <View style={user.skills!=null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
+                            {user.skills ? (
+                                <RadarChart
+                                    data={data}
+                                    maxValue={100}
+                                    gradientColor={{
+                                        startColor: '#FF9432',
+                                        endColor: '#FFF8F1',
+                                        count: 5,
+                                    }}
+                                    stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
+                                    strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
+                                    strokeOpacity={[1, 1, 1, 1, 0.13]}
+                                    labelColor="#111111"
+                                    dataFillColor="#FF9432"
+                                    dataFillOpacity={0.8}
+                                    dataStroke="#FF4000"
+                                    dataStrokeWidth={2}
+                                    isCircle
+                                />) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
 
                         </View>
                     </View>
 
-                    <View style={styles.profileSection}>
-                        <TouchableOpacity onPress={handleLogout}>
-                            <Text>logout</Text>
+                    {userId == user.id && <View style={[styles.profileSection,styles.profileActions]}>
+                        <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Edit profile</Text>
                         </TouchableOpacity>
-                    </View>
+                        <TouchableOpacity onPress={handleShareProfile} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Share Profile</Text>
+                        </TouchableOpacity>
+                    </View>}
                 </View>
             </Animated.ScrollView>
+            }
 
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
@@ -398,4 +465,20 @@ const styles = StyleSheet.create({
         height: 24,
         tintColor: '#FF4000',
     },
+    profileActions:{
+        borderTopWidth:1,
+        borderTopColor:'rgba(0,0,0,0.2)',
+        paddingTop:10
+    },
+    profileButton:{
+        borderRadius:5,
+        padding:10,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        marginBottom:10
+    },
+    profileButtonText:{
+        fontSize: 18,
+        color: '#150000',
+        fontFamily: 'Bebas',
+    }
 });

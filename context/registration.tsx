@@ -22,6 +22,11 @@ interface RegistrationData {
   height: string | null;
   weight: string | null;
   agreed: boolean | null;
+  highlights: any;
+  stats: any;
+  achievements: any;
+  events: any;
+  skills: any;
 }
 
 // 2. Define the context type
