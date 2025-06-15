@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRegistration } from '../../context/registration';
 
@@ -18,6 +19,18 @@ export default function WizardStep4() {
     const { formData, updateFormData } = useRegistration();
     const [independent, setIndependent] = useState<boolean>(formData.club == 'independent' ? true : false);
     const [selected, setSelected] = useState<string | null>(formData.club != 'independent' ? formData.club : null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                router.replace('/profile'); // Redirect if token exists
+            }
+        };
+
+        checkAuth();
+    }, []);
 
 
     const toggleCheckbox = () => {
@@ -26,6 +39,7 @@ export default function WizardStep4() {
 
     const handleNext = () => {
         if (!independent && !selected) {
+            setError('Kindly select a club')
             return;
         }
         if (independent) {
@@ -64,9 +78,15 @@ export default function WizardStep4() {
             </View>
 
             <View style={styles.form}>
+                {error != null && <View style={styles.error}>
+                    <View style={styles.errorIcon}></View>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>}
                 <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
                     <View style={styles.checkbox}>
-                        {independent && <View style={styles.checked} />}
+                        {independent && <View style={styles.checked} >
+                            <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+                        </View>}
                     </View>
 
                     <Text style={styles.label}>
@@ -230,7 +250,7 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 30,
+        bottom: 50,
         left: 0,
         width: width,
         paddingLeft: 20,
@@ -265,10 +285,38 @@ const styles = StyleSheet.create({
     checked: {
         width: 16,
         height: 16,
-        backgroundColor: 'black'
+        backgroundColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    checkImage: {
+        width: 16,
+        height: 16,
+        resizeMode: 'contain',
     },
     label: {
         color: '#000000',
         fontFamily: 'Manrope'
     },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
+    }
 });

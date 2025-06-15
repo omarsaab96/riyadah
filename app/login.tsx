@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -10,6 +11,7 @@ import {
   View
 } from 'react-native';
 
+
 const { width } = Dimensions.get('window');
 const router = useRouter();
 
@@ -17,12 +19,45 @@ const router = useRouter();
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleLogin = () => {
-    console.log('Email:', email);
-    console.log('Password:', password);
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await SecureStore.getItemAsync('userToken');
+      if (token) {
+        router.replace('/profile'); // Redirect if token exists
+      }
+    };
 
-    router.replace('/profile')
+    checkAuth();
+  }, []);
+
+  const handleLogin = async () => {
+    if (!email || !password) return;
+
+    try {
+      const response = await fetch('https://riyadah.onrender.com/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        setError('Invalid email or password');
+      }
+
+      const { user, token } = await response.json();
+
+      // Save the token securely
+      await SecureStore.setItemAsync('userToken', token);
+
+      // Navigate to profile screen
+      router.replace('/profile');
+    } catch (error: any) {
+      console.error('Login failed:', error.message);
+    }
   };
 
   return (
@@ -50,6 +85,10 @@ export default function Login() {
       </View>
 
       <View style={styles.form}>
+        {error != '' && <View style={styles.error}>
+          <View style={styles.errorIcon}></View>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>}
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -199,5 +238,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingTop: 3,
     lineHeight: 16
+  },
+  error: {
+    marginBottom: 15,
+    backgroundColor: '#fce3e3',
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'flex-start'
+  },
+  errorIcon: {
+    width: 3,
+    height: 15,
+    backgroundColor: 'red',
+    borderRadius: 5,
+    marginRight: 10,
+    marginTop: 3
+  },
+  errorText: {
+    color: 'red',
+    fontFamily: 'Manrope',
   }
 });

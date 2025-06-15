@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRegistration } from '../../context/registration';
@@ -14,11 +15,23 @@ export default function WizardStep2() {
     const [year, setYear] = useState<string | null>(formData.dob?.year || null);
     const [showParentEmail, setShowParentEmail] = useState(false);
     const [parentEmail, setParentEmail] = useState<string | null>(formData.parentEmail || null);
+    const [error, setError] = useState<string | null>(null);
 
 
     const dayRef = useRef(null);
     const monthRef = useRef(null);
     const yearRef = useRef(null);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                router.replace('/profile'); // Redirect if token exists
+            }
+        };
+
+        checkAuth();
+    }, []);
 
     useEffect(() => {
         setTimeout(() => {
@@ -58,7 +71,9 @@ export default function WizardStep2() {
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
         const age = calculateAge(dob);
 
-        if (age < 18 && parentEmail != "") {
+        console.log(parentEmail)
+
+        if (age < 18 && parentEmail != "" && parentEmail != null) {
             updateFormData({
                 dob: {
                     day: day,
@@ -69,7 +84,7 @@ export default function WizardStep2() {
             });
             console.log(formData)
             router.push('/wizard/step3');
-        } else if (age >= 18) {
+        } else if (age >= 18 && day != null && month != null && year != null) {
             updateFormData({
                 dob: {
                     day: day,
@@ -81,6 +96,8 @@ export default function WizardStep2() {
 
             console.log(formData)
             router.push('/wizard/step3');
+        } else {
+            setError('Kindly fill all fields')
         }
 
 
@@ -104,6 +121,10 @@ export default function WizardStep2() {
             </View>
 
             <View style={styles.form}>
+                {error != null && <View style={styles.error}>
+                    <View style={styles.errorIcon}></View>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>}
                 <View style={styles.dobRow}>
                     <TextInput
                         ref={dayRef}
@@ -277,7 +298,7 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 30,
+        bottom: 50,
         left: 0,
         width: width,
         paddingLeft: 20,
@@ -298,4 +319,25 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginBottom: 10
     },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
+    }
 });

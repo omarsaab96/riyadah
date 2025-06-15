@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRegistration } from '../../context/registration';
 
@@ -17,12 +18,26 @@ export default function WizardStep3() {
     const [keyword, setKeyword] = useState('');
     const { formData, updateFormData } = useRegistration();
     const [selected, setSelected] = useState<string | null>(formData.sport || null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                router.replace('/profile'); // Redirect if token exists
+            }
+        };
+
+        checkAuth();
+    }, []);
 
     const handleNext = () => {
-        if(selected){
+        if (selected) {
             updateFormData({ sport: selected });
             console.log(formData)
             router.push('/wizard/step4')
+        } else {
+            setError('Kindly select an sport type')
         }
     }
 
@@ -51,6 +66,10 @@ export default function WizardStep3() {
             </View>
 
             <View style={styles.form}>
+                {error != null && <View style={styles.error}>
+                    <View style={styles.errorIcon}></View>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>}
                 <TextInput
                     style={styles.input}
                     placeholder="Search"
@@ -207,7 +226,7 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 30,
+        bottom: 50,
         left: 0,
         width: width,
         paddingLeft: 20,
@@ -225,4 +244,25 @@ const styles = StyleSheet.create({
         color: 'black',
         borderRadius: 10
     },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
+    }
 });

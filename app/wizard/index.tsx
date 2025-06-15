@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRegistration } from '../../context/registration';
 
@@ -16,12 +17,26 @@ export default function WizardStep1() {
     const { formData, updateFormData } = useRegistration();
     const router = useRouter();
     const [selected, setSelected] = useState<string | null>(formData.type || null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                router.replace('/profile'); // Redirect if token exists
+            }
+        };
+
+        checkAuth();
+    }, []);
 
     const handleNext = () => {
         if (selected) {
             updateFormData({ type: selected });
             console.log(formData)
             router.push('/wizard/step2');
+        } else {
+            setError('Kindly select an account type')
         }
     }
 
@@ -50,6 +65,10 @@ export default function WizardStep1() {
             </View>
 
             <ScrollView >
+                {error != null && <View style={styles.error}>
+                    <View style={styles.errorIcon}></View>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>}
 
                 <View style={styles.wizardContainer}>
                     {accountTypes.map(({ label, icon }, idx) => (
@@ -196,10 +215,32 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 30,
+        bottom: 50,
         left: 0,
         width: width,
         paddingLeft: 20,
         paddingRight: 20
+    },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginHorizontal: 20
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
     }
 });

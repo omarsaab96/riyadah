@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRegistration } from '../../context/registration';
 
@@ -15,14 +16,27 @@ export default function WizardStep5() {
     const [bio, setBio] = useState<string | null>(formData.bio || null);
     const [selectedGender, setSelectedGender] = useState<string | null>(formData.gender || null);
     const [loading, setLoading] = useState(false);
+    const [registrationError, setRegisterError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                router.replace('/profile'); // Redirect if token exists
+            }
+        };
+
+        checkAuth();
+    }, []);
 
     const handleNext = async () => {
         if (!selectedGender) {
+            setError('Kindly select a gender')
             return;
         }
         setLoading(true);
-        setError(null);
+        setRegisterError(null);
 
         try {
             updateFormData({
@@ -37,7 +51,7 @@ export default function WizardStep5() {
                 gender: selectedGender,
             };
 
-            console.log('Submitting user data:', newUserData); // for debugging
+            console.log('Submitting user data:', newUserData);
 
             const response = await fetch('https://riyadah.onrender.com/api/users', {
                 method: 'POST',
@@ -51,19 +65,22 @@ export default function WizardStep5() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const result = await response.json();
+            const { user, token } = await response.json();
 
-            console.log('User created:', result);
+            await SecureStore.setItemAsync('userToken', String(token));
 
             router.replace('/profile');
         } catch (err) {
             console.error('User creation failed:', err);
-            setError('Something went wrong. Please try again.');
+            setRegisterError('Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
+    const handleRetry = async () => {
+        router.replace('/register');
+    };
 
     return (
         <View style={styles.container}>
@@ -76,29 +93,49 @@ export default function WizardStep5() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>
-                        {!loading ? 'About You' : 'Creating account'}
+                        {!loading
+                            ? (registrationError ? 'Error' : 'About You')
+                            : 'Creating account'}
                     </Text>
 
+
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {!loading && <Text style={styles.pageDesc}>Tell us more about you</Text>}
-                        {loading && (
-                            <ActivityIndicator size="small" color="#ffffff" style={{ transform: [{ scale: 1.25 }] }} />
+                        {!loading && registrationError == null && <Text style={styles.pageDesc}>Tell us more about you</Text>}
+
+                        {loading && !registrationError && (
+                            <ActivityIndicator
+                                size="small"
+                                color="#ffffff"
+                                style={{ transform: [{ scale: 1.25 }] }}
+                            />
+                        )}
+
+                        {!loading && registrationError && (
+                            <Text style={styles.pageDesc}>Sorry for the inconvenience</Text>
                         )}
                     </View>
 
                 </View>
 
                 <Text style={styles.ghostText}>
-                    {!loading && 'About'}
+                    {!loading
+                        ? (error ? 'Error' : 'About')
+                        : null}
                 </Text>
 
             </View>
 
-            {!loading && <ScrollView style={styles.form}>
-                {/* <View style={styles.inputEntity}>
-                    <Text style={styles.label}>Profile picture</Text>
+            {registrationError != null && <View style={styles.registrationError}>
+                <View style={styles.errorIcon}></View>
+                <Text style={styles.errorText}>{registrationError}</Text>
 
-                </View> */}
+            </View>}
+
+            {!loading && registrationError == null && <ScrollView style={styles.form}>
+                {error != null && <View style={styles.error}>
+                    <View style={styles.errorIcon}></View>
+                    <Text style={styles.errorText}>{error}</Text>
+                </View>}
 
                 <View style={styles.inputEntity}>
                     <Text style={styles.label}>Gender</Text>
@@ -135,10 +172,9 @@ export default function WizardStep5() {
                         returnKeyType="default"
                     />
                 </View>
-            </ScrollView>
-            }
+            </ScrollView>}
 
-            {!loading && <View style={styles.fixedBottomSection}>
+            {!loading && registrationError == null && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
                     <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
                     <View style={styles.loginButton}>
@@ -146,16 +182,17 @@ export default function WizardStep5() {
                     </View>
                     <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                 </TouchableOpacity>
-            </View>
-            }
+            </View>}
 
-            {loading && (
-                <Text style={{ paddingHorizontal: 20, fontFamily: 'Manrope', marginBottom: 10 }}></Text>
-            )}
-
-            {error && (
-                <Text style={{ position: 'absolute', bottom: 80, left: 20, color: 'red', marginBottom: 10, textAlign: 'center' }}>{error}</Text>
-            )}
+            {!loading && registrationError != null && <View style={styles.fixedBottomSection}>
+                <TouchableOpacity style={styles.fullButtonRow} onPress={handleRetry}>
+                    <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
+                    <View style={styles.loginButton}>
+                        <Text style={styles.loginText}>Try again</Text>
+                    </View>
+                    <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+                </TouchableOpacity>
+            </View>}
         </View>
     );
 }
@@ -270,7 +307,7 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 30,
+        bottom: 50,
         left: 0,
         width: width,
         paddingLeft: 20,
@@ -298,5 +335,36 @@ const styles = StyleSheet.create({
     },
     inputEntity: {
         marginBottom: 30
+    },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    registrationError: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginHorizontal: 20
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
     }
 });

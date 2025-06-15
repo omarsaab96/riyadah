@@ -21,6 +21,7 @@ interface RegistrationData {
   bio: string | null;
   height: string | null;
   weight: string | null;
+  agreed: boolean | null;
 }
 
 // 2. Define the context type

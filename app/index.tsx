@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
+import * as SecureStore from 'expo-secure-store';
+import React, { useEffect } from 'react';
 import {
     Dimensions,
     Image,
@@ -16,6 +17,17 @@ const router = useRouter();
 
 
 export default function Home() {
+    useEffect(() => {
+        const checkAuth = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                router.replace('/profile'); // Redirect if token exists
+            }
+        };
+
+        checkAuth();
+    }, []);
+
     return (
         <SafeAreaView style={styles.container}>
             {/* Logo */}
@@ -95,7 +107,7 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 30,
+        bottom: 50,
         left: 0,
         width: width,
         paddingLeft: 20,

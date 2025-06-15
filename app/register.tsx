@@ -1,11 +1,14 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import React, { useEffect, useState } from 'react';
 import CountryPicker from 'react-native-country-picker-modal';
 import { useRegistration } from '../context/registration';
 
 import {
   Dimensions,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -25,7 +28,19 @@ export default function Register() {
   const [email, setEmail] = useState<string | null>(formData.email || null);
   const [phoneNumber, setPhoneNumber] = useState<string | null>(formData.phone || null);
   const [password, setPassword] = useState<string | null>(formData.password || null);
-  const [agreed, setAgreed] = useState(false);
+  const [agreed, setAgreed] = useState<boolean | null>(formData.agreed || null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await SecureStore.getItemAsync('userToken');
+      if (token) {
+        router.replace('/profile'); // Redirect if token exists
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const handleRegister = () => {
     if (name != null && email != null && phoneNumber != null && password != null && agreed) {
@@ -34,10 +49,13 @@ export default function Register() {
         email: email,
         phone: phoneNumber,
         password: password,
-        country:countryCode
+        country: countryCode,
+        agreed: agreed
       });
       console.log(formData)
       router.replace('/wizard');
+    } else {
+      setError('Please fill all fields and agree terms and conditions');
     }
   };
 
@@ -47,118 +65,130 @@ export default function Register() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.pageHeader}>
-        <Image
-          source={require('../assets/logo_white.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
 
-        <View style={styles.headerTextBlock}>
-          <Text style={styles.pageTitle}>
-            Create your Account
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Adjust as needed
+      >
+        <View style={styles.pageHeader}>
+          <Image
+            source={require('../assets/logo_white.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+
+          <View style={styles.headerTextBlock}>
+            <Text style={styles.pageTitle}>
+              Create your Account
+            </Text>
+            <Text style={styles.pageDesc}>
+              Join the energy, unite with athletes like you!
+            </Text>
+          </View>
+
+          <Text style={styles.ghostText}>
+            join
           </Text>
-          <Text style={styles.pageDesc}>
-            Join the energy, unite with athletes like you!
-          </Text>
+
         </View>
 
-        <Text style={styles.ghostText}>
-          join
-        </Text>
-
-      </View>
-
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          placeholderTextColor="#A8A8A8"
-          value={name}
-          onChangeText={setName}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#A8A8A8"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <View style={styles.phoneContainer}>
-          <CountryPicker
-            countryCode={countryCode}
-            withFilter
-            withFlag
-            withCallingCode
-            withAlphaFilter
-            withCallingCodeButton
-            withEmoji={false}
-            theme={{
-              itemHeight: 44,
-            }}
-            onSelect={(country) => {
-              setCountryCode(country.cca2);
-              setCallingCode(country.callingCode[0]);
-            }}
+        <View style={styles.form}>
+          {error != '' && <View style={styles.error}>
+            <View style={styles.errorIcon}></View>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>}
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            placeholderTextColor="#A8A8A8"
+            value={name}
+            onChangeText={setName}
           />
           <TextInput
-            style={[styles.input, styles.phoneInput]}
-            placeholder="Phone number"
-            keyboardType="phone-pad"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#A8A8A8"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
-        </View>
-        <TextInput
-          style={[styles.input, styles.passwordInput]}
-          placeholder="Password"
-          placeholderTextColor="#A8A8A8"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+          <View style={styles.phoneContainer}>
+            <CountryPicker
+              countryCode={countryCode}
+              withFilter
+              withFlag
+              withCallingCode
+              withAlphaFilter
+              withCallingCodeButton
+              withEmoji={false}
+              theme={{
+                itemHeight: 44,
+              }}
+              onSelect={(country) => {
+                setCountryCode(country.cca2);
+                setCallingCode(country.callingCode[0]);
+              }}
+            />
+            <TextInput
+              style={[styles.input, styles.phoneInput]}
+              placeholder="Phone number"
+              keyboardType="phone-pad"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+            />
+          </View>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            placeholder="Password"
+            placeholderTextColor="#A8A8A8"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-        <View style={styles.hintContainer}>
-          <Text style={styles.hint}>Password must be at least 6 character long and include 1 capital letter and 1 symbol</Text>
-        </View>
-
-        <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
-          <View style={styles.checkbox}>
-            {agreed && <View style={styles.checked} />}
+          <View style={styles.hintContainer}>
+            <Text style={styles.hint}>Password must be at least 6 character long and include 1 capital letter and 1 symbol</Text>
           </View>
 
-          <Text style={styles.label}>
-            I agree to the{' '}
-            <Text style={styles.link} onPress={() => router.push('/termsConditions')}>
-              Terms & Conditions
+          <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+            <View style={styles.checkbox}>
+              {agreed && <View style={styles.checked} >
+                <Image source={require('../assets/check.png')} style={styles.checkImage} />
+              </View>}
+            </View>
+
+            <Text style={styles.label}>
+              I agree to the{' '}
+              <Text style={styles.link} onPress={() => router.push('/termsConditions')}>
+                Terms & Conditions
+              </Text>
             </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.fullButtonRow} onPress={handleRegister}>
+            <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
+            <View style={styles.loginButton}>
+              <Text style={styles.loginText}>CREATE ACCOUNT</Text>
+            </View>
+            <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.switchLinkContainer}>
+          <Text>Already have an account?</Text>
+          <TouchableOpacity onPress={() => router.replace('/login')}>
+            <Text style={styles.switchLink}>LOGIN HERE</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.disclaimer}>
+          <Text style={styles.hint}>
+            By agreeing to the above terms, you are consenting that your personal information will be collected, stored, and processed on behalf of RIYADAH
           </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.fullButtonRow} onPress={handleRegister}>
-          <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
-          <View style={styles.loginButton}>
-            <Text style={styles.loginText}>CREATE ACCOUNT</Text>
-          </View>
-          <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.switchLinkContainer}>
-        <Text>Already have an account?</Text>
-        <TouchableOpacity onPress={() => router.replace('/login')}>
-          <Text style={styles.switchLink}>LOGIN HERE</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.disclaimer}>
-        <Text style={styles.hint}>
-          By agreeing to the above terms, you are consenting that your personal information will be collected, stored, and processed on behalf of RIYADAH
-        </Text>
-      </View>
-
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -318,7 +348,14 @@ const styles = StyleSheet.create({
   checked: {
     width: 16,
     height: 16,
-    backgroundColor: 'black'
+    backgroundColor: 'black',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  checkImage: {
+    width: 16,
+    height: 16,
+    resizeMode: 'contain',
   },
   label: {
     color: '#000000',
@@ -327,5 +364,26 @@ const styles = StyleSheet.create({
   link: {
     color: '#000000',
     fontWeight: 'bold',
+  },
+  error: {
+    marginBottom: 15,
+    backgroundColor: '#fce3e3',
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'flex-start'
+  },
+  errorIcon: {
+    width: 3,
+    height: 15,
+    backgroundColor: 'red',
+    borderRadius: 5,
+    marginRight: 10,
+    marginTop: 3
+  },
+  errorText: {
+    color: 'red',
+    fontFamily: 'Manrope',
   }
 });
