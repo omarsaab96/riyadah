@@ -5,12 +5,15 @@ import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
     Image,
+    KeyboardAvoidingView, Platform,
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
+import CountryPicker from 'react-native-country-picker-modal';
 
 
 const { width } = Dimensions.get('window');
@@ -29,42 +32,16 @@ export default function EditProfile() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                // const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
-                //     headers: { Authorization: `Bearer ${token}` }
-                // });
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-                // if (response.ok) {
-                //     const user = await response.json();
-                //     setUser(user)
-                // } else {
-                //     console.error('API error')
-                // }
-
-                const u = {
-                    "id": "684ec2ddc15b465ac1228ae4",
-                    "name": "Omar Saab",
-                    "email": "omar",
-                    "phone": "dsa",
-                    "country": "LB",
-                    "password": "123",
-                    "dob": {
-                        "day": "01",
-                        "month": "09",
-                        "year": "1996"
-                    },
-                    "parentEmail": "kj",
-                    "type": "Club",
-                    "sport": "Basketball",
-                    "club": "Independent",
-                    "gender": "Male",
-                    "bio": null,
-                    "height": null,
-                    "weight": null,
-                    "createdAt": "2025-06-15T12:55:57.944Z",
-                    "updatedAt": "2025-06-15T12:55:57.944Z",
-                    "__v": 0
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
                 }
-                setUser(u);
             }
         };
 
@@ -75,122 +52,292 @@ export default function EditProfile() {
         console.log("User: ", user)
     }, [user]);
 
+    const updateField = (field, value) => {
+  setUser(prev => ({ ...prev, [field]: value }));
+};
+
     const handleCancel = () => {
-        console.log("Cancel clicked")
+        router.replace('/profile');
     }
 
-    const handleSave = () => {
-        console.log("Save clicked")
+    const handleSave = async () => {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token || !userId) return;
+
+        const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        });
+
+        if (response.ok) {
+            console.log("Profile updated successfully");
+            router.replace('/profile'); // or any confirmation screen
+        } else {
+            console.error("Failed to update profile");
+        }
     }
+
+    if (!user) return <Text style={{ padding: 20 }}>Loading...</Text>;
 
     return (
-        <View style={styles.container}>
-            {user && <View style={styles.pageHeader}>
-                <Image
-                    source={require('../assets/logo_white.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                />
-
-                <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Edit profile</Text>
-                    <Text style={styles.pageDesc}>Change your data</Text>
-                </View>
-
-                <Text style={styles.ghostText}>Edit Prof</Text>
-
-                <View style={styles.profileImage}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+        >
+            <View style={styles.container}>
+                {user && <View style={styles.pageHeader}>
                     <Image
-                        source={require('../assets/avatar.png')}
-                        style={styles.profileImageAvatar}
+                        source={require('../assets/logo_white.png')}
+                        style={styles.logo}
                         resizeMode="contain"
                     />
-                </View>
-            </View>
-            }
 
-            {user && <ScrollView>
-                <View style={styles.contentContainer}>
-                    <View style={styles.profileSection}>
-                        <Text style={styles.title}>
-                            Bio
-                        </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={styles.headerTextBlock}>
+                        <Text style={styles.pageTitle}>Edit profile</Text>
+                        <Text style={styles.pageDesc}>Change your data</Text>
+                    </View>
+
+                    <Text style={styles.ghostText}>Edit Prof</Text>
+
+                    <View style={styles.profileImage}>
+                        <Image
+                            source={require('../assets/avatar.png')}
+                            style={styles.profileImageAvatar}
+                            resizeMode="contain"
+                        />
+                    </View>
+                </View>
+                }
+
+                {user && <ScrollView>
+                    <View style={styles.contentContainer}>
+                        <View style={styles.entity}>
+                            <Text style={styles.title}>
+                                Bio
+                            </Text>
+                            <TextInput
+                                style={styles.textarea}
+                                placeholder="More about you"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.bio || ""}
+                                onChangeText={(text) => updateField('bio', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
+                            />
+                        </View>
+                        <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Country
                             </Text>
+                            <View style={[styles.input, styles.select]}>
+                                <CountryPicker
+                                    countryCode={user.country}
+                                    withFilter
+                                    withFlag
+                                    withAlphaFilter
+                                    withCountryNameButton
+                                    withEmoji={false}
+                                    theme={{
+                                        itemHeight: 44,
+                                    }}
+                                    onSelect={(country) => updateField('country', country.cca2)}
+                                />
+                            </View>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Team/club
                             </Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Club name"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.club}
+                                onChangeText={(text) => updateField('club', text)}
+                            />
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Date of Birth
                             </Text>
+                            <View style={styles.dobRow}>
+                                <TextInput
+                                    style={styles.dobInput}
+                                    placeholder="DD"
+                                    placeholderTextColor="#aaa"
+                                    keyboardType="number-pad"
+                                    maxLength={2}
+                                    value={user.dob.day}
+                                    onChangeText={(text) => updateField('dob.day', text)}
+                                />
+                                <Text style={styles.dobSeperator}>/</Text>
+                                <TextInput
+                                    style={styles.dobInput}
+                                    placeholder="MM"
+                                    placeholderTextColor="#aaa"
+                                    keyboardType="number-pad"
+                                    maxLength={2}
+                                    value={user.dob.month}
+                                    onChangeText={(text) => updateField('dob.month', text)}
+                                />
+                                <Text style={styles.dobSeperator}>/</Text>
+                                <TextInput
+                                    style={styles.dobInput}
+                                    placeholder="YYYY"
+                                    placeholderTextColor="#aaa"
+                                    keyboardType="number-pad"
+                                    maxLength={4}
+                                    value={user.dob.year}
+                                    onChangeText={(text) => updateField('dob.year', text)}
+                                />
+                            </View>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="In cm"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.height}
+                                onChangeText={(text) => updateField('height', text)}
+                            />
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Weight
                             </Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="In Kg"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.weight}
+                                onChangeText={(text) => updateField('weight', text)}
+                            />
                         </View>
-                        <Text style={styles.title}>
-                            Highlights
-                        </Text>
-                        <Text style={styles.title}>
-                            Stats
-                        </Text>
-                        <Text style={styles.title}>
-                            Achievements
-                        </Text>
-                        <Text style={styles.title}>
-                            Upcoming Events
-                        </Text>
-                        <Text style={styles.title}>
-                            Skills
-                        </Text>
-                    </View>
+                        <View style={styles.entity}>
 
-                    <View style={[styles.profileSection, styles.profileActions]}>
-                        <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleSave} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Save</Text>
-                        </TouchableOpacity>
+                            <Text style={styles.title}>
+                                Highlights
+                            </Text>
+                            <TextInput
+                                style={styles.textarea}
+                                placeholder="Wanna highlight any accomplishment?"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.highlight || ""}
+                                onChangeText={(text) => updateField('highlights', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
+                            />
+                        </View>
+                        <View style={styles.entity}>
+
+                            <Text style={styles.title}>
+                                Stats
+                            </Text>
+                            <TextInput
+                                style={styles.textarea}
+                                placeholder="Let people know how you perform"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.stats || ""}
+                                onChangeText={(text) => updateField('stats', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
+                            />
+                        </View>
+                        <View style={styles.entity}>
+
+                            <Text style={styles.title}>
+                                Achievements
+                            </Text>
+                            <TextInput
+                                style={styles.textarea}
+                                placeholder="What are your biggest achievements?"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.achievements || ""}
+                                onChangeText={(text) => updateField('achievements', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
+                            />
+                        </View>
+                        <View style={styles.entity}>
+
+                            <Text style={styles.title}>
+                                Upcoming Events
+                            </Text>
+                            <TextInput
+                                style={styles.textarea}
+                                placeholder="Are you attending any events?"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.events || ""}
+                                onChangeText={(text) => updateField('events', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
+                            />
+                        </View>
+                        <View style={styles.entity}>
+
+                            <Text style={styles.title}>
+                                Skills
+                            </Text>
+                            <TextInput
+                                style={styles.textarea}
+                                placeholder="How do you measure your skills?"
+                                placeholderTextColor="#A8A8A8"
+                                value={user.skills || ""}
+                                onChangeText={(text) => updateField('skills', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
+                            />
+                        </View>
+
+
+                        <View style={styles.profileActions}>
+                            <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                <Text style={styles.profileButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSave} style={styles.profileButton}>
+                                <Text style={styles.profileButtonText}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
+                </ScrollView>
+                }
+
+                <View style={styles.navBar}>
+                    <TouchableOpacity onPress={() => router.replace('/settings')}>
+                        <Image source={require('../assets/settings.png')} style={styles.icon} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/news')}>
+                        <Image source={require('../assets/news.png')} style={styles.icon} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/landing')}>
+                        <Image source={require('../assets/home.png')} style={[styles.icon, styles.icon]} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/notifications')}>
+                        <Image source={require('../assets/notifications.png')} style={styles.icon} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/profile')}>
+                        <Image source={require('../assets/profile.png')} style={styles.icon} />
+                    </TouchableOpacity>
                 </View>
-            </ScrollView>
-            }
-
-            <View style={styles.navBar}>
-                <TouchableOpacity onPress={() => router.replace('/settings')}>
-                    <Image source={require('../assets/settings.png')} style={styles.icon} />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => router.replace('/news')}>
-                    <Image source={require('../assets/news.png')} style={styles.icon} />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => router.replace('/landing')}>
-                    <Image source={require('../assets/home.png')} style={[styles.icon, styles.icon]} />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                    <Image source={require('../assets/notifications.png')} style={styles.icon} />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => router.replace('/profile')}>
-                    <Image source={require('../assets/profile.png')} style={styles.icon} />
-                </TouchableOpacity>
-            </View>
-        </View>
+            </View >
+        </KeyboardAvoidingView>
     );
 }
 
@@ -201,7 +348,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 20,
-        paddingBottom: 100
+        paddingBottom: 130
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -231,8 +378,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Manrope'
     },
-    profileSection: {
-        marginBottom: 30
+    entity: {
+        marginBottom: 20
     },
     profileProgress: {
         backgroundColor: '#222222',
@@ -279,7 +426,8 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: "Bebas",
-        fontSize: 20
+        fontSize: 20,
+        marginBottom: 10
     },
     subtitle: {
         fontFamily: "Manrope",
@@ -378,5 +526,46 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#150000',
         fontFamily: 'Bebas',
-    }
+    },
+    textarea: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10,
+        height: 170,
+        textAlignVertical: 'top',
+    },
+    input: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10
+    },
+    select: {
+        padding: 10
+    },
+    dobRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+    },
+    dobInput: {
+        flex: 1,
+        fontSize: 14,
+        color: 'black',
+        textAlign: 'center',
+        backgroundColor: '#F4F4F4',
+        borderRadius: 10
+    },
+    dobSeperator: {
+        fontSize: 30,
+        fontFamily: 'Bebas',
+        fontWeight: 'bold',
+        color: '#FF4000',
+        marginHorizontal: 10
+    },
 });

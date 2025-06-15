@@ -44,42 +44,16 @@ export default function Profile() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                // const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
-                //     headers: { Authorization: `Bearer ${token}` }
-                // });
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-                // if (response.ok) {
-                //     const user = await response.json();
-                //     setUser(user)
-                // } else {
-                //     console.error('API error')
-                // }
-
-                const u = {
-                    "id": "684ec2ddc15b465ac1228ae4",
-                    "name": "Omar Saab",
-                    "email": "omar",
-                    "phone": "dsa",
-                    "country": "LB",
-                    "password": "123",
-                    "dob": {
-                        "day": "01",
-                        "month": "09",
-                        "year": "1996"
-                    },
-                    "parentEmail": "kj",
-                    "type": "Club",
-                    "sport": "Basketball",
-                    "club": "Independent",
-                    "gender": "Male",
-                    "bio": null,
-                    "height": null,
-                    "weight": null,
-                    "createdAt": "2025-06-15T12:55:57.944Z",
-                    "updatedAt": "2025-06-15T12:55:57.944Z",
-                    "__v": 0
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
                 }
-                setUser(u);
             }
         };
 
@@ -178,7 +152,7 @@ export default function Profile() {
 
                 <View style={styles.contentContainer}>
 
-                    {userId == user.id && 
+                    {userId == user._id && 
                         <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={() => router.replace('/editProfile')}>
                             <View style={styles.profileProgressPercentage}>
                                 <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
@@ -352,7 +326,7 @@ export default function Profile() {
                         </View>
                     </View>
 
-                    {userId == user.id && <View style={[styles.profileSection, styles.profileActions]}>
+                    {userId == user._id && <View style={[styles.profileSection, styles.profileActions]}>
                         <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>
                             <Text style={styles.profileButtonText}>Edit profile</Text>
                         </TouchableOpacity>

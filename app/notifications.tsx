@@ -29,42 +29,16 @@ export default function EditProfile() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                // const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
-                //     headers: { Authorization: `Bearer ${token}` }
-                // });
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
 
-                // if (response.ok) {
-                //     const user = await response.json();
-                //     setUser(user)
-                // } else {
-                //     console.error('API error')
-                // }
-
-                const u = {
-                    "id": "684ec2ddc15b465ac1228ae4",
-                    "name": "Omar Saab",
-                    "email": "omar",
-                    "phone": "dsa",
-                    "country": "LB",
-                    "password": "123",
-                    "dob": {
-                        "day": "01",
-                        "month": "09",
-                        "year": "1996"
-                    },
-                    "parentEmail": "kj",
-                    "type": "Club",
-                    "sport": "Basketball",
-                    "club": "Independent",
-                    "gender": "Male",
-                    "bio": null,
-                    "height": null,
-                    "weight": null,
-                    "createdAt": "2025-06-15T12:55:57.944Z",
-                    "updatedAt": "2025-06-15T12:55:57.944Z",
-                    "__v": 0
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
                 }
-                setUser(u);
             }
         };
 
@@ -74,14 +48,6 @@ export default function EditProfile() {
     useEffect(() => {
         console.log("User: ", user)
     }, [user]);
-
-    const handleCancel = () => {
-        console.log("Cancel clicked")
-    }
-
-    const handleSave = () => {
-        console.log("Save clicked")
-    }
 
     return (
         <View style={styles.container}>
@@ -93,77 +59,26 @@ export default function EditProfile() {
                 />
 
                 <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Edit profile</Text>
-                    <Text style={styles.pageDesc}>Change your data</Text>
+                    <Text style={styles.pageTitle}>Notifications</Text>
+                    <Text style={styles.pageDesc}>You have 3 unread notifications</Text>
                 </View>
 
-                <Text style={styles.ghostText}>Edit Prof</Text>
-
-                <View style={styles.profileImage}>
-                    <Image
-                        source={require('../assets/avatar.png')}
-                        style={styles.profileImageAvatar}
-                        resizeMode="contain"
-                    />
-                </View>
+                <Text style={styles.ghostText}>Notifica</Text>
             </View>
             }
 
             {user && <ScrollView>
                 <View style={styles.contentContainer}>
-                    <View style={styles.profileSection}>
-                        <Text style={styles.title}>
-                            Bio
+                    <View style={styles.notification}>
+                        <Text style={styles.notificationText}>
+                            X added you as a friend
                         </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Country
-                            </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Team/club
-                            </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Date of Birth
-                            </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Height
-                            </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Weight
-                            </Text>
-                        </View>
-                        <Text style={styles.title}>
-                            Highlights
-                        </Text>
-                        <Text style={styles.title}>
-                            Stats
-                        </Text>
-                        <Text style={styles.title}>
-                            Achievements
-                        </Text>
-                        <Text style={styles.title}>
-                            Upcoming Events
-                        </Text>
-                        <Text style={styles.title}>
-                            Skills
-                        </Text>
+                        <View style={styles.notificationUnread}></View>
                     </View>
-
-                    <View style={[styles.profileSection, styles.profileActions]}>
-                        <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleSave} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Save</Text>
-                        </TouchableOpacity>
+                    <View style={styles.notification}>
+                        <Text style={styles.notificationText}>
+                            X added you as a friend
+                        </Text>
                     </View>
                 </View>
             </ScrollView>
@@ -183,7 +98,7 @@ export default function EditProfile() {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                    <Image source={require('../assets/notifications.png')} style={styles.icon} />
+                    <Image source={require('../assets/notifications.png')} style={styles.activeIcon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/profile')}>
@@ -231,64 +146,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Manrope'
     },
-    profileSection: {
-        marginBottom: 30
-    },
-    profileProgress: {
-        backgroundColor: '#222222',
-        padding: 5,
-        paddingRight: 10,
-        borderTopLeftRadius: 40,
-        borderBottomLeftRadius: 40,
-        borderRadius: 15,
+    notification: {
+        backgroundColor: '#D4D4D4',
+        padding: 10,
+        borderRadius: 10,
+        marginBottom: 10,
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start'
+        alignItems: 'flex-start'
     },
-    profileProgressPercentage: {
-        width: 60,
-        height: 60,
-        borderRadius: 60,
-        borderWidth: 5,
-        borderColor: '#FF4000',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 20,
-    },
-    profileProgressPercentageText: {
-        color: '#FF4000',
-        textAlign: 'center',
-        fontSize: 24,
-        fontFamily: 'Bebas'
-    },
-    profileProgressTextSection: {
+    notificationText: {
+        fontFamily: "Manrope",
+        fontSize: 14,
         flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between'
+        paddingRight:20
     },
-    profileProgressText: {
-        color: 'white',
-        fontFamily: 'Bebas',
-        fontSize: 24,
-    },
-    profileProgressImg: {
-        width: 15,
-        height: 15,
-        objectFit: 'contain',
-    },
-    title: {
-        fontFamily: "Bebas",
-        fontSize: 20
-    },
-    subtitle: {
-        fontFamily: "Manrope",
-        fontSize: 16,
-        fontWeight: 'bold'
-    },
-    paragraph: {
-        fontFamily: "Manrope",
-        fontSize: 16
+    notificationUnread: {
+        width: 10,
+        height: 10,
+        borderRadius: 10,
+        backgroundColor: '#FF4000',
+        marginTop:6
     },
     ghostText: {
         color: '#ffffff',
@@ -298,20 +175,6 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
-    },
-    profileImage: {
-        position: 'absolute',
-        bottom: 0,
-        right: -5,
-        height: '70%',
-        maxWidth: 200,
-        overflow: 'hidden',
-    },
-    profileImageAvatar: {
-        height: '100%',
-        width: undefined,
-        aspectRatio: 1,
-        resizeMode: 'contain',
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -363,20 +226,4 @@ const styles = StyleSheet.create({
         height: 24,
         tintColor: '#FF4000',
     },
-    profileActions: {
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(0,0,0,0.2)',
-        paddingTop: 10
-    },
-    profileButton: {
-        borderRadius: 5,
-        padding: 10,
-        backgroundColor: 'rgba(0,0,0,0.05)',
-        marginBottom: 10
-    },
-    profileButtonText: {
-        fontSize: 18,
-        color: '#150000',
-        fontFamily: 'Bebas',
-    }
 });
