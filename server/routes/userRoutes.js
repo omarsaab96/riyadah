@@ -3,6 +3,21 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require("jsonwebtoken");
 
+// Middleware to verify token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
+
+  if (!token) return res.status(401).json({ error: 'Token missing' });
+
+  jwt.verify(token, '123456', (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = decoded; // decoded contains userId
+    next();
+  });
+};
+
+
 // Login user
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -18,6 +33,26 @@ router.post('/login', async (req, res) => {
 
     res.json({ user, token });
   } catch (err) {
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+router.get('/:userId', authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+
+  // Optional: Make sure the token's userId matches the request param
+  if (req.user.userId !== userId) {
+    return res.status(403).json({ error: 'Unauthorized access to user data' });
+  }
+
+  try {
+    const user = await User.findById(userId).select('-password'); // don't return password
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Something went wrong' });
   }
 });

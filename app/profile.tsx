@@ -1,12 +1,15 @@
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useRouter } from 'expo-router';
-import React, { useRef } from 'react';
+import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
     Dimensions,
     Image,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
@@ -18,6 +21,8 @@ const router = useRouter();
 
 export default function Profile() {
     const scrollY = useRef(new Animated.Value(0)).current;
+    const [userId, setUserId] = useState(null);
+
 
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 300],
@@ -29,6 +34,36 @@ export default function Profile() {
         outputRange: [1, 0],
         extrapolate: 'clamp',
     });
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                console.log("DECODED: ", decodedToken)
+                setUserId(decodedToken.userId);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    console.log('User info:', user);
+                }else{
+                    console.error('API error')
+                }
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    const handleLogout = async () => {
+        await SecureStore.deleteItemAsync('userToken');
+        router.replace('/')
+        console.log('Token deleted');
+    };
 
     //graph data
     const data = [
@@ -177,35 +212,62 @@ export default function Profile() {
                         </Text>
                     </View>
 
-
                     <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Skills
                         </Text>
-                        <View style={{alignItems:'center'}}>
-                        <RadarChart
-                            data={data}
-                            maxValue={100}
-                            gradientColor={{
-                                startColor: '#FF9432',
-                                endColor: '#FFF8F1',
-                                count: 5,
-                            }}
-                            stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
-                            strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
-                            strokeOpacity={[1, 1, 1, 1, 0.13]}
-                            labelColor="#111111"
-                            dataFillColor="#FF9432"
-                            dataFillOpacity={0.8}
-                            dataStroke="#FF4000"
-                            dataStrokeWidth={2}
-                            isCircle
-                        />
-                            
+                        <View style={{ alignItems: 'center' }}>
+                            <RadarChart
+                                data={data}
+                                maxValue={100}
+                                gradientColor={{
+                                    startColor: '#FF9432',
+                                    endColor: '#FFF8F1',
+                                    count: 5,
+                                }}
+                                stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
+                                strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
+                                strokeOpacity={[1, 1, 1, 1, 0.13]}
+                                labelColor="#111111"
+                                dataFillColor="#FF9432"
+                                dataFillOpacity={0.8}
+                                dataStroke="#FF4000"
+                                dataStrokeWidth={2}
+                                isCircle
+                            />
+
                         </View>
+                    </View>
+
+                    <View style={styles.profileSection}>
+                        <TouchableOpacity onPress={handleLogout}>
+                            <Text>logout</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Animated.ScrollView>
+
+            <View style={styles.navBar}>
+                <TouchableOpacity onPress={() => router.replace('/settings')}>
+                    <Image source={require('../assets/settings.png')} style={styles.icon} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => router.replace('/news')}>
+                    <Image source={require('../assets/news.png')} style={styles.icon} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => router.replace('/landing')}>
+                    <Image source={require('../assets/home.png')} style={[styles.icon, styles.icon]} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => router.replace('/notifications')}>
+                    <Image source={require('../assets/notifications.png')} style={styles.icon} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => router.replace('/profile')}>
+                    <Image source={require('../assets/profile.png')} style={styles.activeIcon} />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -216,7 +278,8 @@ const styles = StyleSheet.create({
         height: '100%'
     },
     contentContainer: {
-        padding: 20
+        padding: 20,
+        paddingBottom: 100
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -301,5 +364,38 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: 'white',
         fontFamily: 'Bebas',
+    },
+    navBar: {
+        position: 'absolute',
+        bottom: 50,
+        left: 10,
+        width: width - 20,
+        height: 60,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        justifyContent: 'space-between',
+        backgroundColor: '#ffffff',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+
+        // iOS shadow
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+
+        // Android shadow
+        elevation: 5,
+    },
+    icon: {
+        width: 24,
+        height: 24,
+    },
+    activeIcon: {
+        width: 24,
+        height: 24,
+        tintColor: '#FF4000',
     },
 });
