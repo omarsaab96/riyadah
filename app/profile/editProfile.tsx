@@ -1,3 +1,4 @@
+import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -311,13 +312,27 @@ export default function EditProfile() {
                                 blurOnSubmit={false}
                                 returnKeyType="default"
                             />
+                            <Slider
+                                style={{ width: '100%', height: 40 }}
+                                minimumValue={0}
+                                maximumValue={100}
+                                step={1}
+                                value={user?.skills?.attack || 0}
+                                onValueChange={(value) => updateField('skills.attack', value)}
+                                minimumTrackTintColor="#FF4000"
+                                maximumTrackTintColor="#d3d3d3"
+                                thumbTintColor="#FF4000"
+                            />
+                            <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                {user?.skills?.attack || 0} / 100
+                            </Text>
                         </View>
 
                         <View style={styles.profileActions}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
                                 <Text style={styles.profileButtonText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSave} style={[styles.profileButton,styles.savebtn]}>
+                            <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
                                 <Text style={styles.profileButtonText}>Save</Text>
                                 {saving && (
                                     <ActivityIndicator
@@ -539,8 +554,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    savebtn:{
-        flexDirection:'row'
+    savebtn: {
+        flexDirection: 'row'
     },
     profileButtonText: {
         fontSize: 18,

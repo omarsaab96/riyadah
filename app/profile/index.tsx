@@ -66,13 +66,6 @@ export default function Profile() {
 
     useEffect(() => {
         console.log("User: ", user)
-        const data = [
-        { label: 'Attack', value: user.skills?.attack },
-        { label: 'Defense', value: user.skills?.defense },
-        { label: 'Speed', value: user.skills?.speed },
-        { label: 'Stamina', value: user.skills?.stamina },
-        { label: 'Skill', value: user.skills?.skill }
-    ];
     }, [user]);
 
     const handleEdit = async () => {
@@ -85,6 +78,15 @@ export default function Profile() {
     };
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december']
+
+    //graph data
+    const data = [
+    //     { label: 'Attack', value: user?.skills?.attack },
+    //     { label: 'Defense', value: user?.skills?.defense },
+    //     { label: 'Speed', value: user?.skills?.speed },
+    //     { label: 'Stamina', value: user?.skills?.stamina },
+    //     { label: 'Skill', value: user?.skills?.skill }
+    ];
 
     const getProfileProgress = () => {
         const totalFields = 21;
