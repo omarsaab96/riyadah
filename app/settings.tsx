@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React from 'react';
 import {
     Dimensions,
@@ -18,8 +19,8 @@ const router = useRouter();
 export default function Profile() {
 
     const handleLogout = async () => {
-        // await SecureStore.deleteItemAsync('userToken');
-        // router.replace('/')
+        await SecureStore.deleteItemAsync('userToken');
+        router.replace('/')
         console.log('Token deleted');
     };
 

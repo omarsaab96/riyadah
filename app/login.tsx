@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   StyleSheet,
@@ -22,6 +23,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -35,7 +37,14 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-    if (!email || !password) return;
+    if(loading) return;
+
+    setLoading(true)
+
+    if (!email || !password) {
+      setError("Please fill email and password")
+      setLoading(false)
+    };
 
     try {
       const response = await fetch('https://riyadah.onrender.com/api/users/login', {
@@ -58,6 +67,8 @@ export default function Login() {
       // Navigate to profile screen
       router.replace('/profile');
     } catch (error: any) {
+      setError("Login failed. Please try again")
+      setLoading(false)
       console.error('Login failed:', error.message);
     }
   };
@@ -118,6 +129,13 @@ export default function Login() {
           <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
           <View style={styles.loginButton}>
             <Text style={styles.loginText}>LOGIN</Text>
+            {loading && (
+              <ActivityIndicator
+                size="small"
+                color="#FFFFFF"
+                style={styles.loginLoader}
+              />
+            )}
           </View>
           <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
         </TouchableOpacity>
@@ -204,11 +222,15 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row'
   },
   loginText: {
     fontSize: 20,
     color: 'white',
     fontFamily: 'Bebas',
+  },
+  loginLoader: {
+    marginLeft: 10
   },
   sideRect: {
     height: 48,

@@ -64,6 +64,8 @@ export default function EditProfile() {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
+        console.log(token)
+
         const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
             method: 'PUT',
             headers: {
@@ -75,7 +77,7 @@ export default function EditProfile() {
 
         if (response.ok) {
             console.log("Profile updated successfully");
-            router.replace('/profile'); // or any confirmation screen
+            router.replace('/profile');
         } else {
             console.error("Failed to update profile");
         }
