@@ -1,6 +1,4 @@
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
-import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
@@ -20,31 +18,7 @@ const router = useRouter();
 export default function EditProfile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            const token = await SecureStore.getItemAsync('userToken');
-            if (token) {
-                const decodedToken = jwtDecode(token);
-                console.log("DECODED: ", decodedToken)
-                setUserId(decodedToken.userId);
-
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const user = await response.json();
-                    setUser(user)
-                } else {
-                    console.error('API error')
-                }
-            }
-        };
-
-        fetchUser();
-    }, []);
-
+    
     useEffect(() => {
         console.log("User: ", user)
     }, [user]);
