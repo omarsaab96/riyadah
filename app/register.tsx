@@ -5,6 +5,7 @@ import CountryPicker from 'react-native-country-picker-modal';
 import { useRegistration } from '../context/registration';
 
 import {
+  ActivityIndicator,
   Dimensions,
   Image,
   KeyboardAvoidingView,
@@ -30,6 +31,7 @@ export default function Register() {
   const [password, setPassword] = useState<string | null>(formData.password || null);
   const [agreed, setAgreed] = useState<boolean | null>(formData.agreed || null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,8 +44,37 @@ export default function Register() {
     checkAuth();
   }, []);
 
-  const handleRegister = () => {
+  const checkAvailability = async (email: string, phone: string) => {
+    try {
+      const response = await fetch('https://riyadah.onrender.com/api/users/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, phone })
+      });
+
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      console.error('Availability check error:', err);
+      return { success: false, msg: 'Server error' };
+    }
+  };
+
+  const handleRegister = async () => {
+    setLoading(true)
+
     if (name != null && email != null && phoneNumber != null && password != null && agreed) {
+
+      const checkResult = await checkAvailability(email, phoneNumber);
+
+      if (!checkResult.success) {
+        setError(checkResult.msg);
+        setLoading(false);
+        return;
+      }
+
       updateFormData({
         name: name,
         email: email,
@@ -54,8 +85,11 @@ export default function Register() {
       });
       console.log(formData)
       router.replace('/wizard');
+
+
+
     } else {
-      setError('Please fill all fields and agree terms and conditions');
+      setError('Please fill all fields and agree to our terms');
     }
   };
 
@@ -171,6 +205,13 @@ export default function Register() {
             <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
             <View style={styles.loginButton}>
               <Text style={styles.loginText}>CREATE ACCOUNT</Text>
+              {loading && (
+                <ActivityIndicator
+                  size="small"
+                  color="#FFFFFF"
+                  style={styles.loginLoader}
+                />
+              )}
             </View>
             <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
           </TouchableOpacity>
@@ -279,6 +320,10 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row'
+  },
+  loginLoader: {
+    marginLeft: 10
   },
   loginText: {
     fontSize: 20,

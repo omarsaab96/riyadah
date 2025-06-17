@@ -96,6 +96,36 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.post('/check', async (req, res) => {
+  const { email, phone } = req.body;
+
+  if (!email && !phone) {
+    return res.status(400).json({ success: false, msg: 'Email or phone is required' });
+  }
+
+  try {
+    if (email) {
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(200).json({ success: false, msg: 'email already exists' });
+      }
+    }
+
+    if (phone) {
+      const existingPhone = await User.findOne({ phone });
+      if (existingPhone) {
+        return res.status(200).json({ success: false, msg: 'phone already exists' });
+      }
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Check failed:', err);
+    return res.status(500).json({ success: false, msg: 'Server error' });
+  }
+});
+
+
 // Get all users
 router.get('/', async (req, res) => {
   const users = await User.find();
