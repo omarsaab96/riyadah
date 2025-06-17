@@ -107,14 +107,14 @@ router.post('/check', async (req, res) => {
     if (email) {
       const existingEmail = await User.findOne({ email });
       if (existingEmail) {
-        return res.status(200).json({ success: false, msg: 'email already exists' });
+        return res.status(200).json({ success: false, msg: 'Email already exists' });
       }
     }
 
     if (phone) {
       const existingPhone = await User.findOne({ phone });
       if (existingPhone) {
-        return res.status(200).json({ success: false, msg: 'phone already exists' });
+        return res.status(200).json({ success: false, msg: 'Phone already exists' });
       }
     }
 
