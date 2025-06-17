@@ -37,7 +37,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.get('/:userId', authenticateToken, async (req, res) => {
+router.put('/:userId', authenticateToken, async (req, res) => {
   const { userId } = req.params;
 
   // Optional: Make sure the token's userId matches the request param
