@@ -86,9 +86,8 @@ export default function Register() {
       console.log(formData)
       router.replace('/wizard');
 
-
-
     } else {
+      setLoading(false)
       setError('Please fill all fields and agree to our terms');
     }
   };
@@ -149,22 +148,25 @@ export default function Register() {
             autoCapitalize="none"
           />
           <View style={styles.phoneContainer}>
-            <CountryPicker
-              countryCode={countryCode}
-              withFilter
-              withFlag
-              withCallingCode
-              withAlphaFilter
-              withCallingCodeButton
-              withEmoji={false}
-              theme={{
-                itemHeight: 44,
-              }}
-              onSelect={(country) => {
-                setCountryCode(country.cca2);
-                setCallingCode(country.callingCode[0]);
-              }}
-            />
+            <View style={styles.phonePicker}>
+              <CountryPicker
+                countryCode={countryCode}
+                withFilter
+                withFlag
+                withCallingCode
+                withAlphaFilter
+                withCallingCodeButton
+                withEmoji={false}
+                theme={{
+                  itemHeight: 44,
+                  fontSize:14
+                }}
+                onSelect={(country) => {
+                  setCountryCode(country.cca2);
+                  setCallingCode(country.callingCode[0]);
+                }}
+              />
+            </View>
             <TextInput
               style={[styles.input, styles.phoneInput]}
               placeholder="Phone number"
@@ -291,19 +293,20 @@ const styles = StyleSheet.create({
   },
   phoneContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
     width: '100%',
     marginBottom: 16,
     backgroundColor: '#F4F4F4',
     borderRadius: 10,
-    padding: 15,
-    paddingTop: 0,
-    paddingBottom: 0,
+    paddingLeft: 15,
+  },
+  phonePicker:{
+    paddingTop:10
   },
   phoneInput: {
     marginBottom: 0,
     flexGrow: 1,
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   },
   passwordInput: {
     letterSpacing: 1,

@@ -62,7 +62,19 @@ export const RegistrationProvider = ({ children }: Props) => {
     gender: null,
     bio: null,
     height: null,
-    weight: null
+    weight: null,
+    agreed: false,
+    highlights: null,
+    stats: null,
+    achievements: null,
+    events: null,
+    skills: {
+      attack: null,
+      skill: null,
+      stamina: null,
+      speed: null,
+      defense: null
+    }
   });
 
   const updateFormData = (newData: Partial<RegistrationData>) => {

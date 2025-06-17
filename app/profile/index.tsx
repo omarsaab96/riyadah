@@ -32,14 +32,14 @@ export default function Profile() {
 
     const logoOpacity = scrollY.interpolate({
         inputRange: [0, 300],
-        outputRange: [1, 0],
+        outputRange: [1, -1],
         extrapolate: 'clamp',
     });
 
     useEffect(() => {
         const fetchUser = async () => {
             const token = await SecureStore.getItemAsync('userToken');
-            
+
             console.log(token)
             if (token) {
                 const decodedToken = jwtDecode(token);
@@ -56,7 +56,7 @@ export default function Profile() {
                 } else {
                     console.error('API error')
                 }
-            }else{
+            } else {
                 console.log("no token",)
             }
         };
@@ -66,6 +66,13 @@ export default function Profile() {
 
     useEffect(() => {
         console.log("User: ", user)
+        const data = [
+        { label: 'Attack', value: user.skills?.attack },
+        { label: 'Defense', value: user.skills?.defense },
+        { label: 'Speed', value: user.skills?.speed },
+        { label: 'Stamina', value: user.skills?.stamina },
+        { label: 'Skill', value: user.skills?.skill }
+    ];
     }, [user]);
 
     const handleEdit = async () => {
@@ -79,40 +86,32 @@ export default function Profile() {
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december']
 
-    //graph data
-    const data = [
-        { label: 'Attack', value: 90 },
-        { label: 'Defense', value: 40 },
-        { label: 'Speed', value: 70 },
-        { label: 'Stamina', value: 35 },
-        { label: 'Skill', value: 80 }
-    ];
-
     const getProfileProgress = () => {
-        const totalFields = 20;
+        const totalFields = 21;
 
         let filledFields = 0;
 
-        if (user.name) filledFields++;
-        if (user.email) filledFields++;
-        if (user.phone) filledFields++;
-        if (user.country) filledFields++;
-        if (user.password) filledFields++;
-        if (user.dob?.day && user.dob?.month && user.dob?.year) filledFields++;
-        if (user.parentEmail) filledFields++;
-        if (user.type) filledFields++;
-        if (user.sport) filledFields++;
-        if (user.club) filledFields++;
-        if (user.gender) filledFields++;
-        if (user.bio) filledFields++;
-        if (user.height) filledFields++;
-        if (user.weight) filledFields++;
-        if (user.agreed === true) filledFields++;
-        if (user.highlights && user.highlights.length > 0) filledFields++;
-        if (user.stats && user.stats.length > 0) filledFields++;
-        if (user.achievements && user.achievements.length > 0) filledFields++;
-        if (user.events && user.events.length > 0) filledFields++;
-        if (user.skills && user.skills.length > 0) filledFields++;
+        if (user.name != null) filledFields++;
+        if (user.email != null) filledFields++;
+        if (user.phone != null) filledFields++;
+        if (user.country != null) filledFields++;
+        if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
+        if (user.type != null) filledFields++;
+        if (user.sport != null) filledFields++;
+        if (user.club != null) filledFields++;
+        if (user.gender != null) filledFields++;
+        if (user.bio != null) filledFields++;
+        if (user.height != null) filledFields++;
+        if (user.weight != null) filledFields++;
+        if (user.highlights != null) filledFields++;
+        if (user.stats != null) filledFields++;
+        if (user.achievements != null) filledFields++;
+        if (user.events != null) filledFields++;
+        if (user.skills.attack != null) filledFields++;
+        if (user.skills.skill != null) filledFields++;
+        if (user.skills.stamina != null) filledFields++;
+        if (user.skills.speed != null) filledFields++;
+        if (user.skills.defense != null) filledFields++;
 
         const progress = Math.round((filledFields / totalFields) * 100);
 
@@ -156,7 +155,7 @@ export default function Profile() {
 
                 <View style={styles.contentContainer}>
 
-                    {userId == user._id && 
+                    {userId == user._id &&
                         <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
                             <View style={styles.profileProgressPercentage}>
                                 <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
@@ -235,7 +234,7 @@ export default function Profile() {
                             </Text>
                             <View>
                                 {user.height ? (
-                                    <Text style={styles.paragraph}>{user.height} m</Text>
+                                    <Text style={styles.paragraph}>{user.height} cm</Text>
                                 ) : (
                                     <Text style={styles.paragraph}>-</Text>
                                 )}

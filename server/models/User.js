@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+    agreed:Boolean,
     name: String,
     email: String,
     phone: String,
@@ -23,7 +24,13 @@ const userSchema = new mongoose.Schema({
     stats: String,
     achievements: String,
     events: String,
-    skills: String
+    skills: {
+        attack:Number,
+        skill:Number,
+        stamina:Number,
+        speed:Number,
+        defense:Number
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

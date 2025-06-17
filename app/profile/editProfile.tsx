@@ -43,6 +43,7 @@ export default function EditProfile() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
+                    console.log("Got User ", user)
                 } else {
                     console.error('API error')
                 }
@@ -66,8 +67,6 @@ export default function EditProfile() {
         setSaving(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
-
-        // console.log(token)
 
         const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
             method: 'PUT',
@@ -219,7 +218,7 @@ export default function EditProfile() {
                                 style={styles.input}
                                 placeholder="In cm"
                                 placeholderTextColor="#A8A8A8"
-                                value={user.height}
+                                value={user.height?.toString()}
                                 onChangeText={(text) => updateField('height', text)}
                             />
                         </View>
@@ -231,7 +230,7 @@ export default function EditProfile() {
                                 style={styles.input}
                                 placeholder="In Kg"
                                 placeholderTextColor="#A8A8A8"
-                                value={user.weight}
+                                value={user.weight?.toString()}
                                 onChangeText={(text) => updateField('weight', text)}
                             />
                         </View>
@@ -243,7 +242,7 @@ export default function EditProfile() {
                                 style={styles.textarea}
                                 placeholder="Wanna highlight any accomplishment?"
                                 placeholderTextColor="#A8A8A8"
-                                value={user.highlight || ""}
+                                value={user.highlights || ""}
                                 onChangeText={(text) => updateField('highlights', text)}
                                 multiline={true}
                                 blurOnSubmit={false}
@@ -299,7 +298,6 @@ export default function EditProfile() {
                             />
                         </View>
                         <View style={styles.entity}>
-
                             <Text style={styles.title}>
                                 Skills
                             </Text>
@@ -307,8 +305,8 @@ export default function EditProfile() {
                                 style={styles.textarea}
                                 placeholder="How do you measure your skills?"
                                 placeholderTextColor="#A8A8A8"
-                                value={user.skills || ""}
-                                onChangeText={(text) => updateField('skills', text)}
+                                value={user?.skills?.attack || ""}
+                                onChangeText={(text) => updateField('skills.attack', text)}
                                 multiline={true}
                                 blurOnSubmit={false}
                                 returnKeyType="default"
