@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     Image,
     KeyboardAvoidingView, Platform,
@@ -23,9 +24,12 @@ const router = useRouter();
 export default function EditProfile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
+            setLoading(true)
             const token = await SecureStore.getItemAsync('userToken');
             if (token) {
                 const decodedToken = jwtDecode(token);
@@ -42,29 +46,28 @@ export default function EditProfile() {
                 } else {
                     console.error('API error')
                 }
+
+                setLoading(false)
             }
         };
 
         fetchUser();
     }, []);
 
-    useEffect(() => {
-        console.log("User: ", user)
-    }, [user]);
-
     const updateField = (field, value) => {
-  setUser(prev => ({ ...prev, [field]: value }));
-};
+        setUser(prev => ({ ...prev, [field]: value }));
+    };
 
     const handleCancel = () => {
         router.replace('/profile');
     }
 
     const handleSave = async () => {
+        setSaving(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
-        console.log(token)
+        // console.log(token)
 
         const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
             method: 'PUT',
@@ -83,39 +86,48 @@ export default function EditProfile() {
         }
     }
 
-    if (!user) return <Text style={{ padding: 20 }}>Loading...</Text>;
-
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={{ flex: 1 }}
         >
             <View style={styles.container}>
-                {user && <View style={styles.pageHeader}>
+                <View style={styles.pageHeader}>
                     <Image
-                        source={require('../assets/logo_white.png')}
+                        source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
                     />
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>Edit profile</Text>
-                        <Text style={styles.pageDesc}>Change your data</Text>
+                        {!loading && <Text style={styles.pageDesc}>Change your data</Text>}
+
+                        {loading &&
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#ffffff"
+                                    style={{ transform: [{ scale: 1.25 }] }}
+                                />
+                            </View>
+                        }
                     </View>
 
                     <Text style={styles.ghostText}>Edit Prof</Text>
 
                     <View style={styles.profileImage}>
                         <Image
-                            source={require('../assets/avatar.png')}
+                            source={require('../../assets/avatar.png')}
                             style={styles.profileImageAvatar}
                             resizeMode="contain"
                         />
                     </View>
-                </View>
-                }
 
-                {user && <ScrollView>
+
+                </View>
+
+                {user && !loading && <ScrollView>
                     <View style={styles.contentContainer}>
                         <View style={styles.entity}>
                             <Text style={styles.title}>
@@ -224,7 +236,6 @@ export default function EditProfile() {
                             />
                         </View>
                         <View style={styles.entity}>
-
                             <Text style={styles.title}>
                                 Highlights
                             </Text>
@@ -304,13 +315,19 @@ export default function EditProfile() {
                             />
                         </View>
 
-
                         <View style={styles.profileActions}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
                                 <Text style={styles.profileButtonText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSave} style={styles.profileButton}>
+                            <TouchableOpacity onPress={handleSave} style={[styles.profileButton,styles.savebtn]}>
                                 <Text style={styles.profileButtonText}>Save</Text>
+                                {saving && (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#111111"
+                                        style={styles.saveLoaderContainer}
+                                    />
+                                )}
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -319,23 +336,23 @@ export default function EditProfile() {
 
                 <View style={styles.navBar}>
                     <TouchableOpacity onPress={() => router.replace('/settings')}>
-                        <Image source={require('../assets/settings.png')} style={styles.icon} />
+                        <Image source={require('../../assets/settings.png')} style={styles.icon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/news')}>
-                        <Image source={require('../assets/news.png')} style={styles.icon} />
+                        <Image source={require('../../assets/news.png')} style={styles.icon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/landing')}>
-                        <Image source={require('../assets/home.png')} style={[styles.icon, styles.icon]} />
+                        <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                        <Image source={require('../assets/notifications.png')} style={styles.icon} />
+                        <Image source={require('../../assets/notifications.png')} style={styles.icon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/profile')}>
-                        <Image source={require('../assets/profile.png')} style={styles.icon} />
+                        <Image source={require('../../assets/profile.png')} style={styles.icon} />
                     </TouchableOpacity>
                 </View>
             </View >
@@ -524,6 +541,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
+    savebtn:{
+        flexDirection:'row'
+    },
     profileButtonText: {
         fontSize: 18,
         color: '#150000',
@@ -570,4 +590,7 @@ const styles = StyleSheet.create({
         color: '#FF4000',
         marginHorizontal: 10
     },
+    saveLoaderContainer: {
+        marginLeft: 10
+    }
 });

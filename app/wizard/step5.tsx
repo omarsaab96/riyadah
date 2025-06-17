@@ -61,11 +61,14 @@ export default function WizardStep5() {
                 body: JSON.stringify(newUserData),
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            // if (!response.ok) {
+                console.log(response)
+                // throw new Error(`HTTP error! status: ${response.status}`);
+            // }
 
             const { user, token } = await response.json();
+
+            console.log("response token: ", token)
 
             await SecureStore.setItemAsync('userToken', String(token));
 

@@ -35,7 +35,7 @@ export default function Register() {
     const checkAuth = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        router.replace('/profile'); // Redirect if token exists
+        router.replace('/profile');
       }
     };
 

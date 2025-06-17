@@ -24,12 +24,12 @@ export default function Profile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
 
-
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 300],
         outputRange: [300, 175],
         extrapolate: 'clamp',
     });
+
     const logoOpacity = scrollY.interpolate({
         inputRange: [0, 300],
         outputRange: [1, 0],
@@ -39,6 +39,8 @@ export default function Profile() {
     useEffect(() => {
         const fetchUser = async () => {
             const token = await SecureStore.getItemAsync('userToken');
+            
+            console.log(token)
             if (token) {
                 const decodedToken = jwtDecode(token);
                 console.log("DECODED: ", decodedToken)
@@ -54,6 +56,8 @@ export default function Profile() {
                 } else {
                     console.error('API error')
                 }
+            }else{
+                console.log("no token",)
             }
         };
 
@@ -65,12 +69,12 @@ export default function Profile() {
     }, [user]);
 
     const handleEdit = async () => {
-        router.replace('/editProfile');
+        router.push('/profile/editProfile');
         console.log('Edit clicked');
     };
 
     const handleShareProfile = async () => {
-        console.log('share clicked');
+        console.log('Share clicked');
     };
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december']
@@ -119,7 +123,7 @@ export default function Profile() {
         <View style={styles.container}>
             {user && <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
                 <Animated.Image
-                    source={require('../assets/logo_white.png')}
+                    source={require('../../assets/logo_white.png')}
                     style={[styles.logo, { opacity: logoOpacity }]}
                     resizeMode="contain"
                 />
@@ -133,7 +137,7 @@ export default function Profile() {
 
                 <View style={styles.profileImage}>
                     <Image
-                        source={require('../assets/avatar.png')}
+                        source={require('../../assets/avatar.png')}
                         style={styles.profileImageAvatar}
                         resizeMode="contain"
                     />
@@ -153,7 +157,7 @@ export default function Profile() {
                 <View style={styles.contentContainer}>
 
                     {userId == user._id && 
-                        <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={() => router.replace('/editProfile')}>
+                        <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
                             <View style={styles.profileProgressPercentage}>
                                 <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
                             </View>
@@ -161,7 +165,7 @@ export default function Profile() {
                                 <Text style={styles.profileProgressText}>Complete your profile now</Text>
                                 <Image
                                     style={styles.profileProgressImg}
-                                    source={require('../assets/rightArrow.png')}
+                                    source={require('../../assets/rightArrow.png')}
                                     resizeMode="contain"
                                 />
                             </View>
@@ -340,23 +344,23 @@ export default function Profile() {
 
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
-                    <Image source={require('../assets/settings.png')} style={styles.icon} />
+                    <Image source={require('../../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/news')}>
-                    <Image source={require('../assets/news.png')} style={styles.icon} />
+                    <Image source={require('../../assets/news.png')} style={styles.icon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/landing')}>
-                    <Image source={require('../assets/home.png')} style={[styles.icon, styles.icon]} />
+                    <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                    <Image source={require('../assets/notifications.png')} style={styles.icon} />
+                    <Image source={require('../../assets/notifications.png')} style={styles.icon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/profile')}>
-                    <Image source={require('../assets/profile.png')} style={styles.activeIcon} />
+                    <Image source={require('../../assets/profile.png')} style={styles.activeIcon} />
                 </TouchableOpacity>
             </View>
         </View>

@@ -88,9 +88,9 @@ router.post('/', async (req, res) => {
     console.log('Incoming body:', req.body);
     const newUser = await User.create(req.body);
 
-    const token = jwt.sign({ userId: user._id }, "123456");
+    const token = jwt.sign({ userId: newUser._id }, "123456");
 
-    res.status(201).json({ user, token });
+    res.status(201).json({ newUser, token });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
