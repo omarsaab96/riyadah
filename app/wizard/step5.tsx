@@ -49,6 +49,7 @@ export default function WizardStep5() {
                 ...formData,
                 bio: bio,
                 gender: selectedGender,
+                image:null
             };
 
             console.log('Submitting user data:', newUserData);

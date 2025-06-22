@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow access to your camera to take profile pictures",
+        "NSPhotoLibraryUsageDescription": "Allow access to your photos to choose a profile picture"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +21,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.omarsaab96.riyadah"
+      "package": "com.omarsaab96.riyadah",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",

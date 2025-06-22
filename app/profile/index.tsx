@@ -1,3 +1,4 @@
+import Entypo from '@expo/vector-icons/Entypo';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -81,11 +82,11 @@ export default function Profile() {
 
     //graph data
     const data = [
-    //     { label: 'Attack', value: user?.skills?.attack },
-    //     { label: 'Defense', value: user?.skills?.defense },
-    //     { label: 'Speed', value: user?.skills?.speed },
-    //     { label: 'Stamina', value: user?.skills?.stamina },
-    //     { label: 'Skill', value: user?.skills?.skill }
+        { label: 'Attack', value: user?.skills?.attack },
+        { label: 'Defense', value: user?.skills?.defense },
+        { label: 'Speed', value: user?.skills?.speed },
+        { label: 'Stamina', value: user?.skills?.stamina },
+        { label: 'Skill', value: user?.skills?.skill }
     ];
 
     const getProfileProgress = () => {
@@ -137,11 +138,36 @@ export default function Profile() {
                 <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>
 
                 <View style={styles.profileImage}>
-                    <Image
+                    {(user.image == null || user.image == "") && user.gender == "Male" && <Image
                         source={require('../../assets/avatar.png')}
                         style={styles.profileImageAvatar}
                         resizeMode="contain"
-                    />
+                    />}
+                    {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                        source={require('../../assets/avatarF.png')}
+                        style={styles.profileImageAvatar}
+                        resizeMode="contain"
+                    />}
+                    {user.image != null && <Image
+                        source={user.image}
+                        style={styles.profileImageAvatar}
+                        resizeMode="contain"
+                    />}
+
+                    {(user.image == null || user.image == "") &&
+                        <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                            <Entypo name="plus" size={20} color="#FF4000" />
+                            <Text style={styles.uploadImageText}>Upload avatar</Text>
+                        </TouchableOpacity>
+                    }
+
+                    {user.image != null &&
+                        <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                            <Entypo name="plus" size={20} color="#FF4000" />
+                            <Text style={styles.uploadImageText}>Change avatar</Text>
+                        </TouchableOpacity>
+                    }
+
                 </View>
             </Animated.View>
             }
@@ -154,10 +180,8 @@ export default function Profile() {
                 scrollEventThrottle={16}
             >
 
-
                 <View style={styles.contentContainer}>
-
-                    {userId == user._id &&
+                    {userId == user._id && (getProfileProgress() < 100) &&
                         <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
                             <View style={styles.profileProgressPercentage}>
                                 <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
@@ -248,7 +272,7 @@ export default function Profile() {
                             </Text>
                             <View>
                                 {user.weight ? (
-                                    <Text style={styles.paragraph}>{user.weight} Kg</Text>
+                                    <Text style={styles.paragraph}>{user.weight} kg</Text>
                                 ) : (
                                     <Text style={styles.paragraph}>-</Text>
                                 )}
@@ -552,5 +576,24 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#150000',
         fontFamily: 'Bebas',
+    },
+    uploadImage: {
+        backgroundColor: '#000000',
+        padding: 2,
+        paddingRight: 5,
+        borderRadius: 10,
+        textAlign: 'center',
+        position: 'absolute',
+        bottom: 5,
+        left: '50%',
+        transform: [{ translateX: '-50%' }],
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    uploadImageText: {
+        color: '#FF4000',
+        fontFamily: 'Bebas',
+        fontSize: 16,
     }
 });

@@ -20,6 +20,7 @@ interface RegistrationData {
   gender: string | null;
   bio: string | null;
   height: string | null;
+  image: string | null;
   weight: string | null;
   agreed: boolean | null;
   highlights: any;
@@ -62,6 +63,7 @@ export const RegistrationProvider = ({ children }: Props) => {
     gender: null,
     bio: null,
     height: null,
+    image:null,
     weight: null,
     agreed: false,
     highlights: null,

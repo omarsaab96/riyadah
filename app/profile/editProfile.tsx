@@ -57,7 +57,20 @@ export default function EditProfile() {
     }, []);
 
     const updateField = (field, value) => {
-        setUser(prev => ({ ...prev, [field]: value }));
+        const path = field.split('.');
+        setUser(prev => {
+            const updated = { ...prev };
+            let current = updated;
+
+            for (let i = 0; i < path.length - 1; i++) {
+                const key = path[i];
+                if (!current[key]) current[key] = {};
+                current = current[key];
+            }
+
+            current[path[path.length - 1]] = value;
+            return updated;
+        });
     };
 
     const handleCancel = () => {
@@ -68,6 +81,8 @@ export default function EditProfile() {
         setSaving(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
+
+        console.log("Saving user: ", JSON.stringify(user))
 
         const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
             method: 'PUT',
@@ -302,30 +317,113 @@ export default function EditProfile() {
                             <Text style={styles.title}>
                                 Skills
                             </Text>
-                            <TextInput
-                                style={styles.textarea}
-                                placeholder="How do you measure your skills?"
-                                placeholderTextColor="#A8A8A8"
-                                value={user?.skills?.attack || ""}
-                                onChangeText={(text) => updateField('skills.attack', text)}
-                                multiline={true}
-                                blurOnSubmit={false}
-                                returnKeyType="default"
-                            />
-                            <Slider
-                                style={{ width: '100%', height: 40 }}
-                                minimumValue={0}
-                                maximumValue={100}
-                                step={1}
-                                value={user?.skills?.attack || 0}
-                                onValueChange={(value) => updateField('skills.attack', value)}
-                                minimumTrackTintColor="#FF4000"
-                                maximumTrackTintColor="#d3d3d3"
-                                thumbTintColor="#FF4000"
-                            />
-                            <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                {user?.skills?.attack || 0} / 100
-                            </Text>
+                            <View style={styles.rangeContainer}>
+                                <Text style={styles.subtitle}>
+                                    attack
+                                </Text>
+                                <View style={styles.rangeSliderContainer}>
+                                    <Slider
+                                        style={styles.rangeSlider}
+                                        minimumValue={0}
+                                        maximumValue={100}
+                                        step={1}
+                                        value={user?.skills?.attack || 0}
+                                        onValueChange={(value) => updateField('skills.attack', value)}
+                                        minimumTrackTintColor="#FF4000"
+                                        maximumTrackTintColor="#d3d3d3"
+                                        thumbTintColor="#FF4000"
+                                    />
+                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        {user?.skills?.attack || 0}%
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.rangeContainer}>
+                                <Text style={styles.subtitle}>
+                                    defense
+                                </Text>
+                                <View style={styles.rangeSliderContainer}>
+                                    <Slider
+                                        style={styles.rangeSlider}
+                                        minimumValue={0}
+                                        maximumValue={100}
+                                        step={1}
+                                        value={user?.skills?.defense || 0}
+                                        onValueChange={(value) => updateField('skills.defense', value)}
+                                        minimumTrackTintColor="#FF4000"
+                                        maximumTrackTintColor="#d3d3d3"
+                                        thumbTintColor="#FF4000"
+                                    />
+                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        {user?.skills?.defense || 0}%
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.rangeContainer}>
+                                <Text style={styles.subtitle}>
+                                    skill
+                                </Text>
+                                <View style={styles.rangeSliderContainer}>
+                                    <Slider
+                                        style={styles.rangeSlider}
+                                        minimumValue={0}
+                                        maximumValue={100}
+                                        step={1}
+                                        value={user?.skills?.skill || 0}
+                                        onValueChange={(value) => updateField('skills.skill', value)}
+                                        minimumTrackTintColor="#FF4000"
+                                        maximumTrackTintColor="#d3d3d3"
+                                        thumbTintColor="#FF4000"
+                                    />
+                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        {user?.skills?.skill || 0}%
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.rangeContainer}>
+                                <Text style={styles.subtitle}>
+                                    speed
+                                </Text>
+                                <View style={styles.rangeSliderContainer}>
+                                    <Slider
+                                        style={styles.rangeSlider}
+                                        minimumValue={0}
+                                        maximumValue={100}
+                                        step={1}
+                                        value={user?.skills?.speed || 0}
+                                        onValueChange={(value) => updateField('skills.speed', value)}
+                                        minimumTrackTintColor="#FF4000"
+                                        maximumTrackTintColor="#d3d3d3"
+                                        thumbTintColor="#FF4000"
+                                    />
+                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        {user?.skills?.speed || 0}%
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.rangeContainer}>
+                                <Text style={styles.subtitle}>
+                                    stamina
+                                </Text>
+                                <View style={styles.rangeSliderContainer}>
+                                    <Slider
+                                        style={styles.rangeSlider}
+                                        minimumValue={0}
+                                        maximumValue={100}
+                                        step={1}
+                                        value={user?.skills?.stamina || 0}
+                                        onValueChange={(value) => updateField('skills.stamina', value)}
+                                        minimumTrackTintColor="#FF4000"
+                                        maximumTrackTintColor="#d3d3d3"
+                                        thumbTintColor="#FF4000"
+                                    />
+                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        {user?.skills?.stamina || 0}%
+                                    </Text>
+                                </View>
+                            </View>
+
+
                         </View>
 
                         <View style={styles.profileActions}>
@@ -464,7 +562,9 @@ const styles = StyleSheet.create({
     subtitle: {
         fontFamily: "Manrope",
         fontSize: 16,
-        fontWeight: 'bold'
+        // fontWeight: 'bold',
+        width: '100%',
+        textTransform: 'capitalize',
     },
     paragraph: {
         fontFamily: "Manrope",
@@ -605,5 +705,19 @@ const styles = StyleSheet.create({
     },
     saveLoaderContainer: {
         marginLeft: 10
+    },
+    rangeContainer: {
+
+    },
+    rangeSliderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+        flexWrap: 'wrap',
+    },
+    rangeSlider: {
+        flex: 1,
+        height: 40
     }
 });
