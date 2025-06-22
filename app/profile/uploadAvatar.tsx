@@ -75,23 +75,35 @@ export default function UploadAvatar() {
         });
 
         if (!result.canceled && result.assets.length > 0) {
-            setUploading(true)
+            setUploading(true);
             const base64 = result.assets[0].base64;
 
-            const removeBG = await fetch('https://riyadah.onrender.com/api/removeBG', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    image: `data:image/png;base64,${base64}`,
-                }),
-            })
-                .then((res) => res.json())
-                .then((data) => {
-                    updateField('image', data.image);
-                    setUploading(false)
+            try {
+                const res = await fetch('https://riyadah.onrender.com/api/removeBG', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: `data:image/png;base64,${base64}`,
+                    }),
                 });
+
+                const data = await res.json();
+
+                if (res.ok && data.image) {
+                    updateField('image', data.image);
+                } else {
+                    console.error("Failed to remove background:", data);
+                    alert("Background removal failed.");
+                }
+
+            } catch (err) {
+                console.error("Error removing background:", err);
+                alert("An error occurred while removing background.");
+            } finally {
+                setUploading(false);
+            }
         }
     };
 

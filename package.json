@@ -18,7 +18,6 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "@salmonco/react-native-radar-chart": "^0.0.26",
-    "@uptotec/background-removal-node": "^1.4.9",
     "expo": "53.0.10",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.6",
