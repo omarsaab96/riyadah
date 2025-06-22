@@ -8,6 +8,7 @@ interface RegistrationData {
   phone: string | null;
   country: string | null;
   password: string | null;
+  children: [] | null;
   dob: {
     day: string | null;
     month: string | null;
@@ -56,6 +57,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       month: null,
       year: null
     },
+    children:null,
     parentEmail: null,
     type: null,
     sport: null,

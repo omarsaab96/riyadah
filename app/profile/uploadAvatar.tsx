@@ -105,7 +105,7 @@ export default function UploadAvatar() {
                 setUploading(false);
             }
         }
-    };ty9sdnF7P1DzzCSgjdqizqCp
+    };
 
     const updateField = (field, value) => {
         setUser(prev => ({ ...prev, [field]: value }));
@@ -178,7 +178,7 @@ export default function UploadAvatar() {
                                         <View>
                                             <Image
                                                 source={{ uri: localImg || user.image }}
-                                                style={styles.avatarPreview}
+                                                style={[styles.avatarPreview,, {backgroundColor:'#FF4000'}]}
                                             />
                                             <Text style={styles.uploadHint}>Tap to change image</Text>
                                         </View>

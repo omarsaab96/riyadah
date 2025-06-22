@@ -83,7 +83,11 @@ export default function WizardStep2() {
                 parentEmail: parentEmail
             });
             console.log(formData)
-            router.push('/wizard/step3');
+            if (formData.type == "Parent") {
+                router.push('/wizard/step5');
+            } else {
+                router.push('/wizard/step3');
+            }
         } else if (age >= 18 && day != null && month != null && year != null) {
             updateFormData({
                 dob: {
@@ -94,8 +98,13 @@ export default function WizardStep2() {
                 parentEmail: null
             });
 
-            console.log(formData)
-            router.push('/wizard/step3');
+            // console.log(formData)
+            if (formData.type == "Parent") {
+                router.push('/wizard/step5');
+            } else {
+                router.push('/wizard/step3');
+            }
+
         } else {
             setError('Kindly fill all fields')
         }

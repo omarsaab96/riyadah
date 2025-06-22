@@ -132,43 +132,71 @@ export default function Profile() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>{user.name}</Text>
-                    <Text style={styles.pageDesc}>{user.sport} player</Text>
+                    {user.type != "Parent" && <Text style={styles.pageDesc}>
+                        {user.sport}
+                    </Text>
+                    }
+                    {user.type == "Parent" && <Text style={styles.pageDesc}>
+                        Parent
+                    </Text>
+                    }
                 </View>
 
                 <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>
 
-                <View style={styles.profileImage}>
-                    {(user.image == null || user.image == "") && user.gender == "Male" && <Image
-                        source={require('../../assets/avatar.png')}
-                        style={styles.profileImageAvatar}
-                        resizeMode="contain"
-                    />}
-                    {(user.image == null || user.image == "") && user.gender == "Female" && <Image
-                        source={require('../../assets/avatarF.png')}
-                        style={styles.profileImageAvatar}
-                        resizeMode="contain"
-                    />}
-                    {user.image != null && <Image
-                        source={{ uri: user.image }}
-                        style={styles.profileImageAvatar}
-                        resizeMode="contain"
-                    />}
-
-                    {(user.image == null || user.image == "") &&
-                        <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
-                            <Entypo name="plus" size={20} color="#FF4000" />
-                            <Text style={styles.uploadImageText}>Upload avatar</Text>
+                {userId == user._id ? (
+                    <View style={styles.profileImage}>
+                        <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
+                            {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                source={require('../../assets/avatar.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                source={require('../../assets/avatarF.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {user.image != null && <Image
+                                source={{ uri: user.image }}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
                         </TouchableOpacity>
-                    }
 
-                    {user.image != null && user.image != "" &&
-                        <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
-                            <Entypo name="plus" size={20} color="#FF4000" />
-                            <Text style={styles.uploadImageText}>Change avatar</Text>
-                        </TouchableOpacity>
-                    }
+                        {(user.image == null || user.image == "") &&
+                            <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                                <Entypo name="plus" size={20} color="#FF4000" />
+                                <Text style={styles.uploadImageText}>Upload avatar</Text>
+                            </TouchableOpacity>
+                        }
 
-                </View>
+                        {user.image != null && user.image != "" &&
+                            <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                                <Entypo name="plus" size={20} color="#FF4000" />
+                                <Text style={styles.uploadImageText}>Change avatar</Text>
+                            </TouchableOpacity>
+                        }
+                    </View>
+                ) : (
+                    <View style={styles.profileImage}>
+                        {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                            source={require('../../assets/avatar.png')}
+                            style={styles.profileImageAvatar}
+                            resizeMode="contain"
+                        />}
+                        {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                            source={require('../../assets/avatarF.png')}
+                            style={styles.profileImageAvatar}
+                            resizeMode="contain"
+                        />}
+                        {user.image != null && <Image
+                            source={{ uri: user.image }}
+                            style={styles.profileImageAvatar}
+                            resizeMode="contain"
+                        />}
+                    </View>
+                )}
             </Animated.View>
             }
 

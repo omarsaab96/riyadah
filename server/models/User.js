@@ -1,36 +1,40 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    agreed:Boolean,
+    agreed: Boolean,
     name: String,
     email: String,
     phone: String,
     country: String,
     password: String,
+    children: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: null
+    },
     dob: {
-        day:String,
-        month:String,
-        year:String
+        day: String,
+        month: String,
+        year: String
     },
     parentEmail: String,
     type: String,
     sport: String,
     club: String,
     gender: String,
-    image: String||null,
+    image: String,
     bio: String,
-    height: Number||null,
-    weight: Number||null,
+    height: Number,
+    weight: Number,
     highlights: String,
     stats: String,
     achievements: String,
     events: String,
     skills: {
-        attack:Number,
-        skill:Number,
-        stamina:Number,
-        speed:Number,
-        defense:Number
+        attack: Number,
+        skill: Number,
+        stamina: Number,
+        speed: Number,
+        defense: Number
     }
 }, { timestamps: true });
 

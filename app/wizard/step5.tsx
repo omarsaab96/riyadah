@@ -49,7 +49,7 @@ export default function WizardStep5() {
                 ...formData,
                 bio: bio,
                 gender: selectedGender,
-                image:null
+                image: null
             };
 
             console.log('Submitting user data:', newUserData);
@@ -63,8 +63,8 @@ export default function WizardStep5() {
             });
 
             // if (!response.ok) {
-                console.log(response)
-                // throw new Error(`HTTP error! status: ${response.status}`);
+            console.log(response)
+            // throw new Error(`HTTP error! status: ${response.status}`);
             // }
 
             const { user, token } = await response.json();
@@ -163,19 +163,21 @@ export default function WizardStep5() {
                     </View>
                 </View>
 
-                <View style={styles.inputEntity}>
-                    <Text style={styles.label}>BIO</Text>
-                    <TextInput
-                        style={styles.textarea}
-                        placeholder="What are your biggest achievements?"
-                        placeholderTextColor="#A8A8A8"
-                        value={bio}
-                        onChangeText={setBio}
-                        multiline={true}
-                        blurOnSubmit={false}
-                        returnKeyType="default"
-                    />
-                </View>
+                {formData.type != "Parent" &&
+                    <View style={styles.inputEntity}>
+                        <Text style={styles.label}>BIO</Text>
+                        <TextInput
+                            style={styles.textarea}
+                            placeholder="What are your biggest achievements?"
+                            placeholderTextColor="#A8A8A8"
+                            value={bio}
+                            onChangeText={setBio}
+                            multiline={true}
+                            blurOnSubmit={false}
+                            returnKeyType="default"
+                        />
+                    </View>
+                }
             </ScrollView>}
 
             {!loading && registrationError == null && <View style={styles.fixedBottomSection}>
