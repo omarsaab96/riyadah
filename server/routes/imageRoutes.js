@@ -19,16 +19,16 @@ router.post('/', async (req, res) => {
         const imageBuffer = Buffer.from(base64Data, 'base64');
 
         console.log("Removing bg...")
-        const outputBuffer = await removeBackground({
+        const result = await removeBackground({
             image: imageBuffer,
             output: {
-                format: 'image/png',
-                type: 'buffer'
+                format: 'png', // <- IMPORTANT FIX
+                type: 'buffer',
             }
         });
         console.log("Done removing bg.")
 
-        const outputBase64 = outputBuffer.toString('base64');
+        const outputBase64 = result.toString('base64');
         const dataUrl = `data:image/png;base64,${outputBase64}`;
 
         return res.json({ image: dataUrl });
