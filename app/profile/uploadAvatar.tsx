@@ -105,7 +105,7 @@ export default function UploadAvatar() {
                 setUploading(false);
             }
         }
-    };
+    };ty9sdnF7P1DzzCSgjdqizqCp
 
     const updateField = (field, value) => {
         setUser(prev => ({ ...prev, [field]: value }));
