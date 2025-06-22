@@ -149,7 +149,7 @@ export default function Profile() {
                         resizeMode="contain"
                     />}
                     {user.image != null && <Image
-                        source={user.image}
+                        source={{ uri: user.image }}
                         style={styles.profileImageAvatar}
                         resizeMode="contain"
                     />}
@@ -161,7 +161,7 @@ export default function Profile() {
                         </TouchableOpacity>
                     }
 
-                    {user.image != null &&
+                    {user.image != null && user.image != "" &&
                         <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
                             <Entypo name="plus" size={20} color="#FF4000" />
                             <Text style={styles.uploadImageText}>Change avatar</Text>

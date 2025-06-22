@@ -73,11 +73,8 @@ export default function UploadAvatar() {
             quality: 1,
         });
 
-        console.log('Result:', result); // 👈 check this
-
         if (!result.canceled && result.assets.length > 0) {
             const base64 = result.assets[0].base64;
-            console.log(base64)
             updateField('image', `data:image/png;base64,${base64}`);
         }
     };
@@ -132,36 +129,29 @@ export default function UploadAvatar() {
                     </View>
 
                     <Text style={styles.ghostText}>Avatar</Text>
-
-                    <TouchableOpacity style={styles.profileImage} onPress={pickImage}>
-                        <Image
-                            source={
-                                user?.image
-                                    ? { uri: user.image }
-                                    : require('../../assets/avatar.png')
-                            }
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />
-                    </TouchableOpacity>
                 </View>
 
                 {user && !loading && (
                     <ScrollView>
                         <View style={styles.contentContainer}>
 
-                            <Text style={styles.fieldLabel}>Profile picture</Text>
+                            {/* <Text style={styles.subtitle}>Profile picture</Text> */}
 
                             <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
                                 {localImg || user?.image ? (
-                                    <Image
-                                        source={{ uri: localImg || user.image }}
-                                        style={styles.avatarPreview}
-                                    />
+                                    <View>
+                                        <Image
+                                            source={{ uri: localImg || user.image }}
+                                            style={styles.avatarPreview}
+                                        />
+                                        <Text style={styles.uploadHint}>Tap to change image</Text>
+                                    </View>
                                 ) : (
                                     <>
-                                        <MaterialIcons name="add" size={40} color="#FF4000" />
-                                        <Text style={styles.uploadHint}>Tap to choose image</Text>
+                                        <View style={styles.emptyImage}>
+                                            <MaterialIcons name="add" size={40} color="#FF4000" />
+                                        </View>
+                                        <Text style={styles.uploadHint}>Tap to upload new image</Text>
                                     </>
                                 )}
                             </TouchableOpacity>
@@ -247,18 +237,11 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2,
     },
-    profileImage: {
-        position: 'absolute',
-        bottom: 0,
-        right: -5,
-        height: '70%',
-        maxWidth: 200,
-        overflow: 'hidden',
-    },
-    profileImageAvatar: {
-        height: '100%',
-        width: undefined,
-        aspectRatio: 1,
+    subtitle: {
+        fontSize: 18,
+        width: '100%',
+        fontFamily: 'Bebas',
+        marginBottom:5,
     },
     profileActions: {
         borderTopWidth: 1,
@@ -306,4 +289,31 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
     },
+    uploadBox: {
+        marginBottom: 30,
+        // flexDirection:'row'
+    },
+    avatarPreview: {
+        height: 200,
+        width: 200,
+        borderRadius:20,
+        marginBottom:5
+    },
+    uploadHint: {
+        fontFamily:'Manrope',
+        marginBottom:10
+    },
+    emptyImage:{
+        height: 200,
+        width: 200,
+        borderRadius:20,
+        marginRight:20,
+        borderWidth:1,
+        borderStyle:'dashed',
+        borderColor:'#333333',
+        justifyContent:'center',
+        alignItems:'center',
+        backgroundColor:'#f4f4f4',
+        marginBottom:5
+    }
 });
