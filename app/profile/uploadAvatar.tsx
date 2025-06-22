@@ -75,7 +75,20 @@ export default function UploadAvatar() {
 
         if (!result.canceled && result.assets.length > 0) {
             const base64 = result.assets[0].base64;
-            updateField('image', `data:image/png;base64,${base64}`);
+
+            const removeBG = await fetch('https://riyadah.onrender.com/api/removeBG', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: `data:image/png;base64,${base64}`,
+                }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    updateField('image', data.image);
+                });
         }
     };
 
@@ -241,7 +254,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         width: '100%',
         fontFamily: 'Bebas',
-        marginBottom:5,
+        marginBottom: 5,
     },
     profileActions: {
         borderTopWidth: 1,
@@ -296,24 +309,24 @@ const styles = StyleSheet.create({
     avatarPreview: {
         height: 200,
         width: 200,
-        borderRadius:20,
-        marginBottom:5
+        borderRadius: 20,
+        marginBottom: 5
     },
     uploadHint: {
-        fontFamily:'Manrope',
-        marginBottom:10
+        fontFamily: 'Manrope',
+        marginBottom: 10
     },
-    emptyImage:{
+    emptyImage: {
         height: 200,
         width: 200,
-        borderRadius:20,
-        marginRight:20,
-        borderWidth:1,
-        borderStyle:'dashed',
-        borderColor:'#333333',
-        justifyContent:'center',
-        alignItems:'center',
-        backgroundColor:'#f4f4f4',
-        marginBottom:5
+        borderRadius: 20,
+        marginRight: 20,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: '#333333',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f4f4f4',
+        marginBottom: 5
     }
 });
