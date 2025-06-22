@@ -1,40 +1,31 @@
-// routes/removeBackground.js
 const express = require('express');
-const { removeBackground } = require('@imgly/background-removal-node');
+const { removeBackground } = require('@uptotec/background-removal-node');
 
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-    try {
+  try {
+    const { image } = req.body;
+    if (!image) return res.status(400).json({ error: 'No image provided' });
 
-        const { image } = req.body;
-        console.log("Received: ", image)
+    const base64 = image.replace(/^data:image\/\w+;base64,/, '');
+    const imgBuf = Buffer.from(base64, 'base64');
 
-        if (!image) {
-            return res.status(400).json({ error: 'No image provided' });
-        }
+    const outBuf = await removeBackground({
+      image: imgBuf,
+      output: {
+        type: 'buffer',
+        format: 'image/png'
+      }
+    });
 
-        // Remove the base64 prefix if present
-        const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-        const imageBuffer = Buffer.from(base64Data, 'base64');
+    const dataUrl = `data:image/png;base64,${outBuf.toString('base64')}`;
+    res.json({ image: dataUrl });
 
-        console.log("Removing bg...")
-        const resultBuffer = await removeBackground(imageBuffer, {
-            output: {
-                format: 'image/png', // ✅ CORRECT MIME TYPE
-                type: 'buffer',
-            },
-        });
-        console.log("Done removing bg.")
-
-        const outputBase64 = resultBuffer.toString('base64');
-        const dataUrl = `data:image/png;base64,${outputBase64}`;
-
-        return res.json({ image: dataUrl });
-    } catch (err) {
-        console.error('Background removal failed:', err);
-        res.status(500).json({ error: 'Background removal failed' });
-    }
+  } catch (err) {
+    console.error('BG removal error:', err);
+    res.status(500).json({ error: 'Background removal failed' });
+  }
 });
 
 module.exports = router;
