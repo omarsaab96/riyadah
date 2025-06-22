@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     country: String,
     password: String,
     children: {
-        type: [mongoose.Schema.Types.Mixed],
+        type: [String],
         default: null
     },
     dob: {
