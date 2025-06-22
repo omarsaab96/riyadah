@@ -25,6 +25,7 @@ export default function UploadAvatar() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [localImg, setLocalImg] = useState<string | null>(null);
 
     useEffect(() => {
@@ -74,6 +75,7 @@ export default function UploadAvatar() {
         });
 
         if (!result.canceled && result.assets.length > 0) {
+            setUploading(true)
             const base64 = result.assets[0].base64;
 
             const removeBG = await fetch('https://riyadah.onrender.com/api/removeBG', {
@@ -88,6 +90,7 @@ export default function UploadAvatar() {
                 .then((res) => res.json())
                 .then((data) => {
                     updateField('image', data.image);
+                    setUploading(false)
                 });
         }
     };
@@ -150,36 +153,47 @@ export default function UploadAvatar() {
 
                             {/* <Text style={styles.subtitle}>Profile picture</Text> */}
 
-                            <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
-                                {localImg || user?.image ? (
-                                    <View>
-                                        <Image
-                                            source={{ uri: localImg || user.image }}
-                                            style={styles.avatarPreview}
-                                        />
-                                        <Text style={styles.uploadHint}>Tap to change image</Text>
-                                    </View>
-                                ) : (
-                                    <>
-                                        <View style={styles.emptyImage}>
-                                            <MaterialIcons name="add" size={40} color="#FF4000" />
+                            {uploading && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5, marginBottom: 20 }}>
+                                    <ActivityIndicator size="small" color="#FF4000" />
+                                    <Text style={[styles.uploadHint, { marginLeft: 10, paddingTop: 5 }]}>Removing background...</Text>
+                                </View>
+                            )}
+
+                            {!uploading && (
+                                <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
+                                    {localImg || user?.image ? (
+                                        <View>
+                                            <Image
+                                                source={{ uri: localImg || user.image }}
+                                                style={styles.avatarPreview}
+                                            />
+                                            <Text style={styles.uploadHint}>Tap to change image</Text>
                                         </View>
-                                        <Text style={styles.uploadHint}>Tap to upload new image</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-
-
-                            <View style={styles.profileActions}>
-                                <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    ) : (
+                                        <>
+                                            <View style={styles.emptyImage}>
+                                                <MaterialIcons name="add" size={40} color="#FF4000" />
+                                            </View>
+                                            <Text style={styles.uploadHint}>Tap to upload new image</Text>
+                                        </>
+                                    )}
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
-                                    <Text style={styles.profileButtonText}>Save</Text>
-                                    {saving && <ActivityIndicator size="small" color="#111" style={styles.saveLoaderContainer} />}
-                                </TouchableOpacity>
-                            </View>
+                            )}
+
+                            {!uploading && (
+                                <View style={styles.profileActions}>
+                                    <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                        <Text style={styles.profileButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
+                                        <Text style={styles.profileButtonText}>Save</Text>
+                                        {saving && <ActivityIndicator size="small" color="#111" style={styles.saveLoaderContainer} />}
+                                    </TouchableOpacity>
+                                </View>
+                            )}
                         </View>
+
                     </ScrollView>
                 )}
 
@@ -201,7 +215,7 @@ export default function UploadAvatar() {
                     </TouchableOpacity>
                 </View>
             </View>
-        </KeyboardAvoidingView>
+        </KeyboardAvoidingView >
     );
 }
 

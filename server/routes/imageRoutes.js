@@ -20,7 +20,10 @@ router.post('/', async (req, res) => {
 
         console.log("Removing bg...")
         const outputBuffer = await removeBackground(imageBuffer, {
-            output: { format: 'buffer' }
+            output: {
+                format: 'image/png', // ✅ this is correct
+                type: 'buffer'       // ✅ this is correct
+            },
         });
         console.log("Done removing bg.")
 
