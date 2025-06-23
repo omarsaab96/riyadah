@@ -104,7 +104,7 @@ export default function EditProfile() {
     }
 
     const handleAddChildren = () => {
-
+        router.replace('/profile/addChildren');
     }
 
     return (
@@ -194,7 +194,7 @@ export default function EditProfile() {
                                 ))}
                             </View>) : (
                                 <View>
-                                    <Text style={styles.noChildrenText}>You didn't add any children</Text>
+                                    <Text style={styles.noChildrenText}>No children added yet</Text>
                                 </View>
                             )}
                         </View>}
@@ -480,7 +480,7 @@ export default function EditProfile() {
 
                         </View>}
 
-                        <View style={styles.profileActions}>
+                        <View style={[styles.profileActions,styles.inlineActions]}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
                                 <Text style={styles.profileButtonText}>Cancel</Text>
                             </TouchableOpacity>
@@ -701,6 +701,11 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.2)',
         paddingTop: 10
+    },
+    inlineActions:{
+        flexDirection:'row',
+        justifyContent:'flex-end',
+        columnGap:15
     },
     profileButton: {
         borderRadius: 5,

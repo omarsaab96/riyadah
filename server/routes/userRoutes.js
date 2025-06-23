@@ -132,4 +132,26 @@ router.get('/', async (req, res) => {
   res.json(users);
 });
 
+// Search athletes by name (case-insensitive, partial match)
+router.get('/search', authenticate, async (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Name query parameter is required' });
+  }
+
+  try {
+    const regex = new RegExp(name, 'i');
+    const athletes = await User.find({
+      type: 'Athlete',
+      name: { $regex: regex }
+    }).select('name _id image sport'); // return only needed fields
+
+    res.json(athletes);
+  } catch (err) {
+    console.error('Error searching athletes:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
