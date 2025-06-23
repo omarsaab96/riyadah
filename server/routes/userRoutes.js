@@ -36,27 +36,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Get user info
-router.get('/:userId', authenticateToken, async (req, res) => {
-  const { userId } = req.params;
-
-  // Optional: Make sure the token's userId matches the request param
-  if (req.user.userId !== userId) {
-    return res.status(403).json({ error: 'Unauthorized access to user data' });
-  }
-
-  try {
-    const user = await User.findById(userId).select('-password'); // don't return password
-
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    res.json(user);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Something went wrong' });
-  }
-});
-
 // Create user
 router.post('/', async (req, res) => {
   try {
@@ -147,6 +126,27 @@ router.put('/:userId', authenticateToken, async (req, res) => {
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 
     res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
+// Get user info
+router.get('/:userId', authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+
+  // Optional: Make sure the token's userId matches the request param
+  if (req.user.userId !== userId) {
+    return res.status(403).json({ error: 'Unauthorized access to user data' });
+  }
+
+  try {
+    const user = await User.findById(userId).select('-password'); // don't return password
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Something went wrong' });
