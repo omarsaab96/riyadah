@@ -1,4 +1,5 @@
 import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -172,9 +173,9 @@ export default function Profile() {
                         }
 
                         {user.image != null && user.image != "" &&
-                            <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
-                                <Entypo name="plus" size={20} color="#FF4000" />
-                                <Text style={styles.uploadImageText}>Change avatar</Text>
+                            <TouchableOpacity style={[styles.uploadImage,{padding: 5,}]} onPress={() => router.push('/profile/uploadAvatar')}>
+                                <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                <Text style={[styles.uploadImageText,{marginLeft:5}]}>Change avatar</Text>
                             </TouchableOpacity>
                         }
                     </View>
@@ -209,7 +210,7 @@ export default function Profile() {
             >
 
                 <View style={styles.contentContainer}>
-                    {userId == user._id && (getProfileProgress() < 100) &&
+                    {userId == user._id && (getProfileProgress() < 100) && user.type != "Parent" &&
                         <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
                             <View style={styles.profileProgressPercentage}>
                                 <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
@@ -224,7 +225,7 @@ export default function Profile() {
                             </View>
                         </TouchableOpacity>}
 
-                    <View style={styles.profileSection}>
+                    {user.type != "Parent" && <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Bio
                         </Text>
@@ -236,7 +237,7 @@ export default function Profile() {
                             <Text style={styles.paragraph}>-</Text>
                         )}
 
-                    </View>
+                    </View>}
 
                     <View style={styles.profileSection}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -256,7 +257,7 @@ export default function Profile() {
                                 <Text style={styles.paragraph}>-</Text>
                             )}
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Team/club
                             </Text>
@@ -267,7 +268,7 @@ export default function Profile() {
                             ) : (
                                 <Text style={styles.paragraph}>-</Text>
                             )}
-                        </View>
+                        </View>}
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Date of Birth
@@ -282,7 +283,7 @@ export default function Profile() {
                                 </View>
                             )}
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
@@ -293,8 +294,8 @@ export default function Profile() {
                                     <Text style={styles.paragraph}>-</Text>
                                 )}
                             </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        </View>}
+                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Weight
                             </Text>
@@ -305,13 +306,16 @@ export default function Profile() {
                                     <Text style={styles.paragraph}>-</Text>
                                 )}
                             </View>
-                        </View>
+                        </View>}
                     </View>
 
                     <View style={styles.profileSection}>
-                        <Text style={styles.title}>
+                        {user.type != "Parent" && <Text style={styles.title}>
                             Highlights
-                        </Text>
+                        </Text>}
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Highlights
+                        </Text>}
                         {user.highlights ? (
                             <Text style={styles.paragraph}>{user.highlights}</Text>
                         ) : (
@@ -321,9 +325,12 @@ export default function Profile() {
                     </View>
 
                     <View style={styles.profileSection}>
-                        <Text style={styles.title}>
+                        {user.type != "Parent" && <Text style={styles.title}>
                             Stats
-                        </Text>
+                        </Text>}
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Stats
+                        </Text>}
                         {user.stats ? (
                             <Text style={styles.paragraph}>{user.stats}</Text>
                         ) : (
@@ -332,9 +339,14 @@ export default function Profile() {
                     </View>
 
                     <View style={styles.profileSection}>
-                        <Text style={styles.title}>
+                        {user.type != "Parent" && <Text style={styles.title}>
                             Achievements
                         </Text>
+                        }
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Achievements
+                        </Text>
+                        }
                         {user.achievements ? (
                             <Text style={styles.paragraph}>{user.achievements}</Text>
                         ) : (
@@ -343,9 +355,12 @@ export default function Profile() {
                     </View>
 
                     <View style={styles.profileSection}>
-                        <Text style={styles.title}>
+                        {user.type != "Parent" && <Text style={styles.title}>
                             Upcoming Events
-                        </Text>
+                        </Text>}
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Upcoming Events
+                        </Text>}
                         {user.events ? (
                             <Text style={styles.paragraph}>{user.events}</Text>
                         ) : (
@@ -353,7 +368,7 @@ export default function Profile() {
                         )}
                     </View>
 
-                    <View style={styles.profileSection}>
+                    {user.type != "Parent" && <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Skills
                         </Text>
@@ -381,7 +396,7 @@ export default function Profile() {
                             )}
 
                         </View>
-                    </View>
+                    </View>}
 
                     {userId == user._id && <View style={[styles.profileSection, styles.profileActions]}>
                         <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>

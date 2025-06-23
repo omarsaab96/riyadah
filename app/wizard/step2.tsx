@@ -46,6 +46,18 @@ export default function WizardStep2() {
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
         const age = calculateAge(dob);
 
+        if(age < 18 && formData.type=="Parent"){
+            setShowParentEmail(false);
+            setError('Parents cannot be under 18');
+            return;
+        }
+
+        if(age > 18 && formData.type=="Parent"){
+            setShowParentEmail(false);
+            setError(null);
+            return;
+        }
+
         if (age < 18) {
             setShowParentEmail(true);
         } else {
@@ -72,6 +84,11 @@ export default function WizardStep2() {
         const age = calculateAge(dob);
 
         console.log(parentEmail)
+
+        if(formData.type == "Parent" && age < 18 ){
+            setError('Parents cannot be under 18')
+            return;
+        }
 
         if (age < 18 && parentEmail != "" && parentEmail != null) {
             updateFormData({

@@ -1,3 +1,5 @@
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -101,6 +103,10 @@ export default function EditProfile() {
         }
     }
 
+    const handleAddChildren = () => {
+
+    }
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -131,20 +137,68 @@ export default function EditProfile() {
 
                     <Text style={styles.ghostText}>Edit Prof</Text>
 
-                    <View style={styles.profileImage}>
-                        <Image
-                            source={require('../../assets/avatar.png')}
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />
-                    </View>
+                    {user && !loading && <View style={styles.profileImage}>
+                        <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
+                            {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                source={require('../../assets/avatar.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                source={require('../../assets/avatarF.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {user.image != null && <Image
+                                source={{ uri: user.image }}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                        </TouchableOpacity>
+
+                        {(user.image == null || user.image == "") &&
+                            <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                                <Entypo name="plus" size={20} color="#FF4000" />
+                                <Text style={styles.uploadImageText}>Upload avatar</Text>
+                            </TouchableOpacity>
+                        }
+
+                        {user.image != null && user.image != "" &&
+                            <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
+                                <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
+                            </TouchableOpacity>
+                        }
+                    </View>}
 
 
                 </View>
 
                 {user && !loading && <ScrollView>
                     <View style={styles.contentContainer}>
-                        <View style={styles.entity}>
+                        {user.type == "Parent" && <View style={styles.entity}>
+                            <View style={styles.noChildrenView}>
+                                <Text style={[styles.title,{marginBottom:0}]}>
+                                    Children ({user.children?.length || 0})
+                                </Text>
+                                <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddChildren}>
+                                    <Entypo name="plus" size={20} color="#FF4000" />
+                                    <Text style={styles.addChildrenButtonText}>Add child</Text>
+                                </TouchableOpacity>
+                            </View>
+                            {user.children?.length > 0 ? (<View style={styles.childrenList}>
+                                {user.children.map((child, index) => (
+                                    <View key={index} style={styles.childItem}>
+                                        <Text>{child}</Text>
+                                    </View>
+                                ))}
+                            </View>) : (
+                                <View>
+                                    <Text style={styles.noChildrenText}>You didn't add any children</Text>
+                                </View>
+                            )}
+                        </View>}
+                        {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Bio
                             </Text>
@@ -158,7 +212,7 @@ export default function EditProfile() {
                                 blurOnSubmit={false}
                                 returnKeyType="default"
                             />
-                        </View>
+                        </View>}
                         <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Country
@@ -178,7 +232,7 @@ export default function EditProfile() {
                                 />
                             </View>
                         </View>
-                        <View style={styles.entity}>
+                        {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Team/club
                             </Text>
@@ -189,7 +243,7 @@ export default function EditProfile() {
                                 value={user.club}
                                 onChangeText={(text) => updateField('club', text)}
                             />
-                        </View>
+                        </View>}
                         <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Date of Birth
@@ -226,7 +280,7 @@ export default function EditProfile() {
                                 />
                             </View>
                         </View>
-                        <View style={styles.entity}>
+                        {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
@@ -237,8 +291,8 @@ export default function EditProfile() {
                                 value={user.height?.toString()}
                                 onChangeText={(text) => updateField('height', text)}
                             />
-                        </View>
-                        <View style={styles.entity}>
+                        </View>}
+                        {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Weight
                             </Text>
@@ -249,8 +303,8 @@ export default function EditProfile() {
                                 value={user.weight?.toString()}
                                 onChangeText={(text) => updateField('weight', text)}
                             />
-                        </View>
-                        <View style={styles.entity}>
+                        </View>}
+                        {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Highlights
                             </Text>
@@ -264,8 +318,8 @@ export default function EditProfile() {
                                 blurOnSubmit={false}
                                 returnKeyType="default"
                             />
-                        </View>
-                        <View style={styles.entity}>
+                        </View>}
+                        {user.type != "Parent" && <View style={styles.entity}>
 
                             <Text style={styles.title}>
                                 Stats
@@ -280,8 +334,8 @@ export default function EditProfile() {
                                 blurOnSubmit={false}
                                 returnKeyType="default"
                             />
-                        </View>
-                        <View style={styles.entity}>
+                        </View>}
+                        {user.type != "Parent" && <View style={styles.entity}>
 
                             <Text style={styles.title}>
                                 Achievements
@@ -296,8 +350,8 @@ export default function EditProfile() {
                                 blurOnSubmit={false}
                                 returnKeyType="default"
                             />
-                        </View>
-                        <View style={styles.entity}>
+                        </View>}
+                        {user.type != "Parent" && <View style={styles.entity}>
 
                             <Text style={styles.title}>
                                 Upcoming Events
@@ -312,8 +366,8 @@ export default function EditProfile() {
                                 blurOnSubmit={false}
                                 returnKeyType="default"
                             />
-                        </View>
-                        <View style={styles.entity}>
+                        </View>}
+                        {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Skills
                             </Text>
@@ -424,7 +478,7 @@ export default function EditProfile() {
                             </View>
 
 
-                        </View>
+                        </View>}
 
                         <View style={styles.profileActions}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
@@ -719,5 +773,50 @@ const styles = StyleSheet.create({
     rangeSlider: {
         flex: 1,
         height: 40
+    },
+    uploadImage: {
+        backgroundColor: '#000000',
+        padding: 2,
+        paddingRight: 5,
+        borderRadius: 10,
+        textAlign: 'center',
+        position: 'absolute',
+        bottom: 5,
+        left: '50%',
+        transform: [{ translateX: '-50%' }],
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    uploadImageText: {
+        color: '#FF4000',
+        fontFamily: 'Bebas',
+        fontSize: 16,
+    },
+    childrenList: {
+
+    },
+    childItem: {
+
+    },
+    noChildrenView: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom:10
+    },
+    addChildrenButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    addChildrenButtonText: {
+        color: 'black',
+        fontFamily: 'Bebas',
+        fontSize: 18
+    },
+    noChildrenText: {
+        marginBottom: 10,
+        fontSize: 16,
+        fontFamily: 'Manrope'
     }
 });
