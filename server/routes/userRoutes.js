@@ -133,7 +133,7 @@ router.get('/', async (req, res) => {
 });
 
 // Search athletes by name (case-insensitive, partial match)
-router.get('/search', authenticate, async (req, res) => {
+router.get('/search', async (req, res) => {
   const { name } = req.query;
 
   if (!name) {
