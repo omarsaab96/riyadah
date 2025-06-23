@@ -37,7 +37,6 @@ export default function AddChildren() {
             const token = await SecureStore.getItemAsync('userToken');
             if (token) {
                 const decodedToken = jwtDecode(token);
-                console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
                 const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
@@ -47,7 +46,6 @@ export default function AddChildren() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
-                    console.log("Got User ", user)
                 } else {
                     console.error('API error')
                 }
@@ -208,7 +206,7 @@ export default function AddChildren() {
                             {user.children?.length > 0 ? (<View style={styles.childrenList}>
                                 {user.children.map((child, index) => (
                                     <View key={index} style={styles.childItem}>
-                                        <Text>{child}</Text>
+                                        <Text>{child.name}</Text>
                                     </View>
                                 ))}
                             </View>) : (
