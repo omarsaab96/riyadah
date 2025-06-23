@@ -57,31 +57,6 @@ router.get('/:userId', authenticateToken, async (req, res) => {
   }
 });
 
-//Edit user
-router.put('/:userId', authenticateToken, async (req, res) => {
-  const { userId } = req.params;
-
-  // Optional: Ensure the token's userId matches the request param
-  if (req.user.userId !== userId) {
-    return res.status(403).json({ error: 'Unauthorized access to update user data' });
-  }
-
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $set: req.body }, // Update only fields provided in req.body
-      { new: true, runValidators: true }
-    ).select('-password'); // Don't return the password
-
-    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
-
-    res.json(updatedUser);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Something went wrong' });
-  }
-});
-
 // Create user
 router.post('/', async (req, res) => {
   try {
@@ -125,7 +100,6 @@ router.post('/check', async (req, res) => {
   }
 });
 
-
 // Get all users
 router.get('/', async (req, res) => {
   const users = await User.find();
@@ -151,6 +125,31 @@ router.get('/search', async (req, res) => {
   } catch (err) {
     console.error('Error searching athletes:', err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//Edit user
+router.put('/:userId', authenticateToken, async (req, res) => {
+  const { userId } = req.params;
+
+  // Optional: Ensure the token's userId matches the request param
+  if (req.user.userId !== userId) {
+    return res.status(403).json({ error: 'Unauthorized access to update user data' });
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: req.body }, // Update only fields provided in req.body
+      { new: true, runValidators: true }
+    ).select('-password'); // Don't return the password
+
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
   }
 });
 

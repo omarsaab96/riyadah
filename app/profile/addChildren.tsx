@@ -130,9 +130,9 @@ export default function AddChildren() {
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/users/search?name=${name}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await fetch(`https://riyadah.onrender.com/api/users/search?name=${name}`);
+
+            console.warn('res ',res)
 
             if (res.ok) {
                 const data = await res.json();
