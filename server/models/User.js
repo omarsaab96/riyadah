@@ -7,10 +7,14 @@ const userSchema = new mongoose.Schema({
     phone: String,
     country: String,
     password: String,
-    children: {
-        type: [String],
-        default: null
-    },
+    children: [
+        {
+            _id: String,
+            name: String,
+            image: String,
+            sport: String
+        }
+    ],
     dob: {
         day: String,
         month: String,

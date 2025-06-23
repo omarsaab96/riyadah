@@ -189,7 +189,7 @@ export default function EditProfile() {
                             {user.children?.length > 0 ? (<View style={styles.childrenList}>
                                 {user.children.map((child, index) => (
                                     <View key={index} style={styles.childItem}>
-                                        <Text>{child}</Text>
+                                        <Text>{child.name}</Text>
                                     </View>
                                 ))}
                             </View>) : (

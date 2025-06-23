@@ -132,10 +132,9 @@ export default function AddChildren() {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/users/search?name=${name}`);
 
-            console.warn('res ',res)
-
             if (res.ok) {
                 const data = await res.json();
+                console.log(data)
                 setSearchResults(data); // expected array
             } else {
                 console.error("Search failed");
@@ -148,6 +147,20 @@ export default function AddChildren() {
             setSearching(false);
         }
     };
+
+    const handleAddChildToParent = (child: Object) => {
+        setUser(prev => {
+            const updatedChildren = [...(prev.children || [])];
+            if (!updatedChildren.includes(child)) {
+                updatedChildren.push(child);
+            }
+            return { ...prev, children: updatedChildren };
+        });
+    };
+
+    const handleCreateNewAthlete = () => {
+        console.log("creating new athlete")
+    }
 
     return (
         <KeyboardAvoidingView
@@ -206,32 +219,75 @@ export default function AddChildren() {
                         </View>}
 
                         <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Search
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Athlete name"
-                                placeholderTextColor="#A8A8A8"
-                                value={keyword}
-                                onChangeText={handleSearchInput}
-                            />
+                            <View>
+                                <Text style={styles.title}>
+                                    Search
+                                </Text>
+                                <View style={{
+                                    marginBottom: 16,
+                                }}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Athlete name"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={keyword}
+                                        onChangeText={handleSearchInput}
+                                    />
+                                    {searching &&
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#FF4000"
+                                            style={styles.searchLoader}
+                                        />
+                                    }
+                                </View>
+                            </View>
 
                             {keyword.trim().length > 0 && (
                                 <View style={{ marginTop: 10 }}>
-                                    {searching ? (
-                                        <Text style={styles.searchLoadingText}>Loading...</Text>
-                                    ) : (
-                                        searchResults.length > 0 ? (
-                                            searchResults.map((athlete, i) => (
-                                                <View key={i} style={styles.searchResultItem}>
-                                                    <Text>{athlete.name}</Text>
-                                                </View>
-                                            ))
-                                        ) : (
-                                            <Text style={styles.searchNoResultText}>No results found</Text>
-                                        )
-                                    )}
+                                    {searchResults.length > 0 && !searching &&
+                                        searchResults.map((athlete, i) => (
+                                            <View key={i} >
+                                                <TouchableOpacity
+                                                    style={styles.searchResultItem}
+                                                    onPress={() => { handleAddChildToParent(athlete) }}>
+                                                    <View style={styles.searchResultItemImageContainer}>
+                                                        <Image
+                                                            style={styles.searchResultItemImage}
+                                                            source={{ uri: athlete.image }}
+                                                        />
+                                                    </View>
+                                                    <View style={styles.searchResultItemInfo}>
+                                                        <View>
+                                                            <Text style={styles.searchResultItemName}>{athlete.name}</Text>
+                                                            <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                                        </View>
+                                                        <Text style={styles.searchResultItemLink}>+ Add As Child</Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            </View>
+                                        ))
+                                    }
+
+                                    {searchResults.length == 0 && !searching && user.type == "Parent" &&
+                                        <View>
+                                            <Text style={styles.searchNoResultText}>
+                                                No results.{'\n'}Can't find your child's account?
+                                            </Text>
+
+                                            <TouchableOpacity style={styles.createChildAccountBtn} onPress={handleCreateNewAthlete}>
+                                                <Text style={styles.createChildAccountBtnText}>Create a New Account</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    }
+
+                                    {/* {searchResults.length == 0 && !searching && user.type != "Parent" &&
+                                        <View>
+                                            <Text style={styles.searchNoResultText}>
+                                                No results
+                                            </Text>
+                                        </View>
+                                    } */}
                                 </View>
                             )}
                         </View>
@@ -491,7 +547,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         padding: 15,
         backgroundColor: '#F4F4F4',
-        marginBottom: 16,
         color: 'black',
         borderRadius: 10
     },
@@ -591,9 +646,48 @@ const styles = StyleSheet.create({
         marginVertical: 5
     },
     searchResultItem: {
-        padding: 10,
-        backgroundColor: '#F4F4F4',
-        marginBottom: 5,
-        borderRadius: 8
+        marginBottom: 10,
+        flexDirection: 'row',
+        columnGap: 20
+    },
+    searchResultItemImageContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+        backgroundColor: '#f4f4f4'
+    },
+    searchResultItemImage: {
+        objectFit: 'contain',
+        height: '100%',
+        width: '100%'
+    },
+    searchResultItemInfo: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        justifyContent: 'space-between'
+    },
+    searchResultItemLink: {
+        color: '#FF4000'
+    },
+    searchResultItemDescription: {
+        // fontSize:16,
+        marginBottom: 5
+    },
+    searchResultItemName: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        // marginBottom:5
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: '50%',
+        right: 10,
+        transform: [{ translateY: '-50%' }]
+    },
+    createChildAccountBtn: {
+        backgroundColor: 'transparent'
+    },
+    createChildAccountBtnText: {
+        color: '#FF4000'
     }
 });
