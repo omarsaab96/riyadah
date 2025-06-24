@@ -59,6 +59,8 @@ export default function EditProfile() {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
+                console.log(response)
+
                 if (response.ok) {
                     const notifications = await response.json();
                     setLoading(false)

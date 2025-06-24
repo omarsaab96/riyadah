@@ -36,7 +36,7 @@ router.get('/:userId', authenticateToken, async (req, res) => {
         const notifications = await Notification.find({ userId });
 
         if (!notifications || notifications.length === 0) {
-            return res.status(404).json({ error: 'No notifications found' });
+            return res.status(200).json([]);
         }
 
         res.json(notifications);

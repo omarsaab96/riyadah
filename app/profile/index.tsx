@@ -17,10 +17,8 @@ import {
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
 
-
 const { width } = Dimensions.get('window');
 const router = useRouter();
-
 
 export default function Profile() {
     const scrollY = useRef(new Animated.Value(0)).current;
