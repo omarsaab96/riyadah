@@ -54,7 +54,13 @@ router.post('/', async (req, res) => {
 router.get('/find-children', async (req, res) => {
     try {
         const { parentEmail } = req.query;
-        const children = await User.find({ type: 'Athlete', parentEmail });
+        const children = await User.find(
+          {
+            type: 'Athlete',
+            parentEmail
+          }
+        ).select('_id name sport image');
+
         res.json(children);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
@@ -110,7 +116,7 @@ router.get('/search', async (req, res) => {
     const athletes = await User.find({
       type: 'Athlete',
       name: { $regex: regex }
-    }).select('name _id image sport'); // return only needed fields
+    }).select('_id name sport image'); 
 
     res.json(athletes);
   } catch (err) {

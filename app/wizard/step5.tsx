@@ -50,11 +50,16 @@ export default function WizardStep5() {
         setLoading(true);
         setRegisterError(null);
 
-        if(formData.type=="Parent"){
-            let children = getRegisteredChildren();
-            console.log('Children: ',children)
+        if (formData.type == "Parent") {
+            let children = await getRegisteredChildren();
+            if (children.length > 0) {
+                children.forEach(child => {
+                    console.log(child.name);
+                });
+            }
         }
 
+        setLoading(false);
         // try {
         //     updateFormData({
         //         bio: bio,
