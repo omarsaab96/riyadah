@@ -7,14 +7,7 @@ const userSchema = new mongoose.Schema({
     phone: String,
     country: String,
     password: String,
-    children: [
-        {
-            _id: String,
-            name: String,
-            image: String,
-            sport: String
-        }
-    ],
+    children: [String],
     dob: {
         day: String,
         month: String,
