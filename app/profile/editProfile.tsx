@@ -29,6 +29,7 @@ export default function EditProfile() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [children, setChildren] = useState([]);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -46,7 +47,6 @@ export default function EditProfile() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
-                    console.log("Got User ", user)
                 } else {
                     console.error('API error')
                 }
@@ -57,6 +57,44 @@ export default function EditProfile() {
 
         fetchUser();
     }, []);
+
+    useEffect(() => {
+        if (user && user.children && user.children.length > 0) {
+            getChildren();
+        }
+    }, [user])
+
+    const getChildren = async () => {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token || !user || !user.children || user.children.length === 0) return;
+
+        try {
+            const childData = [];
+
+            for (const childId of user.children) {
+                console.log('geting child: ', childId)
+                const res = await fetch(`https://riyadah.onrender.com/api/users/${childId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('child: ', res)
+
+                if (res.ok) {
+                    const data = await res.json();
+                    childData.push(data);
+                } else {
+                    console.warn(`Failed to fetch child with ID: ${childId}`);
+                }
+            }
+
+            setChildren(childData);
+        } catch (err) {
+            console.error('Error fetching children:', err);
+        }
+    };
 
     const updateField = (field, value) => {
         const path = field.split('.');
@@ -178,16 +216,16 @@ export default function EditProfile() {
                     <View style={styles.contentContainer}>
                         {user.type == "Parent" && <View style={styles.entity}>
                             <View style={styles.noChildrenView}>
-                                <Text style={[styles.title,{marginBottom:0}]}>
-                                    Children ({user.children?.length || 0})
+                                <Text style={[styles.title, { marginBottom: 0 }]}>
+                                    Children ({children?.length || 0})
                                 </Text>
                                 <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddChildren}>
                                     <Entypo name="plus" size={20} color="#FF4000" />
                                     <Text style={styles.addChildrenButtonText}>Add child</Text>
                                 </TouchableOpacity>
                             </View>
-                            {user.children?.length > 0 ? (<View style={styles.childrenList}>
-                                {user.children.map((child, index) => (
+                            {children?.length > 0 ? (<View style={styles.childrenList}>
+                                {children.map((child, index) => (
                                     <View key={index} style={styles.childItem}>
                                         <Text>{child.name}</Text>
                                     </View>
@@ -480,7 +518,7 @@ export default function EditProfile() {
 
                         </View>}
 
-                        <View style={[styles.profileActions,styles.inlineActions]}>
+                        <View style={[styles.profileActions, styles.inlineActions]}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
                                 <Text style={styles.profileButtonText}>Cancel</Text>
                             </TouchableOpacity>
@@ -702,10 +740,10 @@ const styles = StyleSheet.create({
         borderTopColor: 'rgba(0,0,0,0.2)',
         paddingTop: 10
     },
-    inlineActions:{
-        flexDirection:'row',
-        justifyContent:'flex-end',
-        columnGap:15
+    inlineActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        columnGap: 15
     },
     profileButton: {
         borderRadius: 5,
@@ -808,7 +846,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom:10
+        marginBottom: 10
     },
     addChildrenButton: {
         flexDirection: 'row',
