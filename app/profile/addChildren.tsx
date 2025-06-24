@@ -1,4 +1,3 @@
-import Entypo from '@expo/vector-icons/Entypo';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -30,6 +29,8 @@ export default function AddChildren() {
     const [searchResults, setSearchResults] = useState([]);
     const [searching, setSearching] = useState(false);
     const [debounceTimeout, setDebounceTimeout] = useState(null);
+    const [error, setError] = useState('');
+
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -149,15 +150,21 @@ export default function AddChildren() {
     const handleAddChildToParent = (child: Object) => {
         setUser(prev => {
             const updatedChildren = [...(prev.children || [])];
-            if (!updatedChildren.includes(child)) {
+
+            const alreadyExists = updatedChildren.some(c => c._id === child._id);
+            if (!alreadyExists) {
                 updatedChildren.push(child);
+                setError('')
+            } else {
+                setError(`${child.name} is already added as a child`);
             }
+
             return { ...prev, children: updatedChildren };
         });
     };
 
     const handleCreateNewAthlete = () => {
-        console.log("creating new athlete")
+        router.push('/profile/parentCreateAthlete');
     }
 
     return (
@@ -192,16 +199,17 @@ export default function AddChildren() {
                 </View>
 
                 {user && !loading && <ScrollView>
+
                     <View style={styles.contentContainer}>
+                        {error != '' && <View style={styles.error}>
+                            <View style={styles.errorIcon}></View>
+                            <Text style={styles.errorText}>{error}</Text>
+                        </View>}
                         {user.type == "Parent" && <View style={styles.entity}>
                             <View style={styles.noChildrenView}>
                                 <Text style={[styles.title, { marginBottom: 0 }]}>
                                     Children ({user.children?.length || 0})
                                 </Text>
-                                <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddChildren}>
-                                    <Entypo name="plus" size={20} color="#FF4000" />
-                                    <Text style={styles.addChildrenButtonText}>Add child</Text>
-                                </TouchableOpacity>
                             </View>
                             {user.children?.length > 0 ? (<View style={styles.childrenList}>
                                 {user.children.map((child, index) => (
@@ -241,7 +249,7 @@ export default function AddChildren() {
                                 </View>
                             </View>
 
-                            {keyword.trim().length > 0 && (
+                            {keyword.trim().length > 0 && !searching && (
                                 <View style={{ marginTop: 10 }}>
                                     {searchResults.length > 0 && !searching &&
                                         searchResults.map((athlete, i) => (
@@ -687,5 +695,26 @@ const styles = StyleSheet.create({
     },
     createChildAccountBtnText: {
         color: '#FF4000'
+    },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
     }
 });

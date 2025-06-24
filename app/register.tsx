@@ -23,7 +23,7 @@ export default function Register() {
   const { formData, updateFormData } = useRegistration();
   const router = useRouter();
   const [countryCode, setCountryCode] = useState('LB');
-  const [callingCode, setCallingCode] = useState('1');
+  const [callingCode, setCallingCode] = useState('961');
 
   const [name, setName] = useState<string | null>(formData.name || null);
   const [email, setEmail] = useState<string | null>(formData.email || null);
@@ -137,6 +137,7 @@ export default function Register() {
             placeholderTextColor="#A8A8A8"
             value={name}
             onChangeText={setName}
+            autoCapitalize="words"
           />
           <TextInput
             style={styles.input}

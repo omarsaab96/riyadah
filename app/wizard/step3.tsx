@@ -5,7 +5,7 @@ import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOp
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
-const accountTypes = [
+const sportTypes = [
     { label: 'Football', icon: require('../../assets/football.png') },
     { label: 'Basketball', icon: require('../../assets/basketball.png') },
     { label: 'Gymnastics', icon: require('../../assets/gymnastics.png') },
@@ -37,7 +37,7 @@ export default function WizardStep3() {
             console.log(formData)
             router.push('/wizard/step4')
         } else {
-            setError('Kindly select an sport type')
+            setError('Kindly select a sport type')
         }
     }
 
@@ -82,7 +82,7 @@ export default function WizardStep3() {
             <ScrollView >
 
                 <View style={styles.wizardContainer}>
-                    {accountTypes.map(({ label, icon }, idx) => (
+                    {sportTypes.map(({ label, icon }, idx) => (
                         <TouchableOpacity
                             key={label}
                             style={[

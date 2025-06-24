@@ -50,6 +50,18 @@ router.post('/', async (req, res) => {
   }
 });
 
+// find children by parent email
+router.get('/find-children', async (req, res) => {
+    try {
+        const { parentEmail } = req.query;
+        const children = await User.find({ type: 'Athlete', parentEmail });
+        res.json(children);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 router.post('/check', async (req, res) => {
   const { email, phone } = req.body;
 

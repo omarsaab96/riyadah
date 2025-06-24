@@ -30,6 +30,18 @@ export default function WizardStep5() {
         checkAuth();
     }, []);
 
+    const getRegisteredChildren = async () => {
+        if (!formData.email) return [];
+
+        try {
+            const res = await fetch(`https://riyadah.onrender.com/api/users/find-children?parentEmail=${formData.email}`);
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            console.error('Failed to fetch children', err);
+        }
+    };
+
     const handleNext = async () => {
         if (!selectedGender) {
             setError('Kindly select a gender')
@@ -38,48 +50,54 @@ export default function WizardStep5() {
         setLoading(true);
         setRegisterError(null);
 
-        try {
-            updateFormData({
-                bio: bio,
-                gender: selectedGender,
-            });
-
-            // Combine all data from registration context
-            const newUserData = {
-                ...formData,
-                bio: bio,
-                gender: selectedGender,
-                image: null
-            };
-
-            console.log('Submitting user data:', newUserData);
-
-            const response = await fetch('https://riyadah.onrender.com/api/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newUserData),
-            });
-
-            // if (!response.ok) {
-            console.log(response)
-            // throw new Error(`HTTP error! status: ${response.status}`);
-            // }
-
-            const { user, token } = await response.json();
-
-            console.log("response token: ", token)
-
-            await SecureStore.setItemAsync('userToken', String(token));
-
-            router.replace('/profile');
-        } catch (err) {
-            console.error('User creation failed:', err);
-            setRegisterError('Something went wrong. Please try again.');
-        } finally {
-            setLoading(false);
+        if(formData.type=="Parent"){
+            let children = getRegisteredChildren();
+            console.log('Children: ',children)
         }
+
+        // try {
+        //     updateFormData({
+        //         bio: bio,
+        //         gender: selectedGender,
+        //     });
+
+        //     // Combine all data from registration context
+        //     const newUserData = {
+        //         ...formData,
+        //         bio: bio,
+        //         gender: selectedGender,
+        //         image: null
+        //     };
+
+        //     console.log('Submitting user data:', newUserData);
+
+        //     const response = await fetch('https://riyadah.onrender.com/api/users', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify(newUserData),
+        //     });
+
+        //     console.log(response)
+
+        //     if (!response.ok) {
+        //         throw new Error(`HTTP error! status: ${response.status}`);
+        //     }
+
+        //     const { user, token } = await response.json();
+
+        //     console.log("response token: ", token)
+
+        //     await SecureStore.setItemAsync('userToken', String(token));
+
+        //     router.replace('/profile');
+        // } catch (err) {
+        //     console.error('User creation failed:', err);
+        //     setRegisterError('Something went wrong. Please try again.');
+        // } finally {
+        //     setLoading(false);
+        // }
     };
 
     const handleRetry = async () => {

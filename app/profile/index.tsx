@@ -173,9 +173,9 @@ export default function Profile() {
                         }
 
                         {user.image != null && user.image != "" &&
-                            <TouchableOpacity style={[styles.uploadImage,{padding: 5,}]} onPress={() => router.push('/profile/uploadAvatar')}>
+                            <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
                                 <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                <Text style={[styles.uploadImageText,{marginLeft:5}]}>Change avatar</Text>
+                                <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
                             </TouchableOpacity>
                         }
                     </View>
@@ -373,27 +373,24 @@ export default function Profile() {
                             Skills
                         </Text>
                         <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
-                            {user.skills ? (
-                                <RadarChart
-                                    data={data}
-                                    maxValue={100}
-                                    gradientColor={{
-                                        startColor: '#FF9432',
-                                        endColor: '#FFF8F1',
-                                        count: 5,
-                                    }}
-                                    stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
-                                    strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
-                                    strokeOpacity={[1, 1, 1, 1, 0.13]}
-                                    labelColor="#111111"
-                                    dataFillColor="#FF9432"
-                                    dataFillOpacity={0.8}
-                                    dataStroke="#FF4000"
-                                    dataStrokeWidth={2}
-                                    isCircle
-                                />) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
+                            <RadarChart
+                                data={data}
+                                maxValue={100}
+                                gradientColor={{
+                                    startColor: '#FF9432',
+                                    endColor: '#FFF8F1',
+                                    count: 5,
+                                }}
+                                stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
+                                strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
+                                strokeOpacity={[1, 1, 1, 1, 0.13]}
+                                labelColor="#111111"
+                                dataFillColor="#FF9432"
+                                dataFillOpacity={0.8}
+                                dataStroke="#FF4000"
+                                dataStrokeWidth={2}
+                                isCircle
+                            />
 
                         </View>
                     </View>}

@@ -73,11 +73,11 @@ export const RegistrationProvider = ({ children }: Props) => {
     achievements: null,
     events: null,
     skills: {
-      attack: null,
-      skill: null,
-      stamina: null,
-      speed: null,
-      defense: null
+      attack: 0,
+      skill: 0,
+      stamina: 0,
+      speed: 0,
+      defense: 0
     }
   });
 
