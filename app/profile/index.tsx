@@ -25,6 +25,18 @@ export default function Profile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('Profile');
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory'];
+
+    //graph data
+    const data = [
+        { label: 'Attack', value: user?.skills?.attack },
+        { label: 'Defense', value: user?.skills?.defense },
+        { label: 'Speed', value: user?.skills?.speed },
+        { label: 'Stamina', value: user?.skills?.stamina },
+        { label: 'Skill', value: user?.skills?.skill }
+    ];
 
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 300],
@@ -76,17 +88,6 @@ export default function Profile() {
         console.log('Share clicked');
     };
 
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
-    //graph data
-    const data = [
-        { label: 'Attack', value: user?.skills?.attack },
-        { label: 'Defense', value: user?.skills?.defense },
-        { label: 'Speed', value: user?.skills?.speed },
-        { label: 'Stamina', value: user?.skills?.stamina },
-        { label: 'Skill', value: user?.skills?.skill }
-    ];
-
     const getProfileProgress = () => {
         let progress = 0;
         let filledFields = 0;
@@ -100,7 +101,7 @@ export default function Profile() {
             if (user.country != null) filledFields++;
             if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
             if (user.type != null) filledFields++;
-            if (user.sport != null) filledFields++;
+            if (user.sport != null && user.sport.length >= 1) filledFields++;
             if (user.bio != null) filledFields++;
             if (user.highlights != null) filledFields++;
             if (user.stats != null) filledFields++;
@@ -117,7 +118,7 @@ export default function Profile() {
             if (user.country != null) filledFields++;
             if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
             if (user.type != null) filledFields++;
-            if (user.sport != null) filledFields++;
+            if (user.sport != null && user.sport.length >= 1) filledFields++;
             if (user.club != null) filledFields++;
             if (user.gender != null) filledFields++;
             if (user.bio != null) filledFields++;
@@ -240,8 +241,28 @@ export default function Profile() {
 
             </Animated.View>
 
+            {/* Tabs for clubs */}
+            {!loading && user?.type === "Club" && (
+                <View style={styles.tabs}>
+                    {tabs.map((label, index) => (
+                        <TouchableOpacity
+                            key={label}
+                            style={[
+                                styles.tab,
+                                activeTab === label && styles.activeTab,
+                            ]}
+                            onPress={() => setActiveTab(label)}
+                        >
+                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
+                                {label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
 
-            {!loading && user && <Animated.ScrollView
+            {/* profileTab */}
+            {!loading && user && activeTab == "Profile" && <Animated.ScrollView
                 onScroll={Animated.event(
                     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                     { useNativeDriver: false }
@@ -267,7 +288,7 @@ export default function Profile() {
 
 
                     <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
-                        //Add contact info for clubs
+                        //Add contact info for clubs, each club has an admin
                     </Text>
 
                     {/* BIO */}
@@ -283,6 +304,20 @@ export default function Profile() {
                             <Text style={styles.paragraph}>-</Text>
                         )}
 
+                    </View>}
+
+                    {/* SPORT */}
+                    {user.type != "Parent" && <View style={styles.profileSection}>
+                        <Text style={styles.title}>
+                            Sport{user.sport.length > 1 ? 's' : ''}
+                        </Text>
+                        {user.sport && user.sport.length > 0 ? (
+                            <Text style={styles.paragraph}>
+                                {user.sport.toString()}
+                            </Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
                     </View>}
 
 
@@ -305,20 +340,6 @@ export default function Profile() {
                                 <Text style={styles.paragraph}>-</Text>
                             )}
                         </View>
-
-                        {/* SPORT */}
-                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Sport
-                            </Text>
-                            {user.sport && user.sport.length > 0 ? (
-                                <Text style={styles.paragraph}>
-                                    {user.sport}
-                                </Text>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
-                        </View>}
 
                         {/* TEAM/CLUB */}
                         {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -527,6 +548,80 @@ export default function Profile() {
                             <Text style={styles.profileButtonText}>Share Profile</Text>
                         </TouchableOpacity>
                     </View>}
+                </View>
+            </Animated.ScrollView>
+            }
+
+            {/* teamsTab */}
+            {!loading && user && activeTab == "Teams" && <Animated.ScrollView
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
+            >
+
+                <View style={styles.contentContainer}>
+                    <Text>TEAMS TAB</Text>
+
+                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                        //Each team should have a coach
+                    </Text>
+                </View>
+            </Animated.ScrollView>
+            }
+
+            {/* scheduleTab */}
+            {!loading && user && activeTab == "Schedule" && <Animated.ScrollView
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
+            >
+
+                <View style={styles.contentContainer}>
+                    <Text>SCHEDULE TAB</Text>
+                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                        //create events or training sessions
+                    </Text>
+                </View>
+            </Animated.ScrollView>
+            }
+
+            {/* staffTab */}
+            {!loading && user && activeTab == "Staff" && <Animated.ScrollView
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
+            >
+
+                <View style={styles.contentContainer}>
+                    <Text>STAFF TAB</Text>
+                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                        //manage staff, coaches, admins, board members...
+                    </Text>
+                </View>
+            </Animated.ScrollView>
+            }
+
+            {/* inventoryTabs */}
+            {!loading && user && activeTab == "Inventory" && <Animated.ScrollView
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
+            >
+
+                <View style={styles.contentContainer}>
+                    <Text>INVENTORY TAB</Text>
+
+                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                        //keep track of stock for sports equipment, sportswear, jerseys and accessories
+                    </Text>
                 </View>
             </Animated.ScrollView>
             }
@@ -760,4 +855,27 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 16,
     },
+    tabs: {
+        backgroundColor: '#111111',
+        flexDirection: 'row',
+        paddingLeft: 10
+    },
+    tab: {
+        padding: 10,
+        paddingBottom: 5,
+        borderBottomWidth: 5,
+        borderBottomColor: '#111111'
+    },
+    activeTab: {
+        borderBottomColor: '#FF4000'
+    },
+    tabText: {
+        // color: '#FF4000',
+        color: '#888888',
+        fontFamily: 'Bebas',
+        fontSize: 18
+    },
+    tabTextActive: {
+        color: '#FF4000'
+    }
 });

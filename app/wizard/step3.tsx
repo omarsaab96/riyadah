@@ -32,15 +32,16 @@ export default function WizardStep3() {
     }, []);
 
     const handleNext = () => {
-        if (selected) {
+        if (selected.length > 0) {
             updateFormData({ sport: selected });
-            if (formData.type == "Club") {
+
+            if (formData.type === "Club") {
                 router.push('/wizard/step5');
             } else {
                 router.push('/wizard/step4');
             }
         } else {
-            setError('Kindly select a sport type')
+            setError('Kindly select a sport type');
         }
     }
 
