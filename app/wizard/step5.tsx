@@ -12,7 +12,7 @@ const genders = [
 
 export default function WizardStep5() {
     const router = useRouter();
-    const { formData, updateFormData } = useRegistration();
+    const { formData, updateFormData, resetFormData } = useRegistration();
     const [bio, setBio] = useState<string | null>(formData.bio || null);
     const [selectedGender, setSelectedGender] = useState<string | null>(formData.gender || null);
     const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ export default function WizardStep5() {
     };
 
     const handleNext = async () => {
-        if (!selectedGender) {
+        if (!selectedGender && formData.type != "Club") {
             setError('Kindly select a gender')
             return;
         }
@@ -90,18 +90,15 @@ export default function WizardStep5() {
                 body: JSON.stringify(newUserData),
             });
 
-            console.log(response)
-
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const { user, token } = await response.json();
 
-            console.log("response token: ", token)
-
             await SecureStore.setItemAsync('userToken', String(token));
 
+            resetFormData()
             router.replace('/profile');
         } catch (err) {
             console.error('User creation failed:', err);
@@ -127,13 +124,18 @@ export default function WizardStep5() {
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>
                         {!loading
-                            ? (registrationError ? 'Error' : 'About You')
+                            ? (registrationError ?
+                                'Error'
+                                :
+                                formData.type == "Club" ? 'About Club' : 'About You')
                             : 'Creating account'}
                     </Text>
 
 
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {!loading && registrationError == null && <Text style={styles.pageDesc}>Tell us more about you</Text>}
+                        {!loading && registrationError == null && <Text style={styles.pageDesc}>
+                            {formData.type == "Club" ? 'Tell us more about your club' : 'Tell us more about you'}
+                        </Text>}
 
                         {loading && !registrationError && (
                             <ActivityIndicator
@@ -170,7 +172,7 @@ export default function WizardStep5() {
                     <Text style={styles.errorText}>{error}</Text>
                 </View>}
 
-                <View style={styles.inputEntity}>
+                {formData.type != "Club" && <View style={styles.inputEntity}>
                     <Text style={styles.label}>Gender</Text>
                     <View style={styles.wizardContainer}>
                         {genders.map(({ label, icon }, idx) => (
@@ -191,13 +193,19 @@ export default function WizardStep5() {
 
                     </View>
                 </View>
+                }
 
                 {formData.type != "Parent" &&
                     <View style={styles.inputEntity}>
-                        <Text style={styles.label}>BIO</Text>
+                        {formData.type == "Club" ? (
+                            <Text style={styles.label}>Summary</Text>
+                        ) : (
+                            <Text style={styles.label}>BIO</Text>
+                        )}
+
                         <TextInput
                             style={styles.textarea}
-                            placeholder="What are your biggest achievements?"
+                            placeholder={formData.type == "Club" ? "Describe the club" : "Describe yourself"}
                             placeholderTextColor="#A8A8A8"
                             value={bio}
                             onChangeText={setBio}

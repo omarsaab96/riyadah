@@ -51,7 +51,7 @@ export default function EditProfile() {
                     console.error('API error')
                 }
 
-                setLoading(false)
+
             }
         };
 
@@ -59,28 +59,26 @@ export default function EditProfile() {
     }, []);
 
     useEffect(() => {
-        if (user && user.children && user.children.length > 0) {
-            getChildren();
-        }
+        getChildren();
     }, [user])
 
     const getChildren = async () => {
         const token = await SecureStore.getItemAsync('userToken');
-        if (!token || !user || !user.children || user.children.length === 0) return;
+        if (!token || !user.children || user.children.length === 0) {
+            setLoading(false)
+            return;
+        }
 
         try {
             const childData = [];
 
             for (const childId of user.children) {
-                console.log('geting child: ', childId)
                 const res = await fetch(`https://riyadah.onrender.com/api/users/${childId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
-
-                console.log('child: ', res)
 
                 if (res.ok) {
                     const data = await res.json();
@@ -91,6 +89,7 @@ export default function EditProfile() {
             }
 
             setChildren(childData);
+            setLoading(false)
         } catch (err) {
             console.error('Error fetching children:', err);
         }
@@ -166,7 +165,7 @@ export default function EditProfile() {
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                                 <ActivityIndicator
                                     size="small"
-                                    color="#ffffff"
+                                    color="#fff"
                                     style={{ transform: [{ scale: 1.25 }] }}
                                 />
                             </View>
@@ -236,13 +235,15 @@ export default function EditProfile() {
                                 </View>
                             )}
                         </View>}
+
+                        {/* BIO */}
                         {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
-                                Bio
+                                {user.type == "Club" ? 'Summary' : 'Bio'}
                             </Text>
                             <TextInput
                                 style={styles.textarea}
-                                placeholder="More about you"
+                                placeholder={user.type == "Club" ? 'About the club' : 'About you'}
                                 placeholderTextColor="#A8A8A8"
                                 value={user.bio || ""}
                                 onChangeText={(text) => updateField('bio', text)}
@@ -251,6 +252,8 @@ export default function EditProfile() {
                                 returnKeyType="default"
                             />
                         </View>}
+
+                        {/* COUNTRY */}
                         <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Country
@@ -270,7 +273,9 @@ export default function EditProfile() {
                                 />
                             </View>
                         </View>
-                        {user.type != "Parent" && <View style={styles.entity}>
+
+                        {/* TEAM/CLUB */}
+                        {user.type == "Athlete" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Team/club
                             </Text>
@@ -282,9 +287,11 @@ export default function EditProfile() {
                                 onChangeText={(text) => updateField('club', text)}
                             />
                         </View>}
+
+                        {/* DOB */}
                         <View style={styles.entity}>
                             <Text style={styles.title}>
-                                Date of Birth
+                                {user.type == "Club" ? 'Establishment date' : 'Date of Birth'}
                             </Text>
                             <View style={styles.dobRow}>
                                 <TextInput
@@ -318,7 +325,9 @@ export default function EditProfile() {
                                 />
                             </View>
                         </View>
-                        {user.type != "Parent" && <View style={styles.entity}>
+
+                        {/* HEIGHT */}
+                        {user.type == "Athlete" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
@@ -330,7 +339,9 @@ export default function EditProfile() {
                                 onChangeText={(text) => updateField('height', text)}
                             />
                         </View>}
-                        {user.type != "Parent" && <View style={styles.entity}>
+
+                        {/* WEIGHT */}
+                        {user.type == "Athlete" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Weight
                             </Text>
@@ -342,6 +353,8 @@ export default function EditProfile() {
                                 onChangeText={(text) => updateField('weight', text)}
                             />
                         </View>}
+
+                        {/* HIGHLIGHTS */}
                         {user.type != "Parent" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Highlights
@@ -357,6 +370,8 @@ export default function EditProfile() {
                                 returnKeyType="default"
                             />
                         </View>}
+
+                        {/* STATS */}
                         {user.type != "Parent" && <View style={styles.entity}>
 
                             <Text style={styles.title}>
@@ -373,8 +388,9 @@ export default function EditProfile() {
                                 returnKeyType="default"
                             />
                         </View>}
-                        {user.type != "Parent" && <View style={styles.entity}>
 
+                        {/* ACHIEVEMENTS */}
+                        {user.type == "Athlete" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Achievements
                             </Text>
@@ -389,6 +405,8 @@ export default function EditProfile() {
                                 returnKeyType="default"
                             />
                         </View>}
+
+                        {/* EVENTS */}
                         {user.type != "Parent" && <View style={styles.entity}>
 
                             <Text style={styles.title}>
@@ -405,7 +423,9 @@ export default function EditProfile() {
                                 returnKeyType="default"
                             />
                         </View>}
-                        {user.type != "Parent" && <View style={styles.entity}>
+
+                        {/* SKILLS */}
+                        {user.type == "Athlete" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Skills
                             </Text>

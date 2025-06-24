@@ -33,8 +33,8 @@ export default function WizardStep1() {
     const handleNext = () => {
         if (selected) {
             updateFormData({ type: selected });
-            console.log(formData)
             router.push('/wizard/step2');
+
         } else {
             setError('Kindly select an account type')
         }

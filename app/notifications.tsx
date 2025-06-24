@@ -1,6 +1,10 @@
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
+
 import {
+    ActivityIndicator,
     Dimensions,
     Image,
     ScrollView,
@@ -18,14 +22,58 @@ const router = useRouter();
 export default function EditProfile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
-    
+    const [loading, setLoading] = useState(true);
+    const [notifications, setNotifications] = useState(false);
+
     useEffect(() => {
-        console.log("User: ", user)
+        const fetchUser = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                // console.log("DECODED: ", decodedToken)
+                setUserId(decodedToken.userId);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
+                }
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (token) {
+                const decodedToken = jwtDecode(token);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/notifications/${user._id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const notifications = await response.json();
+                    setLoading(false)
+                } else {
+                    console.error('API error')
+                }
+            }
+        };
+
+        fetchNotifications();
     }, [user]);
 
     return (
         <View style={styles.container}>
-            {user && <View style={styles.pageHeader}>
+            <View style={styles.pageHeader}>
                 <Image
                     source={require('../assets/logo_white.png')}
                     style={styles.logo}
@@ -34,14 +82,23 @@ export default function EditProfile() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Notifications</Text>
-                    <Text style={styles.pageDesc}>You have 3 unread notifications</Text>
+                    {!loading && <Text style={styles.pageDesc}>You have 3 unread notifications</Text>}
+                    {loading &&
+                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                            <ActivityIndicator
+                                size="small"
+                                color="#fff"
+                                style={{ transform: [{ scale: 1.25 }] }}
+                            />
+                        </View>
+                    }
+
                 </View>
 
                 <Text style={styles.ghostText}>Notifica</Text>
             </View>
-            }
 
-            {user && <ScrollView>
+            {!loading && <ScrollView>
                 <View style={styles.contentContainer}>
                     <View style={styles.notification}>
                         <Text style={styles.notificationText}>
@@ -121,7 +178,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope'
     },
     notification: {
-        backgroundColor: '#D4D4D4',
+        backgroundColor: '#dedede',
         padding: 10,
         borderRadius: 10,
         marginBottom: 10,
@@ -132,14 +189,14 @@ const styles = StyleSheet.create({
         fontFamily: "Manrope",
         fontSize: 14,
         flex: 1,
-        paddingRight:20
+        paddingRight: 20
     },
     notificationUnread: {
         width: 10,
         height: 10,
         borderRadius: 10,
         backgroundColor: '#FF4000',
-        marginTop:6
+        marginTop: 6
     },
     ghostText: {
         color: '#ffffff',

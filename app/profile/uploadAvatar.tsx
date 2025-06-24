@@ -147,8 +147,12 @@ export default function UploadAvatar() {
                     />
 
                     <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Upload Avatar</Text>
-                        {!loading && <Text style={styles.pageDesc}>Change your profile picture</Text>}
+                        <Text style={styles.pageTitle}>
+                            {user?.type == "Club" ? 'Upload logo' : 'Upload Avatar'}
+                        </Text>
+                        {!loading && <Text style={styles.pageDesc}>
+                            {user?.type == "Club" ? 'Change your logo' : 'Change your profile picture'}
+                        </Text>}
                         {loading && (
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                                 <ActivityIndicator size="small" color="#ffffff" />
@@ -156,7 +160,9 @@ export default function UploadAvatar() {
                         )}
                     </View>
 
-                    <Text style={styles.ghostText}>Avatar</Text>
+                    <Text style={styles.ghostText}>
+                        {user?.type == "Club" ? 'Logo' : 'Avatar'}
+                    </Text>
                 </View>
 
                 {user && !loading && (
@@ -178,7 +184,7 @@ export default function UploadAvatar() {
                                         <View>
                                             <Image
                                                 source={{ uri: localImg || user.image }}
-                                                style={[styles.avatarPreview,, {backgroundColor:'#FF4000'}]}
+                                                style={[styles.avatarPreview, , { backgroundColor: '#FF4000' }]}
                                             />
                                             <Text style={styles.uploadHint}>Tap to change image</Text>
                                         </View>
@@ -194,7 +200,7 @@ export default function UploadAvatar() {
                             )}
 
                             {!uploading && (
-                                <View style={styles.profileActions}>
+                                <View style={[styles.profileActions, styles.inlineActions]}>
                                     <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
                                         <Text style={styles.profileButtonText}>Cancel</Text>
                                     </TouchableOpacity>
@@ -227,6 +233,7 @@ export default function UploadAvatar() {
                     </TouchableOpacity>
                 </View>
             </View>
+
         </KeyboardAvoidingView >
     );
 }
@@ -285,7 +292,12 @@ const styles = StyleSheet.create({
     profileActions: {
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.2)',
-        paddingTop: 10,
+        paddingTop: 10
+    },
+    inlineActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        columnGap: 15
     },
     profileButton: {
         borderRadius: 5,

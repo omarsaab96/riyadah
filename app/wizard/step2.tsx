@@ -46,13 +46,13 @@ export default function WizardStep2() {
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
         const age = calculateAge(dob);
 
-        if(age < 18 && formData.type=="Parent"){
+        if (age < 18 && formData.type == "Parent") {
             setShowParentEmail(false);
             setError('Parents cannot be under 18');
             return;
         }
 
-        if(age > 18 && formData.type=="Parent"){
+        if (age > 18 && formData.type == "Parent") {
             setShowParentEmail(false);
             setError(null);
             return;
@@ -80,53 +80,70 @@ export default function WizardStep2() {
     };
 
     const handleNext = () => {
+
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
-        const age = calculateAge(dob);
 
-        console.log(parentEmail)
+        if (formData.type == "Club") {
 
-        if(formData.type == "Parent" && age < 18 ){
-            setError('Parents cannot be under 18')
-            return;
-        }
+            if (day != null && month != null && year != null) {
+                updateFormData({
+                    dob: {
+                        day: day,
+                        month: month,
+                        year: year
+                    },
+                    parentEmail: null
+                });
 
-        if (age < 18 && parentEmail != "" && parentEmail != null) {
-            updateFormData({
-                dob: {
-                    day: day,
-                    month: month,
-                    year: year
-                },
-                parentEmail: parentEmail
-            });
-            console.log(formData)
-            if (formData.type == "Parent") {
-                router.push('/wizard/step5');
-            } else {
                 router.push('/wizard/step3');
-            }
-        } else if (age >= 18 && day != null && month != null && year != null) {
-            updateFormData({
-                dob: {
-                    day: day,
-                    month: month,
-                    year: year
-                },
-                parentEmail: null
-            });
 
-            // console.log(formData)
-            if (formData.type == "Parent") {
-                router.push('/wizard/step5');
             } else {
-                router.push('/wizard/step3');
+                setError('Kindly fill all fields')
             }
 
         } else {
-            setError('Kindly fill all fields')
+            const age = calculateAge(dob);
+
+            if (formData.type == "Parent" && age < 18) {
+                setError('Parents cannot be under 18')
+                return;
+            }
+
+            if (age < 18 && parentEmail != "" && parentEmail != null) {
+                updateFormData({
+                    dob: {
+                        day: day,
+                        month: month,
+                        year: year
+                    },
+                    parentEmail: parentEmail
+                });
+                if (formData.type == "Parent") {
+                    router.push('/wizard/step5');
+                } else {
+                    router.push('/wizard/step3');
+                }
+            } else if (age >= 18 && day != null && month != null && year != null) {
+                updateFormData({
+                    dob: {
+                        day: day,
+                        month: month,
+                        year: year
+                    },
+                    parentEmail: null
+                });
+
+                // console.log(formData)
+                if (formData.type == "Parent") {
+                    router.push('/wizard/step5');
+                } else {
+                    router.push('/wizard/step3');
+                }
+
+            } else {
+                setError('Kindly fill all fields')
+            }
         }
-
-
     };
 
     return (
@@ -138,12 +155,21 @@ export default function WizardStep2() {
                     resizeMode="contain"
                 />
 
-                <View style={styles.headerTextBlock}>
+                {formData.type != "Club" && <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Date of birth</Text>
                     <Text style={styles.pageDesc}>When were you born?</Text>
                 </View>
+                }
 
-                <Text style={styles.ghostText}>DOB</Text>
+                {formData.type == "Club" && <View style={styles.headerTextBlock}>
+                    <Text style={styles.pageTitle}>Established On</Text>
+                    <Text style={styles.pageDesc}>When was your club established?</Text>
+                </View>
+                }
+
+                <Text style={styles.ghostText}>
+                    {formData.type == "Club" ? 'SINCE' : 'DOB'}
+                </Text>
             </View>
 
             <View style={styles.form}>

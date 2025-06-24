@@ -35,6 +35,7 @@ interface RegistrationData {
 interface RegistrationContextType {
   formData: RegistrationData;
   updateFormData: (newData: Partial<RegistrationData>) => void;
+  resetFormData: () => void;
 }
 
 // 3. Create context with default (nullable) values
@@ -57,7 +58,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       month: null,
       year: null
     },
-    children:null,
+    children: null,
     parentEmail: null,
     type: null,
     sport: null,
@@ -65,7 +66,7 @@ export const RegistrationProvider = ({ children }: Props) => {
     gender: null,
     bio: null,
     height: null,
-    image:null,
+    image: null,
     weight: null,
     agreed: false,
     highlights: null,
@@ -85,8 +86,45 @@ export const RegistrationProvider = ({ children }: Props) => {
     setFormData((prev) => ({ ...prev, ...newData }));
   };
 
+  const resetFormData = () => {
+    setFormData({
+      name: null,
+      email: null,
+      phone: null,
+      country: null,
+      password: null,
+      dob: {
+        day: null,
+        month: null,
+        year: null
+      },
+      children: null,
+      parentEmail: null,
+      type: null,
+      sport: null,
+      club: null,
+      gender: null,
+      bio: null,
+      height: null,
+      image: null,
+      weight: null,
+      agreed: false,
+      highlights: null,
+      stats: null,
+      achievements: null,
+      events: null,
+      skills: {
+        attack: 0,
+        skill: 0,
+        stamina: 0,
+        speed: 0,
+        defense: 0
+      }
+    });
+  };
+
   return (
-    <RegistrationContext.Provider value={{ formData, updateFormData }}>
+    <RegistrationContext.Provider value={{ formData, updateFormData, resetFormData }}>
       {children}
     </RegistrationContext.Provider>
   );

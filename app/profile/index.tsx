@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useRef, useState } from 'react';
 import {
+    ActivityIndicator,
     Animated,
     Dimensions,
     Image,
@@ -25,6 +26,7 @@ export default function Profile() {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 300],
@@ -58,6 +60,7 @@ export default function Profile() {
                 } else {
                     console.error('API error')
                 }
+                setLoading(false)
             } else {
                 console.log("no token",)
             }
@@ -65,10 +68,6 @@ export default function Profile() {
 
         fetchUser();
     }, []);
-
-    useEffect(() => {
-        console.log("User: ", user)
-    }, [user]);
 
     const handleEdit = async () => {
         router.push('/profile/editProfile');
@@ -79,7 +78,7 @@ export default function Profile() {
         console.log('Share clicked');
     };
 
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december']
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
     //graph data
     const data = [
@@ -91,40 +90,60 @@ export default function Profile() {
     ];
 
     const getProfileProgress = () => {
-        const totalFields = 21;
-
+        let progress = 0;
         let filledFields = 0;
 
-        if (user.name != null) filledFields++;
-        if (user.email != null) filledFields++;
-        if (user.phone != null) filledFields++;
-        if (user.country != null) filledFields++;
-        if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
-        if (user.type != null) filledFields++;
-        if (user.sport != null) filledFields++;
-        if (user.club != null) filledFields++;
-        if (user.gender != null) filledFields++;
-        if (user.bio != null) filledFields++;
-        if (user.height != null) filledFields++;
-        if (user.weight != null) filledFields++;
-        if (user.highlights != null) filledFields++;
-        if (user.stats != null) filledFields++;
-        if (user.achievements != null) filledFields++;
-        if (user.events != null) filledFields++;
-        if (user.skills.attack != null) filledFields++;
-        if (user.skills.skill != null) filledFields++;
-        if (user.skills.stamina != null) filledFields++;
-        if (user.skills.speed != null) filledFields++;
-        if (user.skills.defense != null) filledFields++;
+        if (user.type == "Club") {
+            const totalFields = 11;
 
-        const progress = Math.round((filledFields / totalFields) * 100);
+            if (user.name != null) filledFields++;
+            if (user.email != null) filledFields++;
+            if (user.phone != null) filledFields++;
+            if (user.country != null) filledFields++;
+            if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
+            if (user.type != null) filledFields++;
+            if (user.sport != null) filledFields++;
+            if (user.bio != null) filledFields++;
+            if (user.highlights != null) filledFields++;
+            if (user.stats != null) filledFields++;
+            if (user.events != null) filledFields++;
+
+            progress = Math.round((filledFields / totalFields) * 100);
+
+        } else {
+            const totalFields = 21;
+
+            if (user.name != null) filledFields++;
+            if (user.email != null) filledFields++;
+            if (user.phone != null) filledFields++;
+            if (user.country != null) filledFields++;
+            if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
+            if (user.type != null) filledFields++;
+            if (user.sport != null) filledFields++;
+            if (user.club != null) filledFields++;
+            if (user.gender != null) filledFields++;
+            if (user.bio != null) filledFields++;
+            if (user.height != null) filledFields++;
+            if (user.weight != null) filledFields++;
+            if (user.highlights != null) filledFields++;
+            if (user.stats != null) filledFields++;
+            if (user.achievements != null) filledFields++;
+            if (user.events != null) filledFields++;
+            if (user.skills.attack != null) filledFields++;
+            if (user.skills.skill != null) filledFields++;
+            if (user.skills.stamina != null) filledFields++;
+            if (user.skills.speed != null) filledFields++;
+            if (user.skills.defense != null) filledFields++;
+
+            progress = Math.round((filledFields / totalFields) * 100);
+        }
 
         return progress;
     };
 
     return (
         <View style={styles.container}>
-            {user && <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
+            <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
                 <Animated.Image
                     source={require('../../assets/logo_white.png')}
                     style={[styles.logo, { opacity: logoOpacity }]}
@@ -132,22 +151,80 @@ export default function Profile() {
                 />
 
                 <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>{user.name}</Text>
-                    {user.type != "Parent" && <Text style={styles.pageDesc}>
-                        {user.sport}
+                    <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
+                    {user?.type != "Parent" && !loading && <Text style={styles.pageDesc}>
+                        {user?.sport}
                     </Text>
                     }
-                    {user.type == "Parent" && <Text style={styles.pageDesc}>
+                    {user?.type == "Parent" && !loading && <Text style={styles.pageDesc}>
                         Parent
                     </Text>
                     }
+
+                    {loading &&
+                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                            <ActivityIndicator
+                                size="small"
+                                color="#fff"
+                                style={{ transform: [{ scale: 1.25 }] }}
+                            />
+                        </View>
+                    }
                 </View>
 
-                <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>
+                {!loading && <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>}
 
-                {userId == user._id ? (
-                    <View style={styles.profileImage}>
-                        <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
+                {!loading && <>
+                    {userId == user._id ? (
+                        <View style={styles.profileImage}>
+                            <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
+                                {(user.image == null || user.image == "") && user.type == "Club" && <Image
+                                    source={require('../../assets/clublogo.png')}
+                                    style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
+                                    resizeMode="contain"
+                                />}
+                                {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                    source={require('../../assets/avatar.png')}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                                {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                    source={require('../../assets/avatarF.png')}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                                {user.image != null && <Image
+                                    source={{ uri: user.image }}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                            </TouchableOpacity>
+
+                            {(user.image == null || user.image == "") &&
+                                <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                                    <Entypo name="plus" size={20} color="#FF4000" />
+                                    <Text style={styles.uploadImageText}>
+                                        {user.type == "Club" ? 'Upload logo' : 'Upload avatar'}
+                                    </Text>
+                                </TouchableOpacity>
+                            }
+
+                            {user.image != null && user.image != "" &&
+                                <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
+                                    <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                    <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
+                                        {user.type == "Club" ? 'Change logo' : 'Change avatar'}
+                                    </Text>
+                                </TouchableOpacity>
+                            }
+                        </View>
+                    ) : (
+                        <View style={styles.profileImage}>
+                            {(user.image == null || user.image == "") && user.type == "Club" && <Image
+                                source={require('../../assets/clublogo.png')}
+                                style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
+                                resizeMode="contain"
+                            />}
                             {(user.image == null || user.image == "") && user.gender == "Male" && <Image
                                 source={require('../../assets/avatar.png')}
                                 style={styles.profileImageAvatar}
@@ -163,45 +240,14 @@ export default function Profile() {
                                 style={styles.profileImageAvatar}
                                 resizeMode="contain"
                             />}
-                        </TouchableOpacity>
+                        </View>
+                    )}
+                </>}
 
-                        {(user.image == null || user.image == "") &&
-                            <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
-                                <Entypo name="plus" size={20} color="#FF4000" />
-                                <Text style={styles.uploadImageText}>Upload avatar</Text>
-                            </TouchableOpacity>
-                        }
-
-                        {user.image != null && user.image != "" &&
-                            <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
-                                <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
-                            </TouchableOpacity>
-                        }
-                    </View>
-                ) : (
-                    <View style={styles.profileImage}>
-                        {(user.image == null || user.image == "") && user.gender == "Male" && <Image
-                            source={require('../../assets/avatar.png')}
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />}
-                        {(user.image == null || user.image == "") && user.gender == "Female" && <Image
-                            source={require('../../assets/avatarF.png')}
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />}
-                        {user.image != null && <Image
-                            source={{ uri: user.image }}
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />}
-                    </View>
-                )}
             </Animated.View>
-            }
 
-            {user && <Animated.ScrollView
+
+            {!loading && user && <Animated.ScrollView
                 onScroll={Animated.event(
                     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                     { useNativeDriver: false }
@@ -210,7 +256,7 @@ export default function Profile() {
             >
 
                 <View style={styles.contentContainer}>
-                    {userId == user._id && (getProfileProgress() < 100) && user.type != "Parent" &&
+                    {userId == user._id && (getProfileProgress() < 100) &&
                         <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
                             <View style={styles.profileProgressPercentage}>
                                 <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
@@ -225,9 +271,15 @@ export default function Profile() {
                             </View>
                         </TouchableOpacity>}
 
+
+                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                        //Add contact info for clubs
+                    </Text>
+
+                    {/* BIO */}
                     {user.type != "Parent" && <View style={styles.profileSection}>
                         <Text style={styles.title}>
-                            Bio
+                            {user.type != "Club" ? 'Bio' : 'Summary'}
                         </Text>
                         {user.bio ? (
                             <Text style={styles.paragraph}>
@@ -239,7 +291,9 @@ export default function Profile() {
 
                     </View>}
 
+
                     <View style={styles.profileSection}>
+                        {/* COUNTRY */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Country
@@ -257,7 +311,9 @@ export default function Profile() {
                                 <Text style={styles.paragraph}>-</Text>
                             )}
                         </View>
-                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                        {/* TEAM/CLUB */}
+                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Team/club
                             </Text>
@@ -269,9 +325,59 @@ export default function Profile() {
                                 <Text style={styles.paragraph}>-</Text>
                             )}
                         </View>}
+
+                        {/* NUMBER OF SPORTS */}
+                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Total number of sports
+                            </Text>
+                            {user.sport ? (
+                                <View>
+                                    <Text style={styles.paragraph}>
+                                        {user.sport.length}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
+                        </View>}
+
+                        {/* NUMBER OF TEAMS */}
+                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Total number of teams
+                            </Text>
+                            {user.club ? (
+                                <View>
+                                    <Text style={styles.paragraph}>
+                                        {user.club.length}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
+                        </View>}
+
+                        {/* NUMBER OF MEMBERS */}
+                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Total number of members
+                            </Text>
+                            {user.children ? (
+                                <View>
+                                    <Text style={styles.paragraph}>
+                                        {user.children.length}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
+                        </View>}
+
+                        {/* DOB */}
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
-                                Date of Birth
+                                {user.type == "Club" ? 'Established' : 'Date of Birth'}
                             </Text>
                             {(user.dob.day && user.dob.month && user.dob.year) ? (
                                 <View>
@@ -283,7 +389,9 @@ export default function Profile() {
                                 </View>
                             )}
                         </View>
-                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                        {/* HEIGHT */}
+                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
@@ -295,7 +403,9 @@ export default function Profile() {
                                 )}
                             </View>
                         </View>}
-                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                        {/* WEIGHT */}
+                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Weight
                             </Text>
@@ -309,6 +419,7 @@ export default function Profile() {
                         </View>}
                     </View>
 
+                    {/* HIGHLIGHTS */}
                     <View style={styles.profileSection}>
                         {user.type != "Parent" && <Text style={styles.title}>
                             Highlights
@@ -324,6 +435,7 @@ export default function Profile() {
 
                     </View>
 
+                    {/* STATS */}
                     <View style={styles.profileSection}>
                         {user.type != "Parent" && <Text style={styles.title}>
                             Stats
@@ -338,7 +450,8 @@ export default function Profile() {
                         )}
                     </View>
 
-                    <View style={styles.profileSection}>
+                    {/* ACHIEVEMENTS */}
+                    {user.type != "Club" && <View style={styles.profileSection}>
                         {user.type != "Parent" && <Text style={styles.title}>
                             Achievements
                         </Text>
@@ -352,8 +465,9 @@ export default function Profile() {
                         ) : (
                             <Text style={styles.paragraph}>-</Text>
                         )}
-                    </View>
+                    </View>}
 
+                    {/* EVENTS */}
                     <View style={styles.profileSection}>
                         {user.type != "Parent" && <Text style={styles.title}>
                             Upcoming Events
@@ -368,7 +482,8 @@ export default function Profile() {
                         )}
                     </View>
 
-                    {user.type != "Parent" && <View style={styles.profileSection}>
+                    {/* SKILLS */}
+                    {user.type == "Athlete" && <View style={styles.profileSection}>
                         <Text style={styles.title}>
                             Skills
                         </Text>
@@ -395,6 +510,7 @@ export default function Profile() {
                         </View>
                     </View>}
 
+                    {/* ACIONS */}
                     {userId == user._id && <View style={[styles.profileSection, styles.profileActions]}>
                         <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>
                             <Text style={styles.profileButtonText}>Edit profile</Text>
@@ -635,5 +751,5 @@ const styles = StyleSheet.create({
         color: '#FF4000',
         fontFamily: 'Bebas',
         fontSize: 16,
-    }
+    },
 });

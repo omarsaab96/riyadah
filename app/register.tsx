@@ -83,7 +83,6 @@ export default function Register() {
         country: countryCode,
         agreed: agreed
       });
-      console.log(formData)
       router.replace('/wizard');
 
     } else {

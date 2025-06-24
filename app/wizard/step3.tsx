@@ -34,8 +34,11 @@ export default function WizardStep3() {
     const handleNext = () => {
         if (selected) {
             updateFormData({ sport: selected });
-            console.log(formData)
-            router.push('/wizard/step4')
+            if (formData.type == "Club") {
+                router.push('/wizard/step5');
+            } else {
+                router.push('/wizard/step4');
+            }
         } else {
             setError('Kindly select a sport type')
         }
