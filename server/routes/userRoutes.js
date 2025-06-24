@@ -59,7 +59,7 @@ router.get('/find-children', async (req, res) => {
             type: 'Athlete',
             parentEmail
           }
-        ).select('_id name sport image');
+        ).select('_id');
 
         res.json(children);
     } catch (error) {
@@ -116,7 +116,7 @@ router.get('/search', async (req, res) => {
     const athletes = await User.find({
       type: 'Athlete',
       name: { $regex: regex }
-    }).select('_id name sport image'); 
+    }).select('_id'); 
 
     res.json(athletes);
   } catch (err) {
