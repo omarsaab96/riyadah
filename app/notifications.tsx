@@ -59,10 +59,9 @@ export default function EditProfile() {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                console.log(response)
-
                 if (response.ok) {
                     const notifications = await response.json();
+                    setNotifications(notifications)
                     setLoading(false)
                 } else {
                     console.error('API error')
@@ -101,19 +100,28 @@ export default function EditProfile() {
             </View>
 
             {!loading && <ScrollView>
-                <View style={styles.contentContainer}>
-                    <View style={styles.notification}>
-                        <Text style={styles.notificationText}>
-                            X added you as a friend
-                        </Text>
-                        <View style={styles.notificationUnread}></View>
-                    </View>
-                    <View style={styles.notification}>
-                        <Text style={styles.notificationText}>
-                            X added you as a friend
-                        </Text>
-                    </View>
-                </View>
+
+                {notifications.length == 0 ?
+                    (
+                        <View style={styles.contentContainer}>
+                            <Text style={styles.emptyNotifications}>No notifications</Text>
+                        </View>
+                    ) : (
+                        <View style={styles.contentContainer}>
+                            <View style={styles.notification}>
+                                <Text style={styles.notificationText}>
+                                    X added you as a friend
+                                </Text>
+                                <View style={styles.notificationUnread}></View>
+                            </View>
+                            <View style={styles.notification}>
+                                <Text style={styles.notificationText}>
+                                    X added you as a friend
+                                </Text>
+                            </View>
+                        </View>
+                    )}
+
             </ScrollView>
             }
 
@@ -259,4 +267,8 @@ const styles = StyleSheet.create({
         height: 24,
         tintColor: '#FF4000',
     },
+    emptyNotifications: {
+        fontFamily:'Manrope',
+        fontSize:16
+    }
 });

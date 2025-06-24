@@ -17,7 +17,7 @@ export default function WizardStep3() {
     const router = useRouter();
     const [keyword, setKeyword] = useState('');
     const { formData, updateFormData } = useRegistration();
-    const [selected, setSelected] = useState<string | null>(formData.sport || null);
+    const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : []);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -43,6 +43,18 @@ export default function WizardStep3() {
             setError('Kindly select a sport type')
         }
     }
+
+    const toggleSportSelection = (label: string) => {
+        if (formData.type === "Club") {
+            setSelected(prev =>
+                prev.includes(label)
+                    ? prev.filter(item => item !== label) // Remove if already selected
+                    : [...prev, label]                    // Add if not selected
+            );
+        } else {
+            setSelected([label]); // Single selection for non-Club users
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -85,21 +97,27 @@ export default function WizardStep3() {
             <ScrollView >
 
                 <View style={styles.wizardContainer}>
-                    {sportTypes.map(({ label, icon }, idx) => (
-                        <TouchableOpacity
-                            key={label}
-                            style={[
-                                styles.accountOption,
-                                selected === label && styles.accountOptionSelected,
-                            ]}
-                            onPress={() => setSelected(label)}
-                        >
-                            <Image source={icon} style={styles.icon} resizeMode="contain" />
-                            <Text style={[styles.accountText, selected === label && styles.accountTextSelected]}>
-                                {label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                    {sportTypes.map(({ label, icon }) => {
+                        const isSelected = selected.includes(label);
+                        return (
+                            <TouchableOpacity
+                                key={label}
+                                style={[
+                                    styles.accountOption,
+                                    isSelected && styles.accountOptionSelected
+                                ]}
+                                onPress={() => toggleSportSelection(label)}
+                            >
+                                <Image source={icon} style={styles.icon} resizeMode="contain" />
+                                <Text style={[
+                                    styles.accountText,
+                                    isSelected && styles.accountTextSelected
+                                ]}>
+                                    {label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
 
                 </View>
             </ScrollView>

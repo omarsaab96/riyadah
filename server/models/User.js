@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     },
     parentEmail: String,
     type: String,
-    sport: String,
+    sport: [String],
     club: String,
     gender: String,
     image: String,

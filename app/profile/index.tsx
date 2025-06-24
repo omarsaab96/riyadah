@@ -150,14 +150,10 @@ export default function Profile() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
-                    {user?.type != "Parent" && !loading && <Text style={styles.pageDesc}>
-                        {user?.sport}
-                    </Text>
-                    }
-                    {user?.type == "Parent" && !loading && <Text style={styles.pageDesc}>
-                        Parent
-                    </Text>
-                    }
+                    {!loading && <Text style={styles.pageDesc}>
+                        {user?.type}
+                    </Text>}
+
 
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -309,6 +305,20 @@ export default function Profile() {
                                 <Text style={styles.paragraph}>-</Text>
                             )}
                         </View>
+
+                        {/* SPORT */}
+                        {user.type != "Parent" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Sport
+                            </Text>
+                            {user.sport && user.sport.length > 0 ? (
+                                <Text style={styles.paragraph}>
+                                    {user.sport}
+                                </Text>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
+                        </View>}
 
                         {/* TEAM/CLUB */}
                         {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
