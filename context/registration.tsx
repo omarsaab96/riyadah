@@ -18,6 +18,11 @@ interface RegistrationData {
     telegram: String | null;
     tiktok: String | null;
     snapchat: String | null;
+    location:{
+      latitude:String;
+      longitude:String;
+    };
+    description:String;
   };
   dob: {
     day: string | null;

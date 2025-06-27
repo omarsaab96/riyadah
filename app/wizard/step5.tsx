@@ -79,16 +79,19 @@ export default function WizardStep5() {
                 gender: selectedGender,
                 image: null,
                 contactInfo: {
-                    phone: null,
-                    email: null,
-                    facebook: null,
-                    instagram: null,
-                    whatsapp: null,
-                    telegram: null,
-                    tiktok: null,
+                    phone: "+96170433863",
+                    email: "name@email.com",
+                    facebook: "omar.saab.96",
+                    instagram: "omarsaab96",
+                    whatsapp: "+96170433863",
+                    telegram: "os1996",
+                    tiktok: "omarsaab96",
                     snapchat: null,
-                    location: null,
-                    description:null
+                    location: {
+                        latitude: "33.8938",
+                        longitude: "35.5018"
+                    },
+                    description:"We are open 24/7"
                 }
             };
 

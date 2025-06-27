@@ -20,6 +20,7 @@ import {
     View
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
+import MapView, { Marker } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 const router = useRouter();
@@ -301,93 +302,106 @@ export default function Profile() {
                             CONTACT
                         </Text>
                         <View style={styles.contactInfo}>
-                            {user.contactInfo.phone &&
+                            {user.contactInfo.phone != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`tel:${user.contactInfo.phone}`)}>
-                                        <FontAwesome6 name="phone" size={24} color="#FF4000" />
+                                        <FontAwesome6 name="phone" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
-                            {user.contactInfo.email &&
+                            {user.contactInfo.email != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`mailto:${user.contactInfo.email}`)}>
-                                        <MaterialCommunityIcons name="email-outline" size={24} color="#FF4000" />
+                                        <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
-                            {user.contactInfo.facebook &&
+                            {user.contactInfo.facebook != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.facebook.com/${user.contactInfo.facebook}`)}>
-                                        <FontAwesome name="facebook" size={24} color="#FF4000" />
+                                        <FontAwesome name="facebook" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
-                            {user.contactInfo.instagram &&
+                            {user.contactInfo.instagram != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.instagram.com/${user.contactInfo.instagram}`)}>
-                                        <FontAwesome name="instagram" size={24} color="#FF4000" />
+                                        <FontAwesome name="instagram" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
-                            {user.contactInfo.whatsapp &&
+                            {user.contactInfo.whatsapp != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://wa.me/${user.contactInfo.whatsapp}`)}>
-                                        <FontAwesome name="whatsapp" size={24} color="#FF4000" />
+                                        <FontAwesome name="whatsapp" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
-                            {user.contactInfo.telegram &&
+                            {user.contactInfo.telegram != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://t.me/${user.contactInfo.telegram}`)}>
-                                        <FontAwesome5 name="telegram-plane" size={24} color="#FF4000" />
+                                        <FontAwesome5 name="telegram-plane" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
-                            {user.contactInfo.tiktok &&
+                            {user.contactInfo.tiktok != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.tiktok.com/@${user.contactInfo.tiktok}`)}>
-                                        <FontAwesome6 name="tiktok" size={24} color="#FF4000" />
+                                        <FontAwesome6 name="tiktok" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
-                            {user.contactInfo.snapchat &&
+                            {user.contactInfo.snapchat != null &&
                                 <View style={styles.contactItem}>
                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.snapchat.com/add/${user.contactInfo.snapchat}`)}>
-                                        <FontAwesome name="snapchat-ghost" size={24} color="#FF4000" />
+                                        <FontAwesome name="snapchat-ghost" size={24} color="#000" />
                                     </TouchableOpacity>
                                 </View>
                             }
                         </View>
 
-                        {!user.contactInfo.location &&
+                        {user.contactInfo.location != null &&
                             <View style={styles.contactLocation}>
-                                <View style={styles.contactLocation}>
-                                    <View style={styles.map}>
-                                        <Image source={require('../../assets/settings.png')} />
-                                    </View>
-                                    <TouchableOpacity
-                                        onPress={async () => {
-                                            const locationQuery = encodeURIComponent('Beirut Lebanon');
-                                            const googleMapsURL = `comgooglemaps://?q=${locationQuery}`;
-                                            const browserURL = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
+                                <View style={styles.map}>
+                                    <MapView
+                                        style={styles.mapPreview}
+                                        initialRegion={{
+                                            latitude: user.contactInfo.location.latitude,
+                                            longitude: user.contactInfo.location.longitude,
+                                            latitudeDelta: 0.01,
+                                            longitudeDelta: 0.01,
+                                        }}
+                                    >
+                                        <Marker
+                                            coordinate={{
+                                                latitude: user.contactInfo.location.latitude,
+                                                longitude: user.contactInfo.location.longitude,
+                                            }}
+                                        />
+                                    </MapView>
 
-                                            try {
-                                                const supported = await Linking.canOpenURL(googleMapsURL);
-                                                if (supported) {
-                                                    // Open in Google Maps app
-                                                    await Linking.openURL(googleMapsURL);
-                                                } else {
-                                                    // Fallback to browser
-                                                    await Linking.openURL(browserURL);
-                                                }
-                                            } catch (error) {
-                                                Alert.alert("Error", "Could not open map.");
-                                                console.error(error);
-                                            }
-                                        }}>
-                                        <Text>Get Directions</Text>
-                                    </TouchableOpacity>
                                 </View>
+                                <TouchableOpacity
+                                    style={styles.locationLink}
+                                    onPress={async () => {
+                                        const { latitude, longitude } = user.contactInfo.location;
+                                        const googleMapsURL = `comgooglemaps://?center=${latitude},${longitude}&q=${latitude},${longitude}`;
+                                        const browserURL = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
+                                        try {
+                                            const supported = await Linking.canOpenURL(googleMapsURL);
+                                            if (supported) {
+                                                await Linking.openURL(googleMapsURL);
+                                            } else {
+                                                await Linking.openURL(browserURL);
+                                            }
+                                        } catch (error) {
+                                            Alert.alert("Error", "Could not open map.");
+                                            console.error(error);
+                                        }
+                                    }}>
+                                    <Text style={styles.locationLinkText}>Get Directions</Text>
+                                </TouchableOpacity>
                             </View>
                         }
                     </View>}
@@ -993,5 +1007,28 @@ const styles = StyleSheet.create({
         height: 36,
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    contactLocation: {
+        marginTop: 30,
+        rowGap: 10
+    },
+    map: {
+        borderRadius: 8,
+        overflow: 'hidden'
+    },
+    mapPreview: {
+        width: '100%',
+        height: 150,
+    },
+    locationLink: {
+        backgroundColor: '#cccccc',
+        borderRadius: 8,
+        paddingVertical: 5
+    },
+    locationLinkText: {
+        color: '#000',
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        textAlign: 'center'
     }
 });

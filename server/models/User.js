@@ -8,17 +8,20 @@ const userSchema = new mongoose.Schema({
     country: String,
     password: String,
     children: [String],
-    contactInfo:{
-        phone:String,
-        email:String,
-        facebook:String,
-        instagram:String,
-        whatsapp:String,
-        telegram:String,
-        tiktok:String,
-        snapchat:String,
-        location:String,
-        description:String
+    contactInfo: {
+        phone: String,
+        email: String,
+        facebook: String,
+        instagram: String,
+        whatsapp: String,
+        telegram: String,
+        tiktok: String,
+        snapchat: String,
+        location: {
+            latitude: String,
+            longitude: String
+        },
+        description: String
     },
     dob: {
         day: String,
