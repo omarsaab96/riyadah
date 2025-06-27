@@ -58,7 +58,7 @@ export default function WizardStep2() {
             return;
         }
 
-        if (age < 18) {
+        if (age < 18 && formData.type == "Athlete") {
             setShowParentEmail(true);
         } else {
             setShowParentEmail(false);
@@ -80,11 +80,9 @@ export default function WizardStep2() {
     };
 
     const handleNext = () => {
-
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
 
         if (formData.type == "Club") {
-
             if (day != null && month != null && year != null) {
                 updateFormData({
                     dob: {

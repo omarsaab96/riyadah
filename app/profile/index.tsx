@@ -1,5 +1,8 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -10,6 +13,7 @@ import {
     Animated,
     Dimensions,
     Image,
+    Linking,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -290,6 +294,103 @@ export default function Profile() {
                     <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
                         //Add contact info for clubs, each club has an admin
                     </Text>
+
+                    {/* CONTACT INFO */}
+                    {user.type != "Parent" && <View style={[styles.profileSection, { backgroundColor: '#eeeeee', borderRadius: 10, padding: 5, marginBottom: 20 }]}>
+                        <Text style={styles.title}>
+                            CONTACT
+                        </Text>
+                        <View style={styles.contactInfo}>
+                            {user.contactInfo.phone &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`tel:${user.contactInfo.phone}`)}>
+                                        <FontAwesome6 name="phone" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                            {user.contactInfo.email &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`mailto:${user.contactInfo.email}`)}>
+                                        <MaterialCommunityIcons name="email-outline" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                            {user.contactInfo.facebook &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.facebook.com/${user.contactInfo.facebook}`)}>
+                                        <FontAwesome name="facebook" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                            {user.contactInfo.instagram &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.instagram.com/${user.contactInfo.instagram}`)}>
+                                        <FontAwesome name="instagram" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                            {user.contactInfo.whatsapp &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://wa.me/${user.contactInfo.whatsapp}`)}>
+                                        <FontAwesome name="whatsapp" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                            {user.contactInfo.telegram &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://t.me/${user.contactInfo.telegram}`)}>
+                                        <FontAwesome5 name="telegram-plane" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                            {user.contactInfo.tiktok &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.tiktok.com/@${user.contactInfo.tiktok}`)}>
+                                        <FontAwesome6 name="tiktok" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                            {user.contactInfo.snapchat &&
+                                <View style={styles.contactItem}>
+                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.snapchat.com/add/${user.contactInfo.snapchat}`)}>
+                                        <FontAwesome name="snapchat-ghost" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
+                        </View>
+
+                        {!user.contactInfo.location &&
+                            <View style={styles.contactLocation}>
+                                <View style={styles.contactLocation}>
+                                    <View style={styles.map}>
+                                        <Image source={require('../../assets/settings.png')} />
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={async () => {
+                                            const locationQuery = encodeURIComponent('Beirut Lebanon');
+                                            const googleMapsURL = `comgooglemaps://?q=${locationQuery}`;
+                                            const browserURL = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
+
+                                            try {
+                                                const supported = await Linking.canOpenURL(googleMapsURL);
+                                                if (supported) {
+                                                    // Open in Google Maps app
+                                                    await Linking.openURL(googleMapsURL);
+                                                } else {
+                                                    // Fallback to browser
+                                                    await Linking.openURL(browserURL);
+                                                }
+                                            } catch (error) {
+                                                Alert.alert("Error", "Could not open map.");
+                                                console.error(error);
+                                            }
+                                        }}>
+                                        <Text>Get Directions</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        }
+                    </View>}
 
                     {/* BIO */}
                     {user.type != "Parent" && <View style={styles.profileSection}>
@@ -877,5 +978,20 @@ const styles = StyleSheet.create({
     },
     tabTextActive: {
         color: '#FF4000'
+    },
+    contactInfo: {
+        flexDirection: 'row',
+        columnGap: 10,
+        paddingTop: 10,
+    },
+    contactItem: {
+        borderRadius: 10,
+        backgroundColor: '#cccccc',
+    },
+    contactLink: {
+        width: 36,
+        height: 36,
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 });

@@ -16,7 +16,9 @@ const userSchema = new mongoose.Schema({
         whatsapp:String,
         telegram:String,
         tiktok:String,
-        snapchat:String
+        snapchat:String,
+        location:String,
+        description:String
     },
     dob: {
         day: String,

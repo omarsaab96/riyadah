@@ -69,7 +69,15 @@ export default function WizardStep5() {
         try {
             updateFormData({
                 bio: bio,
+                gender: selectedGender
+            });
+
+            // Combine all data from registration context
+            const newUserData = {
+                ...formData,
+                bio: bio,
                 gender: selectedGender,
+                image: null,
                 contactInfo: {
                     phone: null,
                     email: null,
@@ -78,16 +86,10 @@ export default function WizardStep5() {
                     whatsapp: null,
                     telegram: null,
                     tiktok: null,
-                    snapchat: null
+                    snapchat: null,
+                    location: null,
+                    description:null
                 }
-            });
-
-            // Combine all data from registration context
-            const newUserData = {
-                ...formData,
-                bio: bio,
-                gender: selectedGender,
-                image: null
             };
 
             console.log('Submitting user data:', newUserData);
