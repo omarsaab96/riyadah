@@ -70,6 +70,16 @@ export default function WizardStep5() {
             updateFormData({
                 bio: bio,
                 gender: selectedGender,
+                contactInfo: {
+                    phone: null,
+                    email: null,
+                    facebook: null,
+                    instagram: null,
+                    whatsapp: null,
+                    telegram: null,
+                    tiktok: null,
+                    snapchat: null
+                }
             });
 
             // Combine all data from registration context

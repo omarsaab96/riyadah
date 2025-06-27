@@ -9,6 +9,16 @@ interface RegistrationData {
   country: string | null;
   password: string | null;
   children: [] | null;
+  contactInfo: {
+    phone: String | null;
+    email: String | null;
+    facebook: String | null;
+    instagram: String | null;
+    whatsapp: String | null;
+    telegram: String | null;
+    tiktok: String | null;
+    snapchat: String | null;
+  };
   dob: {
     day: string | null;
     month: string | null;

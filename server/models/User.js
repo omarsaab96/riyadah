@@ -8,6 +8,16 @@ const userSchema = new mongoose.Schema({
     country: String,
     password: String,
     children: [String],
+    contactInfo:{
+        phone:String,
+        email:String,
+        facebook:String,
+        instagram:String,
+        whatsapp:String,
+        telegram:String,
+        tiktok:String,
+        snapchat:String
+    },
     dob: {
         day: String,
         month: String,
