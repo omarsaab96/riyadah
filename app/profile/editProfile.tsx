@@ -172,7 +172,7 @@ export default function EditProfile() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Edit Prof</Text>
+                    <Text style={styles.ghostText}>Edit Pro</Text>
 
                     {user && !loading && <View style={styles.profileImage}>
                         <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>

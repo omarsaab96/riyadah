@@ -22,6 +22,7 @@ import {
 import CountryFlag from "react-native-country-flag";
 import MapView, { Marker } from 'react-native-maps';
 
+
 const { width } = Dimensions.get('window');
 const router = useRouter();
 
@@ -55,7 +56,13 @@ export default function Profile() {
         extrapolate: 'clamp',
     });
 
+    const forceLogout = async () => {
+        //FORCE LOGOUT -> EMERGENCY USE ONLY
+        await SecureStore.deleteItemAsync('userToken');
+    }
+
     useEffect(() => {
+        // forceLogout();
         const fetchUser = async () => {
             const token = await SecureStore.getItemAsync('userToken');
 
@@ -293,14 +300,19 @@ export default function Profile() {
 
 
                     <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
-                        //Add contact info for clubs, each club has an admin
+                        //Add contact info IN EDIT PROFILE PAGE, each club has an admin
                     </Text>
 
                     {/* CONTACT INFO */}
                     {user.type != "Parent" && <View style={[styles.profileSection, { backgroundColor: '#eeeeee', borderRadius: 10, padding: 5, marginBottom: 20 }]}>
-                        <Text style={styles.title}>
+                        <Text style={[styles.title,styles.contactTitle]}>
                             CONTACT
                         </Text>
+                        {user.contactInfo.description != null &&
+                            <View style={styles.contactDescription}>
+                                <Text>{user.contactInfo.description}</Text>
+                            </View>
+                        }
                         <View style={styles.contactInfo}>
                             {user.contactInfo.phone != null &&
                                 <View style={styles.contactItem}>
@@ -366,16 +378,16 @@ export default function Profile() {
                                     <MapView
                                         style={styles.mapPreview}
                                         initialRegion={{
-                                            latitude: user.contactInfo.location.latitude,
-                                            longitude: user.contactInfo.location.longitude,
+                                            latitude: parseFloat(user.contactInfo.location.latitude),
+                                            longitude: parseFloat(user.contactInfo.location.longitude),
                                             latitudeDelta: 0.01,
                                             longitudeDelta: 0.01,
                                         }}
                                     >
                                         <Marker
                                             coordinate={{
-                                                latitude: user.contactInfo.location.latitude,
-                                                longitude: user.contactInfo.location.longitude,
+                                                latitude: parseFloat(user.contactInfo.location.latitude),
+                                                longitude: parseFloat(user.contactInfo.location.longitude),
                                             }}
                                         />
                                     </MapView>
@@ -996,25 +1008,34 @@ const styles = StyleSheet.create({
     contactInfo: {
         flexDirection: 'row',
         columnGap: 10,
-        paddingTop: 10,
+    },
+    contactTitle: {
+        marginBottom:10
     },
     contactItem: {
         borderRadius: 10,
         backgroundColor: '#cccccc',
+        width: (width - 120) / 8,
+        height: (width - 120) / 8,
+    },
+    contactDescription: {
+        marginBottom: 15
     },
     contactLink: {
-        width: 36,
-        height: 36,
+        height: '100%',
+        width: '100%',
         alignItems: 'center',
         justifyContent: 'center'
     },
     contactLocation: {
-        marginTop: 30,
-        rowGap: 10
+        marginTop: 15,
+        rowGap: 10,
     },
     map: {
         borderRadius: 8,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        borderWidth:1,
+        borderColor:"#cccccc"
     },
     mapPreview: {
         width: '100%',

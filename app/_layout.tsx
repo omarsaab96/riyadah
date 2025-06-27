@@ -1,7 +1,6 @@
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import * as NavigationBar from "expo-navigation-bar";
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
@@ -21,8 +20,8 @@ export default function RootLayout() {
 
     checkToken();
     // Hide Android system navigation bar and enable immersive mode
-    NavigationBar.setVisibilityAsync("hidden");
-    NavigationBar.setBehaviorAsync("sticky-immersive");
+    // NavigationBar.setVisibilityAsync("hidden");
+    // NavigationBar.setBehaviorAsync("sticky-immersive");
   }, []);
 
   const colorScheme = useColorScheme();
