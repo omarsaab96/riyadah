@@ -1,6 +1,10 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Slider from '@react-native-community/slider';
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -18,6 +22,7 @@ import {
     View
 } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
+import MapView, { Marker } from 'react-native-maps';
 
 
 const { width } = Dimensions.get('window');
@@ -30,6 +35,8 @@ export default function EditProfile() {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [children, setChildren] = useState([]);
+    const [location, setLocation] = useState(null);
+
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -47,6 +54,12 @@ export default function EditProfile() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
+                    if (user.contactInfo?.location) {
+                        setLocation({
+                            latitude: parseFloat(user.contactInfo.location.latitude),
+                            longitude: parseFloat(user.contactInfo.location.longitude),
+                        });
+                    }
                 } else {
                     console.error('API error')
                 }
@@ -121,7 +134,7 @@ export default function EditProfile() {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
-        console.log("Saving user: ", JSON.stringify(user))
+        // console.log("Saving user: ", JSON.stringify(user))
 
         const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
             method: 'PUT',
@@ -235,6 +248,182 @@ export default function EditProfile() {
                                 </View>
                             )}
                         </View>}
+
+                        {user.type != "Parent" &&
+                            <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    CONTACT Info
+                                </Text>
+                                <Text style={[styles.subtitle, styles.contactSubTitle]}>
+                                    Description
+                                </Text>
+                                <TextInput style={styles.textarea}
+                                    placeholder="Opening hours"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.contactInfo.description || ""}
+                                    onChangeText={(text) => updateField('contactInfo.description', text)}
+                                    multiline={true}
+                                    blurOnSubmit={false}
+                                    returnKeyType="default"
+                                />
+
+                                <View style={styles.contactItem}>
+                                    <FontAwesome6 name="phone" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="Phone number"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.phone}
+                                        onChangeText={(text) => updateField('contactInfo.phone', text)}
+                                    />
+                                </View>
+
+                                <View style={styles.contactItem}>
+                                    <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="ُEmail"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.email}
+                                        onChangeText={(text) => updateField('contactInfo.email', text)}
+                                    />
+                                </View>
+
+                                <View style={styles.contactItem}>
+                                    <FontAwesome name="facebook" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="Facebook username"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.facebook}
+                                        onChangeText={(text) => updateField('contactInfo.facebook', text)}
+                                    />
+                                </View>
+
+                                <View style={styles.contactItem}>
+                                    <FontAwesome name="instagram" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="Instagram username"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.instagram}
+                                        onChangeText={(text) => updateField('contactInfo.instagram', text)}
+                                    />
+                                </View>
+
+                                <View style={styles.contactItem}>
+                                    <FontAwesome name="whatsapp" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="Whatsapp number"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.whatsapp}
+                                        onChangeText={(text) => updateField('contactInfo.whatsapp', text)}
+                                    />
+                                </View>
+
+                                <View style={styles.contactItem}>
+                                    <FontAwesome5 name="telegram-plane" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="Telegram username"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.telegram}
+                                        onChangeText={(text) => updateField('contactInfo.telegram', text)}
+                                    />
+                                </View>
+
+                                <View style={styles.contactItem}>
+                                    <FontAwesome6 name="tiktok" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="Tiktok username"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.tiktok}
+                                        onChangeText={(text) => updateField('contactInfo.tiktok', text)}
+                                    />
+                                </View>
+
+                                <View style={styles.contactItem}>
+                                    <FontAwesome name="snapchat-ghost" size={24} color="#000" />
+                                    <TextInput
+                                        style={[styles.input, styles.contactInput]}
+                                        placeholder="Snapchat username"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.snapchat}
+                                        onChangeText={(text) => updateField('contactInfo.snapchat', text)}
+                                    />
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop:10, marginBottom:5 }}>
+                                    <Text style={[styles.subtitle, styles.contactSubTitle,{width:'auto'}]}>
+                                        Location
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={styles.locationBtn}
+                                        onPress={async () => {
+                                            console.log('Checking permissions...')
+                                            let { status } = await Location.requestForegroundPermissionsAsync();
+
+                                            if (status !== 'granted') {
+                                                console.log("Permission to access location was denied")
+                                                alert('Permission to access location was denied. Go to your phone\'s settings and enable Riyadah to use your location');
+                                                return;
+                                            }
+                                            console.log("Permission to access location granted")
+
+                                            console.log("Getting current location...")
+                                            let currentLocation = await Location.getCurrentPositionAsync({});
+                                            console.log("Location= ", currentLocation)
+
+                                            const coords = {
+                                                latitude: currentLocation.coords.latitude,
+                                                longitude: currentLocation.coords.longitude,
+                                            };
+                                            setLocation(coords);
+
+                                            // Also update the user state
+                                            updateField('contactInfo.location.latitude', String(coords.latitude));
+                                            updateField('contactInfo.location.longitude', String(coords.longitude));
+                                        }}
+                                    >
+                                        <Text style={styles.locationBtnText}>Use My Current Location</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <Text style={styles.hint}>Pinch to zoom, tap to pin location</Text>
+
+                                <View style={styles.map}>
+                                    <MapView
+                                        style={styles.mapPreview}
+                                        region={{
+                                            latitude: location?.latitude || 0,
+                                            longitude: location?.longitude || 0,
+                                            latitudeDelta: location?.latitude ? 0.01 : 50,
+                                            longitudeDelta: location?.longitude ? 0.01 : 50
+                                        }}
+                                        onPress={(e) => {
+                                            const coords = e.nativeEvent.coordinate;
+                                            setLocation(coords);
+                                            updateField('contactInfo.location.latitude', String(coords.latitude));
+                                            updateField('contactInfo.location.longitude', String(coords.longitude));
+                                        }}
+                                    >
+                                        {location && (
+                                            <Marker
+                                                coordinate={location}
+                                                draggable
+                                                onDragEnd={(e) => {
+                                                    const coords = e.nativeEvent.coordinate;
+                                                    setLocation(coords);
+                                                    updateField('contactInfo.location.latitude', String(coords.latitude));
+                                                    updateField('contactInfo.location.longitude', String(coords.longitude));
+                                                }}
+                                            />
+                                        )}
+                                    </MapView>
+                                </View>
+                            </View>}
 
                         {/* BIO */}
                         {user.type != "Parent" && <View style={styles.entity}>
@@ -678,6 +867,10 @@ const styles = StyleSheet.create({
         width: '100%',
         textTransform: 'capitalize',
     },
+    contactSubTitle: {
+        marginBottom: 5,
+        // fontSize: 14,
+    },
     paragraph: {
         fontFamily: "Manrope",
         fontSize: 16
@@ -789,6 +982,14 @@ const styles = StyleSheet.create({
         height: 170,
         textAlignVertical: 'top',
     },
+    contactItem: {
+        backgroundColor: '#F4F4F4',
+        borderRadius: 10,
+        marginBottom: 10,
+        padding: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     input: {
         fontSize: 14,
         padding: 15,
@@ -796,6 +997,12 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         color: 'black',
         borderRadius: 10
+    },
+    contactInput: {
+        marginBottom: 0,
+        padding: 10,
+        flex: 1,
+        paddingLeft: 20
     },
     select: {
         padding: 10
@@ -881,5 +1088,28 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         fontSize: 16,
         fontFamily: 'Manrope'
+    },
+    map: {
+        borderRadius: 8,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: "#cccccc"
+    },
+    mapPreview: {
+        width: '100%',
+        height: 150,
+    },
+    locationBtn:{
+    },
+    locationBtnText:{
+        color:'#FF4000',
+        fontFamily:'Manrope',
+        fontSize:14
+    },
+    hint:{
+        marginBottom:10,
+        fontFamily:'Manrope',
+        fontSize:12,
+        color:'#000000'
     }
 });
