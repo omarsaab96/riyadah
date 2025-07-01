@@ -33,7 +33,7 @@ export default function Profile() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
-    const [adminUser, setAdminUser] = useState('Profile');
+    const [adminUser, setAdminUser] = useState(null);
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory'];
 
@@ -99,11 +99,20 @@ export default function Profile() {
 
     const getAdminInfo = async () => {
         if (user.type == "Club") {
-            console.log('fetching admin...')
             try {
-                const res = await fetch(`https://riyadah.onrender.com/api/users/findAdmin?email=${user.admin.email}`);
+                const res = await fetch(`https://riyadah.onrender.com/api/users/findAdmin?email=${user.admin.email}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 const data = await res.json();
-                console.log(data)
+
+                if (data.success) {
+                    setAdminUser(data.admin)
+                } else {
+                    setAdminUser(null)
+                }
             } catch (err) {
                 console.error('Failed to fetch children', err);
             }
@@ -170,6 +179,11 @@ export default function Profile() {
 
         return progress;
     };
+
+    const handleGoToAdminProfile = (id: string) => {
+        console.log(id)
+    }
+
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -316,22 +330,35 @@ export default function Profile() {
                     </TouchableOpacity>
                     }
 
-                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
-                        //Add contact info IN EDIT PROFILE PAGE, each club has an admin
-                    </Text>
-
                     {user.type == "Club" && user.admin.email != null &&
                         <View style={styles.adminDiv}>
                             <Text style={[styles.title, styles.contactTitle]}>
                                 Admin
                             </Text>
-                            <View style={styles.admin}>
-                                {adminUser && adminUser.image != null && <Image
-                                    source={{ uri: adminUser.image }}
-                                    style={styles.adminAvatar}
-                                    resizeMode="contain"
-                                />}
-                            </View>
+
+                            {adminUser &&
+                                <TouchableOpacity style={styles.adminButton} onPress={() => { handleGoToAdminProfile(adminUser.id) }}>
+                                    <View style={styles.admin}>
+                                        {adminUser.image != null ? (
+                                            <Image
+                                                source={{ uri: adminUser.image }}
+                                                style={styles.adminAvatar}
+                                                resizeMode="contain"
+                                            />
+                                        ) : (
+                                            <Image
+                                                source={require('../../assets/avatar.png')}
+                                                style={styles.adminAvatar}
+                                                resizeMode="contain"
+                                            />
+                                        )}
+                                        <View>
+                                            <Text style={styles.adminName}>{adminUser.name}</Text>
+                                            <Text style={styles.adminLink}>Check profile</Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            }
                         </View>
                     }
 
@@ -751,11 +778,114 @@ export default function Profile() {
                 >
 
                     <View style={styles.contentContainer}>
-                        <Text>TEAMS TAB</Text>
+                        <View style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>Club Teams</Text>
+                            {userId == user._id && user.teams && user.teams.length > 0 && (
+                                <TouchableOpacity
+                                    style={styles.addButton}
+                                    onPress={() => router.push('/teams/createTeam')}
+                                >
+                                    <Text style={styles.addButtonText}>+ Add Team</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
 
-                        <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
-                        //Each team should have a coach
-                        </Text>
+                        {user.teams && user.teams.length > 0 ? (
+                            user.teams.map((team, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    style={styles.teamCard}
+                                    onPress={() => router.push(`/teams/${team._id}`)}
+                                >
+                                    <View style={styles.teamHeader}>
+                                        {team.image ? (
+                                            <Image
+                                                source={{ uri: team.image }}
+                                                style={styles.teamLogo}
+                                                resizeMode="contain"
+                                            />
+                                        ) : (
+                                            <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
+                                                <Text style={styles.defaultLogoText}>{team.name.charAt(0)}</Text>
+                                            </View>
+                                        )}
+                                        <View style={styles.teamInfo}>
+                                            <Text style={styles.teamName}>{team.name}</Text>
+                                            <Text style={styles.teamSport}>{team.sport}</Text>
+                                        </View>
+                                        <View style={styles.teamStats}>
+                                            <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
+                                            <Text style={styles.teamStatLabel}>Members</Text>
+                                        </View>
+                                    </View>
+
+                                    {team.coach && (
+                                        <View style={styles.coachSection}>
+                                            <Text style={styles.coachLabel}>Coach:</Text>
+                                            <View style={styles.coachInfo}>
+                                                {team.coach.image ? (
+                                                    <Image
+                                                        source={{ uri: team.coach.image }}
+                                                        style={styles.coachAvatar}
+                                                    />
+                                                ) : (
+                                                    <View style={styles.coachAvatar}>
+                                                        <FontAwesome name="user" size={16} color="#fff" />
+                                                    </View>
+                                                )}
+                                                <Text style={styles.coachName}>{team.coach.name}</Text>
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    <View style={styles.teamActions}>
+                                        <TouchableOpacity
+                                            style={styles.teamActionButton}
+                                            onPress={() => router.push(`/teams/${team._id}/members`)}
+                                        >
+                                            <FontAwesome5 name="users" size={16} color="#FF4000" />
+                                            <Text style={styles.teamActionText}>Members</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.teamActionButton}
+                                            onPress={() => router.push(`/teams/${team._id}/schedule`)}
+                                        >
+                                            <FontAwesome5 name="calendar-alt" size={16} color="#FF4000" />
+                                            <Text style={styles.teamActionText}>Schedule</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.teamActionButton}
+                                            onPress={() => router.push(`/teams/${team._id}/stats`)}
+                                        >
+                                            <FontAwesome5 name="chart-bar" size={16} color="#FF4000" />
+                                            <Text style={styles.teamActionText}>Stats</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </TouchableOpacity>
+                            ))
+                        ) : (
+                            <View style={styles.emptyState}>
+                                {/* <Image
+                                    source={require('../../assets/empty_teams.png')}
+                                    style={styles.emptyStateImage}
+                                    resizeMode="contain"
+                                /> */}
+                                <Text style={styles.emptyStateTitle}>No Teams Yet</Text>
+                                <Text style={styles.emptyStateText}>
+                                    {userId == user._id
+                                        ? "Create your first team to get started"
+                                        : "This club hasn't created any teams yet"}
+                                </Text>
+                                {userId == user._id && (
+                                    <TouchableOpacity
+                                        style={styles.emptyStateButton}
+                                        onPress={() => router.push('/teams/createTeam')}
+                                    >
+                                        <Text style={styles.emptyStateButtonText}>Create Team</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        )}
                     </View>
                 </Animated.ScrollView>
             }
@@ -1130,12 +1260,202 @@ const styles = StyleSheet.create({
         color: '#888888'
     },
     adminDiv: {
-
+        // backgroundColor: '#eeeeee',
+        marginBottom: 20,
+        // padding: 5,
+        // borderRadius: 8,
     },
     admin: {
-
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#eeeeee',
+        padding: 5,
+        borderRadius: 8
     },
     adminAvatar: {
+        width: 60,
+        aspectRatio: 1,
+        borderRadius: 30,
+        backgroundColor: '#FF4000',
+        marginRight: 20
+    },
+    adminName: {
+        fontFamily: 'Manrope',
+        fontSize: 16
+    },
+    adminLink: {
+        color: '#FF4000',
+        fontSize: 12,
+        fontFamily: 'Manrope'
+    },
+    adminButton: {
 
-    }
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    sectionTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 24,
+        color: '#111111',
+    },
+    addButton: {
+        backgroundColor: '#FF4000',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+    },
+    addButtonText: {
+        color: 'white',
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    teamCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 15,
+        marginBottom: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    teamHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    teamLogo: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 15,
+    },
+    defaultTeamLogo: {
+        backgroundColor: '#FF4000',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    defaultLogoText: {
+        color: 'white',
+        fontFamily: 'Bebas',
+        fontSize: 24,
+    },
+    teamInfo: {
+        flex: 1,
+    },
+    teamName: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        color: '#111111',
+    },
+    teamSport: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#666666',
+    },
+    teamStats: {
+        alignItems: 'center',
+        marginLeft: 10,
+    },
+    teamStatValue: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        color: '#FF4000',
+    },
+    teamStatLabel: {
+        fontFamily: 'Manrope',
+        fontSize: 12,
+        color: '#666666',
+    },
+    coachSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#eeeeee',
+    },
+    coachLabel: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#666666',
+        marginRight: 10,
+    },
+    coachInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    coachAvatar: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: '#FF4000',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    coachName: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#111111',
+        fontWeight: 'bold',
+    },
+    teamActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        borderTopWidth: 1,
+        borderTopColor: '#eeeeee',
+        paddingTop: 10,
+    },
+    teamActionButton: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 8,
+    },
+    teamActionText: {
+        fontFamily: 'Manrope',
+        fontSize: 12,
+        color: '#FF4000',
+        marginTop: 5,
+    },
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: 40,
+    },
+    emptyStateImage: {
+        width: 150,
+        height: 150,
+        marginBottom: 20,
+    },
+    emptyStateTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 24,
+        color: '#111111',
+        marginBottom: 10,
+    },
+    emptyStateText: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        color: '#666666',
+        textAlign: 'center',
+        marginBottom: 20,
+        maxWidth: '80%',
+    },
+    emptyStateButton: {
+        backgroundColor: '#FF4000',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 25,
+    },
+    emptyStateButtonText: {
+        color: 'white',
+        fontFamily: 'Bebas',
+        fontSize: 18,
+    },
 });

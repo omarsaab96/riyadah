@@ -26,10 +26,10 @@ import MapView, { Marker } from 'react-native-maps';
 
 
 const { width } = Dimensions.get('window');
-const router = useRouter();
-
 
 export default function EditProfile() {
+    const router = useRouter();
+
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -120,7 +120,7 @@ export default function EditProfile() {
                 current = current[key];
             }
 
-            current[path[path.length - 1]] = value==""? null : value;
+            current[path[path.length - 1]] = value == "" ? null : value;
             return updated;
         });
     };
