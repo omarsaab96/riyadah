@@ -8,12 +8,12 @@ interface RegistrationData {
   phone: string | null;
   country: string | null;
   password: string | null;
-  children: [] | null;
   admin: {
     id: string | null;
     name: string | null;
     email: String | null;
   };
+  children: [] | null;
   contactInfo: {
     phone: String | null;
     email: String | null;
@@ -24,10 +24,10 @@ interface RegistrationData {
     tiktok: String | null;
     snapchat: String | null;
     location: {
-      latitude: String;
-      longitude: String;
+      latitude: String | null;
+      longitude: String | null;
     };
-    description: String;
+    description: String | null;
   };
   dob: {
     day: string | null;
@@ -77,6 +77,21 @@ export const RegistrationProvider = ({ children }: Props) => {
       id: null,
       name: null,
       email: null
+    },
+    contactInfo: {
+      phone: null,
+      email: null,
+      facebook: null,
+      instagram: null,
+      whatsapp: null,
+      telegram: null,
+      tiktok: null,
+      snapchat: null,
+      location: {
+        latitude: null,
+        longitude: null
+      },
+      description: null
     },
     dob: {
       day: null,

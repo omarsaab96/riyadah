@@ -52,19 +52,19 @@ router.post('/', async (req, res) => {
 
 // find children by parent email
 router.get('/find-children', async (req, res) => {
-    try {
-        const { parentEmail } = req.query;
-        const children = await User.find(
-          {
-            type: 'Athlete',
-            parentEmail
-          }
-        ).select('_id');
+  try {
+    const { parentEmail } = req.query;
+    const children = await User.find(
+      {
+        type: 'Athlete',
+        parentEmail
+      }
+    ).select('_id');
 
-        res.json(children);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error' });
-    }
+    res.json(children);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 
@@ -105,15 +105,21 @@ router.post('/findAdmin', async (req, res) => {
   }
 
   try {
-    if (email) {
-      const existingEmail = await User.findOne({ email });
+    const existingEmail = await User.findOne({ email });
 
-      if (!existingEmail) {
-        return res.status(404).json({ success: false, msg: 'Admin not found' });
-      }
+    if (!existingEmail) {
+      return res.status(404).json({ success: false, msg: 'Admin not found' });
     }
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({
+      success: true,
+      admin: {
+        id: existingUser._id,
+        name: existingUser.name,
+        image: existingUser.image
+      }
+    });
+
   } catch (err) {
     console.error('Check failed:', err);
     return res.status(500).json({ success: false, msg: 'Server error' });
@@ -139,7 +145,7 @@ router.get('/search', async (req, res) => {
     const athletes = await User.find({
       type: 'Athlete',
       name: { $regex: regex }
-    }).select('_id'); 
+    }).select('_id');
 
     res.json(athletes);
   } catch (err) {
@@ -193,5 +199,6 @@ router.get('/:userId', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
+
 
 module.exports = router;

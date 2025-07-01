@@ -24,14 +24,16 @@ import MapView, { Marker } from 'react-native-maps';
 
 
 const { width } = Dimensions.get('window');
-const router = useRouter();
 
 export default function Profile() {
+    const router = useRouter();
+
     const scrollY = useRef(new Animated.Value(0)).current;
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
+    const [adminUser, setAdminUser] = useState('Profile');
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory'];
 
@@ -90,6 +92,12 @@ export default function Profile() {
 
         fetchUser();
     }, []);
+
+    useEffect(() => {
+        if (user.type == "Club") {
+            getAdminInfo(user.admin.email)
+        }
+    }, [user]);
 
     const handleEdit = async () => {
         router.push('/profile/editProfile');
@@ -151,7 +159,6 @@ export default function Profile() {
 
         return progress;
     };
-
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -283,138 +290,181 @@ export default function Profile() {
             >
 
                 <View style={styles.contentContainer}>
-                    {userId == user._id && (getProfileProgress() < 100) &&
-                        <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
-                            <View style={styles.profileProgressPercentage}>
-                                <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
-                            </View>
-                            <View style={styles.profileProgressTextSection}>
-                                <Text style={styles.profileProgressText}>Complete your profile now</Text>
-                                <Image
-                                    style={styles.profileProgressImg}
-                                    source={require('../../assets/rightArrow.png')}
-                                    resizeMode="contain"
-                                />
-                            </View>
-                        </TouchableOpacity>}
-
+                    {userId == user._id && (getProfileProgress() < 100) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
+                        <View style={styles.profileProgressPercentage}>
+                            <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
+                        </View>
+                        <View style={styles.profileProgressTextSection}>
+                            <Text style={styles.profileProgressText}>Complete your profile now</Text>
+                            <Image
+                                style={styles.profileProgressImg}
+                                source={require('../../assets/rightArrow.png')}
+                                resizeMode="contain"
+                            />
+                        </View>
+                    </TouchableOpacity>
+                    }
 
                     <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
                         //Add contact info IN EDIT PROFILE PAGE, each club has an admin
                     </Text>
 
+                    {user.type == "Club" && user.admin.email != null &&
+                        <View style={styles.adminDiv}>
+                            <Text style={[styles.title, styles.contactTitle]}>
+                                Admin
+                            </Text>
+                            <View style={styles.admin}>
+                                {adminUser && adminUser.image != null && <Image
+                                    source={{ uri: adminUser.image }}
+                                    style={styles.adminAvatar}
+                                    resizeMode="contain"
+                                />}
+                            </View>
+                        </View>
+                    }
+
+
                     {/* CONTACT INFO */}
                     {user.type != "Parent" && <View style={[styles.profileSection, { backgroundColor: '#eeeeee', borderRadius: 10, padding: 5, marginBottom: 20 }]}>
-                        <Text style={[styles.title,styles.contactTitle]}>
-                            CONTACT
-                        </Text>
-                        {user.contactInfo.description != null &&
-                            <View style={styles.contactDescription}>
-                                <Text>{user.contactInfo.description}</Text>
-                            </View>
-                        }
-                        <View style={styles.contactInfo}>
-                            {user.contactInfo.phone != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`tel:${user.contactInfo.phone}`)}>
-                                        <FontAwesome6 name="phone" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                            {user.contactInfo.email != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`mailto:${user.contactInfo.email}`)}>
-                                        <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                            {user.contactInfo.facebook != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.facebook.com/${user.contactInfo.facebook}`)}>
-                                        <FontAwesome name="facebook" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                            {user.contactInfo.instagram != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.instagram.com/${user.contactInfo.instagram}`)}>
-                                        <FontAwesome name="instagram" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                            {user.contactInfo.whatsapp != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://wa.me/${user.contactInfo.whatsapp}`)}>
-                                        <FontAwesome name="whatsapp" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                            {user.contactInfo.telegram != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://t.me/${user.contactInfo.telegram}`)}>
-                                        <FontAwesome5 name="telegram-plane" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                            {user.contactInfo.tiktok != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.tiktok.com/@${user.contactInfo.tiktok}`)}>
-                                        <FontAwesome6 name="tiktok" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                            {user.contactInfo.snapchat != null &&
-                                <View style={styles.contactItem}>
-                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.snapchat.com/add/${user.contactInfo.snapchat}`)}>
-                                        <FontAwesome name="snapchat-ghost" size={24} color="#000" />
-                                    </TouchableOpacity>
-                                </View>
-                            }
-                        </View>
-
-                        {user.contactInfo.location != null &&
-                            <View style={styles.contactLocation}>
-                                <View style={styles.map}>
-                                    <MapView
-                                        style={styles.mapPreview}
-                                        initialRegion={{
-                                            latitude: parseFloat(user.contactInfo.location.latitude),
-                                            longitude: parseFloat(user.contactInfo.location.longitude),
-                                            latitudeDelta: 0.01,
-                                            longitudeDelta: 0.01,
-                                        }}
-                                    >
-                                        <Marker
-                                            coordinate={{
-                                                latitude: parseFloat(user.contactInfo.location.latitude),
-                                                longitude: parseFloat(user.contactInfo.location.longitude),
-                                            }}
-                                        />
-                                    </MapView>
-
-                                </View>
-                                <TouchableOpacity
-                                    style={styles.locationLink}
-                                    onPress={async () => {
-                                        const { latitude, longitude } = user.contactInfo.location;
-                                        const googleMapsURL = `comgooglemaps://?center=${latitude},${longitude}&q=${latitude},${longitude}`;
-                                        const browserURL = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-
-                                        try {
-                                            const supported = await Linking.canOpenURL(googleMapsURL);
-                                            if (supported) {
-                                                await Linking.openURL(googleMapsURL);
-                                            } else {
-                                                await Linking.openURL(browserURL);
-                                            }
-                                        } catch (error) {
-                                            Alert.alert("Error", "Could not open map.");
-                                            console.error(error);
+                        {(user.contactInfo?.phone != null || user.contactInfo?.email != null || user.contactInfo?.facebook != null
+                            || user.contactInfo?.instagram != null || user.contactInfo?.whatsapp != null || user.contactInfo?.telegram != null
+                            || user.contactInfo?.tiktok != null || user.contactInfo?.snapchat != null || user.contactInfo?.location.latitude != null
+                            || user.contactInfo?.location.longitude != null || user.contactInfo?.description != null) ?
+                            (
+                                <View>
+                                    <Text style={[styles.title, styles.contactTitle]}>
+                                        CONTACT
+                                    </Text>
+                                    <View>
+                                        {user.contactInfo?.description != null &&
+                                            <View style={styles.contactDescription}>
+                                                <Text>{user.contactInfo?.description}</Text>
+                                            </View>
                                         }
-                                    }}>
-                                    <Text style={styles.locationLinkText}>Get Directions</Text>
-                                </TouchableOpacity>
-                            </View>
+                                        <View style={styles.contactInfo}>
+                                            {user.contactInfo?.phone != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`tel:${user.contactInfo.phone}`)}>
+                                                        <FontAwesome6 name="phone" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.email != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`mailto:${user.contactInfo.email}`)}>
+                                                        <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.facebook != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.facebook.com/${user.contactInfo.facebook}`)}>
+                                                        <FontAwesome name="facebook" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.instagram != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.instagram.com/${user.contactInfo.instagram}`)}>
+                                                        <FontAwesome name="instagram" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.whatsapp != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://wa.me/${user.contactInfo.whatsapp}`)}>
+                                                        <FontAwesome name="whatsapp" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.telegram != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://t.me/${user.contactInfo.telegram}`)}>
+                                                        <FontAwesome5 name="telegram-plane" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.tiktok != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.tiktok.com/@${user.contactInfo.tiktok}`)}>
+                                                        <FontAwesome6 name="tiktok" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.snapchat != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.snapchat.com/add/${user.contactInfo.snapchat}`)}>
+                                                        <FontAwesome name="snapchat-ghost" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                        </View>
+
+                                        {user.contactInfo?.location.latitude != null && user.contactInfo?.location.longitude != null &&
+                                            <View style={styles.contactLocation}>
+                                                <View style={styles.map}>
+                                                    <MapView
+                                                        style={styles.mapPreview}
+                                                        initialRegion={{
+                                                            latitude: parseFloat(user.contactInfo?.location.latitude || 0),
+                                                            longitude: parseFloat(user.contactInfo?.location.longitude || 0),
+                                                            latitudeDelta: user.contactInfo?.location.latitude ? 0.01 : 50,
+                                                            longitudeDelta: user.contactInfo?.location.longitude ? 0.01 : 50
+                                                        }}
+                                                    >
+                                                        <Marker
+                                                            coordinate={{
+                                                                latitude: parseFloat(user.contactInfo?.location.latitude || 0),
+                                                                longitude: parseFloat(user.contactInfo?.location.longitude || 0),
+                                                            }}
+                                                        />
+                                                    </MapView>
+                                                </View>
+                                                <TouchableOpacity
+                                                    style={styles.locationLink}
+                                                    onPress={async () => {
+                                                        const { latitude, longitude } = user.contactInfo?.location;
+                                                        const googleMapsURL = `comgooglemaps://?center=${latitude},${longitude}&q=${latitude},${longitude}`;
+                                                        const browserURL = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
+                                                        try {
+                                                            const supported = await Linking.canOpenURL(googleMapsURL);
+                                                            if (supported) {
+                                                                await Linking.openURL(googleMapsURL);
+                                                            } else {
+                                                                await Linking.openURL(browserURL);
+                                                            }
+                                                        } catch (error) {
+                                                            Alert.alert("Error", "Could not open map.");
+                                                            console.error(error);
+                                                        }
+                                                    }}>
+                                                    <Text style={styles.locationLinkText}>Get Directions</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        }
+                                    </View>
+                                </View>
+                            ) : (
+                                <View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
+                                        <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
+                                            CONTACT
+                                        </Text>
+
+                                        {userId == user._id && <TouchableOpacity onPress={handleEdit} style={styles.emptyContactInfoBtn}>
+                                            <Text style={styles.emptyContactInfoBtnText}>+Add contact info</Text>
+                                        </TouchableOpacity>}
+
+                                    </View>
+                                    <View>
+                                        <Text style={[styles.emptyContactInfo, { marginBottom: 5 }]}>
+                                            No contact info
+                                        </Text>
+                                    </View>
+                                </View>
+                            )
                         }
                     </View>}
 
@@ -680,77 +730,81 @@ export default function Profile() {
             }
 
             {/* teamsTab */}
-            {!loading && user && activeTab == "Teams" && <Animated.ScrollView
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
+            {
+                !loading && user && activeTab == "Teams" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
 
-                <View style={styles.contentContainer}>
-                    <Text>TEAMS TAB</Text>
+                    <View style={styles.contentContainer}>
+                        <Text>TEAMS TAB</Text>
 
-                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                        <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
                         //Each team should have a coach
-                    </Text>
-                </View>
-            </Animated.ScrollView>
+                        </Text>
+                    </View>
+                </Animated.ScrollView>
             }
 
             {/* scheduleTab */}
-            {!loading && user && activeTab == "Schedule" && <Animated.ScrollView
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
+            {
+                !loading && user && activeTab == "Schedule" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
 
-                <View style={styles.contentContainer}>
-                    <Text>SCHEDULE TAB</Text>
-                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                    <View style={styles.contentContainer}>
+                        <Text>SCHEDULE TAB</Text>
+                        <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
                         //create events or training sessions
-                    </Text>
-                </View>
-            </Animated.ScrollView>
+                        </Text>
+                    </View>
+                </Animated.ScrollView>
             }
 
             {/* staffTab */}
-            {!loading && user && activeTab == "Staff" && <Animated.ScrollView
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
+            {
+                !loading && user && activeTab == "Staff" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
 
-                <View style={styles.contentContainer}>
-                    <Text>STAFF TAB</Text>
-                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                    <View style={styles.contentContainer}>
+                        <Text>STAFF TAB</Text>
+                        <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
                         //manage staff, coaches, admins, board members...
-                    </Text>
-                </View>
-            </Animated.ScrollView>
+                        </Text>
+                    </View>
+                </Animated.ScrollView>
             }
 
             {/* inventoryTabs */}
-            {!loading && user && activeTab == "Inventory" && <Animated.ScrollView
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
-            >
+            {
+                !loading && user && activeTab == "Inventory" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
 
-                <View style={styles.contentContainer}>
-                    <Text>INVENTORY TAB</Text>
+                    <View style={styles.contentContainer}>
+                        <Text>INVENTORY TAB</Text>
 
-                    <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
+                        <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
                         //keep track of stock for sports equipment, sportswear, jerseys and accessories
-                    </Text>
-                </View>
-            </Animated.ScrollView>
+                        </Text>
+                    </View>
+                </Animated.ScrollView>
             }
 
             <View style={styles.navBar}>
@@ -774,7 +828,7 @@ export default function Profile() {
                     <Image source={require('../../assets/profile.png')} style={styles.activeIcon} />
                 </TouchableOpacity>
             </View>
-        </View>
+        </View >
     );
 }
 
@@ -1010,7 +1064,7 @@ const styles = StyleSheet.create({
         columnGap: 10,
     },
     contactTitle: {
-        marginBottom:10
+        marginBottom: 10
     },
     contactItem: {
         borderRadius: 10,
@@ -1034,8 +1088,8 @@ const styles = StyleSheet.create({
     map: {
         borderRadius: 8,
         overflow: 'hidden',
-        borderWidth:1,
-        borderColor:"#cccccc"
+        borderWidth: 1,
+        borderColor: "#cccccc"
     },
     mapPreview: {
         width: '100%',
@@ -1051,5 +1105,17 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 20,
         textAlign: 'center'
+    },
+    emptyContactInfoBtnText: {
+        color: '#FF4000'
+    },
+    emptyContactInfoBtn: {
+
+    },
+    emptyContactInfo: {
+        fontFamily: 'Manrope',
+        fontStyle: 'italic',
+        fontSize: 14,
+        color: '#888888'
     }
 });

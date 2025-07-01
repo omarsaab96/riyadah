@@ -120,7 +120,7 @@ export default function EditProfile() {
                 current = current[key];
             }
 
-            current[path[path.length - 1]] = value;
+            current[path[path.length - 1]] = value==""? null : value;
             return updated;
         });
     };
