@@ -98,7 +98,7 @@ router.post('/check', async (req, res) => {
 });
 
 router.post('/findAdmin', async (req, res) => {
-  const { email } = req.body;
+  const { email } = req.query;
 
   if (!email) {
     return res.status(400).json({ success: false, msg: 'Email is required' });

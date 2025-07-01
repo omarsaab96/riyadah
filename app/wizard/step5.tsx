@@ -42,13 +42,14 @@ export default function WizardStep5() {
             console.error('Failed to fetch children', err);
         }
     };
-    
+
     const checkAdmin = async () => {
         if (!formData.admin.email) return [];
 
         try {
-            const res = await fetch(`https://riyadah.onrender.com/api/users/find-children?findAdmin=${formData.email}`);
+            const res = await fetch(`https://riyadah.onrender.com/api/users/findAdmin?email=${formData.admin.email}`);
             const data = await res.json();
+            console.log(data)
             return data;
         } catch (err) {
             console.error('Failed to fetch children', err);
@@ -60,7 +61,7 @@ export default function WizardStep5() {
             setError('Kindly select a gender')
             return;
         }
-        setLoading(true);
+        // setLoading(true);
         setRegisterError(null);
 
         if (formData.type == "Parent") {
@@ -79,77 +80,76 @@ export default function WizardStep5() {
             }
         }
 
-         if (formData.type == "Club") {
+        if (formData.type == "Club") {
             let admin = await checkAdmin();
+            console.log('checkAdmin')
             console.log(admin)
-            if (admin.length) {
-                if (!Array.isArray(formData.children)) {
-                    formData.children = [];
-                }
-            }
+            // if (admin.length) {
+
+            // }
         }
 
 
-        try {
-            updateFormData({
-                bio: bio,
-                gender: selectedGender
-            });
+        // try {
+        //     updateFormData({
+        //         bio: bio,
+        //         gender: selectedGender
+        //     });
 
-            // Combine all data from registration context
-            const newUserData = {
-                ...formData,
-                bio: bio,
-                gender: selectedGender,
-                image: null,
-                contactInfo: {
-                    phone: "+96170433863",
-                    email: "name@email.com",
-                    facebook: "omar.saab.96",
-                    instagram: "omarsaab96",
-                    whatsapp: "+96170433863",
-                    telegram: "os1996",
-                    tiktok: "omarsaab96",
-                    snapchat: null,
-                    admin: {
-                        name: 'test',
-                        email: 'testEmail',
-                        id: 'testId'
-                    },
-                    location: {
-                        latitude: "33.8938",
-                        longitude: "35.5018"
-                    },
-                    description: "We are open 24/7"
-                }
-            };
+        //     // Combine all data from registration context
+        //     const newUserData = {
+        //         ...formData,
+        //         bio: bio,
+        //         gender: selectedGender,
+        //         image: null,
+        //         contactInfo: {
+        //             phone: "+96170433863",
+        //             email: "name@email.com",
+        //             facebook: "omar.saab.96",
+        //             instagram: "omarsaab96",
+        //             whatsapp: "+96170433863",
+        //             telegram: "os1996",
+        //             tiktok: "omarsaab96",
+        //             snapchat: null,
+        //             admin: {
+        //                 name: 'test',
+        //                 email: 'testEmail',
+        //                 id: 'testId'
+        //             },
+        //             location: {
+        //                 latitude: "33.8938",
+        //                 longitude: "35.5018"
+        //             },
+        //             description: "We are open 24/7"
+        //         }
+        //     };
 
-            console.log('Submitting user data:', newUserData);
+        //     console.log('Submitting user data:', newUserData);
 
-            const response = await fetch('https://riyadah.onrender.com/api/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newUserData),
-            });
+        //     const response = await fetch('https://riyadah.onrender.com/api/users', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify(newUserData),
+        //     });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+        //     if (!response.ok) {
+        //         throw new Error(`HTTP error! status: ${response.status}`);
+        //     }
 
-            const { user, token } = await response.json();
+        //     const { user, token } = await response.json();
 
-            await SecureStore.setItemAsync('userToken', String(token));
+        //     await SecureStore.setItemAsync('userToken', String(token));
 
-            resetFormData()
-            router.replace('/profile');
-        } catch (err) {
-            console.error('User creation failed:', err);
-            setRegisterError('Something went wrong. Please try again.');
-        } finally {
-            setLoading(false);
-        }
+        //     resetFormData()
+        //     router.replace('/profile');
+        // } catch (err) {
+        //     console.error('User creation failed:', err);
+        //     setRegisterError('Something went wrong. Please try again.');
+        // } finally {
+        //     setLoading(false);
+        // }
     };
 
     const handleRetry = async () => {
