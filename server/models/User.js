@@ -8,6 +8,11 @@ const userSchema = new mongoose.Schema({
     country: String,
     password: String,
     children: [String],
+    admin:{
+        name:String,
+        email: String,
+        id:String
+    },
     contactInfo: {
         phone: String,
         email: String,

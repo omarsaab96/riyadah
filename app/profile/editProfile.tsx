@@ -134,8 +134,6 @@ export default function EditProfile() {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
-        // console.log("Saving user: ", JSON.stringify(user))
-
         const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
             method: 'PUT',
             headers: {
@@ -249,14 +247,32 @@ export default function EditProfile() {
                             )}
                         </View>}
 
+                        {user.type == "Club" &&
+                            <View style={styles.adminDiv}>
+                                <Text style={styles.title}>
+                                    Admin
+                                </Text>
+
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Admin"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.admin?.name}
+                                    onChangeText={(text) => updateField('admin.name', text)}
+                                />
+                            </View>
+                        }
+
                         {user.type != "Parent" &&
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
                                     CONTACT Info
                                 </Text>
+
                                 <Text style={[styles.subtitle, styles.contactSubTitle]}>
                                     Description
                                 </Text>
+
                                 <TextInput style={styles.textarea}
                                     placeholder="Opening hours"
                                     placeholderTextColor="#A8A8A8"
@@ -355,8 +371,8 @@ export default function EditProfile() {
                                     />
                                 </View>
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop:10, marginBottom:5 }}>
-                                    <Text style={[styles.subtitle, styles.contactSubTitle,{width:'auto'}]}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
+                                    <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
                                         Location
                                     </Text>
                                     <TouchableOpacity
@@ -423,7 +439,8 @@ export default function EditProfile() {
                                         )}
                                     </MapView>
                                 </View>
-                            </View>}
+                            </View>
+                        }
 
                         {/* BIO */}
                         {user.type != "Parent" && <View style={styles.entity}>
@@ -1099,17 +1116,20 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 150,
     },
-    locationBtn:{
+    locationBtn: {
     },
-    locationBtnText:{
-        color:'#FF4000',
-        fontFamily:'Manrope',
-        fontSize:14
+    locationBtnText: {
+        color: '#FF4000',
+        fontFamily: 'Manrope',
+        fontSize: 14
     },
-    hint:{
-        marginBottom:10,
-        fontFamily:'Manrope',
-        fontSize:12,
-        color:'#000000'
+    hint: {
+        marginBottom: 10,
+        fontFamily: 'Manrope',
+        fontSize: 12,
+        color: '#000000'
+    },
+    adminDiv: {
+        marginBottom: 20
     }
 });

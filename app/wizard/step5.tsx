@@ -14,6 +14,7 @@ export default function WizardStep5() {
     const router = useRouter();
     const { formData, updateFormData, resetFormData } = useRegistration();
     const [bio, setBio] = useState<string | null>(formData.bio || null);
+    const [adminEmail, setAdminEmail] = useState<string | null>(formData.admin?.email || null);
     const [selectedGender, setSelectedGender] = useState<string | null>(formData.gender || null);
     const [loading, setLoading] = useState(false);
     const [registrationError, setRegisterError] = useState<string | null>(null);
@@ -35,6 +36,18 @@ export default function WizardStep5() {
 
         try {
             const res = await fetch(`https://riyadah.onrender.com/api/users/find-children?parentEmail=${formData.email}`);
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            console.error('Failed to fetch children', err);
+        }
+    };
+    
+    const checkAdmin = async () => {
+        if (!formData.admin.email) return [];
+
+        try {
+            const res = await fetch(`https://riyadah.onrender.com/api/users/find-children?findAdmin=${formData.email}`);
             const data = await res.json();
             return data;
         } catch (err) {
@@ -66,6 +79,17 @@ export default function WizardStep5() {
             }
         }
 
+         if (formData.type == "Club") {
+            let admin = await checkAdmin();
+            console.log(admin)
+            if (admin.length) {
+                if (!Array.isArray(formData.children)) {
+                    formData.children = [];
+                }
+            }
+        }
+
+
         try {
             updateFormData({
                 bio: bio,
@@ -87,11 +111,16 @@ export default function WizardStep5() {
                     telegram: "os1996",
                     tiktok: "omarsaab96",
                     snapchat: null,
+                    admin: {
+                        name: 'test',
+                        email: 'testEmail',
+                        id: 'testId'
+                    },
                     location: {
                         latitude: "33.8938",
                         longitude: "35.5018"
                     },
-                    description:"We are open 24/7"
+                    description: "We are open 24/7"
                 }
             };
 
@@ -208,6 +237,19 @@ export default function WizardStep5() {
 
                     </View>
                 </View>
+                }
+
+                {formData.type == "Club" &&
+                    <View style={styles.inputEntity}>
+                        <Text style={styles.label}>Admin email</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Admin email"
+                            placeholderTextColor="#A8A8A8"
+                            value={adminEmail}
+                            onChangeText={setAdminEmail}
+                        />
+                    </View>
                 }
 
                 {formData.type != "Parent" &&
@@ -390,6 +432,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 16,
         marginBottom: 10
+    },
+    input: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10
     },
     inputEntity: {
         marginBottom: 30

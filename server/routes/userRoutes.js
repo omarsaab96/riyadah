@@ -97,6 +97,29 @@ router.post('/check', async (req, res) => {
   }
 });
 
+router.post('/findAdmin', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, msg: 'Email is required' });
+  }
+
+  try {
+    if (email) {
+      const existingEmail = await User.findOne({ email });
+
+      if (!existingEmail) {
+        return res.status(404).json({ success: false, msg: 'Admin not found' });
+      }
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Check failed:', err);
+    return res.status(500).json({ success: false, msg: 'Server error' });
+  }
+});
+
 // Get all users
 router.get('/', async (req, res) => {
   const users = await User.find();

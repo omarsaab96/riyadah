@@ -28,6 +28,8 @@ export default function WizardStep1() {
         };
 
         checkAuth();
+
+        console.log(formData)
     }, []);
 
     const handleNext = () => {

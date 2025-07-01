@@ -9,6 +9,11 @@ interface RegistrationData {
   country: string | null;
   password: string | null;
   children: [] | null;
+  admin: {
+    id: string | null;
+    name: string | null;
+    email: String | null;
+  };
   contactInfo: {
     phone: String | null;
     email: String | null;
@@ -18,11 +23,11 @@ interface RegistrationData {
     telegram: String | null;
     tiktok: String | null;
     snapchat: String | null;
-    location:{
-      latitude:String;
-      longitude:String;
+    location: {
+      latitude: String;
+      longitude: String;
     };
-    description:String;
+    description: String;
   };
   dob: {
     day: string | null;
@@ -68,6 +73,11 @@ export const RegistrationProvider = ({ children }: Props) => {
     phone: null,
     country: null,
     password: null,
+    admin: {
+      id: null,
+      name: null,
+      email: null
+    },
     dob: {
       day: null,
       month: null,
@@ -108,6 +118,11 @@ export const RegistrationProvider = ({ children }: Props) => {
       phone: null,
       country: null,
       password: null,
+      admin: {
+        id: null,
+        name: null,
+        email: null
+      },
       dob: {
         day: null,
         month: null,
