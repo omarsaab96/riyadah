@@ -105,9 +105,9 @@ router.post('/findAdmin', async (req, res) => {
   }
 
   try {
-    const existingEmail = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-    if (!existingEmail) {
+    if (!existingUser) {
       return res.status(404).json({ success: false, msg: 'Admin not found' });
     }
 

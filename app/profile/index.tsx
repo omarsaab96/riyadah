@@ -94,10 +94,21 @@ export default function Profile() {
     }, []);
 
     useEffect(() => {
-        if (user.type == "Club") {
-            getAdminInfo(user.admin.email)
-        }
+        getAdminInfo();
     }, [user]);
+
+    const getAdminInfo = async () => {
+        if (user.type == "Club") {
+            console.log('fetching admin...')
+            try {
+                const res = await fetch(`https://riyadah.onrender.com/api/users/findAdmin?email=${user.admin.email}`);
+                const data = await res.json();
+                console.log(data)
+            } catch (err) {
+                console.error('Failed to fetch children', err);
+            }
+        }
+    }
 
     const handleEdit = async () => {
         router.push('/profile/editProfile');
@@ -1117,5 +1128,14 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         fontSize: 14,
         color: '#888888'
+    },
+    adminDiv: {
+
+    },
+    admin: {
+
+    },
+    adminAvatar: {
+
     }
 });
