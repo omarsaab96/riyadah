@@ -4,6 +4,7 @@ const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const notificationsRoutes = require('./routes/notificationsRoutes');
 const imageRoutes = require('./routes/imageRoutes');
+const teamsRoutes = require('./routes/teamRoutes');
 
 const app = express();
 connectDB();
@@ -13,6 +14,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use('/api/users', userRoutes);
+app.use('/api/teams', teamsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/removeBG', imageRoutes);
 

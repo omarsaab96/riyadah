@@ -91,21 +91,36 @@ export default function CreateTeam() {
     };
 
     const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
+        try {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.7, // Slightly better quality than before
+                base64: true
+            });
 
-        if (!result.canceled) {
-            setTeamData({ ...teamData, image: result.assets[0].uri });
+            if (!result.canceled) {
+                // Check image size (max 2MB)
+                const base64Length = result.assets[0].base64.length;
+                const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
+
+                if (sizeInMB > 2) {
+                    Alert.alert('Image too large', 'Please select an image smaller than 2MB');
+                    return;
+                }
+
+                const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+                setTeamData({ ...teamData, image: base64Image });
+                setErrors({ ...errors, image: null }); // Clear any previous image errors
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to pick image: ' + error.message);
         }
     };
 
     const handleSubmit = async () => {
         const formErrors = validateForm();
-
         if (Object.keys(formErrors).length > 0) {
             return;
         }
@@ -114,39 +129,35 @@ export default function CreateTeam() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
 
-            // Create form data for image upload
-            const formData = new FormData();
-            formData.append('name', teamData.name);
-            formData.append('sport', teamData.sport);
-            formData.append('ageGroup', teamData.ageGroup);
-            formData.append('gender', teamData.gender);
+            // Prepare the request body with Base64 image
+            const requestBody = {
+                name: teamData.name,
+                sport: teamData.sport,
+                ageGroup: teamData.ageGroup,
+                gender: teamData.gender,
+                image: teamData.image // This is the Base64 string
+            };
 
-            if (teamData.image) {
-                formData.append('image', {
-                    uri: teamData.image,
-                    name: 'team-image.jpg',
-                    type: 'image/jpeg'
-                });
-            }
-
-            const response = await fetch('https://riyadah.onrender.com/api/teams', {
+            const response = await fetch('https://riyadah.onrender.com/api/v1/teams', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
+                    'Content-Type': 'application/json',
                 },
-                body: formData
+                body: JSON.stringify(requestBody)
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                console.log("Team created successfully")
-                router.back()
+                Alert.alert('Success', 'Team created successfully!', [
+                    { text: 'OK', onPress: () => router.back() }
+                ]);
             } else {
                 throw new Error(data.message || 'Failed to create team');
             }
         } catch (error) {
+            console.error('Error creating team:', error);
             Alert.alert('Error', error.message);
         } finally {
             setSaving(false);
@@ -491,3 +502,11 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
     }
 });
+
+
+
+/////////
+/////////
+/////////      test create team
+/////////
+/////////
