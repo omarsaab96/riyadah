@@ -46,6 +46,7 @@ const userSchema = new mongoose.Schema({
     stats: String,
     achievements: String,
     events: String,
+    teams:[String],
     skills: {
         attack: Number,
         skill: Number,

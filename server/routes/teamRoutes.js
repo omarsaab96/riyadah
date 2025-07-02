@@ -130,11 +130,19 @@ router.get('/:id', async (req, res) => {
 // @access  Private (Club only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
+    let userType = "";
 
-    console.log('req.user: ',req.user)
+    try {
+      const user = await User.findById(req.user.userId).select('type');
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      userType = user.type;
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Something went wrong' });
+    }
 
     // Check if user is a club
-    if (req.user.type !== 'Club') {
+    if (userType !== 'Club') {
       return res.status(403).json({
         success: false,
         message: 'Only clubs can create teams'
@@ -157,7 +165,7 @@ router.post('/', authenticateToken, async (req, res) => {
       sport,
       ageGroup,
       gender,
-      club: req.user.id,
+      club: req.user.userId,
       image
     };
 
@@ -165,7 +173,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Add team to club's teams array
     await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.userId,
       { $push: { teams: team._id } },
       { new: true }
     );
