@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Team = require('../models/Team');
 const User = require('../models/User');
-const upload = require('../utils/upload'); // For file uploads
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
