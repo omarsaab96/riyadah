@@ -1,5 +1,4 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -68,29 +67,6 @@ const CreateEventScreen = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const showDatepicker = (type) => {
-        setShowStartPicker(false);
-        setShowEndPicker(false);
-        // Then open the correct one
-
-
-        if (Platform.OS === 'android') {
-            // On Android, we need to set the picker visibility immediately
-            if (type === 'start') {
-                setShowStartPicker(true);
-            } else {
-                setShowEndPicker(true);
-            }
-        } else {
-            // On iOS, we can toggle the picker
-            if (type === 'start') {
-                setShowStartPicker(!showStartPicker);
-            } else {
-                setShowEndPicker(!showEndPicker);
-            }
-        }
-    };
-
     const handleNestedChange = (parent, name, value) => {
         setFormData(prev => ({
             ...prev,
@@ -99,35 +75,6 @@ const CreateEventScreen = () => {
                 [name]: value
             }
         }));
-    };
-
-    const handleDateChange = (event: any, selectedDate: Date | undefined, type: 'start' | 'end') => {
-        // For Android, we need to handle the case when the picker is dismissed
-        if (!selectedDate) {
-            // User cancelled the picker
-            if (type === 'start') setShowStartPicker(false);
-            else setShowEndPicker(false);
-            return;
-        }
-
-        const currentDate = selectedDate || (type === 'start' ? formData.startDateTime : formData.endDateTime);
-
-        // Always close the picker on selection
-        if (type === 'start') {
-            setShowStartPicker(false);
-            setFormData(prev => ({ ...prev, startDateTime: currentDate }));
-
-            // Auto-adjust end time if it becomes before start time
-            if (currentDate > formData.endDateTime) {
-                setFormData(prev => ({
-                    ...prev,
-                    endDateTime: new Date(currentDate.getTime() + 2 * 60 * 60 * 1000)
-                }));
-            }
-        } else {
-            setShowEndPicker(false);
-            setFormData(prev => ({ ...prev, endDateTime: currentDate }));
-        }
     };
 
     const addEquipment = () => {
@@ -185,6 +132,7 @@ const CreateEventScreen = () => {
             });
 
             const data = await response.json();
+            console.log(data)
 
             if (response.ok) {
                 Alert.alert('Success', 'Event created successfully!', [
@@ -296,43 +244,26 @@ const CreateEventScreen = () => {
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Start Date & Time *</Text>
-                            <TouchableOpacity
-                                style={styles.dateInput}
-                                onPress={() => showDatepicker('start')}
-                            >
-                                <Text>{formData.startDateTime.toLocaleString()}</Text>
+                            <View style={styles.dateInput}>
+                                <TextInput
+                                    placeholder="Enter start date and time"
+                                    value={formData.startDateTime.toLocaleString()}
+                                    onChangeText={(text) => handleChange('startDateTime', text)}
+                                />
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </TouchableOpacity>
-                            {showStartPicker && (
-                                <View>
-                                    <DateTimePicker
-                                        value={formData.startDateTime}
-                                        mode="datetime"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        onChange={(event, date) => handleDateChange(event, date, 'start')}
-                                    />
-                                </View>
-                            )}
+                            </View>
                         </View>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>End Date & Time *</Text>
-                            <TouchableOpacity
-                                style={styles.dateInput}
-                                onPress={() => showDatepicker('end')}
-                            >
-                                <Text>{formData.endDateTime.toLocaleString()}</Text>
-                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </TouchableOpacity>
-                            {showEndPicker && (
-                                <DateTimePicker
-                                    value={formData.endDateTime}
-                                    mode="datetime"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    minimumDate={formData.startDateTime}
-                                    onChange={(event, date) => handleDateChange(event, date, 'end')}
+                            <View style={styles.dateInput}>
+                                <TextInput
+                                    placeholder="Enter end date and time"
+                                    value={formData.endDateTime.toLocaleString()}
+                                    onChangeText={(text) => handleChange('endDateTime', text)}
                                 />
-                            )}
+                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
+                            </View>
                         </View>
 
                         <View style={styles.formGroup}>

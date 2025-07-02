@@ -8,7 +8,7 @@ const TeamSchema = new Schema({
   gender: String,
   image: String,
   club: mongoose.Schema.ObjectId,
-  coach: mongoose.Schema.ObjectId,
+  coaches: mongoose.Schema.ObjectId,
   members: [mongoose.Schema.ObjectId],
   createdAt: Date,
 });
