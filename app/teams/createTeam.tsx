@@ -142,11 +142,7 @@ export default function CreateTeam() {
                 body: JSON.stringify(requestBody)
             });
 
-            console.log('response:', response);
             const data = await response.json();
-            
-
-
 
             if (response.ok) {
                 Alert.alert('Success', 'Team created successfully!', [
@@ -501,11 +497,3 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
     }
 });
-
-
-
-/////////
-/////////
-/////////      test create team
-/////////
-/////////
