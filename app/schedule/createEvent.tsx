@@ -45,7 +45,10 @@ const CreateEventScreen = () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
                 const response = await fetch('https://riyadah.onrender.com/api/teams', {
-                    headers: { Authorization: `Bearer ${token}` }
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
                 const data = await response.json();
                 if (data.success) {

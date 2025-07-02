@@ -101,7 +101,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
 // @desc    Get all teams
 // @route   GET /api/teams
 // @access  Public
-router.get('/', advancedResults(Team, 'club coach members'), async (req, res) => {
+router.get('/', advancedResults(Team, 'club coaches members'), async (req, res) => {
   res.status(200).json(res.advancedResults);
 });
 
