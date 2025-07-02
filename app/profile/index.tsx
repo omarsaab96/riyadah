@@ -898,13 +898,13 @@ export default function Profile() {
                                             </View>
                                         </View>
 
-                                        {team.coach && (
+                                        {team.coaches && (
                                             <View style={styles.coachSection}>
                                                 <Text style={styles.coachLabel}>Coach:</Text>
                                                 <View style={styles.coachInfo}>
-                                                    {team.coach.image ? (
+                                                    {team.coaches.image ? (
                                                         <Image
-                                                            source={{ uri: team.coach.image }}
+                                                            source={{ uri: team.coaches.image }}
                                                             style={styles.coachAvatar}
                                                         />
                                                     ) : (
@@ -912,7 +912,7 @@ export default function Profile() {
                                                             <FontAwesome name="user" size={16} color="#fff" />
                                                         </View>
                                                     )}
-                                                    <Text style={styles.coachName}>{team.coach.name}</Text>
+                                                    <Text style={styles.coachName}>{team.coaches.name}</Text>
                                                 </View>
                                             </View>
                                         )}
