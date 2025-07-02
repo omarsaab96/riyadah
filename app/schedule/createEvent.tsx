@@ -69,6 +69,11 @@ const CreateEventScreen = () => {
     };
 
     const showDatepicker = (type) => {
+        setShowStartPicker(false);
+        setShowEndPicker(false);
+        // Then open the correct one
+
+
         if (Platform.OS === 'android') {
             // On Android, we need to set the picker visibility immediately
             if (type === 'start') {
@@ -96,15 +101,13 @@ const CreateEventScreen = () => {
         }));
     };
 
-    const handleDateChange = (event, selectedDate, type) => {
+    const handleDateChange = (event: any, selectedDate: Date | undefined, type: 'start' | 'end') => {
         // For Android, we need to handle the case when the picker is dismissed
-        if (Platform.OS === 'android') {
-            if (event.type === 'dismissed') {
-                // User cancelled the picker
-                if (type === 'start') setShowStartPicker(false);
-                else setShowEndPicker(false);
-                return;
-            }
+        if (!selectedDate) {
+            // User cancelled the picker
+            if (type === 'start') setShowStartPicker(false);
+            else setShowEndPicker(false);
+            return;
         }
 
         const currentDate = selectedDate || (type === 'start' ? formData.startDateTime : formData.endDateTime);
