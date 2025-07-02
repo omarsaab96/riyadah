@@ -41,7 +41,7 @@ const scheduleSchema = new Schema({
 
     // For Training Sessions
     trainingFocus: String,
-    requiredEquipment: String,
+    requiredEquipment: [String],
 
     // Additional Info
     // attachments: [{
