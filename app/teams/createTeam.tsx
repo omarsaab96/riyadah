@@ -70,11 +70,7 @@ export default function CreateTeam() {
                 } else {
                     console.error('API error')
                 }
-
-
             }
-
-
         };
 
         fetchUser();
@@ -96,7 +92,7 @@ export default function CreateTeam() {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 0.7, // Slightly better quality than before
+                quality: 0.7,
                 base64: true
             });
 
@@ -112,7 +108,6 @@ export default function CreateTeam() {
 
                 const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
                 setTeamData({ ...teamData, image: base64Image });
-                setErrors({ ...errors, image: null }); // Clear any previous image errors
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to pick image: ' + error.message);
@@ -135,10 +130,10 @@ export default function CreateTeam() {
                 sport: teamData.sport,
                 ageGroup: teamData.ageGroup,
                 gender: teamData.gender,
-                image: teamData.image // This is the Base64 string
+                image: teamData.image
             };
 
-            const response = await fetch('https://riyadah.onrender.com/api/v1/teams', {
+            const response = await fetch('https://riyadah.onrender.com/api/teams', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -147,7 +142,11 @@ export default function CreateTeam() {
                 body: JSON.stringify(requestBody)
             });
 
+            console.log('response:', response);
             const data = await response.json();
+            
+
+
 
             if (response.ok) {
                 Alert.alert('Success', 'Team created successfully!', [

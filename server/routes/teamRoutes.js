@@ -2,8 +2,21 @@ const express = require('express');
 const router = express.Router();
 const Team = require('../models/Team');
 const User = require('../models/User');
-const { protect } = require('../middleware/auth');
 const upload = require('../utils/upload'); // For file uploads
+
+// Middleware to verify token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
+
+  if (!token) return res.status(401).json({ error: 'Token missing' });
+
+  jwt.verify(token, '123456', (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = decoded; // decoded contains userId
+    next();
+  });
+};
 
 // Middleware (for pagination, filtering, etc.)
 const advancedResults = (model, populate) => async (req, res, next) => {
@@ -115,7 +128,7 @@ router.get('/:id', async (req, res) => {
 // @desc    Create new team
 // @route   POST /api/teams
 // @access  Private (Club only)
-router.post('/', protect, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     // Check if user is a club
     if (req.user.type !== 'Club') {
@@ -163,7 +176,7 @@ router.post('/', protect, async (req, res) => {
 // @desc    Update team
 // @route   PUT /api/teams/:id
 // @access  Private (Club admin or coach)
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
     let team = await Team.findById(req.params.id);
 
@@ -197,7 +210,7 @@ router.put('/:id', protect, async (req, res) => {
 // @desc    Delete team
 // @route   DELETE /api/teams/:id
 // @access  Private (Club admin only)
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const team = await Team.findById(req.params.id);
 
@@ -231,7 +244,7 @@ router.delete('/:id', protect, async (req, res) => {
 // @desc    Assign coach to team
 // @route   PUT /api/teams/:id/coach
 // @access  Private (Club admin only)
-router.put('/:id/coach', protect, async (req, res) => {
+router.put('/:id/coach', authenticateToken, async (req, res) => {
   try {
     const { coachId } = req.body;
 
