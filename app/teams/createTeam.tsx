@@ -178,7 +178,7 @@ export default function CreateTeam() {
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>New Team</Text>
-                        {!loading && <Text style={styles.pageDesc}>Add a team in your club</Text>}
+                        {!loading && <Text style={styles.pageDesc}>Create a new team in your club</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>

@@ -979,7 +979,7 @@ export default function Profile() {
                     )}
                     scrollEventThrottle={16}
                 >
-                    {teamsLoading ? (
+                    {scheduleLoading ? (
                         <View style={[styles.contentContainer, { paddingTop: 20, flexDirection: 'row', alignItems: 'center' }]}>
                             <ActivityIndicator
                                 size="small"
@@ -995,109 +995,111 @@ export default function Profile() {
                                 {userId == user._id && (
                                     <TouchableOpacity
                                         style={styles.addButton}
-                                        onPress={() => router.push('/schedule/create')}
+                                        onPress={() => router.push('/schedule/createEvent')}
                                     >
                                         <Text style={styles.addButtonText}>+ Add Event</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
 
-                            {/* Calendar View */}
-                            <View style={styles.calendarContainer}>
-                                <Text style={styles.monthHeader}>July 2025</Text>
-                                <View style={styles.daysOfWeek}>
-                                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                                        <Text key={day} style={styles.dayHeader}>
-                                            {day}
-                                        </Text>
-                                    ))}
+                            {schedule.length > 0 ? (
+                                <View>
+                                    <View style={styles.calendarContainer}>
+                                        <Text style={styles.monthHeader}>July 2025</Text>
+                                        <View style={styles.daysOfWeek}>
+                                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                                                <Text key={day} style={styles.dayHeader}>
+                                                    {day}
+                                                </Text>
+                                            ))}
+                                        </View>
+
+
+                                        <View style={styles.calendarGrid}>
+                                            {Array.from({ length: 31 }).map((_, i) => (
+                                                <TouchableOpacity
+                                                    key={i}
+                                                    style={[
+                                                        styles.calendarDay,
+                                                        i + 1 === new Date().getDate() && styles.currentDay,
+                                                    ]}
+                                                >
+                                                    <Text style={[styles.dayNumber, i + 1 === new Date().getDate() && styles.currentDayText]}>{i + 1}</Text>
+                                                    {i % 5 === 0 && (
+                                                        <View style={styles.eventDot} />
+                                                    )}
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </View>
+
+                                    <View>
+                                        <Text style={styles.subSectionTitle}>Upcoming Events</Text>
+                                        {schedule.map((event) => {
+                                            const eventDate = new Date(event.startDateTime);
+                                            const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                            const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                            return (
+                                                <TouchableOpacity
+                                                    key={event._id}
+                                                    style={styles.eventCard}
+                                                    onPress={() => router.push(`/schedule/${event._id}`)}
+                                                >
+                                                    <View style={styles.eventDate}>
+                                                        <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
+                                                        <Text style={styles.eventMonth}>
+                                                            {eventDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
+                                                        </Text>
+                                                    </View>
+                                                    <View style={styles.eventDetails}>
+                                                        <Text style={styles.eventTitle}>{event.title}</Text>
+                                                        <Text style={styles.eventTime}>
+                                                            {formattedTime} - {endTime}
+                                                        </Text>
+                                                        <Text style={styles.eventLocation}>
+                                                            {event.locationType === 'online'
+                                                                ? 'Online Event'
+                                                                : event.venue?.name || 'Location TBD'}
+                                                        </Text>
+                                                        {event.eventType === 'match' && event.opponent && (
+                                                            <View style={styles.opponentContainer}>
+                                                                <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                    <TouchableOpacity
+                                                        style={styles.eventAction}
+                                                        onPress={(e) => {
+                                                            e.stopPropagation();
+                                                            // Handle menu press
+                                                        }}
+                                                    >
+                                                        <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
+                                                    </TouchableOpacity>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
                                 </View>
-                                <View style={styles.calendarGrid}>
-                                    {Array.from({ length: 31 }).map((_, i) => (
+                            ) : (
+                                <View style={styles.emptyState}>
+                                    <Text style={styles.emptyStateTitle}>No Scheduled Events</Text>
+                                    <Text style={styles.emptyStateText}>
+                                        {userId === user._id
+                                            ? "Add your first event to get started"
+                                            : "This club hasn't scheduled any events yet"}
+                                    </Text>
+                                    {userId === user._id && (
                                         <TouchableOpacity
-                                            key={i}
-                                            style={[
-                                                styles.calendarDay,
-                                                i + 1 === new Date().getDate() && styles.currentDay,
-                                            ]}
+                                            style={styles.emptyStateButton}
+                                            onPress={() => router.push('/schedule/createEvent')}
                                         >
-                                            <Text style={styles.dayNumber}>{i + 1}</Text>
-                                            {i % 5 === 0 && (
-                                                <View style={styles.eventDot} />
-                                            )}
+                                            <Text style={styles.emptyStateButtonText}>Create Event</Text>
                                         </TouchableOpacity>
-                                    ))}
+                                    )}
                                 </View>
-                            </View>
-
-                            {/* Upcoming Events Section */}
-                            <Text style={styles.subSectionTitle}>Upcoming Events</Text>
-
-                            {/* Event Cards */}
-                            <View style={styles.eventCard}>
-                                <View style={styles.eventDate}>
-                                    <Text style={styles.eventDay}>15</Text>
-                                    <Text style={styles.eventMonth}>JUL</Text>
-                                </View>
-                                <View style={styles.eventDetails}>
-                                    <Text style={styles.eventTitle}>Team Practice</Text>
-                                    <Text style={styles.eventTime}>4:00 PM - 6:00 PM</Text>
-                                    <Text style={styles.eventLocation}>Main Field</Text>
-                                </View>
-                                <TouchableOpacity style={styles.eventAction}>
-                                    <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
-                                </TouchableOpacity>
-                            </View>
-
-                            <View style={styles.eventCard}>
-                                <View style={styles.eventDate}>
-                                    <Text style={styles.eventDay}>18</Text>
-                                    <Text style={styles.eventMonth}>JUL</Text>
-                                </View>
-                                <View style={styles.eventDetails}>
-                                    <Text style={styles.eventTitle}>Friendly Match vs. City FC</Text>
-                                    <Text style={styles.eventTime}>10:00 AM - 12:00 PM</Text>
-                                    <Text style={styles.eventLocation}>Away - City Stadium</Text>
-                                </View>
-                                <TouchableOpacity style={styles.eventAction}>
-                                    <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
-                                </TouchableOpacity>
-                            </View>
-
-                            <View style={styles.eventCard}>
-                                <View style={styles.eventDate}>
-                                    <Text style={styles.eventDay}>22</Text>
-                                    <Text style={styles.eventMonth}>JUL</Text>
-                                </View>
-                                <View style={styles.eventDetails}>
-                                    <Text style={styles.eventTitle}>Team Meeting</Text>
-                                    <Text style={styles.eventTime}>6:00 PM - 7:00 PM</Text>
-                                    <Text style={styles.eventLocation}>Club Office</Text>
-                                </View>
-                                <TouchableOpacity style={styles.eventAction}>
-                                    <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Empty State */}
-                            {/* {events.length === 0 && (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateTitle}>No Scheduled Events</Text>
-            <Text style={styles.emptyStateText}>
-              {userId == user._id
-                ? "Add your first event to get started"
-                : "This club hasn't scheduled any events yet"}
-            </Text>
-            {userId == user._id && (
-              <TouchableOpacity
-                style={styles.emptyStateButton}
-                onPress={() => router.push('/schedule/create')}
-              >
-                <Text style={styles.emptyStateButtonText}>Create Event</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )} */}
+                            )}
                         </View>
                     )}
 
@@ -1689,7 +1691,6 @@ const styles = StyleSheet.create({
     },
     calendarDay: {
         width: `${100 / 7}%`,
-        aspectRatio: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
         paddingTop: 5,
@@ -1698,17 +1699,20 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         borderRadius: 20,
     },
+    currentDayText: {
+        color: 'white',
+        fontWeight: 'bold'
+    },
     dayNumber: {
         fontFamily: 'Manrope',
         fontSize: 14,
         color: '#111111',
     },
     eventDot: {
-        width: 6,
-        height: 6,
+        width: 5,
+        height: 5,
         borderRadius: 3,
         backgroundColor: '#FF4000',
-        marginTop: 2,
     },
     eventCard: {
         flexDirection: 'row',
