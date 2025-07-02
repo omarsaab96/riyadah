@@ -151,9 +151,10 @@ export default function Profile() {
     const getSchedule = async () => {
         if (user.type == "Club") {
             try {
-                const res = await fetch(`https://riyadah.onrender.com/api/schedule`, {
+                const res = await fetch(`https://riyadah.onrender.com/api/schedules`, {
                     method: 'GET',
                     headers: {
+                        'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
                         'Content-Type': 'application/json'
                     }
                 });
