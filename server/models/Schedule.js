@@ -78,7 +78,7 @@ scheduleSchema.virtual('duration').get(function () {
 
 // Pre-save hook to validate dates
 scheduleSchema.pre('save', function (next) {
-    if (this.repeats !== 'none' && !this.repeatEndDate) {
+    if (this.repeats !== 'No' && !this.repeatEndDate) {
         throw new Error('Repeat end date is required for recurring events');
     }
     this.updatedAt = Date.now();
