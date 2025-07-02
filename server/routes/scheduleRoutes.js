@@ -4,7 +4,7 @@ const Schedule = require('../models/Schedule');
 const Team = require('../models/Team');
 const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
+const User = require('../models/User');
 
 // Middleware: JWT Authentication
 const authenticate = async (req, res, next) => {
