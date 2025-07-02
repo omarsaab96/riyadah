@@ -50,7 +50,7 @@ const scheduleSchema = new Schema({
     //     type: String
     // }],
     notes: String,
-    isPrivate:Boolean,
+    isPrivate: Boolean,
 
     // System
     createdBy: String,
@@ -59,7 +59,18 @@ const scheduleSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    updatedAt: Date
+    updatedAt: Date,
+    participants: [
+        {
+            user: { type: Schema.Types.ObjectId, ref: 'User' },
+            status: {
+                type: String,
+                enum: ['pending', 'confirmed', 'declined', 'tentative'],
+                default: 'pending',
+            },
+            responseDate: Date,
+        }
+    ],
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

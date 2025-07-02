@@ -279,8 +279,8 @@ const CreateEventScreen = () => {
                                 onValueChange={(value) => handleChange('locationType', value)}
                                 style={styles.picker}
                             >
-                                <Picker.Item label="Venue" value="venue" />
-                                <Picker.Item label="Online" value="online" />
+                                <Picker.Item label="Venue" value="Venue" />
+                                <Picker.Item label="Online" value="Online" />
                                 <Picker.Item label="To Be Determined" value="tbd" />
                             </Picker>
                         </View>
