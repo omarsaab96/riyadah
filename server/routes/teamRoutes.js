@@ -112,7 +112,7 @@ router.get('/:id', async (req, res) => {
   try {
     const team = await Team.findById(req.params.id)
       .populate('club', 'name image')
-      .populate('coach', 'name image')
+      .populate('coaches', 'name image')
       .populate('members', 'name image');
 
     if (!team) {
