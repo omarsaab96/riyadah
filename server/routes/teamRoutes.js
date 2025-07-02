@@ -130,6 +130,9 @@ router.get('/:id', async (req, res) => {
 // @access  Private (Club only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
+
+    console.log('req.user: ',req.user)
+
     // Check if user is a club
     if (req.user.type !== 'Club') {
       return res.status(403).json({
