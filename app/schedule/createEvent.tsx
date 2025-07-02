@@ -121,9 +121,9 @@ const CreateEventScreen = () => {
             };
 
             // Clean up empty fields
-            if (formData.locationType !== 'online') delete requestBody.onlineLink;
-            if (formData.locationType !== 'venue') delete requestBody.venue;
-            if (formData.eventType !== 'match') delete requestBody.opponent;
+            if (formData.locationType !== 'Online') delete requestBody.onlineLink;
+            if (formData.locationType !== 'Venue') delete requestBody.venue;
+            if (formData.eventType !== 'Match') delete requestBody.opponent;
             if (formData.eventType !== 'Training') delete requestBody.trainingFocus;
 
             console.log(formData)
@@ -224,7 +224,7 @@ const CreateEventScreen = () => {
                                 onValueChange={(value) => handleChange('eventType', value)}
                                 style={styles.picker}
                             >
-                                <Picker.Item label="Training Session" value="training" />
+                                <Picker.Item label="Training Session" value="Training" />
                                 <Picker.Item label="Match" value="Match" />
                                 <Picker.Item label="Meeting" value="Meeting" />
                                 <Picker.Item label="Tournament" value="Tournament" />
