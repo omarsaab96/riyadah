@@ -189,7 +189,7 @@ router.post('/',
         check('endDateTime', 'Valid end date required').isISO8601(),
         check('team', 'Team ID is required').isMongoId(),
         check('eventType', 'Invalid event type').isIn([
-            'training', 'match', 'meeting', 'tournament', 'other'
+            'Training', 'Match', 'Meeting', 'Tournament', 'Other'
         ])
     ]),
     async (req, res) => {

@@ -51,6 +51,7 @@ const CreateEventScreen = () => {
                     }
                 });
                 const data = await response.json();
+                console.log(data)
                 if (data.success) {
                     setTeams(data.data);
                     if (data.data.length > 0) {
