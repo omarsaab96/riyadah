@@ -200,15 +200,9 @@ router.post('/', auth, async (req, res) => {
         staff = new Staff({
             ...req.body,
             createdBy: req.user.id,
-            image: req.file ? req.file.path : undefined
         });
 
         await staff.save();
-
-        // Populate the response
-        staff = await Staff.findById(staff._id)
-            .populate('club', 'name image')
-            .populate('createdBy', 'name email image');
 
         res.status(201).json({
             success: true,
