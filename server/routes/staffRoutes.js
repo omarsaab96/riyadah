@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
     try {
 
         // Get staff with pagination and sorting
-        const staff = await Staff.all()
+        const staff = await Staff.find()
 
         res.json({
             success: true,
