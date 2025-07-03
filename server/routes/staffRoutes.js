@@ -176,7 +176,6 @@ router.get('/:id', [
  */
 router.post('/', [
     auth,
-    adminCheck,
     [
         check('name', 'Name is required').not().isEmpty().trim().escape(),
         check('email', 'Please include a valid email').isEmail().normalizeEmail(),
