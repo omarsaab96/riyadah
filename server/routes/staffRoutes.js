@@ -174,33 +174,13 @@ router.get('/:id', [
  * @desc    Create new staff member
  * @access  Private (Club Admin)
  */
-router.post('/', [
-    auth,
-    [
-        check('name', 'Name is required').not().isEmpty().trim().escape(),
-        check('email', 'Please include a valid email').isEmail().normalizeEmail(),
-        check('phone', 'Please include a valid phone number').optional().isMobilePhone(),
-        check('role', 'Role is required').not().isEmpty().trim().escape(),
-        check('club', 'Club ID is required').not().isEmpty().trim().escape(),
-        check('employmentType', 'Invalid employment type').optional().isIn(['Full-time', 'Part-time', 'Contract', 'Volunteer']),
-        check('salary', 'Salary must be a number').optional().isNumeric()
-    ]
-], async (req, res) => {
+router.post('/', auth, async (req, res) => {
     console.log('Received body:', req.body);
     console.log('Received files:', req.files);
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({
-            success: false,
-            errors: errors.array()
-        });
-    }
 
     try {
         const { email, club } = req.body;
-
-        // Verify user has permission to add staff to this club
-        if (req.user.type !== 'Club' || req.user._id.toString() !== club) {
+        if (req.user.type !== 'Club') {
             return res.status(403).json({
                 success: false,
                 message: 'Not authorized to add staff to this club'
