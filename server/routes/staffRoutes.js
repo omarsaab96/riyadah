@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Staff = require('../models/staff');
+const Staff = require('../models/Staff');
 const { body, validationResult } = require('express-validator');
 
 // Create staff
