@@ -180,12 +180,6 @@ router.post('/', auth, async (req, res) => {
 
     try {
         const { email, club } = req.body;
-        if (req.user.type !== 'Club') {
-            return res.status(403).json({
-                success: false,
-                message: 'Not authorized to add staff to this club'
-            });
-        }
 
         // Check if staff already exists
         let staff = await Staff.findOne({ email, club });
