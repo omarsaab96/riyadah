@@ -30,6 +30,25 @@ const adminCheck = (req, res, next) => {
     next();
 };
 
+router.get('/', async (req, res) => {
+    try {
+
+        // Get staff with pagination and sorting
+        const staff = await Staff.all()
+
+        res.json({
+            success: true,
+            data: staff
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+});
+
 /**
  * @route   GET /api/staff/club/:clubId
  * @desc    Get all staff for a club with pagination and filtering
