@@ -208,71 +208,22 @@ const CreateStaffScreen = () => {
         try {
             setSaving(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const staffData = new FormData();
-
-            // Append all fields (including nested objects as JSON strings)
-            staffData.append('name', formData.name);
-            staffData.append('email', formData.email);
-            staffData.append('phone', formData.phone || '');
-            staffData.append('role', formData.role);
-            staffData.append('specialization', formData.specialization || '');
-            staffData.append('bio', formData.bio || '');
-            staffData.append('employmentType', formData.employmentType);
-            staffData.append('salary', formData.salary || '');
-            staffData.append('isActive', formData.isActive.toString());
-            staffData.append('club', user?._id || userId);
-
-            // Stringify nested objects
-            staffData.append('emergencyContact[name]', formData.emergencyContact.name);
-            staffData.append('emergencyContact[relationship]', formData.emergencyContact.relationship);
-            staffData.append('emergencyContact[phone]', formData.emergencyContact.phone);
-
-            staffData.append('address[street]', formData.address.street);
-            staffData.append('address[city]', formData.address.city);
-            staffData.append('address[state]', formData.address.state);
-            staffData.append('address[postalCode]', formData.address.postalCode);
-            staffData.append('address[country]', formData.address.country);
-
-            // Stringify arrays
-            formData.qualifications.forEach((qual, index) => {
-                staffData.append(`qualifications[${index}]`, qual);
-            });
-            formData.certifications.forEach((cert, index) => {
-                staffData.append(`certifications[${index}]`, cert);
-            });
-            formData.teams.forEach((teamId, index) => {
-                staffData.append(`teams[${index}]`, teamId);
-            });
-
-            // Handle image upload if exists
-            if (image) {
-                const filename = image.split('/').pop();
-                const match = /\.(\w+)$/.exec(filename);
-                const type = match ? `image/${match[1]}` : 'image';
-
-                staffData.append('image', {
-                    uri: image,
-                    name: filename,
-                    type
-                });
-            }
 
             const response = await fetch('https://riyadah.onrender.com/api/staff', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
-                body: staffData
+                body: formData
             });
+
+
+            console.log('Final FormData:', formData);
 
             const data = await response.json();
 
-            console.log('Final FormData:');
-            for (let [key, value] of staffData._parts) {
-                console.log(key, value);
-            }
-            
-            console.log("response ", response.json())
+            console.log("response ", data)
 
             if (!response.ok) {
                 // Handle validation errors from server
