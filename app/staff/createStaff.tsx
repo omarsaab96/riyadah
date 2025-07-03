@@ -4,6 +4,7 @@ import { Picker as RNPicker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -29,6 +30,8 @@ const CreateStaffScreen = () => {
     const [error, setError] = useState('');
     const [image, setImage] = useState(null);
     const [teams, setTeams] = useState([]);
+    const [userId, setUserId] = useState(null);
+    const [user, setUser] = useState(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -89,8 +92,37 @@ const CreateStaffScreen = () => {
             }
         };
 
+        const fetchUser = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            console.log(token)
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                console.log("DECODED: ", decodedToken)
+                setUserId(decodedToken.userId);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
+                }
+                setLoading(false)
+            } else {
+                console.log("no token",)
+            }
+        };
+
+        fetchUser();
         fetchTeams();
     }, []);
+
+    useEffect(() => {
+    }, [user]);
 
     const handleImagePick = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -176,53 +208,63 @@ const CreateStaffScreen = () => {
         try {
             setSaving(true);
             const token = await SecureStore.getItemAsync('userToken');
-
-            // Prepare form data for submission
             const staffData = new FormData();
 
-            // Append all form fields
-            Object.keys(formData).forEach(key => {
-                if (key === 'teams') {
-                    staffData.append(key, JSON.stringify(formData[key]));
-                } else if (typeof formData[key] === 'object' && formData[key] !== null) {
-                    staffData.append(key, JSON.stringify(formData[key]));
-                } else {
-                    staffData.append(key, formData[key]);
-                }
-            });
+            // Append all fields (including nested objects as JSON strings)
+            staffData.append('name', formData.name);
+            staffData.append('email', formData.email);
+            staffData.append('phone', formData.phone || '');
+            staffData.append('role', formData.role);
+            staffData.append('specialization', formData.specialization || '');
+            staffData.append('bio', formData.bio || '');
+            staffData.append('employmentType', formData.employmentType);
+            staffData.append('salary', formData.salary || '');
+            staffData.append('isActive', formData.isActive.toString());
+            staffData.append('club', userId); // Use the club ID from user object
 
-            // Append image if selected
+            // Stringify nested objects
+            staffData.append('emergencyContact', JSON.stringify(formData.emergencyContact));
+            staffData.append('address', JSON.stringify(formData.address));
+
+            // Stringify arrays
+            staffData.append('qualifications', JSON.stringify(formData.qualifications));
+            staffData.append('certifications', JSON.stringify(formData.certifications));
+            staffData.append('teams', JSON.stringify(formData.teams));
+
+            // Handle image upload if exists
             if (image) {
-                const localUri = image;
-                const filename = localUri.split('/').pop();
+                const filename = image.split('/').pop();
                 const match = /\.(\w+)$/.exec(filename);
-                const type = match ? `image/${match[1]}` : `image`;
+                const type = match ? `image/${match[1]}` : 'image';
 
-                staffData.append('image', { uri: localUri, name: filename, type });
+                staffData.append('image', {
+                    uri: image,
+                    name: filename,
+                    type
+                });
             }
 
             const response = await fetch('https://riyadah.onrender.com/api/staff', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
                 },
                 body: staffData
             });
 
-            console.log(staffData)
-
             const data = await response.json();
 
-            console.log(data)
-
-            if (response.ok) {
-                Alert.alert('Success', 'Staff member created successfully!', [
-                    { text: 'OK', onPress: () => router.back() }
-                ]);
-            } else {
-                throw new Error(data.message || 'Failed to create staff member');
+            if (!response.ok) {
+                // Handle validation errors from server
+                const errorMsg = data.errors?.map(e => `${e.path}: ${e.msg}`).join('\n') ||
+                    data.message ||
+                    'Failed to create staff';
+                throw new Error(errorMsg);
             }
+
+            Alert.alert('Success', 'Staff member created successfully!', [
+                { text: 'OK', onPress: () => router.back() }
+            ]);
         } catch (error) {
             console.error('Error creating staff:', error);
             Alert.alert('Error', error.message);

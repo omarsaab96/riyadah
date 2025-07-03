@@ -186,6 +186,7 @@ router.post('/', [
         check('salary', 'Salary must be a number').optional().isNumeric()
     ]
 ], async (req, res) => {
+    console.log(req)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({
