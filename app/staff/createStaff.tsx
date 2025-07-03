@@ -1,5 +1,3 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
@@ -7,7 +5,7 @@ import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Plat
 
 const { width } = Dimensions.get('window');
 
-const CreateEventScreen = () => {
+const CreateStaffScreen = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -195,8 +193,8 @@ const CreateEventScreen = () => {
                     />
 
                     <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>New Event</Text>
-                        {!loading && <Text style={styles.pageDesc}>Create an event for your club</Text>}
+                        <Text style={styles.pageTitle}>New Staff</Text>
+                        {!loading && <Text style={styles.pageDesc}>Add a staff member for your club</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -209,7 +207,7 @@ const CreateEventScreen = () => {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Events</Text>
+                    <Text style={styles.ghostText}>Staff</Text>
                 </View>
 
                 <ScrollView >
@@ -219,204 +217,14 @@ const CreateEventScreen = () => {
                     </View>}
                     <View style={styles.contentContainer}>
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Event Title *</Text>
+                            <Text style={styles.label}>Name</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Enter event title"
+                                placeholder="Enter staff name"
                                 value={formData.title}
                                 onChangeText={(text) => handleChange('title', text)}
                             />
                         </View>
-
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Description</Text>
-                            <TextInput
-                                style={[styles.input]}
-                                placeholder="Enter description"
-                                multiline
-                                value={formData.description}
-                                onChangeText={(text) => handleChange('description', text)}
-                            />
-                        </View>
-
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Event Type *</Text>
-                            <Picker
-                                selectedValue={formData.eventType}
-                                onValueChange={(value) => handleChange('eventType', value)}
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="Training Session" value="Training" />
-                                <Picker.Item label="Match" value="Match" />
-                                <Picker.Item label="Meeting" value="Meeting" />
-                                <Picker.Item label="Tournament" value="Tournament" />
-                            </Picker>
-                        </View>
-
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Team *</Text>
-                            <Picker
-                                selectedValue={formData.team}
-                                onValueChange={(value) => handleChange('team', value)}
-                                style={styles.picker}
-                            >
-                                {teams.map(team => (
-                                    <Picker.Item
-                                        key={team._id}
-                                        label={`${team.name} (${team.sport})`}
-                                        value={team._id}
-                                    />
-                                ))}
-                            </Picker>
-                        </View>
-
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Start Date & Time *</Text>
-                            <View style={styles.dateInput}>
-                                <TextInput
-                                    placeholder="Enter start date and time"
-                                    value={formData.startDateTime.toLocaleString()}
-                                    onChangeText={(text) => handleChange('startDateTime', text)}
-                                />
-                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </View>
-                        </View>
-
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>End Date & Time *</Text>
-                            <View style={styles.dateInput}>
-                                <TextInput
-                                    placeholder="Enter end date and time"
-                                    value={formData.endDateTime.toLocaleString()}
-                                    onChangeText={(text) => handleChange('endDateTime', text)}
-                                />
-                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </View>
-                        </View>
-
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Location Type</Text>
-                            <Picker
-                                selectedValue={formData.locationType}
-                                onValueChange={(value) => handleChange('locationType', value)}
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="Venue" value="Venue" />
-                                <Picker.Item label="Online" value="Online" />
-                                <Picker.Item label="To Be Determined" value="tbd" />
-                            </Picker>
-                        </View>
-
-                        {formData.locationType === 'Venue' && (
-                            <>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Venue Name</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter venue name"
-                                        value={formData.venue.name}
-                                        onChangeText={(text) => handleNestedChange('venue', 'name', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Venue Address</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter venue address"
-                                        value={formData.venue.address}
-                                        onChangeText={(text) => handleNestedChange('venue', 'address', text)}
-                                    />
-                                </View>
-                            </>
-                        )}
-
-                        {formData.locationType === 'Online' && (
-                            <View style={styles.formGroup}>
-                                <Text style={styles.label}>Online Meeting Link</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter meeting link"
-                                    value={formData.onlineLink}
-                                    onChangeText={(text) => handleChange('onlineLink', text)}
-                                />
-                            </View>
-                        )}
-
-                        {formData.eventType === 'Training' && (
-                            <>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Training Focus</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="E.g. Passing drills, defensive positioning"
-                                        value={formData.trainingFocus}
-                                        onChangeText={(text) => handleChange('trainingFocus', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Required Equipment</Text>
-                                    <View style={styles.equipmentContainer}>
-                                        <TextInput
-                                            style={[styles.input, { flex: 1 }]}
-                                            placeholder="Add equipment (e.g. cones, balls)"
-                                            value={equipmentInput}
-                                            onChangeText={setEquipmentInput}
-                                            onSubmitEditing={addEquipment}
-                                        />
-                                        <TouchableOpacity
-                                            style={styles.addButton}
-                                            onPress={addEquipment}
-                                        >
-                                            <Text style={styles.addButtonText}>Add</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                    <View style={styles.equipmentList}>
-                                        {formData.requiredEquipment.map((item, index) => (
-                                            <View key={index} style={styles.equipmentItem}>
-                                                <Text style={styles.equipmentText}>{item}</Text>
-                                                <TouchableOpacity onPress={() => removeEquipment(index)}>
-                                                    <FontAwesome5 name="times" size={14} color="#FF4000" />
-                                                </TouchableOpacity>
-                                            </View>
-                                        ))}
-                                    </View>
-                                </View>
-                            </>
-                        )}
-
-                        {formData.eventType === 'Match' && (
-                            <>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Opponent Name</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter opponent team name"
-                                        value={formData.opponent.name}
-                                        onChangeText={(text) => handleNestedChange('opponent', 'name', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Opponent Logo URL</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter opponent logo URL"
-                                        value={formData.opponent.logo}
-                                        onChangeText={(text) => handleNestedChange('opponent', 'logo', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Home or Away</Text>
-                                    <Picker
-                                        selectedValue={formData.isHomeGame}
-                                        onValueChange={(value) => handleChange('isHomeGame', value)}
-                                        style={styles.picker}
-                                    >
-                                        <Picker.Item label="Home Game" value={true} />
-                                        <Picker.Item label="Away Game" value={false} />
-                                    </Picker>
-                                </View>
-                            </>
-                        )}
 
 
                         <View style={[styles.profileActions, styles.inlineActions]}>
@@ -617,4 +425,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CreateEventScreen;
+export default CreateStaffScreen;

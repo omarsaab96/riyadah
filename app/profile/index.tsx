@@ -33,11 +33,14 @@ export default function Profile() {
     const [user, setUser] = useState(null);
     const [teams, setTeams] = useState(null);
     const [schedule, setSchedule] = useState(null);
+    const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [teamsLoading, setTeamsLoading] = useState(true);
     const [scheduleLoading, setScheduleLoading] = useState(true);
+    const [staffLoading, setStaffLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [adminUser, setAdminUser] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory'];
 
@@ -174,6 +177,33 @@ export default function Profile() {
         }
     }
 
+    const getStaff = async () => {
+        if (user.type == "Club") {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const response = await fetch(`https://riyadah.onrender.com/api/users/club-staff/${user._id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    setStaff(data);
+                } else {
+                    setStaff([]);
+                }
+            } catch (err) {
+                console.error('Failed to fetch staff', err);
+                setStaff([]);
+            } finally {
+                setStaffLoading(false);
+            }
+        }
+    };
+
     const handleEdit = async () => {
         router.push('/profile/editProfile');
         console.log('Edit clicked');
@@ -250,6 +280,11 @@ export default function Profile() {
         if (label == "Schedule") {
             setScheduleLoading(true)
             getSchedule();
+        }
+
+        if (label == "Staff") {
+            setStaffLoading(true);
+            getStaff();
         }
     }
 
@@ -1004,83 +1039,132 @@ export default function Profile() {
 
                             {schedule.length > 0 ? (
                                 <View>
-                                    <View style={styles.calendarContainer}>
-                                        <Text style={styles.monthHeader}>July 2025</Text>
-                                        <View style={styles.daysOfWeek}>
-                                            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                                                <Text key={day} style={styles.dayHeader}>
-                                                    {day}
-                                                </Text>
-                                            ))}
-                                        </View>
+                                    {/** Create a Set of event dates for dots */}
+                                    {(() => {
+                                        const eventDatesSet = new Set(
+                                            schedule.map((event) => {
+                                                const d = new Date(event.startDateTime);
+                                                return d.toISOString().split('T')[0];
+                                            })
+                                        );
 
-
-                                        <View style={styles.calendarGrid}>
-                                            {Array.from({ length: 31 }).map((_, i) => (
-                                                <TouchableOpacity
-                                                    key={i}
-                                                    style={[
-                                                        styles.calendarDay,
-                                                        i + 1 === new Date().getDate() && styles.currentDay,
-                                                    ]}
-                                                >
-                                                    <Text style={[styles.dayNumber, i + 1 === new Date().getDate() && styles.currentDayText]}>{i + 1}</Text>
-                                                    {i % 5 === 0 && (
-                                                        <View style={styles.eventDot} />
-                                                    )}
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-
-                                    <View>
-                                        <Text style={styles.subSectionTitle}>Upcoming Events</Text>
-                                        {schedule.map((event) => {
-                                            const eventDate = new Date(event.startDateTime);
-                                            const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                            const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
+                                        const selectedDayEvents = schedule.filter((event) => {
+                                            const d = new Date(event.startDateTime);
                                             return (
-                                                <TouchableOpacity
-                                                    key={event._id}
-                                                    style={styles.eventCard}
-                                                    onPress={() => router.push(`/schedule/${event._id}`)}
-                                                >
-                                                    <View style={styles.eventDate}>
-                                                        <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
-                                                        <Text style={styles.eventMonth}>
-                                                            {eventDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
-                                                        </Text>
-                                                    </View>
-                                                    <View style={styles.eventDetails}>
-                                                        <Text style={styles.eventTitle}>{event.title}</Text>
-                                                        <Text style={styles.eventTime}>
-                                                            {formattedTime} - {endTime}
-                                                        </Text>
-                                                        <Text style={styles.eventLocation}>
-                                                            {event.locationType === 'online'
-                                                                ? 'Online Event'
-                                                                : event.venue?.name || 'Location TBD'}
-                                                        </Text>
-                                                        {event.eventType === 'match' && event.opponent && (
-                                                            <View style={styles.opponentContainer}>
-                                                                <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
-                                                            </View>
-                                                        )}
-                                                    </View>
-                                                    <TouchableOpacity
-                                                        style={styles.eventAction}
-                                                        onPress={(e) => {
-                                                            e.stopPropagation();
-                                                            // Handle menu press
-                                                        }}
-                                                    >
-                                                        <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
-                                                    </TouchableOpacity>
-                                                </TouchableOpacity>
+                                                d.getFullYear() === selectedDate.getFullYear() &&
+                                                d.getMonth() === selectedDate.getMonth() &&
+                                                d.getDate() === selectedDate.getDate()
                                             );
-                                        })}
-                                    </View>
+                                        });
+
+                                        return (
+                                            <>
+                                                <View style={styles.calendarContainer}>
+                                                    <Text style={styles.monthHeader}>July 2025</Text>
+                                                    <View style={styles.daysOfWeek}>
+                                                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                                                            <Text key={day} style={styles.dayHeader}>
+                                                                {day}
+                                                            </Text>
+                                                        ))}
+                                                    </View>
+
+                                                    <View style={styles.calendarGrid}>
+                                                        {Array.from({ length: 31 }).map((_, i) => {
+                                                            const day = i + 1;
+                                                            const dateStr = `2025-07-${String(day).padStart(2, '0')}`;
+                                                            const isToday =
+                                                                new Date().getDate() === day &&
+                                                                new Date().getMonth() === 6 &&
+                                                                new Date().getFullYear() === 2025;
+                                                            const isSelected =
+                                                                selectedDate.getDate() === day &&
+                                                                selectedDate.getMonth() === 6 &&
+                                                                selectedDate.getFullYear() === 2025;
+
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    key={day}
+                                                                    style={[
+                                                                        styles.calendarDay,
+                                                                        isToday && styles.currentDay,
+                                                                        isSelected && styles.selectedDay,
+                                                                    ]}
+                                                                    onPress={() => setSelectedDate(new Date(`2025-07-${day}`))}
+                                                                >
+                                                                    <Text
+                                                                        style={[
+                                                                            styles.dayNumber,
+                                                                            isToday && styles.currentDayText,
+                                                                            isSelected && styles.selectedDayText,
+                                                                        ]}
+                                                                    >
+                                                                        {day}
+                                                                    </Text>
+                                                                    {eventDatesSet.has(dateStr) && (
+                                                                        <View style={styles.eventDot} />
+                                                                    )}
+                                                                </TouchableOpacity>
+                                                            );
+                                                        })}
+                                                    </View>
+                                                </View>
+
+                                                <View>
+                                                    <Text style={styles.subSectionTitle}>Upcoming Events</Text>
+                                                    {selectedDayEvents.length > 0 ? (
+                                                        selectedDayEvents.map((event) => {
+                                                            const eventDate = new Date(event.startDateTime);
+                                                            const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                            const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    key={event._id}
+                                                                    style={styles.eventCard}
+                                                                    onPress={() => router.push(`/schedule/${event._id}`)}
+                                                                >
+                                                                    <View style={styles.eventDate}>
+                                                                        <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
+                                                                        <Text style={styles.eventMonth}>
+                                                                            {eventDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
+                                                                        </Text>
+                                                                    </View>
+                                                                    <View style={styles.eventDetails}>
+                                                                        <Text style={styles.eventTitle}>{event.title}</Text>
+                                                                        <Text style={styles.eventTime}>
+                                                                            {formattedTime} - {endTime}
+                                                                        </Text>
+                                                                        <Text style={styles.eventLocation}>
+                                                                            {event.locationType === 'online'
+                                                                                ? 'Online Event'
+                                                                                : event.venue?.name || 'Location TBD'}
+                                                                        </Text>
+                                                                        {event.eventType === 'match' && event.opponent && (
+                                                                            <View style={styles.opponentContainer}>
+                                                                                <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                                            </View>
+                                                                        )}
+                                                                    </View>
+                                                                    <TouchableOpacity
+                                                                        style={styles.eventAction}
+                                                                        onPress={(e) => {
+                                                                            e.stopPropagation();
+                                                                            // Handle menu press
+                                                                        }}
+                                                                    >
+                                                                        <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
+                                                                    </TouchableOpacity>
+                                                                </TouchableOpacity>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <Text style={styles.noEventsText}>No events for this day.</Text>
+                                                    )}
+                                                </View>
+                                            </>
+                                        );
+                                    })()}
                                 </View>
                             ) : (
                                 <View style={styles.emptyState}>
@@ -1102,7 +1186,6 @@ export default function Profile() {
                             )}
                         </View>
                     )}
-
                 </Animated.ScrollView>
             }
 
@@ -1115,12 +1198,116 @@ export default function Profile() {
                     )}
                     scrollEventThrottle={16}
                 >
-
                     <View style={styles.contentContainer}>
-                        <Text>STAFF TAB</Text>
-                        <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
-                        //manage staff, coaches, admins, board members...
-                        </Text>
+                        {staffLoading ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#FF4000"
+                                    style={{ transform: [{ scale: 1.25 }] }}
+                                />
+                            </View>
+                        ) : staff.length > 0 ? (
+                            <View>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>Club Staff</Text>
+                                    {userId == user._id && (
+                                        <TouchableOpacity
+                                            style={styles.addButton}
+                                            onPress={() => router.push('/staff/createStaff')}
+                                        >
+                                            <Text style={styles.addButtonText}>+ Add Staff</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                                <View>
+                                    {staff.map((member, index) => (
+                                        <TouchableOpacity
+                                            key={member._id}
+                                            style={styles.staffCard}
+                                            onPress={() => router.push(`/staff/${member._id}`)}
+                                        >
+                                            <View style={styles.staffHeader}>
+                                                {member.image ? (
+                                                    <Image
+                                                        source={{ uri: member.image }}
+                                                        style={styles.staffAvatar}
+                                                        resizeMode="cover"
+                                                    />
+                                                ) : (
+                                                    <View style={[styles.staffAvatar, styles.defaultStaffAvatar]}>
+                                                        <FontAwesome5 name="user" size={24} color="#fff" />
+                                                    </View>
+                                                )}
+                                                <View style={styles.staffInfo}>
+                                                    <Text style={styles.staffName}>{member.name}</Text>
+                                                    <Text style={styles.staffRole}>{member.role || 'Staff Member'}</Text>
+                                                </View>
+                                                <View style={styles.staffStats}>
+                                                    <Text style={styles.staffStatValue}>
+                                                        {member.teams?.length || 0}
+                                                    </Text>
+                                                    <Text style={styles.staffStatLabel}>
+                                                        {member.teams?.length === 1 ? 'Team' : 'Teams'}
+                                                    </Text>
+                                                </View>
+                                            </View>
+
+                                            <View style={styles.staffContact}>
+                                                {member.phone && (
+                                                    <TouchableOpacity
+                                                        style={styles.contactButton}
+                                                        onPress={() => Linking.openURL(`tel:${member.phone}`)}
+                                                    >
+                                                        <FontAwesome5 name="phone" size={16} color="#FF4000" />
+                                                        <Text style={styles.contactButtonText}>Call</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                                {member.email && (
+                                                    <TouchableOpacity
+                                                        style={styles.contactButton}
+                                                        onPress={() => Linking.openURL(`mailto:${member.email}`)}
+                                                    >
+                                                        <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
+                                                        <Text style={styles.contactButtonText}>Email</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        ) : (
+                            <View>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>Club Staff</Text>
+                                    {userId == user._id && (
+                                        <TouchableOpacity
+                                            style={styles.addButton}
+                                            onPress={() => router.push('/staff/createStaff')}
+                                        >
+                                            <Text style={styles.addButtonText}>+ Add Staff</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                                <View style={styles.emptyState}>
+                                    <Text style={styles.emptyStateTitle}>No Staff Members</Text>
+                                    <Text style={styles.emptyStateText}>
+                                        {userId == user._id
+                                            ? "Add your first staff member to get started"
+                                            : "This club hasn't added any staff members yet"}
+                                    </Text>
+                                    {userId == user._id && (
+                                        <TouchableOpacity
+                                            style={styles.emptyStateButton}
+                                            onPress={() => router.push('/staff/createStaff')}
+                                        >
+                                            <Text style={styles.emptyStateButtonText}>Add Staff</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        )}
                     </View>
                 </Animated.ScrollView>
             }
@@ -1693,15 +1880,21 @@ const styles = StyleSheet.create({
         width: `${100 / 7}%`,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingTop: 5,
+        paddingVertical: 5,
     },
     currentDay: {
+        borderRadius: 20,
+        backgroundColor: '#dddddd'
+    },
+    selectedDay: {
         backgroundColor: '#FF4000',
         borderRadius: 20,
     },
     currentDayText: {
-        color: 'white',
         fontWeight: 'bold'
+    },
+    selectedDayText: {
+        color: 'white',
     },
     dayNumber: {
         fontFamily: 'Manrope',
@@ -1709,10 +1902,12 @@ const styles = StyleSheet.create({
         color: '#111111',
     },
     eventDot: {
+        position: 'absolute',
         width: 5,
         height: 5,
         borderRadius: 3,
         backgroundColor: '#FF4000',
+        bottom: 0,
     },
     eventCard: {
         flexDirection: 'row',
@@ -1777,5 +1972,90 @@ const styles = StyleSheet.create({
         color: '#111111',
         marginBottom: 15,
         marginTop: 10,
+    },
+    noEventsText: {
+
+    },
+    opponentContainer: {
+
+    },
+    opponentText: {
+
+    },
+    staffCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 15,
+        marginBottom: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    staffHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    staffAvatar: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginRight: 15,
+    },
+    defaultStaffAvatar: {
+        backgroundColor: '#FF4000',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    staffInfo: {
+        flex: 1,
+    },
+    staffName: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        color: '#111111',
+    },
+    staffRole: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#666666',
+    },
+    staffStats: {
+        alignItems: 'center',
+        marginLeft: 10,
+    },
+    staffStatValue: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        color: '#FF4000',
+    },
+    staffStatLabel: {
+        fontFamily: 'Manrope',
+        fontSize: 12,
+        color: '#666666',
+    },
+    staffContact: {
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        borderTopWidth: 1,
+        borderTopColor: '#eeeeee',
+        paddingTop: 10,
+        gap: 10,
+    },
+    contactButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 64, 0, 0.1)',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        gap: 5,
+    },
+    contactButtonText: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#FF4000',
     },
 });
