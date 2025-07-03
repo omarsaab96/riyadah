@@ -220,16 +220,29 @@ const CreateStaffScreen = () => {
             staffData.append('employmentType', formData.employmentType);
             staffData.append('salary', formData.salary || '');
             staffData.append('isActive', formData.isActive.toString());
-            staffData.append('club', userId); // Use the club ID from user object
+            staffData.append('club', user?._id || userId);
 
             // Stringify nested objects
-            staffData.append('emergencyContact', JSON.stringify(formData.emergencyContact));
-            staffData.append('address', JSON.stringify(formData.address));
+            staffData.append('emergencyContact[name]', formData.emergencyContact.name);
+            staffData.append('emergencyContact[relationship]', formData.emergencyContact.relationship);
+            staffData.append('emergencyContact[phone]', formData.emergencyContact.phone);
+
+            staffData.append('address[street]', formData.address.street);
+            staffData.append('address[city]', formData.address.city);
+            staffData.append('address[state]', formData.address.state);
+            staffData.append('address[postalCode]', formData.address.postalCode);
+            staffData.append('address[country]', formData.address.country);
 
             // Stringify arrays
-            staffData.append('qualifications', JSON.stringify(formData.qualifications));
-            staffData.append('certifications', JSON.stringify(formData.certifications));
-            staffData.append('teams', JSON.stringify(formData.teams));
+            formData.qualifications.forEach((qual, index) => {
+                staffData.append(`qualifications[${index}]`, qual);
+            });
+            formData.certifications.forEach((cert, index) => {
+                staffData.append(`certifications[${index}]`, cert);
+            });
+            formData.teams.forEach((teamId, index) => {
+                staffData.append(`teams[${index}]`, teamId);
+            });
 
             // Handle image upload if exists
             if (image) {
@@ -253,6 +266,13 @@ const CreateStaffScreen = () => {
             });
 
             const data = await response.json();
+
+            console.log('Final FormData:');
+            for (let [key, value] of staffData._parts) {
+                console.log(key, value);
+            }
+            
+            console.log("response ", response.json())
 
             if (!response.ok) {
                 // Handle validation errors from server
