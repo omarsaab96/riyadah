@@ -6,6 +6,7 @@ const notificationsRoutes = require('./routes/notificationsRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const teamsRoutes = require('./routes/teamRoutes');
 const schedulesRoutes = require('./routes/scheduleRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/users', userRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/schedules', schedulesRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/removeBG', imageRoutes);
 
