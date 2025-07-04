@@ -34,10 +34,12 @@ export default function Profile() {
     const [teams, setTeams] = useState(null);
     const [schedule, setSchedule] = useState(null);
     const [staff, setStaff] = useState([]);
+    const [inventory, setInventory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [teamsLoading, setTeamsLoading] = useState(true);
     const [scheduleLoading, setScheduleLoading] = useState(true);
     const [staffLoading, setStaffLoading] = useState(true);
+    const [inventoryLoading, setInventoryLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [adminUser, setAdminUser] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -190,8 +192,6 @@ export default function Profile() {
                 });
                 const data = await response.json();
 
-                console.log("data", data)
-                
                 if (response.ok) {
                     setStaff(data);
                 } else {
@@ -202,6 +202,34 @@ export default function Profile() {
                 setStaff([]);
             } finally {
                 setStaffLoading(false);
+            }
+        }
+    };
+
+    const getInventory = async () => {
+        if (user?.type === "Club") {
+            try {
+                setInventoryLoading(true);
+                const token = await SecureStore.getItemAsync('userToken');
+                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                console.log(data)
+                if (response.ok) {
+                    setInventory(data.data);
+                } else {
+                    setInventory([]);
+                }
+            } catch (err) {
+                console.error('Failed to fetch inventory', err);
+                setInventory([]);
+            } finally {
+                setInventoryLoading(false);
             }
         }
     };
@@ -287,6 +315,11 @@ export default function Profile() {
         if (label == "Staff") {
             setStaffLoading(true);
             getStaff();
+        }
+
+        if (label == "Staff") {
+            setInventoryLoading(true);
+            getInventory();
         }
     }
 
@@ -1209,7 +1242,7 @@ export default function Profile() {
                                     style={{ transform: [{ scale: 1.25 }] }}
                                 />
                             </View>
-                        ) : staff.length > 0 ? (
+                        ) : staff.data.length > 0 ? (
                             <View>
                                 <View style={styles.sectionHeader}>
                                     <Text style={styles.sectionTitle}>Club Staff</Text>
@@ -1223,11 +1256,11 @@ export default function Profile() {
                                     )}
                                 </View>
                                 <View>
-                                    {staff.map((member, index) => (
+                                    {staff.data.map((member, index) => (
                                         <TouchableOpacity
                                             key={member._id}
                                             style={styles.staffCard}
-                                            onPress={() => router.push(`/staff/${member._id}`)}
+                                            onPress={() => router.push(`/staff/details?id=${member._id}`)}
                                         >
                                             <View style={styles.staffHeader}>
                                                 {member.image ? (
@@ -1325,11 +1358,56 @@ export default function Profile() {
                 >
 
                     <View style={styles.contentContainer}>
-                        <Text>INVENTORY TAB</Text>
+                        {inventoryLoading ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#FF4000"
+                                    style={{ transform: [{ scale: 1.25 }] }}
+                                />
+                            </View>
+                        ) : inventory.length === 0 ? (
+                            <View>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>Club Inventory</Text>
+                                    {userId == user._id && (
+                                        <TouchableOpacity
+                                            style={styles.addButton}
+                                            onPress={() => router.push('/inventory/createInventory')}
+                                        >
+                                            <Text style={styles.addButtonText}>+ Add Inventory</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                                <View style={styles.emptyState}>
+                                    <Text style={styles.emptyStateTitle}>Inventory Empty</Text>
+                                    <Text style={styles.emptyStateText}>
+                                        {userId == user._id
+                                            ? "Add your first inventory to get started"
+                                            : "This club hasn't added any inventories yet"}
+                                    </Text>
+                                    {userId == user._id && (
+                                        <TouchableOpacity
+                                            style={styles.emptyStateButton}
+                                            onPress={() => router.push('/inventory/createInventory')}
+                                        >
+                                            <Text style={styles.emptyStateButtonText}>Add Inventory</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
 
-                        <Text style={[styles.paragraph, { backgroundColor: '#cccccc', borderRadius: 10, padding: 5, marginBottom: 20, opacity: 0.5 }]}>
-                        //keep track of stock for sports equipment, sportswear, jerseys and accessories
-                        </Text>
+                            </View>
+                        ) : (
+                            inventory.map((item) => (
+                                <View key={item._id} style={styles.inventoryItem}>
+                                    <Text style={styles.inventoryItemName}>{item.itemName}</Text>
+                                    <Text>Category: {item.category}</Text>
+                                    <Text>Quantity: {item.quantity}</Text>
+                                    <Text>Unit Price: ${item.unitPrice?.toFixed(2) || '0.00'}</Text>
+                                    {item.description ? <Text>Description: {item.description}</Text> : null}
+                                </View>
+                            ))
+                        )}
                     </View>
                 </Animated.ScrollView>
             }
@@ -2059,5 +2137,23 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 14,
         color: '#FF4000',
+    },
+    inventoryItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+        backgroundColor: '#fff',
+        marginBottom: 8,
+        borderRadius: 8,
+        marginHorizontal: 16,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        shadowOffset: { width: 0, height: 2 },
+    },
+    inventoryItemName: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginBottom: 4,
     },
 });
