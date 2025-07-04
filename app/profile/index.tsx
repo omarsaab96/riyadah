@@ -1242,7 +1242,7 @@ export default function Profile() {
                                     style={{ transform: [{ scale: 1.25 }] }}
                                 />
                             </View>
-                        ) : staff.data.length > 0 ? (
+                        ) : staff && staff.data?.length > 0 ? (
                             <View>
                                 <View style={styles.sectionHeader}>
                                     <Text style={styles.sectionTitle}>Club Staff</Text>
@@ -1256,7 +1256,7 @@ export default function Profile() {
                                     )}
                                 </View>
                                 <View>
-                                    {staff.data.map((member, index) => (
+                                    {staff && staff.data?.map((member, index) => (
                                         <TouchableOpacity
                                             key={member._id}
                                             style={styles.staffCard}
