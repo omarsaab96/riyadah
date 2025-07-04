@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
 
 // Get staff by club
 router.post('/byClub/:id', async (req, res) => {
-  const { id } = req.params.id;
+  const { id } = req.params;
 
   if (!id) {
     return res.status(400).json({

@@ -181,8 +181,8 @@ export default function Profile() {
         if (user.type == "Club") {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`https://riyadah.onrender.com/api/staff/byClub/${user._id}`, {
-                    method: 'GET',
+                const response = await fetch(`https://riyadah.onrender.com/api/staff/byClub/${userId}`, {
+                    method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -190,6 +190,8 @@ export default function Profile() {
                 });
                 const data = await response.json();
 
+                console.log("data", data)
+                
                 if (response.ok) {
                     setStaff(data);
                 } else {
