@@ -20,9 +20,12 @@ const authenticateToken = (req, res, next) => {
 // Create inventory item
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { itemName, category, quantity, unitPrice, description, image } = req.body;
-    const club = req.user.id; // assuming your auth middleware sets req.user
+    const { itemName, category, quantity, unitPrice, description, image, club } = req.body;
 
+    if (!club) {
+      return res.status(400).json({ success: false, message: 'Club is required' });
+    }
+    
     if (!itemName) {
       return res.status(400).json({ success: false, message: 'Item name is required' });
     }
