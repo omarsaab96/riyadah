@@ -211,7 +211,7 @@ export default function Profile() {
             try {
                 setInventoryLoading(true);
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub`, {
+                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
