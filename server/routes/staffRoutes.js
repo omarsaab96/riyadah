@@ -48,6 +48,33 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get staff by club
+router.post('/byClub/:id', async (req, res) => {
+  const { id } = req.params.id;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: 'Club id is required'
+    });
+  }
+
+  try {
+    const staff = await Staff.find({ club: id }).populate('teams');
+
+    res.json({
+      success: true,
+      data: staff
+    });
+  } catch (err) {
+    console.error('Error fetching staff by club:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 // Get staff by ID
 router.get('/:id', async (req, res) => {
   try {

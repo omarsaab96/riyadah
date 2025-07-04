@@ -22,6 +22,11 @@ const staffSchema = new mongoose.Schema(
       month: Number,
       year: Number,
     },
+    club: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Club',
+      required: true
+    },
     role: {
       type: String,
       enum: [

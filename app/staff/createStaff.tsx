@@ -40,6 +40,7 @@ const CreateStaffScreen = () => {
         role: 'Coach',
         specialization: '',
         bio: '',
+        club: '',
         qualifications: [],
         certifications: [],
         employmentType: 'Full-time',
@@ -205,6 +206,11 @@ const CreateStaffScreen = () => {
             return;
         }
 
+        const dataToSubmit = {
+            ...formData,
+            club: userId
+        };
+
         try {
             setSaving(true);
             const token = await SecureStore.getItemAsync('userToken');
@@ -215,7 +221,7 @@ const CreateStaffScreen = () => {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                body: formData
+                body: JSON.stringify(dataToSubmit)
             });
 
 

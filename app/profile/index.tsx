@@ -181,7 +181,7 @@ export default function Profile() {
         if (user.type == "Club") {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`https://riyadah.onrender.com/api/users/club-staff/${user._id}`, {
+                const response = await fetch(`https://riyadah.onrender.com/api/staff/byClub/${user._id}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
