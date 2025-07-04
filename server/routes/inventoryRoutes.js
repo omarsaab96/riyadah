@@ -25,7 +25,7 @@ router.post('/', authenticateToken, async (req, res) => {
     if (!club) {
       return res.status(400).json({ success: false, message: 'Club is required' });
     }
-    
+
     if (!itemName) {
       return res.status(400).json({ success: false, message: 'Item name is required' });
     }
@@ -52,8 +52,9 @@ router.post('/', authenticateToken, async (req, res) => {
 // Get all inventory items by club (authenticated)
 router.get('/byClub/:id', authenticateToken, async (req, res) => {
   try {
-    const clubid = req.params;
-    const items = await Inventory.find({ clubid });
+    const clubId = req.params.id;
+
+    const items = await Inventory.find({ club: clubId });
     res.json({ success: true, data: items });
   } catch (err) {
     console.error('Error fetching inventory:', err);
