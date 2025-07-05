@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema({
         role: String,
         location: String,
         since: String,
+        independent: Boolean
     },
     gender: String,
     image: String,

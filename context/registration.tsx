@@ -44,6 +44,7 @@ interface RegistrationData {
     role: string | null;
     location: string | null;
     since: string | null;
+    independent: boolean;
   }
   gender: string | null;
   bio: string | null;
@@ -126,6 +127,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       role: null,
       location: null,
       since: null,
+      independent: false
     },
     skills: {
       attack: 0,
@@ -147,15 +149,38 @@ export const RegistrationProvider = ({ children }: Props) => {
       phone: null,
       country: null,
       password: null,
+      teams: null,
       admin: {
         id: null,
         name: null,
         email: null
       },
+      contactInfo: {
+        phone: null,
+        email: null,
+        facebook: null,
+        instagram: null,
+        whatsapp: null,
+        telegram: null,
+        tiktok: null,
+        snapchat: null,
+        location: {
+          latitude: null,
+          longitude: null
+        },
+        description: null
+      },
       dob: {
         day: null,
         month: null,
         year: null
+      },
+      organization: {
+        name: null,
+        role: null,
+        location: null,
+        since: null,
+        independent: false
       },
       children: null,
       parentEmail: null,

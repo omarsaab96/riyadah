@@ -19,7 +19,12 @@ export default function WizardStep3() {
     const { formData, updateFormData } = useRegistration();
     const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : []);
     const [error, setError] = useState<string | null>(null);
-    const [independent, setIndependent] = useState<boolean>(formData.organization == 'Independent' ? true : false);
+    const [independent, setIndependent] = useState<boolean>(formData.organization.independent ? true : false);
+
+    const [orgName, setOrgName] = useState<string | null>(formData.organization.name | null);
+    const [orgLocation, setOrgLocation] = useState<string | null>(formData.organization.location | null);
+    const [orgRole, setOrgRole] = useState<string | null>(formData.organization.role | null);
+    const [orgSince, setOrgSince] = useState<string | null>(formData.organization.since | null);
 
 
     useEffect(() => {
@@ -127,7 +132,7 @@ export default function WizardStep3() {
                                     style={styles.input}
                                     placeholder="Organization name"
                                     placeholderTextColor="#A8A8A8"
-                                    value={formData.organization.name}
+                                    value={formData.organization?.name}
                                     onChangeText={(text) => handleNestedChange('organization', 'name', text)}
                                 />
                             </View>
@@ -139,7 +144,7 @@ export default function WizardStep3() {
                                     style={styles.input}
                                     placeholder="Organization Location"
                                     placeholderTextColor="#A8A8A8"
-                                    value={formData.organization.name}
+                                    value={formData.organization?.location}
                                     onChangeText={(text) => handleNestedChange('organization', 'location', text)}
                                 />
                             </View>
@@ -151,7 +156,7 @@ export default function WizardStep3() {
                                     style={styles.input}
                                     placeholder="Your rolerol"
                                     placeholderTextColor="#A8A8A8"
-                                    value={formData.organization.name}
+                                    value={formData.organization?.role}
                                     onChangeText={(text) => handleNestedChange('organization', 'role', text)}
                                 />
                             </View>
@@ -163,7 +168,7 @@ export default function WizardStep3() {
                                     style={styles.input}
                                     placeholder="YYYY"
                                     placeholderTextColor="#A8A8A8"
-                                    value={formData.organization.name}
+                                    value={formData.organization.since}
                                     onChangeText={(text) => handleNestedChange('organization', 'since', text)}
                                 />
                             </View>
