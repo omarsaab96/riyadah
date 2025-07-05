@@ -19,6 +19,8 @@ export default function WizardStep3() {
     const { formData, updateFormData } = useRegistration();
     const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : []);
     const [error, setError] = useState<string | null>(null);
+    const [independent, setIndependent] = useState<boolean>(formData.organization == 'Independent' ? true : false);
+
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -35,7 +37,7 @@ export default function WizardStep3() {
         if (selected.length > 0) {
             updateFormData({ sport: selected });
 
-            if (formData.type === "Club") {
+            if (formData.type === "Club" || formData.type === "Scout") {
                 router.push('/wizard/step5');
             } else {
                 router.push('/wizard/step4');
@@ -46,7 +48,7 @@ export default function WizardStep3() {
     }
 
     const toggleSportSelection = (label: string) => {
-        if (formData.type === "Club") {
+        if (formData.type === "Club" || formData.type === "Scout") {
             setSelected(prev =>
                 prev.includes(label)
                     ? prev.filter(item => item !== label) // Remove if already selected
@@ -55,6 +57,21 @@ export default function WizardStep3() {
         } else {
             setSelected([label]); // Single selection for non-Club users
         }
+    };
+
+    const toggleCheckbox = () => {
+        setIndependent(prev => !prev);
+    };
+
+    // Create a handler for nested state updates
+    const handleNestedChange = (parentField: string, fieldName: string, value: string) => {
+        updateFormData(prev => ({
+            ...prev,
+            [parentField]: {
+                ...prev[parentField],
+                [fieldName]: value
+            }
+        }));
     };
 
     return (
@@ -68,58 +85,140 @@ export default function WizardStep3() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>
-                        Sport type
+                        {formData.type !== "Scout" ? 'Sport type' : 'Organization'}
                     </Text>
                     <Text style={styles.pageDesc}>
-                        What do you do?
+                        {formData.type !== "Scout" ? 'What do you do?' : 'What organization do yo work for?'}
                     </Text>
                 </View>
 
                 <Text style={styles.ghostText}>
-                    Sport
+                    {formData.type !== "Scout" ? 'Sport' : 'Organi'}
                 </Text>
 
             </View>
+            <ScrollView>
+                {formData.type == "Scout" &&
+                    <View >
+                        <View style={styles.form}>
+                            {error != null && <View style={styles.error}>
+                                <View style={styles.errorIcon}></View>
+                                <Text style={styles.errorText}>{error}</Text>
+                            </View>}
+                            <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+                                <View style={styles.checkbox}>
+                                    {independent && <View style={styles.checked} >
+                                        <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+                                    </View>}
+                                </View>
 
-            <View style={styles.form}>
-                {error != null && <View style={styles.error}>
-                    <View style={styles.errorIcon}></View>
-                    <Text style={styles.errorText}>{error}</Text>
-                </View>}
-                <TextInput
-                    style={styles.input}
-                    placeholder="Search"
-                    placeholderTextColor="#A8A8A8"
-                    value={keyword}
-                    onChangeText={setKeyword}
-                />
-            </View>
-
-            <ScrollView >
-
-                <View style={styles.wizardContainer}>
-                    {sportTypes.map(({ label, icon }) => {
-                        const isSelected = selected.includes(label);
-                        return (
-                            <TouchableOpacity
-                                key={label}
-                                style={[
-                                    styles.accountOption,
-                                    isSelected && styles.accountOptionSelected
-                                ]}
-                                onPress={() => toggleSportSelection(label)}
-                            >
-                                <Image source={icon} style={styles.icon} resizeMode="contain" />
-                                <Text style={[
-                                    styles.accountText,
-                                    isSelected && styles.accountTextSelected
-                                ]}>
-                                    {label}
+                                <Text style={styles.label}>
+                                    I don't have an organization. I am independent
                                 </Text>
                             </TouchableOpacity>
-                        );
-                    })}
+                        </View>
 
+                        {!independent && <View style={styles.form}>
+                            <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Organization name
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Organization name"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={formData.organization.name}
+                                    onChangeText={(text) => handleNestedChange('organization', 'name', text)}
+                                />
+                            </View>
+                            <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Organization Location
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Organization Location"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={formData.organization.name}
+                                    onChangeText={(text) => handleNestedChange('organization', 'location', text)}
+                                />
+                            </View>
+                            <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Your role in the organization
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Your rolerol"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={formData.organization.name}
+                                    onChangeText={(text) => handleNestedChange('organization', 'role', text)}
+                                />
+                            </View>
+                            <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    In What year did you start working with the organization?
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="YYYY"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={formData.organization.name}
+                                    onChangeText={(text) => handleNestedChange('organization', 'since', text)}
+                                />
+                            </View>
+
+                        </View>
+                        }
+
+                        <View style={styles.form}>
+                            <Text style={styles.title}>
+                                What sports are you interested in?
+                            </Text>
+                        </View>
+
+                    </View>
+                }
+
+                <View style={{ paddingBottom: 40 }}>
+                    <View style={styles.form}>
+                        {error != null && <View style={styles.error}>
+                            <View style={styles.errorIcon}></View>
+                            <Text style={styles.errorText}>{error}</Text>
+                        </View>}
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Search"
+                            placeholderTextColor="#A8A8A8"
+                            value={keyword}
+                            onChangeText={setKeyword}
+                        />
+                    </View>
+
+                    <View style={styles.wizardContainer}>
+                        {sportTypes.map(({ label, icon }) => {
+                            const isSelected = selected.includes(label);
+                            return (
+                                <TouchableOpacity
+                                    key={label}
+                                    style={[
+                                        styles.accountOption,
+                                        isSelected && styles.accountOptionSelected
+                                    ]}
+                                    onPress={() => toggleSportSelection(label)}
+                                >
+                                    <Image source={icon} style={styles.icon} resizeMode="contain" />
+                                    <Text style={[
+                                        styles.accountText,
+                                        isSelected && styles.accountTextSelected
+                                    ]}>
+                                        {label}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+
+                    </View>
                 </View>
             </ScrollView>
 
@@ -286,5 +385,43 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Manrope',
-    }
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20
+    },
+    checkbox: {
+        width: 16,
+        height: 16,
+        borderWidth: 1,
+        borderColor: '#000000',
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    checked: {
+        width: 16,
+        height: 16,
+        backgroundColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    checkImage: {
+        width: 16,
+        height: 16,
+        resizeMode: 'contain',
+    },
+    label: {
+        color: '#000000',
+        fontFamily: 'Manrope'
+    },
+    entity: {
+        marginBottom: 20
+    },
+    title: {
+        fontFamily: "Bebas",
+        fontSize: 20,
+        marginBottom: 10
+    },
 });

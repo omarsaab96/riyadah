@@ -434,25 +434,25 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 12,
-        fontFamily: 'Manrope',
-        fontSize: 16,
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10
     },
     inputError: {
         borderColor: '#FF4000',
     },
     pickerContainer: {
-        borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 8,
         overflow: 'hidden',
     },
     picker: {
         width: '100%',
         fontFamily: 'Manrope',
+        borderWidth: 0,
+        backgroundColor: '#F4F4F4',
     },
     submitButton: {
         backgroundColor: '#FF4000',

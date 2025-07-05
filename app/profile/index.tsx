@@ -247,7 +247,21 @@ export default function Profile() {
         let progress = 0;
         let filledFields = 0;
 
-        if (user.type == "Club") {
+        if (user.type == "Scout") {
+            const totalFields = 8;
+
+            if (user.name != null) filledFields++;
+            if (user.email != null) filledFields++;
+            if (user.phone != null) filledFields++;
+            if (user.country != null) filledFields++;
+            if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
+            if (user.type != null) filledFields++;
+            if (user.sport != null && user.sport.length >= 1) filledFields++;
+            if (user.bio != null) filledFields++;
+
+            progress = Math.round((filledFields / totalFields) * 100);
+
+        } else if (user.type == "Club") {
             const totalFields = 11;
 
             if (user.name != null) filledFields++;
@@ -515,7 +529,7 @@ export default function Profile() {
                                             CONTACT
                                         </Text>
                                         <View>
-                                            {user.contactInfo?.description != null &&
+                                            {user.contactInfo?.description != null && user.type == "Club" &&
                                                 <View style={styles.contactDescription}>
                                                     <Text>{user.contactInfo?.description}</Text>
                                                 </View>
@@ -804,7 +818,7 @@ export default function Profile() {
                         </View>
 
                         {/* HIGHLIGHTS */}
-                        <View style={styles.profileSection}>
+                        {user.type != "Scout" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Highlights
                             </Text>}
@@ -817,10 +831,10 @@ export default function Profile() {
                                 <Text style={styles.paragraph}>-</Text>
                             )}
 
-                        </View>
+                        </View>}
 
                         {/* STATS */}
-                        <View style={styles.profileSection}>
+                        {user.type != "Scout" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Stats
                             </Text>}
@@ -832,10 +846,10 @@ export default function Profile() {
                             ) : (
                                 <Text style={styles.paragraph}>-</Text>
                             )}
-                        </View>
+                        </View>}
 
                         {/* ACHIEVEMENTS */}
-                        {user.type != "Club" && <View style={styles.profileSection}>
+                        {user.type != "Club" && user.type != "Scout" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Achievements
                             </Text>
@@ -852,7 +866,7 @@ export default function Profile() {
                         </View>}
 
                         {/* EVENTS */}
-                        <View style={styles.profileSection}>
+                        {user.type != "Scout" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Upcoming Events
                             </Text>}
@@ -864,7 +878,7 @@ export default function Profile() {
                             ) : (
                                 <Text style={styles.paragraph}>-</Text>
                             )}
-                        </View>
+                        </View>}
 
                         {/* SKILLS */}
                         {user.type == "Athlete" && <View style={styles.profileSection}>
@@ -1347,7 +1361,7 @@ export default function Profile() {
                 </Animated.ScrollView>
             }
 
-            {/* inventoryTabs */}
+            {/* inventoryTab */}
             {
                 !loading && user && activeTab == "Inventory" && <Animated.ScrollView
                     onScroll={Animated.event(
@@ -1356,17 +1370,16 @@ export default function Profile() {
                     )}
                     scrollEventThrottle={16}
                 >
-
                     <View style={styles.contentContainer}>
                         {inventoryLoading ? (
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 20 }}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#FF4000"
                                     style={{ transform: [{ scale: 1.25 }] }}
                                 />
                             </View>
-                        ) : inventory.length === 0 ? (
+                        ) : (
                             <View>
                                 <View style={styles.sectionHeader}>
                                     <Text style={styles.sectionTitle}>Club Inventory</Text>
@@ -1375,38 +1388,65 @@ export default function Profile() {
                                             style={styles.addButton}
                                             onPress={() => router.push('/inventory/createInventory')}
                                         >
-                                            <Text style={styles.addButtonText}>+ Add Inventory</Text>
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
-                                <View style={styles.emptyState}>
-                                    <Text style={styles.emptyStateTitle}>Inventory Empty</Text>
-                                    <Text style={styles.emptyStateText}>
-                                        {userId == user._id
-                                            ? "Add your first inventory to get started"
-                                            : "This club hasn't added any inventories yet"}
-                                    </Text>
-                                    {userId == user._id && (
-                                        <TouchableOpacity
-                                            style={styles.emptyStateButton}
-                                            onPress={() => router.push('/inventory/createInventory')}
-                                        >
-                                            <Text style={styles.emptyStateButtonText}>Add Inventory</Text>
+                                            <Text style={styles.addButtonText}>+ Add Item</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
 
+                                {inventory && inventory.length > 0 ? (
+                                    inventory.map((item) => (
+                                        <TouchableOpacity
+                                            key={item._id}
+                                            style={styles.inventoryCard}
+                                            onPress={() => router.push(`/inventory/${item._id}`)}
+                                        >
+                                            <View style={styles.inventoryHeader}>
+                                                <View style={[styles.inventoryIcon, styles.defaultInventoryIcon]}>
+                                                    <FontAwesome5 name="box-open" size={24} color="#fff" />
+                                                </View>
+                                                <View style={styles.inventoryInfo}>
+                                                    <Text style={styles.inventoryName}>{item.itemName}</Text>
+                                                    <Text style={styles.inventoryCategory}>{item.category}</Text>
+                                                </View>
+                                                <View style={styles.inventoryStats}>
+                                                    <Text style={styles.inventoryStatValue}>{item.quantity}</Text>
+                                                    <Text style={styles.inventoryStatLabel}>In Stock</Text>
+                                                </View>
+                                            </View>
+
+                                            <View style={styles.inventoryDetails}>
+                                                <View style={styles.inventoryDetailRow}>
+                                                    <Text style={styles.inventoryDetailLabel}>Unit Price:</Text>
+                                                    <Text style={styles.inventoryDetailValue}>${item.unitPrice?.toFixed(2) || '0.00'}</Text>
+                                                </View>
+                                                {item.description && (
+                                                    <View style={styles.inventoryDetailRow}>
+                                                        <Text style={styles.inventoryDetailLabel}>Description:</Text>
+                                                        <Text style={styles.inventoryDetailValue} numberOfLines={1}>{item.description}</Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        </TouchableOpacity>
+                                    ))
+                                ) : (
+                                    <View style={styles.emptyState}>
+                                        <Text style={styles.emptyStateTitle}>No Inventory Items</Text>
+                                        <Text style={styles.emptyStateText}>
+                                            {userId == user._id
+                                                ? "Add your first inventory item to get started"
+                                                : "This club hasn't added any inventory items yet"}
+                                        </Text>
+                                        {userId == user._id && (
+                                            <TouchableOpacity
+                                                style={styles.emptyStateButton}
+                                                onPress={() => router.push('/inventory/createInventory')}
+                                            >
+                                                <Text style={styles.emptyStateButtonText}>Add Item</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                )}
                             </View>
-                        ) : (
-                            inventory.map((item) => (
-                                <View key={item._id} style={styles.inventoryItem}>
-                                    <Text style={styles.inventoryItemName}>{item.itemName}</Text>
-                                    <Text>Category: {item.category}</Text>
-                                    <Text>Quantity: {item.quantity}</Text>
-                                    <Text>Unit Price: ${item.unitPrice?.toFixed(2) || '0.00'}</Text>
-                                    {item.description ? <Text>Description: {item.description}</Text> : null}
-                                </View>
-                            ))
                         )}
                     </View>
                 </Animated.ScrollView>
@@ -2138,22 +2178,82 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#FF4000',
     },
-    inventoryItem: {
-        padding: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+    inventoryCard: {
         backgroundColor: '#fff',
-        marginBottom: 8,
-        borderRadius: 8,
-        marginHorizontal: 16,
+        borderRadius: 12,
+        padding: 15,
+        marginBottom: 15,
         shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
         shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    inventoryItemName: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 4,
+    inventoryHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
     },
+    inventoryIcon: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginRight: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    defaultInventoryIcon: {
+        backgroundColor: '#FF4000',
+    },
+    inventoryInfo: {
+        flex: 1,
+    },
+    inventoryName: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        color: '#111111',
+    },
+    inventoryCategory: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#666666',
+    },
+    inventoryStats: {
+        alignItems: 'center',
+        marginLeft: 10,
+    },
+    inventoryStatValue: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        color: '#FF4000',
+    },
+    inventoryStatLabel: {
+        fontFamily: 'Manrope',
+        fontSize: 12,
+        color: '#666666',
+    },
+    inventoryDetails: {
+        borderTopWidth: 1,
+        borderTopColor: '#eeeeee',
+        paddingTop: 10,
+    },
+    inventoryDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 5,
+    },
+    inventoryDetailLabel: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#666666',
+    },
+    inventoryDetailValue: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#111111',
+        flexShrink: 1,
+        marginLeft: 10,
+    },
+
+
 });

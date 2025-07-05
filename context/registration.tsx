@@ -39,6 +39,12 @@ interface RegistrationData {
   type: string | null;
   sport: string | null;
   club: string | null;
+  organization: {
+    name: string | null;
+    role: string | null;
+    location: string | null;
+    since: string | null;
+  }
   gender: string | null;
   bio: string | null;
   height: string | null;
@@ -115,6 +121,12 @@ export const RegistrationProvider = ({ children }: Props) => {
     stats: null,
     achievements: null,
     events: null,
+    organization: {
+      name: null,
+      role: null,
+      location: null,
+      since: null,
+    },
     skills: {
       attack: 0,
       skill: 0,

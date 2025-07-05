@@ -269,11 +269,11 @@ export default function EditProfile() {
                                     CONTACT Info
                                 </Text>
 
-                                <Text style={[styles.subtitle, styles.contactSubTitle]}>
+                                {user.type == "Club" && <Text style={[styles.subtitle, styles.contactSubTitle]}>
                                     Description
-                                </Text>
+                                </Text>}
 
-                                <TextInput style={styles.textarea}
+                                {user.type == "Club" && <TextInput style={styles.textarea}
                                     placeholder="Opening hours"
                                     placeholderTextColor="#A8A8A8"
                                     value={user.contactInfo.description || ""}
@@ -281,7 +281,7 @@ export default function EditProfile() {
                                     multiline={true}
                                     blurOnSubmit={false}
                                     returnKeyType="default"
-                                />
+                                />}
 
                                 <View style={styles.contactItem}>
                                     <FontAwesome6 name="phone" size={24} color="#000" />
@@ -371,74 +371,76 @@ export default function EditProfile() {
                                     />
                                 </View>
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
-                                    <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
-                                        Location
-                                    </Text>
-                                    <TouchableOpacity
-                                        style={styles.locationBtn}
-                                        onPress={async () => {
-                                            console.log('Checking permissions...')
-                                            let { status } = await Location.requestForegroundPermissionsAsync();
+                                {user.type=="Club" && <View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
+                                        <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
+                                            Location
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={styles.locationBtn}
+                                            onPress={async () => {
+                                                console.log('Checking permissions...')
+                                                let { status } = await Location.requestForegroundPermissionsAsync();
 
-                                            if (status !== 'granted') {
-                                                console.log("Permission to access location was denied")
-                                                alert('Permission to access location was denied. Go to your phone\'s settings and enable Riyadah to use your location');
-                                                return;
-                                            }
-                                            console.log("Permission to access location granted")
+                                                if (status !== 'granted') {
+                                                    console.log("Permission to access location was denied")
+                                                    alert('Permission to access location was denied. Go to your phone\'s settings and enable Riyadah to use your location');
+                                                    return;
+                                                }
+                                                console.log("Permission to access location granted")
 
-                                            console.log("Getting current location...")
-                                            let currentLocation = await Location.getCurrentPositionAsync({});
-                                            console.log("Location= ", currentLocation)
+                                                console.log("Getting current location...")
+                                                let currentLocation = await Location.getCurrentPositionAsync({});
+                                                console.log("Location= ", currentLocation)
 
-                                            const coords = {
-                                                latitude: currentLocation.coords.latitude,
-                                                longitude: currentLocation.coords.longitude,
-                                            };
-                                            setLocation(coords);
+                                                const coords = {
+                                                    latitude: currentLocation.coords.latitude,
+                                                    longitude: currentLocation.coords.longitude,
+                                                };
+                                                setLocation(coords);
 
-                                            // Also update the user state
-                                            updateField('contactInfo.location.latitude', String(coords.latitude));
-                                            updateField('contactInfo.location.longitude', String(coords.longitude));
-                                        }}
-                                    >
-                                        <Text style={styles.locationBtnText}>Use My Current Location</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                                // Also update the user state
+                                                updateField('contactInfo.location.latitude', String(coords.latitude));
+                                                updateField('contactInfo.location.longitude', String(coords.longitude));
+                                            }}
+                                        >
+                                            <Text style={styles.locationBtnText}>Use My Current Location</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
-                                <Text style={styles.hint}>Pinch to zoom, tap to pin location</Text>
+                                    <Text style={styles.hint}>Pinch to zoom, tap to pin location</Text>
 
-                                <View style={styles.map}>
-                                    <MapView
-                                        style={styles.mapPreview}
-                                        region={{
-                                            latitude: location?.latitude || 0,
-                                            longitude: location?.longitude || 0,
-                                            latitudeDelta: location?.latitude ? 0.01 : 50,
-                                            longitudeDelta: location?.longitude ? 0.01 : 50
-                                        }}
-                                        onPress={(e) => {
-                                            const coords = e.nativeEvent.coordinate;
-                                            setLocation(coords);
-                                            updateField('contactInfo.location.latitude', String(coords.latitude));
-                                            updateField('contactInfo.location.longitude', String(coords.longitude));
-                                        }}
-                                    >
-                                        {location && (
-                                            <Marker
-                                                coordinate={location}
-                                                draggable
-                                                onDragEnd={(e) => {
-                                                    const coords = e.nativeEvent.coordinate;
-                                                    setLocation(coords);
-                                                    updateField('contactInfo.location.latitude', String(coords.latitude));
-                                                    updateField('contactInfo.location.longitude', String(coords.longitude));
-                                                }}
-                                            />
-                                        )}
-                                    </MapView>
-                                </View>
+                                    <View style={styles.map}>
+                                        <MapView
+                                            style={styles.mapPreview}
+                                            region={{
+                                                latitude: location?.latitude || 0,
+                                                longitude: location?.longitude || 0,
+                                                latitudeDelta: location?.latitude ? 0.01 : 50,
+                                                longitudeDelta: location?.longitude ? 0.01 : 50
+                                            }}
+                                            onPress={(e) => {
+                                                const coords = e.nativeEvent.coordinate;
+                                                setLocation(coords);
+                                                updateField('contactInfo.location.latitude', String(coords.latitude));
+                                                updateField('contactInfo.location.longitude', String(coords.longitude));
+                                            }}
+                                        >
+                                            {location && (
+                                                <Marker
+                                                    coordinate={location}
+                                                    draggable
+                                                    onDragEnd={(e) => {
+                                                        const coords = e.nativeEvent.coordinate;
+                                                        setLocation(coords);
+                                                        updateField('contactInfo.location.latitude', String(coords.latitude));
+                                                        updateField('contactInfo.location.longitude', String(coords.longitude));
+                                                    }}
+                                                />
+                                            )}
+                                        </MapView>
+                                    </View>
+                                </View>}
                             </View>
                         }
 
@@ -561,7 +563,7 @@ export default function EditProfile() {
                         </View>}
 
                         {/* HIGHLIGHTS */}
-                        {user.type != "Parent" && <View style={styles.entity}>
+                        {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
                             <Text style={styles.title}>
                                 Highlights
                             </Text>
@@ -578,7 +580,7 @@ export default function EditProfile() {
                         </View>}
 
                         {/* STATS */}
-                        {user.type != "Parent" && <View style={styles.entity}>
+                        {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
 
                             <Text style={styles.title}>
                                 Stats
@@ -613,7 +615,7 @@ export default function EditProfile() {
                         </View>}
 
                         {/* EVENTS */}
-                        {user.type != "Parent" && <View style={styles.entity}>
+                        {user.type != "Parent" && user.type != "Scout"  && <View style={styles.entity}>
 
                             <Text style={styles.title}>
                                 Upcoming Events

@@ -8,10 +8,10 @@ const userSchema = new mongoose.Schema({
     country: String,
     password: String,
     children: [String],
-    admin:{
-        name:String,
+    admin: {
+        name: String,
         email: String,
-        id:String
+        id: String
     },
     contactInfo: {
         phone: String,
@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     sport: [String],
     club: String,
+    organization: {
+        name: String,
+        role: String,
+        location: String,
+        since: String,
+    },
     gender: String,
     image: String,
     bio: String,
@@ -46,7 +52,7 @@ const userSchema = new mongoose.Schema({
     stats: String,
     achievements: String,
     events: String,
-    teams:[String],
+    teams: [String],
     skills: {
         attack: Number,
         skill: Number,

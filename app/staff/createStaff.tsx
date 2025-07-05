@@ -425,11 +425,14 @@ const CreateStaffScreen = () => {
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Bio</Text>
                             <TextInput
-                                style={[styles.input, { height: 100 }]}
-                                placeholder="Tell us about this staff member"
-                                multiline
+                                style={styles.textarea}
+                                placeholder="About this staff member"
+                                placeholderTextColor="#A8A8A8"
                                 value={formData.bio}
                                 onChangeText={(text) => handleChange('bio', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
                             />
                         </View>
 
@@ -438,7 +441,7 @@ const CreateStaffScreen = () => {
                             <Text style={styles.label}>Qualifications</Text>
                             <View style={styles.listInputContainer}>
                                 <TextInput
-                                    style={[styles.input, { flex: 1 }]}
+                                    style={[styles.input, { marginBottom: 0, flex: 1 }]}
                                     placeholder="Add qualification"
                                     value={qualificationInput}
                                     onChangeText={setQualificationInput}
@@ -468,7 +471,7 @@ const CreateStaffScreen = () => {
                             <Text style={styles.label}>Certifications</Text>
                             <View style={styles.listInputContainer}>
                                 <TextInput
-                                    style={[styles.input, { flex: 1 }]}
+                                    style={[styles.input, { marginBottom: 0, flex: 1 }]}
                                     placeholder="Add certification"
                                     value={certificationInput}
                                     onChangeText={setCertificationInput}
@@ -517,12 +520,11 @@ const CreateStaffScreen = () => {
                                             }
                                         }}
                                     >
-                                        <View style={styles.teamCheckbox}>
-                                            {formData.teams.includes(team._id) ? (
-                                                <MaterialIcons name="check-box" size={24} color="#FF4000" />
-                                            ) : (
-                                                <MaterialIcons name="check-box-outline-blank" size={24} color="#666" />
-                                            )}
+                                        <View style={styles.checkbox}>
+                                            {formData.teams.includes(team._id) && <View style={styles.checked} >
+                                                <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+                                            </View>
+                                            }
                                         </View>
                                         <Text style={styles.teamName}>{team.name} ({team.sport})</Text>
                                     </TouchableOpacity>
@@ -754,22 +756,22 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 12,
-        fontFamily: 'Manrope',
-        fontSize: 16,
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10
     },
     pickerContainer: {
-        borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 8,
         overflow: 'hidden',
     },
     picker: {
         width: '100%',
         fontFamily: 'Manrope',
+        borderWidth: 0,
+        backgroundColor: '#F4F4F4',
     },
     dateInput: {
         borderWidth: 1,
@@ -949,6 +951,42 @@ const styles = StyleSheet.create({
     savebtn: {
         flexDirection: 'row'
     },
+    textarea: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10,
+        height: 170,
+        textAlignVertical: 'top',
+    },
+    checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 40
+  },
+  checkbox: {
+    width: 16,
+    height: 16,
+    borderWidth: 1,
+    borderColor: '#000000',
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  checked: {
+    width: 16,
+    height: 16,
+    backgroundColor: 'black',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  checkImage: {
+    width: 16,
+    height: 16,
+    resizeMode: 'contain',
+  },
 });
 
 export default CreateStaffScreen;

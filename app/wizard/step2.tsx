@@ -52,6 +52,12 @@ export default function WizardStep2() {
             return;
         }
 
+        if (age < 18 && formData.type == "Scout") {
+            setShowParentEmail(false);
+            setError('Scout cannot be under 18');
+            return;
+        }
+
         if (age > 18 && formData.type == "Parent") {
             setShowParentEmail(false);
             setError(null);
@@ -82,7 +88,30 @@ export default function WizardStep2() {
     const handleNext = () => {
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
 
-        if (formData.type == "Club") {
+        if (formData.type == "Scout") {
+            if (day != null && month != null && year != null && day.trim()!='' && month.trim()!='' && year.trim()!='') {
+                const age = calculateAge(dob);
+                if (formData.type == "Scout" && age < 18) {
+                    setError('Scout cannot be under 18')
+                    return;
+                }
+
+                updateFormData({
+                    dob: {
+                        day: day,
+                        month: month,
+                        year: year
+                    },
+                    parentEmail: null
+                });
+
+                router.push('/wizard/step3');
+
+            } else {
+                setError('Kindly fill all fields')
+            }
+
+        } else if (formData.type == "Club") {
             if (day != null && month != null && year != null) {
                 updateFormData({
                     dob: {
