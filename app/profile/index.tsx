@@ -247,7 +247,7 @@ export default function Profile() {
         let progress = 0;
         let filledFields = 0;
 
-        if (user.type == "Scout" || user.type == "Sponsor" ) {
+        if (user.type == "Scout" || user.type == "Sponsor") {
             const totalFields = 8;
 
             if (user.name != null) filledFields++;
@@ -512,6 +512,19 @@ export default function Profile() {
                                             </View>
                                         </View>
                                     </TouchableOpacity>
+                                }
+
+                                {adminUser == null &&
+                                    <View style={styles.admin}>
+                                        <Image
+                                            source={require('../../assets/avatar.png')}
+                                            style={styles.adminAvatar}
+                                            resizeMode="contain"
+                                        />
+                                        <View>
+                                            <Text style={styles.adminName}>{user.admin.name}</Text>
+                                        </View>
+                                    </View>
                                 }
                             </View>
                         }
@@ -957,9 +970,10 @@ export default function Profile() {
                         </View>
                     ) : (
                         <View style={styles.contentContainer}>
+                            {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>Club Teams</Text>
-                                {userId == user._id && user.teams && user.teams.length > 0 && (
+                                {userId == user._id && (
                                     <TouchableOpacity
                                         style={styles.addButton}
                                         onPress={() => router.push('/teams/createTeam')}
@@ -968,7 +982,6 @@ export default function Profile() {
                                     </TouchableOpacity>
                                 )}
                             </View>
-
 
                             {teams && teams.length > 0 ? (
                                 teams.map((team, index) => (

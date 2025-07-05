@@ -15,6 +15,7 @@ export default function WizardStep5() {
     const { formData, updateFormData, resetFormData } = useRegistration();
     const [bio, setBio] = useState<string | null>(formData.bio || null);
     const [adminEmail, setAdminEmail] = useState<string | null>(formData.admin.email || null);
+    const [adminName, setAdminName] = useState<string | null>(formData.admin.name || null);
     const [selectedGender, setSelectedGender] = useState<string | null>(formData.gender || null);
     const [loading, setLoading] = useState(false);
     const [registrationError, setRegisterError] = useState<string | null>(null);
@@ -49,8 +50,13 @@ export default function WizardStep5() {
             return;
         }
 
+        if (!adminName && formData.type == "Club") {
+            setError('Kindly fill admin name')
+            return;
+        }
+
         if (!adminEmail && formData.type == "Club") {
-            setError('Kindly Fill admin email')
+            setError('Kindly fill admin email')
             return;
         }
 
@@ -87,6 +93,7 @@ export default function WizardStep5() {
                 image: null,
                 admin: {
                     ...formData.admin,
+                    name: adminName,
                     email: adminEmail,
                 }
 
@@ -209,7 +216,14 @@ export default function WizardStep5() {
 
                 {formData.type == "Club" &&
                     <View style={styles.inputEntity}>
-                        <Text style={styles.label}>Admin email</Text>
+                        <Text style={styles.label}>Admin</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Admin name"
+                            placeholderTextColor="#A8A8A8"
+                            value={adminName}
+                            onChangeText={setAdminName}
+                        />
                         <TextInput
                             style={styles.input}
                             placeholder="Admin email"
@@ -217,6 +231,9 @@ export default function WizardStep5() {
                             value={adminEmail}
                             onChangeText={setAdminEmail}
                         />
+                        <Text style={styles.hint}>
+                            The system will check if the admin has an account on Riyadah
+                        </Text>
                     </View>
                 }
 
@@ -442,5 +459,10 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Manrope',
+    },
+    hint:{
+        color:'#A8A8A8',
+        fontFamily:'Manrope',
+        fontSize:12
     }
 });

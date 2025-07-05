@@ -1,4 +1,5 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -36,9 +37,56 @@ const CreateEventScreen = () => {
         requiredEquipment: []
     });
 
-    const [showStartPicker, setShowStartPicker] = useState(false);
-    const [showEndPicker, setShowEndPicker] = useState(false);
+    const [pickerState, setPickerState] = useState({
+        show: false,
+        mode: 'date', // 'date' or 'time'
+        field: null, // 'start' or 'end'
+        tempDate: new Date(),
+    });
+
     const [equipmentInput, setEquipmentInput] = useState('');
+
+    const [date, setDate] = useState(new Date());
+    const [mode, setMode] = useState('date'); // 'date' or 'time'
+    const [show, setShow] = useState(false);
+
+    const onChange = (event, selectedDate) => {
+        if (event.type === 'dismissed') {
+            setPickerState(prev => ({ ...prev, show: false }));
+            return;
+        }
+
+        if (pickerState.mode === 'date') {
+            // Next, ask for time
+            setPickerState(prev => ({
+                ...prev,
+                mode: 'time',
+                tempDate: selectedDate,
+            }));
+        } else {
+            // Finalize datetime
+            const finalDateTime = new Date(
+                pickerState.tempDate.getFullYear(),
+                pickerState.tempDate.getMonth(),
+                pickerState.tempDate.getDate(),
+                selectedDate.getHours(),
+                selectedDate.getMinutes()
+            );
+
+            if (pickerState.field === 'start') {
+                handleChange('startDateTime', finalDateTime);
+            } else {
+                handleChange('endDateTime', finalDateTime);
+            }
+
+            setPickerState(prev => ({ ...prev, show: false }));
+        }
+    };
+
+    const showMode = (currentMode) => {
+        setShow(true);
+        setMode(currentMode);
+    };
 
     useEffect(() => {
         const fetchTeams = async () => {
@@ -67,29 +115,17 @@ const CreateEventScreen = () => {
         fetchTeams();
     }, []);
 
-    const handleStartDateChange = (event, selectedDate) => {
-        setShowStartPicker(false);
-        if (selectedDate) {
-            setFormData(prev => ({ ...prev, startDateTime: selectedDate }));
-            // Auto-set end date to be 2 hours after start if it's before start
-            if (formData.endDateTime <= selectedDate) {
-                setFormData(prev => ({
-                    ...prev,
-                    endDateTime: new Date(selectedDate.getTime() + 2 * 60 * 60 * 1000)
-                }));
-            }
-        }
-    };
-
-    const handleEndDateChange = (event, selectedDate) => {
-        setShowEndPicker(false);
-        if (selectedDate) {
-            setFormData(prev => ({ ...prev, endDateTime: selectedDate }));
-        }
-    };
-
     const handleChange = (name: string, value: string) => {
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const showPicker = (field, mode) => {
+        setPickerState({
+            show: true,
+            mode,
+            field,
+            tempDate: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
+        });
     };
 
     const handleNestedChange = (parent, name, value) => {
@@ -241,70 +277,90 @@ const CreateEventScreen = () => {
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Event Type *</Text>
-                            <Picker
-                                selectedValue={formData.eventType}
-                                onValueChange={(value) => handleChange('eventType', value)}
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="Training Session" value="Training" />
-                                <Picker.Item label="Match" value="Match" />
-                                <Picker.Item label="Meeting" value="Meeting" />
-                                <Picker.Item label="Tournament" value="Tournament" />
-                            </Picker>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={formData.eventType}
+                                    onValueChange={(value) => handleChange('eventType', value)}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item label="Training Session" value="Training" />
+                                    <Picker.Item label="Match" value="Match" />
+                                    <Picker.Item label="Meeting" value="Meeting" />
+                                    <Picker.Item label="Tournament" value="Tournament" />
+                                </Picker>
+                            </View>
                         </View>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Team *</Text>
-                            <Picker
-                                selectedValue={formData.team}
-                                onValueChange={(value) => handleChange('team', value)}
-                                style={styles.picker}
-                            >
-                                {teams.map(team => (
-                                    <Picker.Item
-                                        key={team._id}
-                                        label={`${team.name} (${team.sport})`}
-                                        value={team._id}
-                                    />
-                                ))}
-                            </Picker>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={formData.team}
+                                    onValueChange={(value) => handleChange('team', value)}
+                                    style={styles.picker}
+                                >
+                                    {teams.map(team => (
+                                        <Picker.Item
+                                            key={team._id}
+                                            label={`${team.name} (${team.sport})`}
+                                            value={team._id}
+                                        />
+                                    ))}
+                                </Picker>
+                            </View>
                         </View>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Start Date & Time *</Text>
-                            <View style={styles.dateInput}>
-                                <TextInput
-                                    placeholder="Enter start date and time"
-                                    value={formData.startDateTime.toLocaleString()}
-                                    onChangeText={(text) => handleChange('startDateTime', text)}
-                                />
+                            <TouchableOpacity
+                                style={styles.dateInput}
+                                onPress={() => showPicker('start', 'date')}
+                            >
+                                <Text style={styles.inputText}>
+                                    {formData.startDateTime.toLocaleString()}
+                                </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </View>
+                            </TouchableOpacity>
                         </View>
 
+                        {/* End Date & Time */}
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>End Date & Time *</Text>
-                            <View style={styles.dateInput}>
-                                <TextInput
-                                    placeholder="Enter end date and time"
-                                    value={formData.endDateTime.toLocaleString()}
-                                    onChangeText={(text) => handleChange('endDateTime', text)}
-                                />
+                            <TouchableOpacity
+                                style={styles.dateInput}
+                                onPress={() => showPicker('end', 'date')}
+                            >
+                                <Text style={styles.inputText}>
+                                    {formData.endDateTime.toLocaleString()}
+                                </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </View>
+                            </TouchableOpacity>
                         </View>
+
+                        {pickerState.show && (
+                            <DateTimePicker
+                                testID="dateTimePicker"
+                                value={pickerState.tempDate}
+                                mode={pickerState.mode}
+                                is24Hour={true}
+                                display="default"
+                                onChange={onChange}
+                            />
+                        )}
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Location Type</Text>
-                            <Picker
-                                selectedValue={formData.locationType}
-                                onValueChange={(value) => handleChange('locationType', value)}
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="Venue" value="Venue" />
-                                <Picker.Item label="Online" value="Online" />
-                                <Picker.Item label="To Be Determined" value="tbd" />
-                            </Picker>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={formData.locationType}
+                                    onValueChange={(value) => handleChange('locationType', value)}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item label="Venue" value="Venue" />
+                                    <Picker.Item label="Online" value="Online" />
+                                    <Picker.Item label="To Be Determined" value="tbd" />
+                                </Picker>
+                            </View>
                         </View>
 
                         {formData.locationType === 'Venue' && (
@@ -357,7 +413,7 @@ const CreateEventScreen = () => {
                                     <Text style={styles.label}>Required Equipment</Text>
                                     <View style={styles.equipmentContainer}>
                                         <TextInput
-                                            style={[styles.input, { flex: 1 }]}
+                                            style={[styles.input, { marginBottom: 0, flex: 1 }]}
                                             placeholder="Add equipment (e.g. cones, balls)"
                                             value={equipmentInput}
                                             onChangeText={setEquipmentInput}
@@ -452,16 +508,6 @@ const styles = StyleSheet.create({
     },
     formGroup: {
         marginBottom: 20,
-    },
-    dateInput: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 12,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: Platform.OS === 'android' ? 10 : 0,
     },
     equipmentContainer: {
         flexDirection: 'row',
@@ -594,26 +640,49 @@ const styles = StyleSheet.create({
         fontSize: 20,
         marginBottom: 10
     },
+
     input: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        borderRadius: 8,
-        padding: 12,
-        fontFamily: 'Manrope',
-        fontSize: 16,
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10
     },
     inputError: {
         borderColor: '#FF4000',
     },
     pickerContainer: {
-        borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 8,
         overflow: 'hidden',
     },
     picker: {
         width: '100%',
         fontFamily: 'Manrope',
+        backgroundColor: '#F4F4F4',
+    },
+    dateInput: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 12,
+        borderRadius: 4,
+        justifyContent: 'space-between',
+    },
+    // dateInput: {
+    //     borderWidth: 1,
+    //     borderColor: '#ddd',
+    //     borderRadius: 8,
+    //     padding: 12,
+    //     flexDirection: 'row',
+    //     justifyContent: 'space-between',
+    //     alignItems: 'center',
+    //     marginBottom: Platform.OS === 'android' ? 10 : 0,
+    // },
+    inputText: {
+        fontSize: 16,
+        color: '#333',
     },
 });
 

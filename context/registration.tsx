@@ -14,7 +14,7 @@ interface RegistrationData {
     email: String | null;
   };
   children: [] | null;
-  teams: [] | null;
+  teams: [];
   contactInfo: {
     phone: String | null;
     email: String | null;
@@ -107,7 +107,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       year: null
     },
     children: null,
-    teams: null,
+    teams: [],
     parentEmail: null,
     type: null,
     sport: null,
@@ -149,7 +149,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       phone: null,
       country: null,
       password: null,
-      teams: null,
+      teams: [],
       admin: {
         id: null,
         name: null,

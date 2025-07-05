@@ -1,4 +1,4 @@
-import { FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -20,6 +20,7 @@ import {
     View
 } from 'react-native';
 
+
 const { width } = Dimensions.get('window');
 
 export default function CreateTeam() {
@@ -29,6 +30,7 @@ export default function CreateTeam() {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [localImg, setLocalImg] = useState<string | null>(null);
 
     const [teamData, setTeamData] = useState({
         name: '',
@@ -87,12 +89,20 @@ export default function CreateTeam() {
     };
 
     const pickImage = async () => {
+        setError('');
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+            alert("Permission to access media library is required!");
+            return;
+        }
+
         try {
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
-                quality: 0.7,
+                quality: 1,
                 base64: true
             });
 
@@ -102,7 +112,7 @@ export default function CreateTeam() {
                 const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
 
                 if (sizeInMB > 2) {
-                    Alert.alert('Image too large', 'Please select an image smaller than 2MB');
+                    setError("Image too large. Max 2MB");
                     return;
                 }
 
@@ -203,28 +213,34 @@ export default function CreateTeam() {
                 </View> */}
 
                 <ScrollView >
-                    {error != '' && <View style={styles.error}>
-                        <View style={styles.errorIcon}></View>
-                        <Text style={styles.errorText}>{error}</Text>
-                    </View>}
+
                     <View style={styles.contentContainer}>
+
+                        {error != '' && <View style={styles.error}>
+                            <View style={styles.errorIcon}></View>
+                            <Text style={styles.errorText}>{error}</Text>
+                        </View>}
+
                         {/* Team Logo */}
                         <View style={styles.imageUploadContainer}>
                             <Text style={styles.label}>Team Logo</Text>
-                            <TouchableOpacity
-                                style={styles.imageUploadButton}
-                                onPress={pickImage}
-                            >
-                                {teamData.image ? (
-                                    <Image
-                                        source={{ uri: teamData.image }}
-                                        style={styles.teamImage}
-                                    />
-                                ) : (
-                                    <View style={styles.imagePlaceholder}>
-                                        <FontAwesome5 name="camera" size={24} color="#FF4000" />
-                                        <Text style={styles.imageUploadText}>Upload Logo</Text>
+
+                            <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
+                                {localImg || teamData?.image ? (
+                                    <View>
+                                        <Image
+                                            source={{ uri: localImg || teamData.image }}
+                                            style={[styles.avatarPreview, , { backgroundColor: '#FF4000' }]}
+                                        />
+                                        <Text style={styles.uploadHint}>Tap to change image</Text>
                                     </View>
+                                ) : (
+                                    <>
+                                        <View style={styles.emptyImage}>
+                                            <MaterialIcons name="add" size={40} color="#FF4000" />
+                                        </View>
+                                        <Text style={styles.uploadHint}>Tap to upload new image</Text>
+                                    </>
                                 )}
                             </TouchableOpacity>
                         </View>
@@ -397,7 +413,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     imageUploadContainer: {
-        alignItems: 'center',
+        // alignItems: 'center',
         marginBottom: 25,
     },
     imageUploadButton: {
@@ -495,5 +511,32 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Manrope',
+    },
+    uploadBox: {
+        // marginBottom: 30,
+        // flexDirection:'row'
+    },
+    avatarPreview: {
+        height: 100,
+        width: 100,
+        borderRadius: 20,
+        marginBottom: 5
+    },
+    uploadHint: {
+        fontFamily: 'Manrope',
+        marginBottom: 10
+    },
+    emptyImage: {
+        height: 100,
+        width: 100,
+        borderRadius: 20,
+        marginRight: 20,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: '#333333',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f4f4f4',
+        marginBottom: 5
     }
 });

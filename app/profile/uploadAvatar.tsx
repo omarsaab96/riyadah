@@ -22,6 +22,7 @@ const router = useRouter();
 
 export default function UploadAvatar() {
     const [userId, setUserId] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -77,6 +78,13 @@ export default function UploadAvatar() {
         if (!result.canceled && result.assets.length > 0) {
             setUploading(true);
             const base64 = result.assets[0].base64;
+            const base64Length = result.assets[0].base64.length;
+            const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
+
+            if (sizeInMB > 2) {
+                setError("Image too large. Max 2MB");
+                return;
+            }
 
             try {
                 const res = await fetch('https://riyadah.onrender.com/api/removeBG', {
