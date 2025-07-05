@@ -37,7 +37,7 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-    if(loading) return;
+    if (loading) return;
 
     setLoading(true)
 
@@ -128,7 +128,9 @@ export default function Login() {
         <TouchableOpacity style={styles.fullButtonRow} onPress={handleLogin}>
           <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
           <View style={styles.loginButton}>
-            <Text style={styles.loginText}>LOGIN</Text>
+            <Text style={styles.loginText}>
+              {loading ? 'LOGGING IN' : 'LOGIN'}
+            </Text>
             {loading && (
               <ActivityIndicator
                 size="small"

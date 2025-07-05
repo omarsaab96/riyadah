@@ -308,7 +308,7 @@ export default function EditProfile() {
                                 <View style={styles.contactItem}>
                                     <FontAwesome name="facebook" size={24} color="#000" />
                                     <TextInput
-                                        style={[styles.input, styles.contactInput]}
+                                        style={[styles.input, styles.contactInput,{paddingLeft:28}]}
                                         placeholder="Facebook username"
                                         placeholderTextColor="#A8A8A8"
                                         value={user.contactInfo.facebook}
@@ -770,8 +770,8 @@ export default function EditProfile() {
                         <Image source={require('../../assets/settings.png')} style={styles.icon} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.replace('/news')}>
-                        <Image source={require('../../assets/news.png')} style={styles.icon} />
+                    <TouchableOpacity onPress={() => router.replace('/search')}>
+                        <Image source={require('../../assets/search.png')} style={styles.icon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/landing')}>

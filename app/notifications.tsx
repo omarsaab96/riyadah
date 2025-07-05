@@ -130,7 +130,7 @@ export default function EditProfile() {
                     <Image source={require('../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/news')}>
+                <TouchableOpacity onPress={() => router.replace('/search')}>
                     <Image source={require('../assets/news.png')} style={styles.icon} />
                 </TouchableOpacity>
 

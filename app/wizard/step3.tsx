@@ -21,10 +21,10 @@ export default function WizardStep3() {
     const [error, setError] = useState<string | null>(null);
     const [independent, setIndependent] = useState<boolean>(formData.organization.independent ? true : false);
 
-    const [orgName, setOrgName] = useState<string | null>(formData.organization.name | null);
-    const [orgLocation, setOrgLocation] = useState<string | null>(formData.organization.location | null);
-    const [orgRole, setOrgRole] = useState<string | null>(formData.organization.role | null);
-    const [orgSince, setOrgSince] = useState<string | null>(formData.organization.since | null);
+    const [orgName, setOrgName] = useState<string | null>(formData.organization.name || null);
+    const [orgLocation, setOrgLocation] = useState<string | null>(formData.organization.location || null);
+    const [orgRole, setOrgRole] = useState<string | null>(formData.organization.role || null);
+    const [orgSince, setOrgSince] = useState<string | null>(formData.organization.since || null);
 
 
     useEffect(() => {
@@ -42,7 +42,32 @@ export default function WizardStep3() {
         if (selected.length > 0) {
             updateFormData({ sport: selected });
 
-            if (formData.type === "Club" || formData.type === "Scout") {
+            if (formData.type === "Scout" || formData.type === "Sponsor") {
+                if (independent) {
+                    updateFormData({
+                        organization: {
+                            name: null,
+                            role: null,
+                            location: null,
+                            since: null,
+                            independent: true
+                        }
+                    })
+                } else {
+                    updateFormData({
+                        organization: {
+                            name: orgName,
+                            role: orgRole,
+                            location: orgLocation,
+                            since: orgSince,
+                            independent: false
+                        }
+                    })
+                }
+
+                router.push('/wizard/step5');
+
+            } else if (formData.type === "Club") {
                 router.push('/wizard/step5');
             } else {
                 router.push('/wizard/step4');
@@ -53,7 +78,7 @@ export default function WizardStep3() {
     }
 
     const toggleSportSelection = (label: string) => {
-        if (formData.type === "Club" || formData.type === "Scout") {
+        if (formData.type === "Club" || formData.type === "Scout" || formData.type === "Sponsor") {
             setSelected(prev =>
                 prev.includes(label)
                     ? prev.filter(item => item !== label) // Remove if already selected
@@ -90,20 +115,20 @@ export default function WizardStep3() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>
-                        {formData.type !== "Scout" ? 'Sport type' : 'Organization'}
+                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'Sport type' : 'Organization'}
                     </Text>
                     <Text style={styles.pageDesc}>
-                        {formData.type !== "Scout" ? 'What do you do?' : 'What organization do yo work for?'}
+                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'What do you do?' : 'What organization do yo work for?'}
                     </Text>
                 </View>
 
                 <Text style={styles.ghostText}>
-                    {formData.type !== "Scout" ? 'Sport' : 'Organi'}
+                    {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'Sport' : 'Organi'}
                 </Text>
 
             </View>
             <ScrollView>
-                {formData.type == "Scout" &&
+                {(formData.type == "Scout" || formData.type == "Sponsor") &&
                     <View >
                         <View style={styles.form}>
                             {error != null && <View style={styles.error}>
@@ -133,7 +158,7 @@ export default function WizardStep3() {
                                     placeholder="Organization name"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.name}
-                                    onChangeText={(text) => handleNestedChange('organization', 'name', text)}
+                                    onChangeText={(text) => setOrgName(text)}
                                 />
                             </View>
                             <View style={styles.entity}>
@@ -145,7 +170,7 @@ export default function WizardStep3() {
                                     placeholder="Organization Location"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.location}
-                                    onChangeText={(text) => handleNestedChange('organization', 'location', text)}
+                                    onChangeText={(text) => setOrgLocation(text)}
                                 />
                             </View>
                             <View style={styles.entity}>
@@ -157,19 +182,19 @@ export default function WizardStep3() {
                                     placeholder="Your rolerol"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.role}
-                                    onChangeText={(text) => handleNestedChange('organization', 'role', text)}
+                                    onChangeText={(text) => setOrgRole(text)}
                                 />
                             </View>
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    In What year did you start working with the organization?
+                                    In What year did you start working with this organization?
                                 </Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="YYYY"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization.since}
-                                    onChangeText={(text) => handleNestedChange('organization', 'since', text)}
+                                    onChangeText={(text) => setOrgSince(text)}
                                 />
                             </View>
 

@@ -159,7 +159,7 @@ export default function Register() {
                 withEmoji={false}
                 theme={{
                   itemHeight: 44,
-                  fontSize:14
+                  fontSize: 14
                 }}
                 onSelect={(country) => {
                   setCountryCode(country.cca2);
@@ -206,7 +206,9 @@ export default function Register() {
           <TouchableOpacity style={styles.fullButtonRow} onPress={handleRegister}>
             <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
             <View style={styles.loginButton}>
-              <Text style={styles.loginText}>CREATE ACCOUNT</Text>
+              <Text style={styles.loginText}>
+                {loading ? 'CREATING' : 'CREATE'} ACCOUNT
+              </Text>
               {loading && (
                 <ActivityIndicator
                   size="small"
@@ -300,8 +302,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingLeft: 15,
   },
-  phonePicker:{
-    paddingTop:10
+  phonePicker: {
+    paddingTop: 10
   },
   phoneInput: {
     marginBottom: 0,

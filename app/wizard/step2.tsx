@@ -40,6 +40,7 @@ export default function WizardStep2() {
     }, []);
 
     useEffect(() => {
+        setError(null);
         const isComplete = day?.length === 2 && month?.length === 2 && year?.length === 4;
         if (!isComplete) return;
 
@@ -55,6 +56,12 @@ export default function WizardStep2() {
         if (age < 18 && formData.type == "Scout") {
             setShowParentEmail(false);
             setError('Scout cannot be under 18');
+            return;
+        }
+
+        if (age < 18 && formData.type == "Sponsor") {
+            setShowParentEmail(false);
+            setError('Sponsor cannot be under 18');
             return;
         }
 
@@ -88,11 +95,11 @@ export default function WizardStep2() {
     const handleNext = () => {
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
 
-        if (formData.type == "Scout") {
+        if (formData.type == "Scout" || formData.type == "Sponsor") {
             if (day != null && month != null && year != null && day.trim()!='' && month.trim()!='' && year.trim()!='') {
                 const age = calculateAge(dob);
-                if (formData.type == "Scout" && age < 18) {
-                    setError('Scout cannot be under 18')
+                if ((formData.type == "Scout" || formData.type == "Sponsor") && age < 18) {
+                    setError(`${formData.type} cannot be under 18`)
                     return;
                 }
 

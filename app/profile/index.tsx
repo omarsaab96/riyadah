@@ -247,7 +247,7 @@ export default function Profile() {
         let progress = 0;
         let filledFields = 0;
 
-        if (user.type == "Scout") {
+        if (user.type == "Scout" || user.type == "Sponsor" ) {
             const totalFields = 8;
 
             if (user.name != null) filledFields++;
@@ -678,7 +678,10 @@ export default function Profile() {
                         {/* SPORT */}
                         {user.type != "Parent" && <View style={styles.profileSection}>
                             <Text style={styles.title}>
-                                Sport{user.sport.length > 1 ? 's' : ''}
+                                {user.type === "Scout" || user.type === "Sponsor"
+                                    ? 'Interested in'
+                                    : `Sport${user.sport?.length > 1 ? 's' : ''}`
+                                }
                             </Text>
                             {user.sport && user.sport.length > 0 ? (
                                 <Text style={styles.paragraph}>
@@ -721,6 +724,20 @@ export default function Profile() {
                                     </View>
                                 ) : (
                                     <Text style={styles.paragraph}>-</Text>
+                                )}
+                            </View>}
+
+                            {/* Organization */}
+                            {(user.type == "Scout" || user.type == "Sponsor") && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text style={styles.title}>
+                                    Organization
+                                </Text>
+                                {!user.organization.independent ? (
+                                    <View>
+                                        <Text style={styles.paragraph}>{user.organization.name}</Text>
+                                    </View>
+                                ) : (
+                                    <Text style={styles.paragraph}>Independent</Text>
                                 )}
                             </View>}
 
@@ -818,7 +835,7 @@ export default function Profile() {
                         </View>
 
                         {/* HIGHLIGHTS */}
-                        {user.type != "Scout" && <View style={styles.profileSection}>
+                        {user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Highlights
                             </Text>}
@@ -834,7 +851,7 @@ export default function Profile() {
                         </View>}
 
                         {/* STATS */}
-                        {user.type != "Scout" && <View style={styles.profileSection}>
+                        {user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Stats
                             </Text>}
@@ -849,7 +866,7 @@ export default function Profile() {
                         </View>}
 
                         {/* ACHIEVEMENTS */}
-                        {user.type != "Club" && user.type != "Scout" && <View style={styles.profileSection}>
+                        {user.type != "Club" && user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Achievements
                             </Text>
@@ -866,7 +883,7 @@ export default function Profile() {
                         </View>}
 
                         {/* EVENTS */}
-                        {user.type != "Scout" && <View style={styles.profileSection}>
+                        {user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
                             {user.type != "Parent" && <Text style={styles.title}>
                                 Upcoming Events
                             </Text>}
@@ -1457,8 +1474,8 @@ export default function Profile() {
                     <Image source={require('../../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/news')}>
-                    <Image source={require('../../assets/news.png')} style={styles.icon} />
+                <TouchableOpacity onPress={() => router.replace('/search')}>
+                    <Image source={require('../../assets/search.png')} style={styles.icon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/landing')}>

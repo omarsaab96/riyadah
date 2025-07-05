@@ -219,8 +219,8 @@ export default function UploadAvatar() {
                     <TouchableOpacity onPress={() => router.replace('/settings')}>
                         <Image source={require('../../assets/settings.png')} style={styles.icon} />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => router.replace('/news')}>
-                        <Image source={require('../../assets/news.png')} style={styles.icon} />
+                    <TouchableOpacity onPress={() => router.replace('/search')}>
+                        <Image source={require('../../assets/search.png')} style={styles.icon} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.replace('/landing')}>
                         <Image source={require('../../assets/home.png')} style={styles.icon} />
