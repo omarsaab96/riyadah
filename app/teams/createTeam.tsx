@@ -146,7 +146,7 @@ export default function CreateTeam() {
                 coaches:[coaches]
             };
 
-            console.log("sending OBJ = ", requestBody)
+            // console.log("sending OBJ = ", requestBody)
 
 
             const response = await fetch('https://riyadah.onrender.com/api/teams', {
@@ -160,15 +160,15 @@ export default function CreateTeam() {
 
             const data = await response.json();
 
-            console.log("res = ", response)
+            // console.log("res = ", response)
 
-        //     if (response.ok) {
-        //         Alert.alert('Success', 'Team created successfully!', [
-        //             { text: 'OK', onPress: () => router.back() }
-        //         ]);
-        //     } else {
-        //         throw new Error(data.message || 'Failed to create team');
-        //     }
+            if (response.ok) {
+                Alert.alert('Success', 'Team created successfully!', [
+                    { text: 'OK', onPress: () => router.back() }
+                ]);
+            } else {
+                throw new Error(data.message || 'Failed to create team');
+            }
         } catch (error) {
             console.error('Error creating team:', error);
             Alert.alert('Error', error.message);

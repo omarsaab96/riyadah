@@ -1012,7 +1012,7 @@ export default function Profile() {
                                             </View>
                                         </View>
 
-                                        {team.coaches && (
+                                        {team.coaches && team.coaches.length>0 &&(
                                             <View style={styles.coachSection}>
                                                 <Text style={styles.coachLabel}>Coach:</Text>
                                                 <View style={styles.coachInfo}>
@@ -1026,7 +1026,7 @@ export default function Profile() {
                                                             <FontAwesome name="user" size={16} color="#fff" />
                                                         </View>
                                                     )}
-                                                    <Text style={styles.coachName}>{team.coaches.name}</Text>
+                                                    <Text style={styles.coachName}>{team.coaches[0]}</Text>
                                                 </View>
                                             </View>
                                         )}
@@ -1938,7 +1938,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 14,
         color: '#111111',
-        fontWeight: 'bold',
     },
     teamActions: {
         flexDirection: 'row',
