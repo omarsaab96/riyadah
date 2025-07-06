@@ -149,7 +149,7 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    const { name, sport, ageGroup, gender, image } = req.body;
+    const { name, sport, ageGroup, gender, image,coaches  } = req.body;
 
     // Check if team already exists for this club
     const existingTeam = await Team.findOne({ name, club: req.user.id });
@@ -166,7 +166,8 @@ router.post('/', authenticateToken, async (req, res) => {
       ageGroup,
       gender,
       club: req.user.userId,
-      image
+      image,
+      coaches 
     };
 
     const team = await Team.create(teamData);
