@@ -27,11 +27,13 @@ const CreateStaffScreen = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState('');
+    const [error, setError] = useState(null);
     const [image, setImage] = useState(null);
     const [teams, setTeams] = useState([]);
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [localImg, setLocalImg] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -126,15 +128,37 @@ const CreateStaffScreen = () => {
     }, [user]);
 
     const handleImagePick = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if (!permissionResult.granted) {
+            alert("Permission to access media library is required!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
+            base64: true,
             aspect: [1, 1],
-            quality: 0.5,
+            quality: 1,
         });
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            setUploading(true);
+            const base64 = result.assets[0].base64;
+            const base64Length = base64.length;
+            const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
+
+            if (sizeInMB > 2) {
+                setError("Image too large. Max 2MB");
+                setUploading(false)
+                return;
+            } else {
+                setError(null)
+            }
+
+            setImage(base64);
+            setUploading(false);
         }
     };
 
@@ -276,33 +300,35 @@ const CreateStaffScreen = () => {
                 </View>
 
                 <ScrollView>
-                    {error && (
-                        <View style={styles.error}>
-                            <MaterialIcons name="error-outline" size={20} color="#FF4000" />
-                            <Text style={styles.errorText}>{error}</Text>
-                        </View>
-                    )}
-
                     <View style={styles.contentContainer}>
+                        {error != null && <View style={styles.error}>
+                            <View style={styles.errorIcon}></View>
+                            <Text style={styles.errorText}>{error}</Text>
+                        </View>}
                         {/* Profile Image */}
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Profile Image</Text>
-                            <TouchableOpacity
-                                style={styles.imagePicker}
-                                onPress={handleImagePick}
-                            >
-                                {image ? (
-                                    <Image
-                                        source={{ uri: image }}
-                                        style={styles.selectedImage}
-                                    />
-                                ) : (
-                                    <View style={styles.imagePlaceholder}>
-                                        <MaterialIcons name="add-a-photo" size={32} color="#FF4000" />
-                                        <Text style={styles.imagePlaceholderText}>Add Photo</Text>
-                                    </View>
-                                )}
-                            </TouchableOpacity>
+                            <Text style={styles.label}>Image</Text>
+
+                            {!uploading && (
+                                <TouchableOpacity style={styles.uploadBox} onPress={handleImagePick}>
+                                    {image != null ? (
+                                        <View>
+                                            <Image
+                                                source={{ uri: `data:image/png;base64,${image}` }}
+                                                style={[styles.avatarPreview,]}
+                                            />
+                                            <Text style={styles.uploadHint}>Tap to change image</Text>
+                                        </View>
+                                    ) : (
+                                        <>
+                                            <View style={styles.emptyImage}>
+                                                <MaterialIcons name="add" size={40} color="#FF4000" />
+                                            </View>
+                                            <Text style={styles.uploadHint}>Tap to upload new image</Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            )}
                         </View>
 
                         {/* Basic Information */}
@@ -357,7 +383,19 @@ const CreateStaffScreen = () => {
                                     value={dob || new Date()}
                                     mode="date"
                                     display="default"
-                                    onChange={handleDateChange}
+                                    onChange={(event, selectedDate) => {
+                                        setShowDatePicker(Platform.OS === 'ios'); // for iOS modal
+                                        if (selectedDate) {
+                                            setDob(selectedDate);
+                                            const day = selectedDate.getDate();
+                                            const month = selectedDate.getMonth() + 1;
+                                            const year = selectedDate.getFullYear();
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                dob: { day, month, year }
+                                            }));
+                                        }
+                                    }}
                                     maximumDate={new Date()}
                                 />
                             )}
@@ -380,12 +418,12 @@ const CreateStaffScreen = () => {
                                     <RNPicker.Item label="Admin" value="Admin" />
                                     <RNPicker.Item label="Board Member" value="Board Member" />
                                     <RNPicker.Item label="Medical Staff" value="Medical Staff" />
-                                    <RNPicker.Item label="Other" value="Other" />
+                                    {/* <RNPicker.Item label="Other" value="Other" /> */}
                                 </RNPicker>
                             </View>
                         </View>
 
-                        <View style={styles.formGroup}>
+                        {/* <View style={styles.formGroup}>
                             <Text style={styles.label}>Specialization</Text>
                             <TextInput
                                 style={styles.input}
@@ -393,7 +431,7 @@ const CreateStaffScreen = () => {
                                 value={formData.specialization}
                                 onChangeText={(text) => handleChange('specialization', text)}
                             />
-                        </View>
+                        </View> */}
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Employment Type</Text>
@@ -422,7 +460,7 @@ const CreateStaffScreen = () => {
                             />
                         </View>
 
-                        <View style={styles.formGroup}>
+                        {/* <View style={styles.formGroup}>
                             <Text style={styles.label}>Bio</Text>
                             <TextInput
                                 style={styles.textarea}
@@ -434,7 +472,7 @@ const CreateStaffScreen = () => {
                                 blurOnSubmit={false}
                                 returnKeyType="default"
                             />
-                        </View>
+                        </View> */}
 
                         {/* Qualifications */}
                         <View style={styles.formGroup}>
@@ -497,7 +535,7 @@ const CreateStaffScreen = () => {
                         </View>
 
                         {/* Team Assignments */}
-                        <Text style={styles.sectionTitle}>Team Assignments</Text>
+                        {/* <Text style={styles.sectionTitle}>Team Assignments</Text>
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Assigned Teams</Text>
                             {teams.length > 0 ? (
@@ -532,10 +570,10 @@ const CreateStaffScreen = () => {
                             ) : (
                                 <Text style={styles.noTeamsText}>No teams available</Text>
                             )}
-                        </View>
+                        </View> */}
 
                         {/* Emergency Contact */}
-                        <Text style={styles.sectionTitle}>Emergency Contact</Text>
+                        {/* <Text style={styles.sectionTitle}>Emergency Contact</Text>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Full Name</Text>
@@ -566,10 +604,10 @@ const CreateStaffScreen = () => {
                                 value={formData.emergencyContact.phone}
                                 onChangeText={(text) => handleNestedChange('emergencyContact', 'phone', text)}
                             />
-                        </View>
+                        </View> */}
 
                         {/* Address */}
-                        <Text style={styles.sectionTitle}>Address</Text>
+                        {/* <Text style={styles.sectionTitle}>Address</Text>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Street Address</Text>
@@ -619,7 +657,7 @@ const CreateStaffScreen = () => {
                                 value={formData.address.country}
                                 onChangeText={(text) => handleNestedChange('address', 'country', text)}
                             />
-                        </View>
+                        </View> */}
 
                         {/* Status */}
                         <View style={styles.formGroup}>
@@ -724,17 +762,25 @@ const styles = StyleSheet.create({
         paddingBottom: 100
     },
     error: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255, 64, 0, 0.1)',
-        padding: 10,
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
         borderRadius: 5,
-        marginBottom: 20,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
     },
     errorText: {
-        color: '#FF4000',
+        color: 'red',
         fontFamily: 'Manrope',
-        marginLeft: 5,
     },
     formGroup: {
         marginBottom: 20,
@@ -774,8 +820,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F4F4F4',
     },
     dateInput: {
-        borderWidth: 1,
-        borderColor: '#ddd',
+        backgroundColor: '#F4F4F4',
         borderRadius: 8,
         padding: 12,
         flexDirection: 'row',
@@ -879,7 +924,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
     },
     inactiveStatusButton: {
-        backgroundColor: '#666',
+        backgroundColor: '#111',
     },
     statusButtonText: {
         fontFamily: 'Manrope',
@@ -962,31 +1007,58 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
     },
     checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 40
-  },
-  checkbox: {
-    width: 16,
-    height: 16,
-    borderWidth: 1,
-    borderColor: '#000000',
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  checked: {
-    width: 16,
-    height: 16,
-    backgroundColor: 'black',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  checkImage: {
-    width: 16,
-    height: 16,
-    resizeMode: 'contain',
-  },
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 40
+    },
+    checkbox: {
+        width: 16,
+        height: 16,
+        borderWidth: 1,
+        borderColor: '#000000',
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    checked: {
+        width: 16,
+        height: 16,
+        backgroundColor: 'black',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    checkImage: {
+        width: 16,
+        height: 16,
+        resizeMode: 'contain',
+    },
+    uploadBox: {
+        marginBottom: 30,
+        // flexDirection:'row'
+    },
+    avatarPreview: {
+        height: 200,
+        width: 200,
+        borderRadius: 20,
+        marginBottom: 5
+    },
+    uploadHint: {
+        fontFamily: 'Manrope',
+        marginBottom: 10
+    },
+    emptyImage: {
+        height: 200,
+        width: 200,
+        borderRadius: 20,
+        marginRight: 20,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: '#333333',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f4f4f4',
+        marginBottom: 5
+    }
 });
 
 export default CreateStaffScreen;

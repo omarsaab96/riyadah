@@ -1460,7 +1460,7 @@ export default function Profile() {
                                     ))
                                 ) : (
                                     <View style={styles.emptyState}>
-                                        <Text style={styles.emptyStateTitle}>No Inventory Items</Text>
+                                        <Text style={styles.emptyStateTitle}>No Items</Text>
                                         <Text style={styles.emptyStateText}>
                                             {userId == user._id
                                                 ? "Add your first inventory item to get started"

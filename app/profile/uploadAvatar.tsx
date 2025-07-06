@@ -78,7 +78,7 @@ export default function UploadAvatar() {
         if (!result.canceled && result.assets.length > 0) {
             setUploading(true);
             const base64 = result.assets[0].base64;
-            const base64Length = result.assets[0].base64.length;
+            const base64Length = base64.length;
             const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
 
             if (sizeInMB > 2) {
@@ -176,6 +176,10 @@ export default function UploadAvatar() {
                 {user && !loading && (
                     <ScrollView>
                         <View style={styles.contentContainer}>
+                            {error != null && <View style={styles.error}>
+                                <View style={styles.errorIcon}></View>
+                                <Text style={styles.errorText}>{error}</Text>
+                            </View>}
 
                             {/* <Text style={styles.subtitle}>Profile picture</Text> */}
 
@@ -374,5 +378,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#f4f4f4',
         marginBottom: 5
-    }
+    },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
+    },
 });

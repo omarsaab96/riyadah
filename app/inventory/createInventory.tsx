@@ -212,12 +212,14 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Description</Text>
-                            <TextInput
-                                style={[styles.input, { height: 100 }]}
+                            <TextInput style={styles.textarea}
                                 placeholder="Enter description"
-                                multiline
-                                value={formData.description}
+                                placeholderTextColor="#A8A8A8"
+                                value={formData.description || ""}
                                 onChangeText={(text) => handleChange('description', text)}
+                                multiline={true}
+                                blurOnSubmit={false}
+                                returnKeyType="default"
                             />
                         </View>
 
@@ -225,8 +227,8 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
                                 <Text style={styles.profileButtonText}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity 
-                                onPress={handleCreate} 
+                            <TouchableOpacity
+                                onPress={handleCreate}
                                 style={[styles.profileButton, styles.savebtn]}
                                 disabled={saving}
                             >
@@ -299,6 +301,16 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.2)',
         paddingTop: 10
+    },
+    textarea: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10,
+        height: 170,
+        textAlignVertical: 'top',
     },
     inlineActions: {
         flexDirection: 'row',

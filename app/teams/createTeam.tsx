@@ -31,6 +31,8 @@ export default function CreateTeam() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [localImg, setLocalImg] = useState<string | null>(null);
+    const [coaches, setCoaches] = useState("");
+
 
     const [teamData, setTeamData] = useState({
         name: '',
@@ -38,7 +40,7 @@ export default function CreateTeam() {
         ageGroup: 'U12',
         gender: 'Mixed',
         image: null,
-        coach: null,
+        coaches: [],
     });
 
     const sports = [
@@ -140,7 +142,8 @@ export default function CreateTeam() {
                 sport: teamData.sport,
                 ageGroup: teamData.ageGroup,
                 gender: teamData.gender,
-                image: teamData.image
+                image: teamData.image,
+                coaches:[coaches]
             };
 
             const response = await fetch('https://riyadah.onrender.com/api/teams', {
@@ -153,6 +156,7 @@ export default function CreateTeam() {
             });
 
             const data = await response.json();
+            
 
             if (response.ok) {
                 Alert.alert('Success', 'Team created successfully!', [
@@ -253,6 +257,17 @@ export default function CreateTeam() {
                                 placeholder="Enter team name"
                                 value={teamData.name}
                                 onChangeText={(text) => setTeamData({ ...teamData, name: text })}
+                            />
+                        </View>
+
+                        {/* Coaches */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Coach</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter coach name"
+                                value={coaches}
+                                onChangeText={(text) => setCoaches(text)}
                             />
                         </View>
 
