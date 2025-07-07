@@ -180,7 +180,7 @@ router.put('/:userId', authenticateToken, async (req, res) => {
 });
 
 // Get user info
-router.get('/:userId', authenticateToken, async (req, res) => {
+router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
   // Optional: Make sure the token's userId matches the request param
