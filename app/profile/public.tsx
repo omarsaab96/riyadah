@@ -201,6 +201,10 @@ export default function PublicProfile() {
         }
     }
 
+    const handleShareProfile = async () => {
+        console.log('Share clicked');
+    };
+
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -754,6 +758,13 @@ export default function PublicProfile() {
                                 </View>
                             </View>
                         )}
+
+                        {/* ACIONS */}
+                        <View style={[styles.profileSection, styles.profileActions]}>
+                            <TouchableOpacity onPress={handleShareProfile} style={styles.profileButton}>
+                                <Text style={styles.profileButtonText}>Share Profile</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </Animated.ScrollView>
             )}
@@ -1240,9 +1251,9 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 150,
+        width: 120,
         position: 'absolute',
-        top: 40,
+        top: 20,
         left: 20,
         zIndex: 1,
     },

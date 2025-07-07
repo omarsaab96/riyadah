@@ -33,7 +33,7 @@ export default function TermsConditions() {
           Terms
         </Text>
       </View>
-      
+
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View>
           <Text style={styles.heading}>Effective Date: 04 June 2025</Text>
@@ -133,9 +133,9 @@ const styles = StyleSheet.create({
     marginBottom: 30
   },
   logo: {
-    width: 150,
+    width: 120,
     position: 'absolute',
-    top: 40,
+    top: 20,
     left: 20,
     zIndex: 1,
   },

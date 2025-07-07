@@ -266,9 +266,9 @@ const styles = StyleSheet.create({
         height: 270,
     },
     logo: {
-        width: 150,
+        width: 120,
         position: 'absolute',
-        top: 40,
+        top: 20,
         left: 20,
         zIndex: 1,
     },
