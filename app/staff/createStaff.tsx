@@ -20,6 +20,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import CountryPicker from 'react-native-country-picker-modal';
 
 const { width } = Dimensions.get('window');
 
@@ -33,7 +34,9 @@ const CreateStaffScreen = () => {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [uploading, setUploading] = useState(false);
-    const [localImg, setLocalImg] = useState<string | null>(null);
+    const [countryCode, setCountryCode] = useState('LB');
+    const [callingCode, setCallingCode] = useState('961');
+
 
     const [formData, setFormData] = useState({
         name: '',
@@ -307,7 +310,8 @@ const CreateStaffScreen = () => {
                         </View>}
                         {/* Profile Image */}
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Image</Text>
+                            <Text style={styles.sectionTitle}>Image</Text>
+
 
                             {!uploading && (
                                 <TouchableOpacity style={styles.uploadBox} onPress={handleImagePick}>
@@ -357,14 +361,36 @@ const CreateStaffScreen = () => {
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Phone Number</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter phone number"
-                                keyboardType="phone-pad"
-                                value={formData.phone}
-                                onChangeText={(text) => handleChange('phone', text)}
-                            />
+                            <Text style={styles.label}>Phone</Text>
+
+                            <View style={styles.phoneContainer}>
+                                <View style={styles.phonePicker}>
+                                    <CountryPicker
+                                        countryCode={countryCode}
+                                        withFilter
+                                        withFlag
+                                        withCallingCode
+                                        withAlphaFilter
+                                        withCallingCodeButton
+                                        withEmoji={false}
+                                        theme={{
+                                            itemHeight: 44,
+                                            fontSize: 14
+                                        }}
+                                        onSelect={(country) => {
+                                            setCountryCode(country.cca2);
+                                            setCallingCode(country.callingCode[0]);
+                                        }}
+                                    />
+                                </View>
+                                <TextInput
+                                    style={[styles.input, styles.phoneInput]}
+                                    placeholder="Phone number"
+                                    keyboardType="phone-pad"
+                                    value={formData.phone}
+                                    onChangeText={(text) => handleChange('phone', text)}
+                                />
+                            </View>
                         </View>
 
                         <View style={styles.formGroup}>
@@ -402,7 +428,7 @@ const CreateStaffScreen = () => {
                         </View>
 
                         {/* Professional Information */}
-                        <Text style={styles.sectionTitle}>Professional Information</Text>
+                        <Text style={[styles.sectionTitle, { marginTop: 30 }]}>Professional Information</Text>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Role *</Text>
@@ -413,15 +439,54 @@ const CreateStaffScreen = () => {
                                     style={styles.picker}
                                 >
                                     <RNPicker.Item label="Coach" value="Coach" />
-                                    <RNPicker.Item label="Assistant Coach" value="Assistant Coach" />
+                                    {/* <RNPicker.Item label="Assistant Coach" value="Assistant Coach" /> */}
                                     <RNPicker.Item label="Manager" value="Manager" />
-                                    <RNPicker.Item label="Admin" value="Admin" />
+                                    {/* <RNPicker.Item label="Admin" value="Admin" /> */}
                                     <RNPicker.Item label="Board Member" value="Board Member" />
                                     <RNPicker.Item label="Medical Staff" value="Medical Staff" />
                                     {/* <RNPicker.Item label="Other" value="Other" /> */}
                                 </RNPicker>
                             </View>
                         </View>
+
+                        {/* Team Assignments */}
+                        {/* {formData.role == "Coach" && <View>
+                            <View style={[styles.formGroup, {marginBottom:20}]}>
+                                <Text style={styles.label}>Assigned Teams</Text>
+                                {teams.length > 0 ? (
+                                    teams.map(team => (
+                                        <TouchableOpacity
+                                            key={team._id}
+                                            style={styles.teamItem}
+                                            onPress={() => {
+                                                const isSelected = formData.teams.includes(team._id);
+                                                if (isSelected) {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        teams: prev.teams.filter(id => id !== team._id)
+                                                    }));
+                                                } else {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        teams: [...prev.teams, team._id]
+                                                    }));
+                                                }
+                                            }}
+                                        >
+                                            <View style={styles.checkbox}>
+                                                {formData.teams.includes(team._id) && <View style={styles.checked} >
+                                                    <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+                                                </View>
+                                                }
+                                            </View>
+                                            <Text style={styles.teamName}>{team.name} ({team.sport})</Text>
+                                        </TouchableOpacity>
+                                    ))
+                                ) : (
+                                    <Text style={styles.noTeamsText}>No teams available</Text>
+                                )}
+                            </View>
+                        </View>} */}
 
                         {/* <View style={styles.formGroup}>
                             <Text style={styles.label}>Specialization</Text>
@@ -534,43 +599,6 @@ const CreateStaffScreen = () => {
                             </View>
                         </View>
 
-                        {/* Team Assignments */}
-                        {/* <Text style={styles.sectionTitle}>Team Assignments</Text>
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Assigned Teams</Text>
-                            {teams.length > 0 ? (
-                                teams.map(team => (
-                                    <TouchableOpacity
-                                        key={team._id}
-                                        style={styles.teamItem}
-                                        onPress={() => {
-                                            const isSelected = formData.teams.includes(team._id);
-                                            if (isSelected) {
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    teams: prev.teams.filter(id => id !== team._id)
-                                                }));
-                                            } else {
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    teams: [...prev.teams, team._id]
-                                                }));
-                                            }
-                                        }}
-                                    >
-                                        <View style={styles.checkbox}>
-                                            {formData.teams.includes(team._id) && <View style={styles.checked} >
-                                                <Image source={require('../../assets/check.png')} style={styles.checkImage} />
-                                            </View>
-                                            }
-                                        </View>
-                                        <Text style={styles.teamName}>{team.name} ({team.sport})</Text>
-                                    </TouchableOpacity>
-                                ))
-                            ) : (
-                                <Text style={styles.noTeamsText}>No teams available</Text>
-                            )}
-                        </View> */}
 
                         {/* Emergency Contact */}
                         {/* <Text style={styles.sectionTitle}>Emergency Contact</Text>
@@ -783,7 +811,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
     },
     formGroup: {
-        marginBottom: 20,
+        marginBottom: 10,
     },
     sectionTitle: {
         fontFamily: 'Bebas',
@@ -805,13 +833,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
         padding: 15,
         backgroundColor: '#F4F4F4',
-        marginBottom: 16,
+        marginBottom: 20,
         color: 'black',
         borderRadius: 10
     },
     pickerContainer: {
         borderRadius: 8,
         overflow: 'hidden',
+        marginBottom: 20,
     },
     picker: {
         width: '100%',
@@ -831,33 +860,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 15,
     },
-    imagePlaceholder: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: '#f5f5f5',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#FF4000',
-        borderStyle: 'dashed',
-    },
-    imagePlaceholderText: {
-        marginTop: 5,
-        fontFamily: 'Manrope',
-        color: '#666',
-    },
-    selectedImage: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        borderWidth: 2,
-        borderColor: '#FF4000',
-    },
     listInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 20,
     },
     addItemButton: {
         backgroundColor: '#FF4000',
@@ -893,8 +899,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
     },
     teamCheckbox: {
         marginRight: 10,
@@ -1033,12 +1037,12 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
     },
     uploadBox: {
-        marginBottom: 30,
+        marginBottom: 10,
         // flexDirection:'row'
     },
     avatarPreview: {
-        height: 200,
-        width: 200,
+        height: 120,
+        width: 120,
         borderRadius: 20,
         marginBottom: 5
     },
@@ -1047,8 +1051,8 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     emptyImage: {
-        height: 200,
-        width: 200,
+        height: 120,
+        width: 120,
         borderRadius: 20,
         marginRight: 20,
         borderWidth: 1,
@@ -1058,7 +1062,24 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#f4f4f4',
         marginBottom: 5
-    }
+    },
+    phoneContainer: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+        width: '100%',
+        marginBottom: 20,
+        backgroundColor: '#F4F4F4',
+        borderRadius: 10,
+        paddingLeft: 15,
+    },
+    phonePicker: {
+        paddingTop: 10
+    },
+    phoneInput: {
+        marginBottom: 0,
+        flexGrow: 1,
+        backgroundColor: 'transparent',
+    },
 });
 
 export default CreateStaffScreen;

@@ -156,638 +156,640 @@ export default function EditProfile() {
     }
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-        >
-            <View style={styles.container}>
-                <View style={styles.pageHeader}>
-                    <Image
-                        source={require('../../assets/logo_white.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
+        <>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                <View style={styles.container}>
+                    <View style={styles.pageHeader}>
+                        <Image
+                            source={require('../../assets/logo_white.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Edit profile</Text>
-                        {!loading && <Text style={styles.pageDesc}>Change your data</Text>}
+                        <View style={styles.headerTextBlock}>
+                            <Text style={styles.pageTitle}>Edit profile</Text>
+                            {!loading && <Text style={styles.pageDesc}>Change your data</Text>}
 
-                        {loading &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
-                                <ActivityIndicator
-                                    size="small"
-                                    color="#fff"
-                                    style={{ transform: [{ scale: 1.25 }] }}
-                                />
-                            </View>
-                        }
-                    </View>
-
-                    <Text style={styles.ghostText}>Edit Pro</Text>
-
-                    {user && !loading && <View style={styles.profileImage}>
-                        <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
-                            {(user.image == null || user.image == "") && user.gender == "Male" && <Image
-                                source={require('../../assets/avatar.png')}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                            {(user.image == null || user.image == "") && user.gender == "Female" && <Image
-                                source={require('../../assets/avatarF.png')}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                            {user.image != null && <Image
-                                source={{ uri: user.image }}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                        </TouchableOpacity>
-
-                        {(user.image == null || user.image == "") &&
-                            <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
-                                <Entypo name="plus" size={20} color="#FF4000" />
-                                <Text style={styles.uploadImageText}>Upload avatar</Text>
-                            </TouchableOpacity>
-                        }
-
-                        {user.image != null && user.image != "" &&
-                            <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
-                                <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
-                            </TouchableOpacity>
-                        }
-                    </View>}
-
-
-                </View>
-
-                {user && !loading && <ScrollView>
-                    <View style={styles.contentContainer}>
-                        {user.type == "Parent" && <View style={styles.entity}>
-                            <View style={styles.noChildrenView}>
-                                <Text style={[styles.title, { marginBottom: 0 }]}>
-                                    Children ({children?.length || 0})
-                                </Text>
-                                <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddChildren}>
-                                    <Entypo name="plus" size={20} color="#FF4000" />
-                                    <Text style={styles.addChildrenButtonText}>Add child</Text>
-                                </TouchableOpacity>
-                            </View>
-                            {children?.length > 0 ? (<View style={styles.childrenList}>
-                                {children.map((child, index) => (
-                                    <View key={index} style={styles.childItem}>
-                                        <Text>{child.name}</Text>
-                                    </View>
-                                ))}
-                            </View>) : (
-                                <View>
-                                    <Text style={styles.noChildrenText}>No children added yet</Text>
+                            {loading &&
+                                <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#fff"
+                                        style={{ transform: [{ scale: 1.25 }] }}
+                                    />
                                 </View>
-                            )}
+                            }
+                        </View>
+
+                        <Text style={styles.ghostText}>Edit Pro</Text>
+
+                        {user && !loading && <View style={styles.profileImage}>
+                            <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
+                                {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                    source={require('../../assets/avatar.png')}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                                {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                    source={require('../../assets/avatarF.png')}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                                {user.image != null && <Image
+                                    source={{ uri: user.image }}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                            </TouchableOpacity>
+
+                            {(user.image == null || user.image == "") &&
+                                <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                                    <Entypo name="plus" size={20} color="#FF4000" />
+                                    <Text style={styles.uploadImageText}>Upload avatar</Text>
+                                </TouchableOpacity>
+                            }
+
+                            {user.image != null && user.image != "" &&
+                                <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
+                                    <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                    <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
+                                </TouchableOpacity>
+                            }
                         </View>}
 
-                        {user.type == "Club" &&
-                            <View style={styles.adminDiv}>
-                                <Text style={styles.title}>
-                                    Admin
-                                </Text>
 
+                    </View>
+
+                    {user && !loading && <ScrollView>
+                        <View style={styles.contentContainer}>
+                            {user.type == "Parent" && <View style={styles.entity}>
+                                <View style={styles.noChildrenView}>
+                                    <Text style={[styles.title, { marginBottom: 0 }]}>
+                                        Children ({children?.length || 0})
+                                    </Text>
+                                    <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddChildren}>
+                                        <Entypo name="plus" size={20} color="#FF4000" />
+                                        <Text style={styles.addChildrenButtonText}>Add child</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                {children?.length > 0 ? (<View style={styles.childrenList}>
+                                    {children.map((child, index) => (
+                                        <View key={index} style={styles.childItem}>
+                                            <Text>{child.name}</Text>
+                                        </View>
+                                    ))}
+                                </View>) : (
+                                    <View>
+                                        <Text style={styles.noChildrenText}>No children added yet</Text>
+                                    </View>
+                                )}
+                            </View>}
+
+                            {user.type == "Club" &&
+                                <View style={styles.adminDiv}>
+                                    <Text style={styles.title}>
+                                        Admin
+                                    </Text>
+
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Admin"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.admin?.name}
+                                        onChangeText={(text) => updateField('admin.name', text)}
+                                    />
+                                </View>
+                            }
+
+                            {user.type != "Parent" &&
+                                <View style={styles.entity}>
+                                    <Text style={styles.title}>
+                                        CONTACT Info
+                                    </Text>
+
+                                    {user.type == "Club" && <Text style={[styles.subtitle, styles.contactSubTitle]}>
+                                        Description
+                                    </Text>}
+
+                                    {user.type == "Club" && <TextInput style={styles.textarea}
+                                        placeholder="Opening hours"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={user.contactInfo.description || ""}
+                                        onChangeText={(text) => updateField('contactInfo.description', text)}
+                                        multiline={true}
+                                        blurOnSubmit={false}
+                                        returnKeyType="default"
+                                    />}
+
+                                    <View style={styles.contactItem}>
+                                        <FontAwesome6 name="phone" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput]}
+                                            placeholder="Phone number"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.phone}
+                                            onChangeText={(text) => updateField('contactInfo.phone', text)}
+                                        />
+                                    </View>
+
+                                    <View style={styles.contactItem}>
+                                        <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput]}
+                                            placeholder="ُEmail"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.email}
+                                            onChangeText={(text) => updateField('contactInfo.email', text)}
+                                        />
+                                    </View>
+
+                                    <View style={styles.contactItem}>
+                                        <FontAwesome name="facebook" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput, { paddingLeft: 28 }]}
+                                            placeholder="Facebook username"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.facebook}
+                                            onChangeText={(text) => updateField('contactInfo.facebook', text)}
+                                        />
+                                    </View>
+
+                                    <View style={styles.contactItem}>
+                                        <FontAwesome name="instagram" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput]}
+                                            placeholder="Instagram username"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.instagram}
+                                            onChangeText={(text) => updateField('contactInfo.instagram', text)}
+                                        />
+                                    </View>
+
+                                    <View style={styles.contactItem}>
+                                        <FontAwesome name="whatsapp" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput]}
+                                            placeholder="Whatsapp number"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.whatsapp}
+                                            onChangeText={(text) => updateField('contactInfo.whatsapp', text)}
+                                        />
+                                    </View>
+
+                                    <View style={styles.contactItem}>
+                                        <FontAwesome5 name="telegram-plane" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput]}
+                                            placeholder="Telegram username"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.telegram}
+                                            onChangeText={(text) => updateField('contactInfo.telegram', text)}
+                                        />
+                                    </View>
+
+                                    <View style={styles.contactItem}>
+                                        <FontAwesome6 name="tiktok" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput]}
+                                            placeholder="Tiktok username"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.tiktok}
+                                            onChangeText={(text) => updateField('contactInfo.tiktok', text)}
+                                        />
+                                    </View>
+
+                                    <View style={styles.contactItem}>
+                                        <FontAwesome name="snapchat-ghost" size={24} color="#000" />
+                                        <TextInput
+                                            style={[styles.input, styles.contactInput]}
+                                            placeholder="Snapchat username"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={user.contactInfo.snapchat}
+                                            onChangeText={(text) => updateField('contactInfo.snapchat', text)}
+                                        />
+                                    </View>
+
+                                    {user.type == "Club" && <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
+                                            <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
+                                                Location
+                                            </Text>
+                                            <TouchableOpacity
+                                                style={styles.locationBtn}
+                                                onPress={async () => {
+                                                    console.log('Checking permissions...')
+                                                    let { status } = await Location.requestForegroundPermissionsAsync();
+
+                                                    if (status !== 'granted') {
+                                                        console.log("Permission to access location was denied")
+                                                        alert('Permission to access location was denied. Go to your phone\'s settings and enable Riyadah to use your location');
+                                                        return;
+                                                    }
+                                                    console.log("Permission to access location granted")
+
+                                                    console.log("Getting current location...")
+                                                    let currentLocation = await Location.getCurrentPositionAsync({});
+                                                    console.log("Location= ", currentLocation)
+
+                                                    const coords = {
+                                                        latitude: currentLocation.coords.latitude,
+                                                        longitude: currentLocation.coords.longitude,
+                                                    };
+                                                    setLocation(coords);
+
+                                                    // Also update the user state
+                                                    updateField('contactInfo.location.latitude', String(coords.latitude));
+                                                    updateField('contactInfo.location.longitude', String(coords.longitude));
+                                                }}
+                                            >
+                                                <Text style={styles.locationBtnText}>Use My Current Location</Text>
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        <Text style={styles.hint}>Pinch to zoom, tap to pin location</Text>
+
+                                        <View style={styles.map}>
+                                            <MapView
+                                                style={styles.mapPreview}
+                                                region={{
+                                                    latitude: location?.latitude || 0,
+                                                    longitude: location?.longitude || 0,
+                                                    latitudeDelta: location?.latitude ? 0.01 : 50,
+                                                    longitudeDelta: location?.longitude ? 0.01 : 50
+                                                }}
+                                                onPress={(e) => {
+                                                    const coords = e.nativeEvent.coordinate;
+                                                    setLocation(coords);
+                                                    updateField('contactInfo.location.latitude', String(coords.latitude));
+                                                    updateField('contactInfo.location.longitude', String(coords.longitude));
+                                                }}
+                                            >
+                                                {location && (
+                                                    <Marker
+                                                        coordinate={location}
+                                                        draggable
+                                                        onDragEnd={(e) => {
+                                                            const coords = e.nativeEvent.coordinate;
+                                                            setLocation(coords);
+                                                            updateField('contactInfo.location.latitude', String(coords.latitude));
+                                                            updateField('contactInfo.location.longitude', String(coords.longitude));
+                                                        }}
+                                                    />
+                                                )}
+                                            </MapView>
+                                        </View>
+                                    </View>}
+                                </View>
+                            }
+
+                            {/* BIO */}
+                            {user.type != "Parent" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    {user.type == "Club" ? 'Summary' : 'Bio'}
+                                </Text>
                                 <TextInput
-                                    style={styles.input}
-                                    placeholder="Admin"
+                                    style={styles.textarea}
+                                    placeholder={user.type == "Club" ? 'About the club' : 'About you'}
                                     placeholderTextColor="#A8A8A8"
-                                    value={user.admin?.name}
-                                    onChangeText={(text) => updateField('admin.name', text)}
-                                />
-                            </View>
-                        }
-
-                        {user.type != "Parent" &&
-                            <View style={styles.entity}>
-                                <Text style={styles.title}>
-                                    CONTACT Info
-                                </Text>
-
-                                {user.type == "Club" && <Text style={[styles.subtitle, styles.contactSubTitle]}>
-                                    Description
-                                </Text>}
-
-                                {user.type == "Club" && <TextInput style={styles.textarea}
-                                    placeholder="Opening hours"
-                                    placeholderTextColor="#A8A8A8"
-                                    value={user.contactInfo.description || ""}
-                                    onChangeText={(text) => updateField('contactInfo.description', text)}
+                                    value={user.bio || ""}
+                                    onChangeText={(text) => updateField('bio', text)}
                                     multiline={true}
                                     blurOnSubmit={false}
                                     returnKeyType="default"
-                                />}
+                                />
+                            </View>}
 
-                                <View style={styles.contactItem}>
-                                    <FontAwesome6 name="phone" size={24} color="#000" />
-                                    <TextInput
-                                        style={[styles.input, styles.contactInput]}
-                                        placeholder="Phone number"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.phone}
-                                        onChangeText={(text) => updateField('contactInfo.phone', text)}
+                            {/* COUNTRY */}
+                            <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Country
+                                </Text>
+                                <View style={[styles.input, styles.select]}>
+                                    <CountryPicker
+                                        countryCode={user.country}
+                                        withFilter
+                                        withFlag
+                                        withAlphaFilter
+                                        withCountryNameButton
+                                        withEmoji={false}
+                                        theme={{
+                                            itemHeight: 44,
+                                        }}
+                                        onSelect={(country) => updateField('country', country.cca2)}
                                     />
                                 </View>
+                            </View>
 
-                                <View style={styles.contactItem}>
-                                    <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
+                            {/* TEAM/CLUB */}
+                            {user.type == "Athlete" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Team/club
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Club name"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.club}
+                                    onChangeText={(text) => updateField('club', text)}
+                                />
+                            </View>}
+
+                            {/* DOB */}
+                            <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    {user.type == "Club" ? 'Establishment date' : 'Date of Birth'}
+                                </Text>
+                                <View style={styles.dobRow}>
                                     <TextInput
-                                        style={[styles.input, styles.contactInput]}
-                                        placeholder="ُEmail"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.email}
-                                        onChangeText={(text) => updateField('contactInfo.email', text)}
+                                        style={styles.dobInput}
+                                        placeholder="DD"
+                                        placeholderTextColor="#aaa"
+                                        keyboardType="number-pad"
+                                        maxLength={2}
+                                        value={user.dob.day}
+                                        onChangeText={(text) => updateField('dob.day', text)}
+                                    />
+                                    <Text style={styles.dobSeperator}>/</Text>
+                                    <TextInput
+                                        style={styles.dobInput}
+                                        placeholder="MM"
+                                        placeholderTextColor="#aaa"
+                                        keyboardType="number-pad"
+                                        maxLength={2}
+                                        value={user.dob.month}
+                                        onChangeText={(text) => updateField('dob.month', text)}
+                                    />
+                                    <Text style={styles.dobSeperator}>/</Text>
+                                    <TextInput
+                                        style={styles.dobInput}
+                                        placeholder="YYYY"
+                                        placeholderTextColor="#aaa"
+                                        keyboardType="number-pad"
+                                        maxLength={4}
+                                        value={user.dob.year}
+                                        onChangeText={(text) => updateField('dob.year', text)}
                                     />
                                 </View>
+                            </View>
 
-                                <View style={styles.contactItem}>
-                                    <FontAwesome name="facebook" size={24} color="#000" />
-                                    <TextInput
-                                        style={[styles.input, styles.contactInput,{paddingLeft:28}]}
-                                        placeholder="Facebook username"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.facebook}
-                                        onChangeText={(text) => updateField('contactInfo.facebook', text)}
-                                    />
-                                </View>
+                            {/* HEIGHT */}
+                            {user.type == "Athlete" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Height
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="In cm"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.height?.toString()}
+                                    onChangeText={(text) => updateField('height', text)}
+                                />
+                            </View>}
 
-                                <View style={styles.contactItem}>
-                                    <FontAwesome name="instagram" size={24} color="#000" />
-                                    <TextInput
-                                        style={[styles.input, styles.contactInput]}
-                                        placeholder="Instagram username"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.instagram}
-                                        onChangeText={(text) => updateField('contactInfo.instagram', text)}
-                                    />
-                                </View>
+                            {/* WEIGHT */}
+                            {user.type == "Athlete" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Weight
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="In Kg"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.weight?.toString()}
+                                    onChangeText={(text) => updateField('weight', text)}
+                                />
+                            </View>}
 
-                                <View style={styles.contactItem}>
-                                    <FontAwesome name="whatsapp" size={24} color="#000" />
-                                    <TextInput
-                                        style={[styles.input, styles.contactInput]}
-                                        placeholder="Whatsapp number"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.whatsapp}
-                                        onChangeText={(text) => updateField('contactInfo.whatsapp', text)}
-                                    />
-                                </View>
+                            {/* HIGHLIGHTS */}
+                            {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Highlights
+                                </Text>
+                                <TextInput
+                                    style={styles.textarea}
+                                    placeholder="Wanna highlight any accomplishment?"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.highlights || ""}
+                                    onChangeText={(text) => updateField('highlights', text)}
+                                    multiline={true}
+                                    blurOnSubmit={false}
+                                    returnKeyType="default"
+                                />
+                            </View>}
 
-                                <View style={styles.contactItem}>
-                                    <FontAwesome5 name="telegram-plane" size={24} color="#000" />
-                                    <TextInput
-                                        style={[styles.input, styles.contactInput]}
-                                        placeholder="Telegram username"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.telegram}
-                                        onChangeText={(text) => updateField('contactInfo.telegram', text)}
-                                    />
-                                </View>
+                            {/* STATS */}
+                            {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
 
-                                <View style={styles.contactItem}>
-                                    <FontAwesome6 name="tiktok" size={24} color="#000" />
-                                    <TextInput
-                                        style={[styles.input, styles.contactInput]}
-                                        placeholder="Tiktok username"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.tiktok}
-                                        onChangeText={(text) => updateField('contactInfo.tiktok', text)}
-                                    />
-                                </View>
+                                <Text style={styles.title}>
+                                    Stats
+                                </Text>
+                                <TextInput
+                                    style={styles.textarea}
+                                    placeholder="Let people know how you perform"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.stats || ""}
+                                    onChangeText={(text) => updateField('stats', text)}
+                                    multiline={true}
+                                    blurOnSubmit={false}
+                                    returnKeyType="default"
+                                />
+                            </View>}
 
-                                <View style={styles.contactItem}>
-                                    <FontAwesome name="snapchat-ghost" size={24} color="#000" />
-                                    <TextInput
-                                        style={[styles.input, styles.contactInput]}
-                                        placeholder="Snapchat username"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={user.contactInfo.snapchat}
-                                        onChangeText={(text) => updateField('contactInfo.snapchat', text)}
-                                    />
-                                </View>
+                            {/* ACHIEVEMENTS */}
+                            {user.type == "Athlete" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Achievements
+                                </Text>
+                                <TextInput
+                                    style={styles.textarea}
+                                    placeholder="What are your biggest achievements?"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.achievements || ""}
+                                    onChangeText={(text) => updateField('achievements', text)}
+                                    multiline={true}
+                                    blurOnSubmit={false}
+                                    returnKeyType="default"
+                                />
+                            </View>}
 
-                                {user.type=="Club" && <View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
-                                        <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
-                                            Location
+                            {/* EVENTS */}
+                            {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
+
+                                <Text style={styles.title}>
+                                    Upcoming Events
+                                </Text>
+                                <TextInput
+                                    style={styles.textarea}
+                                    placeholder="Are you attending any events?"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.events || ""}
+                                    onChangeText={(text) => updateField('events', text)}
+                                    multiline={true}
+                                    blurOnSubmit={false}
+                                    returnKeyType="default"
+                                />
+                            </View>}
+
+                            {/* SKILLS */}
+                            {user.type == "Athlete" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Skills
+                                </Text>
+                                <View style={styles.rangeContainer}>
+                                    <Text style={styles.subtitle}>
+                                        attack
+                                    </Text>
+                                    <View style={styles.rangeSliderContainer}>
+                                        <Slider
+                                            style={styles.rangeSlider}
+                                            minimumValue={0}
+                                            maximumValue={100}
+                                            step={1}
+                                            value={user?.skills?.attack || 0}
+                                            onValueChange={(value) => updateField('skills.attack', value)}
+                                            minimumTrackTintColor="#FF4000"
+                                            maximumTrackTintColor="#d3d3d3"
+                                            thumbTintColor="#FF4000"
+                                        />
+                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                            {user?.skills?.attack || 0}%
                                         </Text>
-                                        <TouchableOpacity
-                                            style={styles.locationBtn}
-                                            onPress={async () => {
-                                                console.log('Checking permissions...')
-                                                let { status } = await Location.requestForegroundPermissionsAsync();
-
-                                                if (status !== 'granted') {
-                                                    console.log("Permission to access location was denied")
-                                                    alert('Permission to access location was denied. Go to your phone\'s settings and enable Riyadah to use your location');
-                                                    return;
-                                                }
-                                                console.log("Permission to access location granted")
-
-                                                console.log("Getting current location...")
-                                                let currentLocation = await Location.getCurrentPositionAsync({});
-                                                console.log("Location= ", currentLocation)
-
-                                                const coords = {
-                                                    latitude: currentLocation.coords.latitude,
-                                                    longitude: currentLocation.coords.longitude,
-                                                };
-                                                setLocation(coords);
-
-                                                // Also update the user state
-                                                updateField('contactInfo.location.latitude', String(coords.latitude));
-                                                updateField('contactInfo.location.longitude', String(coords.longitude));
-                                            }}
-                                        >
-                                            <Text style={styles.locationBtnText}>Use My Current Location</Text>
-                                        </TouchableOpacity>
                                     </View>
-
-                                    <Text style={styles.hint}>Pinch to zoom, tap to pin location</Text>
-
-                                    <View style={styles.map}>
-                                        <MapView
-                                            style={styles.mapPreview}
-                                            region={{
-                                                latitude: location?.latitude || 0,
-                                                longitude: location?.longitude || 0,
-                                                latitudeDelta: location?.latitude ? 0.01 : 50,
-                                                longitudeDelta: location?.longitude ? 0.01 : 50
-                                            }}
-                                            onPress={(e) => {
-                                                const coords = e.nativeEvent.coordinate;
-                                                setLocation(coords);
-                                                updateField('contactInfo.location.latitude', String(coords.latitude));
-                                                updateField('contactInfo.location.longitude', String(coords.longitude));
-                                            }}
-                                        >
-                                            {location && (
-                                                <Marker
-                                                    coordinate={location}
-                                                    draggable
-                                                    onDragEnd={(e) => {
-                                                        const coords = e.nativeEvent.coordinate;
-                                                        setLocation(coords);
-                                                        updateField('contactInfo.location.latitude', String(coords.latitude));
-                                                        updateField('contactInfo.location.longitude', String(coords.longitude));
-                                                    }}
-                                                />
-                                            )}
-                                        </MapView>
+                                </View>
+                                <View style={styles.rangeContainer}>
+                                    <Text style={styles.subtitle}>
+                                        defense
+                                    </Text>
+                                    <View style={styles.rangeSliderContainer}>
+                                        <Slider
+                                            style={styles.rangeSlider}
+                                            minimumValue={0}
+                                            maximumValue={100}
+                                            step={1}
+                                            value={user?.skills?.defense || 0}
+                                            onValueChange={(value) => updateField('skills.defense', value)}
+                                            minimumTrackTintColor="#FF4000"
+                                            maximumTrackTintColor="#d3d3d3"
+                                            thumbTintColor="#FF4000"
+                                        />
+                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                            {user?.skills?.defense || 0}%
+                                        </Text>
                                     </View>
-                                </View>}
-                            </View>
-                        }
+                                </View>
+                                <View style={styles.rangeContainer}>
+                                    <Text style={styles.subtitle}>
+                                        skill
+                                    </Text>
+                                    <View style={styles.rangeSliderContainer}>
+                                        <Slider
+                                            style={styles.rangeSlider}
+                                            minimumValue={0}
+                                            maximumValue={100}
+                                            step={1}
+                                            value={user?.skills?.skill || 0}
+                                            onValueChange={(value) => updateField('skills.skill', value)}
+                                            minimumTrackTintColor="#FF4000"
+                                            maximumTrackTintColor="#d3d3d3"
+                                            thumbTintColor="#FF4000"
+                                        />
+                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                            {user?.skills?.skill || 0}%
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.rangeContainer}>
+                                    <Text style={styles.subtitle}>
+                                        speed
+                                    </Text>
+                                    <View style={styles.rangeSliderContainer}>
+                                        <Slider
+                                            style={styles.rangeSlider}
+                                            minimumValue={0}
+                                            maximumValue={100}
+                                            step={1}
+                                            value={user?.skills?.speed || 0}
+                                            onValueChange={(value) => updateField('skills.speed', value)}
+                                            minimumTrackTintColor="#FF4000"
+                                            maximumTrackTintColor="#d3d3d3"
+                                            thumbTintColor="#FF4000"
+                                        />
+                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                            {user?.skills?.speed || 0}%
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.rangeContainer}>
+                                    <Text style={styles.subtitle}>
+                                        stamina
+                                    </Text>
+                                    <View style={styles.rangeSliderContainer}>
+                                        <Slider
+                                            style={styles.rangeSlider}
+                                            minimumValue={0}
+                                            maximumValue={100}
+                                            step={1}
+                                            value={user?.skills?.stamina || 0}
+                                            onValueChange={(value) => updateField('skills.stamina', value)}
+                                            minimumTrackTintColor="#FF4000"
+                                            maximumTrackTintColor="#d3d3d3"
+                                            thumbTintColor="#FF4000"
+                                        />
+                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                            {user?.skills?.stamina || 0}%
+                                        </Text>
+                                    </View>
+                                </View>
 
-                        {/* BIO */}
-                        {user.type != "Parent" && <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                {user.type == "Club" ? 'Summary' : 'Bio'}
-                            </Text>
-                            <TextInput
-                                style={styles.textarea}
-                                placeholder={user.type == "Club" ? 'About the club' : 'About you'}
-                                placeholderTextColor="#A8A8A8"
-                                value={user.bio || ""}
-                                onChangeText={(text) => updateField('bio', text)}
-                                multiline={true}
-                                blurOnSubmit={false}
-                                returnKeyType="default"
-                            />
-                        </View>}
 
-                        {/* COUNTRY */}
-                        <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Country
-                            </Text>
-                            <View style={[styles.input, styles.select]}>
-                                <CountryPicker
-                                    countryCode={user.country}
-                                    withFilter
-                                    withFlag
-                                    withAlphaFilter
-                                    withCountryNameButton
-                                    withEmoji={false}
-                                    theme={{
-                                        itemHeight: 44,
-                                    }}
-                                    onSelect={(country) => updateField('country', country.cca2)}
-                                />
+                            </View>}
+
+                            <View style={[styles.profileActions, styles.inlineActions]}>
+                                <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
+                                    <Text style={styles.profileButtonText}>Save</Text>
+                                    {saving && (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#111111"
+                                            style={styles.saveLoaderContainer}
+                                        />
+                                    )}
+                                </TouchableOpacity>
                             </View>
                         </View>
+                    </ScrollView>
+                    }
+                </View >
+            </KeyboardAvoidingView>
 
-                        {/* TEAM/CLUB */}
-                        {user.type == "Athlete" && <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Team/club
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Club name"
-                                placeholderTextColor="#A8A8A8"
-                                value={user.club}
-                                onChangeText={(text) => updateField('club', text)}
-                            />
-                        </View>}
+            <View style={styles.navBar}>
+                <TouchableOpacity onPress={() => router.replace('/settings')}>
+                    <Image source={require('../../assets/settings.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-                        {/* DOB */}
-                        <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                {user.type == "Club" ? 'Establishment date' : 'Date of Birth'}
-                            </Text>
-                            <View style={styles.dobRow}>
-                                <TextInput
-                                    style={styles.dobInput}
-                                    placeholder="DD"
-                                    placeholderTextColor="#aaa"
-                                    keyboardType="number-pad"
-                                    maxLength={2}
-                                    value={user.dob.day}
-                                    onChangeText={(text) => updateField('dob.day', text)}
-                                />
-                                <Text style={styles.dobSeperator}>/</Text>
-                                <TextInput
-                                    style={styles.dobInput}
-                                    placeholder="MM"
-                                    placeholderTextColor="#aaa"
-                                    keyboardType="number-pad"
-                                    maxLength={2}
-                                    value={user.dob.month}
-                                    onChangeText={(text) => updateField('dob.month', text)}
-                                />
-                                <Text style={styles.dobSeperator}>/</Text>
-                                <TextInput
-                                    style={styles.dobInput}
-                                    placeholder="YYYY"
-                                    placeholderTextColor="#aaa"
-                                    keyboardType="number-pad"
-                                    maxLength={4}
-                                    value={user.dob.year}
-                                    onChangeText={(text) => updateField('dob.year', text)}
-                                />
-                            </View>
-                        </View>
+                <TouchableOpacity onPress={() => router.replace('/search')}>
+                    <Image source={require('../../assets/search.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-                        {/* HEIGHT */}
-                        {user.type == "Athlete" && <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Height
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="In cm"
-                                placeholderTextColor="#A8A8A8"
-                                value={user.height?.toString()}
-                                onChangeText={(text) => updateField('height', text)}
-                            />
-                        </View>}
+                <TouchableOpacity onPress={() => router.replace('/landing')}>
+                    <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
+                </TouchableOpacity>
 
-                        {/* WEIGHT */}
-                        {user.type == "Athlete" && <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Weight
-                            </Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="In Kg"
-                                placeholderTextColor="#A8A8A8"
-                                value={user.weight?.toString()}
-                                onChangeText={(text) => updateField('weight', text)}
-                            />
-                        </View>}
+                <TouchableOpacity onPress={() => router.replace('/notifications')}>
+                    <Image source={require('../../assets/notifications.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-                        {/* HIGHLIGHTS */}
-                        {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Highlights
-                            </Text>
-                            <TextInput
-                                style={styles.textarea}
-                                placeholder="Wanna highlight any accomplishment?"
-                                placeholderTextColor="#A8A8A8"
-                                value={user.highlights || ""}
-                                onChangeText={(text) => updateField('highlights', text)}
-                                multiline={true}
-                                blurOnSubmit={false}
-                                returnKeyType="default"
-                            />
-                        </View>}
-
-                        {/* STATS */}
-                        {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
-
-                            <Text style={styles.title}>
-                                Stats
-                            </Text>
-                            <TextInput
-                                style={styles.textarea}
-                                placeholder="Let people know how you perform"
-                                placeholderTextColor="#A8A8A8"
-                                value={user.stats || ""}
-                                onChangeText={(text) => updateField('stats', text)}
-                                multiline={true}
-                                blurOnSubmit={false}
-                                returnKeyType="default"
-                            />
-                        </View>}
-
-                        {/* ACHIEVEMENTS */}
-                        {user.type == "Athlete" && <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Achievements
-                            </Text>
-                            <TextInput
-                                style={styles.textarea}
-                                placeholder="What are your biggest achievements?"
-                                placeholderTextColor="#A8A8A8"
-                                value={user.achievements || ""}
-                                onChangeText={(text) => updateField('achievements', text)}
-                                multiline={true}
-                                blurOnSubmit={false}
-                                returnKeyType="default"
-                            />
-                        </View>}
-
-                        {/* EVENTS */}
-                        {user.type != "Parent" && user.type != "Scout"  && <View style={styles.entity}>
-
-                            <Text style={styles.title}>
-                                Upcoming Events
-                            </Text>
-                            <TextInput
-                                style={styles.textarea}
-                                placeholder="Are you attending any events?"
-                                placeholderTextColor="#A8A8A8"
-                                value={user.events || ""}
-                                onChangeText={(text) => updateField('events', text)}
-                                multiline={true}
-                                blurOnSubmit={false}
-                                returnKeyType="default"
-                            />
-                        </View>}
-
-                        {/* SKILLS */}
-                        {user.type == "Athlete" && <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Skills
-                            </Text>
-                            <View style={styles.rangeContainer}>
-                                <Text style={styles.subtitle}>
-                                    attack
-                                </Text>
-                                <View style={styles.rangeSliderContainer}>
-                                    <Slider
-                                        style={styles.rangeSlider}
-                                        minimumValue={0}
-                                        maximumValue={100}
-                                        step={1}
-                                        value={user?.skills?.attack || 0}
-                                        onValueChange={(value) => updateField('skills.attack', value)}
-                                        minimumTrackTintColor="#FF4000"
-                                        maximumTrackTintColor="#d3d3d3"
-                                        thumbTintColor="#FF4000"
-                                    />
-                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                        {user?.skills?.attack || 0}%
-                                    </Text>
-                                </View>
-                            </View>
-                            <View style={styles.rangeContainer}>
-                                <Text style={styles.subtitle}>
-                                    defense
-                                </Text>
-                                <View style={styles.rangeSliderContainer}>
-                                    <Slider
-                                        style={styles.rangeSlider}
-                                        minimumValue={0}
-                                        maximumValue={100}
-                                        step={1}
-                                        value={user?.skills?.defense || 0}
-                                        onValueChange={(value) => updateField('skills.defense', value)}
-                                        minimumTrackTintColor="#FF4000"
-                                        maximumTrackTintColor="#d3d3d3"
-                                        thumbTintColor="#FF4000"
-                                    />
-                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                        {user?.skills?.defense || 0}%
-                                    </Text>
-                                </View>
-                            </View>
-                            <View style={styles.rangeContainer}>
-                                <Text style={styles.subtitle}>
-                                    skill
-                                </Text>
-                                <View style={styles.rangeSliderContainer}>
-                                    <Slider
-                                        style={styles.rangeSlider}
-                                        minimumValue={0}
-                                        maximumValue={100}
-                                        step={1}
-                                        value={user?.skills?.skill || 0}
-                                        onValueChange={(value) => updateField('skills.skill', value)}
-                                        minimumTrackTintColor="#FF4000"
-                                        maximumTrackTintColor="#d3d3d3"
-                                        thumbTintColor="#FF4000"
-                                    />
-                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                        {user?.skills?.skill || 0}%
-                                    </Text>
-                                </View>
-                            </View>
-                            <View style={styles.rangeContainer}>
-                                <Text style={styles.subtitle}>
-                                    speed
-                                </Text>
-                                <View style={styles.rangeSliderContainer}>
-                                    <Slider
-                                        style={styles.rangeSlider}
-                                        minimumValue={0}
-                                        maximumValue={100}
-                                        step={1}
-                                        value={user?.skills?.speed || 0}
-                                        onValueChange={(value) => updateField('skills.speed', value)}
-                                        minimumTrackTintColor="#FF4000"
-                                        maximumTrackTintColor="#d3d3d3"
-                                        thumbTintColor="#FF4000"
-                                    />
-                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                        {user?.skills?.speed || 0}%
-                                    </Text>
-                                </View>
-                            </View>
-                            <View style={styles.rangeContainer}>
-                                <Text style={styles.subtitle}>
-                                    stamina
-                                </Text>
-                                <View style={styles.rangeSliderContainer}>
-                                    <Slider
-                                        style={styles.rangeSlider}
-                                        minimumValue={0}
-                                        maximumValue={100}
-                                        step={1}
-                                        value={user?.skills?.stamina || 0}
-                                        onValueChange={(value) => updateField('skills.stamina', value)}
-                                        minimumTrackTintColor="#FF4000"
-                                        maximumTrackTintColor="#d3d3d3"
-                                        thumbTintColor="#FF4000"
-                                    />
-                                    <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                        {user?.skills?.stamina || 0}%
-                                    </Text>
-                                </View>
-                            </View>
-
-
-                        </View>}
-
-                        <View style={[styles.profileActions, styles.inlineActions]}>
-                            <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>Save</Text>
-                                {saving && (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#111111"
-                                        style={styles.saveLoaderContainer}
-                                    />
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </ScrollView>
-                }
-
-                <View style={styles.navBar}>
-                    <TouchableOpacity onPress={() => router.replace('/settings')}>
-                        <Image source={require('../../assets/settings.png')} style={styles.icon} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => router.replace('/search')}>
-                        <Image source={require('../../assets/search.png')} style={styles.icon} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => router.replace('/landing')}>
-                        <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                        <Image source={require('../../assets/notifications.png')} style={styles.icon} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => router.replace('/profile')}>
-                        <Image source={require('../../assets/profile.png')} style={styles.icon} />
-                    </TouchableOpacity>
-                </View>
-            </View >
-        </KeyboardAvoidingView>
+                <TouchableOpacity onPress={() => router.replace('/profile')}>
+                    <Image source={require('../../assets/profile.png')} style={styles.icon} />
+                </TouchableOpacity>
+            </View>
+        </>
     );
 }
 
@@ -798,7 +800,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 20,
-        paddingBottom: 130
+        paddingBottom: 120
     },
     pageHeader: {
         backgroundColor: '#FF4000',

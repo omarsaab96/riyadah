@@ -32,6 +32,8 @@ export default function CreateTeam() {
     const [error, setError] = useState('');
     const [localImg, setLocalImg] = useState<string | null>(null);
     const [coaches, setCoaches] = useState("");
+    const [staff, setStaff] = useState([]);
+    const [staffLoading, setStaffLoading] = useState(false);
 
 
     const [teamData, setTeamData] = useState({
@@ -81,6 +83,7 @@ export default function CreateTeam() {
     }, []);
 
     useEffect(() => {
+        getStaff()
     }, [user])
 
     const validateForm = () => {
@@ -143,13 +146,13 @@ export default function CreateTeam() {
                 ageGroup: teamData.ageGroup,
                 gender: teamData.gender,
                 image: teamData.image,
-                coaches:[coaches]
+                coaches: teamData.coaches
             };
 
             // console.log("sending OBJ = ", requestBody)
 
 
-            const response = await fetch('https://riyadah.onrender.com/api/teams', {
+            const response = await fetch(`https://riyadah.onrender.com/api/teams/club/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -179,6 +182,35 @@ export default function CreateTeam() {
 
     const handleCancel = async () => {
         router.back()
+    };
+
+    const getStaff = async () => {
+        setStaffLoading(true)
+        if (user.type == "Club") {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const response = await fetch(`https://riyadah.onrender.com/api/staff/byClub/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log("Staff=", data.data)
+                    setStaff(data.data);
+                } else {
+                    setStaff([]);
+                }
+            } catch (err) {
+                console.error('Failed to fetch staff', err);
+                setStaff([]);
+            } finally {
+                setStaffLoading(false)
+            }
+        }
     };
 
     return (
@@ -267,12 +299,37 @@ export default function CreateTeam() {
                         {/* Coaches */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Coach</Text>
-                            <TextInput
+                            {/* <TextInput
                                 style={styles.input}
                                 placeholder="Enter coach name"
                                 value={coaches}
                                 onChangeText={(text) => setCoaches(text)}
-                            />
+                            /> */}
+                            {staffLoading ? (
+                                <View style={{alignItems:'flex-start'}}>
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#FF4000"
+                                    />
+                                </View>
+                            ) : (
+                                <View style={styles.pickerContainer}>
+                                    <Picker
+                                        selectedValue={null}
+                                        onValueChange={(itemValue) => {
+                                            console.log(itemValue);
+                                            setTeamData({ ...teamData, coaches: [...coaches, itemValue] })}
+                                        }
+                                        style={styles.picker}
+                                    >
+                                        {staff.filter(member => member.role === "Coach")
+                                            .map((coach, index) => (
+                                                <Picker.Item key={index} label={coach.name} value={coach._id} />
+                                            ))}
+                                    </Picker>
+                                </View>
+                            )
+                            }
                         </View>
 
                         {/* Sport Selection */}
@@ -346,8 +403,8 @@ export default function CreateTeam() {
                         </View>
                     </View>
                 </ScrollView>
-            </View>
-        </KeyboardAvoidingView>
+            </View >
+        </KeyboardAvoidingView >
     );
 }
 
