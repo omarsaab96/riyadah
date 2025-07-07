@@ -131,7 +131,7 @@ export default function Profile() {
     const getTeams = async () => {
         if (user.type == "Club") {
             try {
-                const res = await fetch(`https://riyadah.onrender.com/api/teams`, {
+                const res = await fetch(`https://riyadah.onrender.com/api/teams/club/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'

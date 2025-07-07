@@ -152,7 +152,7 @@ export default function CreateTeam() {
             // console.log("sending OBJ = ", requestBody)
 
 
-            const response = await fetch(`https://riyadah.onrender.com/api/teams/club/${userId}`, {
+            const response = await fetch('https://riyadah.onrender.com/api/teams', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
