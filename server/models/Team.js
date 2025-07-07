@@ -10,7 +10,7 @@ const TeamSchema = new Schema({
   club: mongoose.Schema.ObjectId,
   coaches: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'Staff'
   }],
   members: [mongoose.Schema.ObjectId],
   createdAt: Date,
