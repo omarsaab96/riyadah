@@ -104,6 +104,7 @@ export default function Profile() {
 
     useEffect(() => {
         getAdminInfo();
+        getTeams();
     }, [user]);
 
     const getAdminInfo = async () => {
@@ -781,10 +782,10 @@ export default function Profile() {
                                 <Text style={styles.title}>
                                     Total number of teams
                                 </Text>
-                                {user.club ? (
+                                {teams ? (
                                     <View>
                                         <Text style={styles.paragraph}>
-                                            {user.club.length}
+                                            {teams?.length}
                                         </Text>
                                     </View>
                                 ) : (
@@ -797,10 +798,10 @@ export default function Profile() {
                                 <Text style={styles.title}>
                                     Total number of members
                                 </Text>
-                                {user.children ? (
+                                {teams ? (
                                     <View>
                                         <Text style={styles.paragraph}>
-                                            {user.children.length}
+                                            {teams.reduce((total, team) => total + (team.members?.length || 0), 0)}
                                         </Text>
                                     </View>
                                 ) : (
@@ -991,6 +992,7 @@ export default function Profile() {
 
                             {teams && teams.length > 0 ? (
                                 teams.map((team, index) => (
+
                                     <TouchableOpacity
                                         key={index}
                                         style={styles.teamCard}
@@ -1018,23 +1020,32 @@ export default function Profile() {
                                             </View>
                                         </View>
 
-                                        {team.coaches && team.coaches.length > 0 && (
+                                        {team.coaches && (
                                             <View style={styles.coachSection}>
-                                                <Text style={styles.coachLabel}>Coach:</Text>
-                                                <View style={styles.coachInfo}>
-                                                    {team.coaches[0].image ? (
-                                                        <Image
-                                                            source={{ uri: team.coaches[0].image }}
-                                                            style={styles.coachAvatar}
-                                                        />
-                                                    ) : (
-                                                        <View style={styles.coachAvatar}>
-                                                            <FontAwesome name="user" size={16} color="#fff" />
-                                                        </View>
-                                                    )}
-                                                    <Text style={styles.coachName}>{team.coaches[0].name}</Text>
+                                                <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
+
+                                                <View style={styles.coachInfoDiv}>
+                                                    {team.coaches.map((coach, index) => (
+                                                        <TouchableOpacity
+                                                            onPress={() => router.push(`/profile/public/${coach._id}`)}
+                                                            key={index} style={styles.coachInfo}>
+                                                            {coach.image ? (
+                                                                <Image
+                                                                    source={{ uri: coach.image }}
+                                                                    style={styles.coachAvatar}
+                                                                />
+                                                            ) : (
+                                                                <Image
+                                                                    source={require('../../assets/avatar.png')}
+                                                                    style={styles.coachAvatar}
+                                                                    resizeMode="contain"
+                                                                />
+                                                            )}
+                                                            <Text style={styles.coachName}>{coach.name}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
                                                 </View>
-                                            </View>
+                                            </View >
                                         )}
 
                                         <View style={styles.teamActions}>
@@ -1061,6 +1072,7 @@ export default function Profile() {
                                             </TouchableOpacity>
                                         </View>
                                     </TouchableOpacity>
+
                                 ))
                             ) : (
                                 <View style={styles.emptyState}>
@@ -1453,10 +1465,10 @@ export default function Profile() {
                                             <View style={styles.inventoryDetails}>
                                                 <View style={styles.inventoryDetailRow}>
                                                     <Text style={styles.inventoryDetailLabel}>Unit Price:</Text>
-                                                    <Text style={styles.inventoryDetailValue}>${item.unitPrice?.toFixed(2) || '0.00'}</Text>
+                                                    <Text style={styles.inventoryDetailValue}>{item.unitPrice}</Text>
                                                 </View>
                                                 {item.description && (
-                                                    <View style={styles.inventoryDetailRow}>
+                                                    <View style={[styles.inventoryDetailRow, { marginTop: 5 }]}>
                                                         <Text style={styles.inventoryDetailLabel}>Description:</Text>
                                                         <Text style={styles.inventoryDetailValue} numberOfLines={1}>{item.description}</Text>
                                                     </View>
@@ -1915,8 +1927,8 @@ const styles = StyleSheet.create({
     },
     coachSection: {
         flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
+        alignItems: 'flex-start',
+        marginBottom: 10,
         paddingTop: 10,
         borderTopWidth: 1,
         borderTopColor: '#eeeeee',
@@ -1926,14 +1938,24 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666666',
         marginRight: 10,
+        paddingTop: 8
+    },
+    coachInfoDiv: {
+        flex: 1,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 5
     },
     coachInfo: {
         flexDirection: 'row',
         alignItems: 'center',
+        backgroundColor: '#eeeeee',
+        padding: 5,
+        borderRadius: 20,
     },
     coachAvatar: {
-        width: 30,
-        height: 30,
+        width: 25,
+        height: 25,
         borderRadius: 15,
         backgroundColor: '#FF4000',
         justifyContent: 'center',
@@ -2275,7 +2297,6 @@ const styles = StyleSheet.create({
     inventoryDetailRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 5,
     },
     inventoryDetailLabel: {
         fontFamily: 'Manrope',
