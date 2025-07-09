@@ -130,11 +130,14 @@ export default function Profile() {
 
     const getTeams = async () => {
         if (user.type == "Club") {
+            const token = await SecureStore.getItemAsync('userToken');
+
             try {
                 const res = await fetch(`https://riyadah.onrender.com/api/teams/club/${userId}`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     }
                 });
                 const response = await res.json();
@@ -1019,9 +1022,9 @@ export default function Profile() {
                                             <View style={styles.coachSection}>
                                                 <Text style={styles.coachLabel}>Coach:</Text>
                                                 <View style={styles.coachInfo}>
-                                                    {team.coaches.image ? (
+                                                    {team.coaches[0].image ? (
                                                         <Image
-                                                            source={{ uri: team.coaches.image }}
+                                                            source={{ uri: team.coaches[0].image }}
                                                             style={styles.coachAvatar}
                                                         />
                                                     ) : (
@@ -1029,7 +1032,7 @@ export default function Profile() {
                                                             <FontAwesome name="user" size={16} color="#fff" />
                                                         </View>
                                                     )}
-                                                    <Text style={styles.coachName}>{team.coaches[0]}</Text>
+                                                    <Text style={styles.coachName}>{team.coaches[0].name}</Text>
                                                 </View>
                                             </View>
                                         )}

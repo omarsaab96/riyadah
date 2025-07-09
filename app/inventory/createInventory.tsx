@@ -1,3 +1,4 @@
+import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -17,6 +18,7 @@ import {
     View,
 } from 'react-native';
 
+
 const { width } = Dimensions.get('window');
 
 interface CreateInventoryProps {
@@ -34,9 +36,9 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
 
     const [formData, setFormData] = useState({
         itemName: '',
-        category: '',
+        category: 'Equipment',
         quantity: '',
-        unitPrice: '',
+        unitPrice: '0 USD',
         description: '',
     });
 
@@ -180,12 +182,25 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Category *</Text>
-                            <TextInput
+                            {/* <TextInput
                                 style={styles.input}
                                 placeholder="Enter category"
                                 value={formData.category}
                                 onChangeText={(text) => handleChange('category', text)}
-                            />
+                            /> */}
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    style={styles.picker}
+                                    selectedValue={formData.category}
+                                    onValueChange={(value) => handleChange('category', value)}
+                                >
+                                    {/* <Picker.Item label="Select a category..." value="" enabled={false} /> */}
+                                    <Picker.Item label="Equipment" value="Equipment" />
+                                    <Picker.Item label="Uniform" value="Uniform" />
+                                    <Picker.Item label="Accessories" value="Accessories" />
+                                    <Picker.Item label="Medical supplies" value="Medical supplies" />
+                                </Picker>
+                            </View>
                         </View>
 
                         <View style={styles.formGroup}>
@@ -201,13 +216,33 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Unit Price</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter unit price"
-                                keyboardType="numeric"
-                                value={formData.unitPrice}
-                                onChangeText={(text) => handleChange('unitPrice', text)}
-                            />
+                            <View style={{ flexDirection: 'row', columnGap: 10 }}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                                    placeholder="Amount"
+                                    keyboardType="numeric"
+                                    value={formData.unitPrice?.split(' ')[0] || ''}
+                                    onChangeText={(text) => {
+                                        const amount = text.trim();
+                                        const currency = formData.unitPrice?.split(' ')[1] || 'USD';
+                                        handleChange('unitPrice', `${amount} ${currency}`);
+                                    }}
+                                />
+                                <View style={[styles.pickerContainer, { flex: 1 }]}>
+                                    <Picker
+                                        style={styles.picker}
+                                        selectedValue={formData.unitPrice?.split(' ')[1] || 'USD'}
+                                        onValueChange={(currency) => {
+                                            const amount = formData.unitPrice?.split(' ')[0] || '0';
+                                            handleChange('unitPrice', `${amount} ${currency}`);
+                                        }}
+                                    >
+                                        <Picker.Item label="USD" value="USD" />
+                                        <Picker.Item label="LBP" value="LBP" />
+                                        <Picker.Item label="EUR" value="EUR" />
+                                    </Picker>
+                                </View>
+                            </View>
                         </View>
 
                         <View style={styles.formGroup}>
@@ -244,8 +279,8 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
                         </View>
                     </View>
                 </ScrollView>
-            </View>
-        </KeyboardAvoidingView>
+            </View >
+        </KeyboardAvoidingView >
     );
 }
 
@@ -367,6 +402,15 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 16,
     },
+    pickerContainer: {
+        overflow: 'hidden',
+        borderRadius: 8,
+    },
+    picker: {
+        width: '100%',
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        backgroundColor: '#F4F4F4',
+        borderRadius: 8,
+    },
 });
-
-export default CreateInventory;
