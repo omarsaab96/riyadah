@@ -108,27 +108,36 @@ export default function Profile() {
     }, [user]);
 
     useEffect(() => {
-        const getCoachesId = async (coachEmail:string) => {
-            const response = await fetch(`https://riyadah.onrender.com/api/users/getUserId`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({email:coachEmail})
-            });
+        const getCoachesIds = async () => {
+            if (!teams || teams.length === 0) return;
 
-            console.log(response)
+            for (const team of teams) {
+                if (Array.isArray(team.coaches)) {
+                    for (const coach of team.coaches) {
+                        try {
+                            const response = await fetch(`https://riyadah.onrender.com/api/users/getUserId`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ email: coach.email }),
+                            });
 
-            // if (response.ok) {
-                
-            // } else {
-            //     console.error('API error')
-            // }
+                            const data = await response.json();
+                            
+                            console.log(data);
+                            
+                        } catch (err) {
+                            console.error('Error fetching coach ID for', coach.email, err);
+                        }
+                    }
+                }
+            }
         };
 
-        //for each coach in each team
-        getCoachesId(getCoachesId.email);
+        getCoachesIds();
     }, [teams]);
+
 
     const getAdminInfo = async () => {
         if (user.type == "Club") {
