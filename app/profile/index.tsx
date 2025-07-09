@@ -107,6 +107,29 @@ export default function Profile() {
         getTeams();
     }, [user]);
 
+    useEffect(() => {
+        const getCoachesId = async (coachEmail:string) => {
+            const response = await fetch(`https://riyadah.onrender.com/api/users/getUserId`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({email:coachEmail})
+            });
+
+            console.log(response)
+
+            // if (response.ok) {
+                
+            // } else {
+            //     console.error('API error')
+            // }
+        };
+
+        //for each coach in each team
+        getCoachesId(getCoachesId.email);
+    }, [teams]);
+
     const getAdminInfo = async () => {
         if (user.type == "Club") {
             try {

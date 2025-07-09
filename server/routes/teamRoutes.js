@@ -133,7 +133,7 @@ router.get('/club/:clubId',authenticateToken, async (req, res) => {
   try {
     const teams = await Team.find({ club: req.params.clubId })
       // .populate('club', 'name image')
-      .populate('coaches', '_id name image')
+      .populate('coaches', '_id name email image')
       // .populate('members', 'name image');
 
     res.status(200).json({ success: true, count: teams.length, data: teams });
