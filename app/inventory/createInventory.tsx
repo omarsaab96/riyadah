@@ -88,7 +88,7 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
             itemName: formData.itemName.trim(),
             category: formData.category.trim(),
             quantity: Number(formData.quantity) || 0,
-            unitPrice: Number(formData.unitPrice) || 0,
+            unitPrice: formData.unitPrice,
             description: formData.description.trim(),
             club: userId,
         };
