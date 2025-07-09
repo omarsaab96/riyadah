@@ -108,35 +108,49 @@ export default function Profile() {
     }, [user]);
 
     useEffect(() => {
+        if (!teams || teams.length === 0) return;
+
         const getCoachesIds = async () => {
-            if (!teams || teams.length === 0) return;
+            const updatedTeams = await Promise.all(
+                teams.map(async (team) => {
+                    if (!Array.isArray(team.coaches)) return team;
 
-            for (const team of teams) {
-                if (Array.isArray(team.coaches)) {
-                    for (const coach of team.coaches) {
-                        try {
-                            const response = await fetch(`https://riyadah.onrender.com/api/users/getUserId`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({ email: coach.email }),
-                            });
+                    const updatedCoaches = await Promise.all(
+                        team.coaches.map(async (coach) => {
+                            try {
+                                const response = await fetch(`https://riyadah.onrender.com/api/users/getUserId`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ email: coach.email }),
+                                });
 
-                            const data = await response.json();
-                            
-                            console.log(data);
-                            
-                        } catch (err) {
-                            console.error('Error fetching coach ID for', coach.email, err);
-                        }
-                    }
-                }
-            }
+                                const data = await response.json();
+
+                                if (response.ok && data.success && data.id) {
+                                    return { ...coach, profileId: data.id };
+                                } else {
+                                    return coach;
+                                }
+                            } catch (err) {
+                                console.error('Error fetching coach ID for', coach.email, err);
+                                return coach;
+                            }
+                        })
+                    );
+
+                    return { ...team, coaches: updatedCoaches };
+                })
+            );
+
+            // Set state with enriched data (assumes you have setTeams state function)
+            setTeams(updatedTeams);
         };
 
         getCoachesIds();
     }, [teams]);
+
 
 
     const getAdminInfo = async () => {
@@ -174,8 +188,6 @@ export default function Profile() {
                     }
                 });
                 const response = await res.json();
-
-                console.log(response)
 
                 if (response.success) {
                     setTeams(response.data)
@@ -1059,7 +1071,10 @@ export default function Profile() {
                                                 <View style={styles.coachInfoDiv}>
                                                     {team.coaches.map((coach, index) => (
                                                         <TouchableOpacity
-                                                            onPress={() => router.push(`/profile/public/${coach._id}`)}
+                                                            onPress={() => router.push({
+                                                                pathname: '/profile/public',
+                                                                params: { id: coach.profileId },
+                                                            })}
                                                             key={index} style={styles.coachInfo}>
                                                             {coach.image ? (
                                                                 <Image
