@@ -34,16 +34,63 @@ router.post(
       } else {
         // ❌ User doesn't exist: create new user
         const newUser = new User({
-          name,
-          email,
+          achievements: null,
+          admin: {
+            name: null,
+            email: null,
+            id: null
+          },
+          agreed: false,
+          bio: null,
+          children: null,
+          club: club,
+          contactInfo: {
+            phone: null,
+            email: null,
+            facebook: null,
+            instagram: null,
+            whatsapp: null,
+            telegram: null,
+            tiktok: null,
+            snapchat: null,
+            location: {
+              latitude: null,
+              longitude: null
+            },
+            description: null
+          },
+          country: null,
+          dob: {
+            day: null,
+            month: null,
+            year: null
+          },
+          email: email,
+          events: null,
+          gender: null,
+          height: null,
+          highlights: null,
+          image: req.body.image ? req.body.image : null,
           isStaff: club,
+          name: name,
+          organization: null,
+          parentEmail: null,
+          password: null,
           personalAccount: false,
+          phone: null,
+          skills: {
+            attack: null,
+            skill: null,
+            stamina: null,
+            speed: null,
+            defense: null
+          },
+          sport: null,
+          stats: null,
+          type: null,
           verified: null,
+          weight: null
         });
-
-        if (req.body.image) {
-          newUser.image = req.body.image;
-        }
 
         await newUser.save();
 
