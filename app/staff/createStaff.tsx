@@ -150,7 +150,7 @@ const CreateStaffScreen = () => {
             setImage(base64);
             setFormData(prev => ({
                 ...prev,
-                image: "data:image/png;base64"+base64,
+                image: "data:image/png;base64,"+base64,
             }));
             setUploading(false);
         }

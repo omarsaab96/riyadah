@@ -239,7 +239,7 @@ export default function Profile() {
                 });
                 const data = await response.json();
 
-                console.log("data= ",data.userRef)
+                console.log("data= ", JSON.stringify(data.data, null, 2));
 
                 if (response.ok) {
                     setStaff(data);
@@ -1373,11 +1373,11 @@ export default function Profile() {
                                             onPress={() => router.push(`/staff/details?id=${member._id}`)}
                                         >
                                             <View style={styles.staffHeader}>
-                                                {member.image ? (
+                                                {member.userRef.image ? (
                                                     <Image
-                                                        source={{ uri: member.image }}
+                                                        source={{ uri: member.userRef.image }}
                                                         style={styles.staffAvatar}
-                                                        resizeMode="cover"
+                                                        resizeMode="contain"
                                                     />
                                                 ) : (
                                                     <View style={[styles.staffAvatar, styles.defaultStaffAvatar]}>
@@ -1385,7 +1385,7 @@ export default function Profile() {
                                                     </View>
                                                 )}
                                                 <View style={styles.staffInfo}>
-                                                    <Text style={styles.staffName}>{member.name}</Text>
+                                                    <Text style={styles.staffName}>{member.userRef.name}</Text>
                                                     <Text style={styles.staffRole}>{member.role || 'Staff Member'}</Text>
                                                 </View>
                                                 {member.role == "Coach" && <View style={styles.staffStats}>
@@ -1399,19 +1399,37 @@ export default function Profile() {
                                             </View>
 
                                             <View style={styles.staffContact}>
-                                                {member.phone && (
+                                                {member.userRef.phone ? (
                                                     <TouchableOpacity
                                                         style={styles.contactButton}
-                                                        onPress={() => Linking.openURL(`tel:${member.phone}`)}
+                                                        onPress={() => Linking.openURL(`tel:${member.userRef.phone}`)}
+                                                    >
+                                                        <FontAwesome5 name="phone" size={16} color="#FF4000" />
+                                                        <Text style={styles.contactButtonText}>Call</Text>
+                                                    </TouchableOpacity>
+                                                ) : (
+                                                    <TouchableOpacity
+                                                        style={[styles.contactButton, { opacity: 0.5 }]}
+                                                        disabled={true}
+                                                        onPress={() => { }}
                                                     >
                                                         <FontAwesome5 name="phone" size={16} color="#FF4000" />
                                                         <Text style={styles.contactButtonText}>Call</Text>
                                                     </TouchableOpacity>
                                                 )}
-                                                {member.email && (
+                                                {member.userRef.email ? (
                                                     <TouchableOpacity
                                                         style={styles.contactButton}
-                                                        onPress={() => Linking.openURL(`mailto:${member.email}`)}
+                                                        onPress={() => Linking.openURL(`mailto:${member.userRef.email}`)}
+                                                    >
+                                                        <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
+                                                        <Text style={styles.contactButtonText}>Email</Text>
+                                                    </TouchableOpacity>
+                                                ) : (
+                                                    <TouchableOpacity
+                                                        style={[styles.contactButton, { opacity: 0.5 }]}
+                                                        disabled={true}
+                                                        onPress={() => { }}
                                                     >
                                                         <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
                                                         <Text style={styles.contactButtonText}>Email</Text>

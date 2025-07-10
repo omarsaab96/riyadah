@@ -136,8 +136,6 @@ router.post('/byClub/:id', async (req, res) => {
       .populate('teams')
       .populate('userRef');
 
-    console.log("got staff= ", staff);
-
     res.json({
       success: true,
       data: staff
