@@ -1229,7 +1229,7 @@ export default function PublicProfile() {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/profile')}>
-                    <Image source={require('../../assets/profile.png')} style={styles.activeIcon} />
+                    <Image source={require('../../assets/profile.png')} style={styles.icon} />
                 </TouchableOpacity>
             </View>
         </View >

@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker as RNPicker } from '@react-native-picker/picker';
+import { Picker, Picker as RNPicker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -49,7 +49,7 @@ const CreateStaffScreen = () => {
         qualifications: [],
         certifications: [],
         employmentType: 'Full-time',
-        salary: '',
+        salary: '0 EUR',
         emergencyContact: {
             name: '',
             relationship: '',
@@ -308,9 +308,12 @@ const CreateStaffScreen = () => {
                             <View style={styles.errorIcon}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
-                        {/* Profile Image */}
+
+                        {/* Basic Information */}
+                        <Text style={styles.sectionTitle}>Basic Information</Text>
+
                         <View style={styles.formGroup}>
-                            <Text style={styles.sectionTitle}>Image</Text>
+                            <Text style={styles.label}>Image</Text>
 
 
                             {!uploading && (
@@ -334,9 +337,6 @@ const CreateStaffScreen = () => {
                                 </TouchableOpacity>
                             )}
                         </View>
-
-                        {/* Basic Information */}
-                        <Text style={styles.sectionTitle}>Basic Information</Text>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Full Name *</Text>
@@ -516,13 +516,33 @@ const CreateStaffScreen = () => {
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Salary (per month)</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter salary amount"
-                                keyboardType="numeric"
-                                value={formData.salary}
-                                onChangeText={(text) => handleChange('salary', text)}
-                            />
+                            <View style={{ flexDirection: 'row', columnGap: 10 }}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1 }]}
+                                    placeholder="Salary amount"
+                                    keyboardType="numeric"
+                                    value={formData.salary?.split(' ')[0] || ''}
+                                    onChangeText={(text) => {
+                                        const amount = text.trim();
+                                        const currency = formData.salary?.split(' ')[1] || 'USD';
+                                        handleChange('salary', `${amount} ${currency}`);
+                                    }}
+                                />
+                                <View style={[styles.pickerContainer, { flex: 1 }]}>
+                                    <Picker
+                                        style={styles.picker}
+                                        selectedValue={formData.salary?.split(' ')[1] || 'USD'}
+                                        onValueChange={(currency) => {
+                                            const amount = formData.salary?.split(' ')[0] || '0';
+                                            handleChange('salary', `${amount} ${currency}`);
+                                        }}
+                                    >
+                                        <Picker.Item label="USD" value="USD" />
+                                        <Picker.Item label="LBP" value="LBP" />
+                                        <Picker.Item label="EUR" value="EUR" />
+                                    </Picker>
+                                </View>
+                            </View>
                         </View>
 
                         {/* <View style={styles.formGroup}>

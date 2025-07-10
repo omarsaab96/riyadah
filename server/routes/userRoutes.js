@@ -153,7 +153,7 @@ router.get('/', async (req, res) => {
   res.json(users);
 });
 
-// Search athletes by name (case-insensitive, partial match)
+// Search users by name (case-insensitive, partial match)
 router.get('/search', async (req, res) => {
   const { name } = req.query;
 
@@ -163,12 +163,11 @@ router.get('/search', async (req, res) => {
 
   try {
     const regex = new RegExp(name, 'i');
-    const athletes = await User.find({
-      type: 'Athlete',
+    const users = await User.find({
       name: { $regex: regex }
-    }).select('_id');
+    }).select('-password');
 
-    res.json(athletes);
+    res.json(users);
   } catch (err) {
     console.error('Error searching athletes:', err);
     res.status(500).json({ error: 'Internal server error' });
