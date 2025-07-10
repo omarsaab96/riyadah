@@ -91,11 +91,14 @@ router.post(
 
         await newUser.save();
         req.body.userRef = newUser._id;
+        console.log("Added user with id: ", newUser._id)
+
       }
 
       // Create and save staff
       const staff = new Staff(req.body);
       await staff.save();
+      console.log("Added staff with id: ", staff._id)
 
       res.status(201).json({ success: true, data: staff });
     } catch (err) {
