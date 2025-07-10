@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Staff = require('../models/Staff');
-const User = require('../models/User'); 
+const User = require('../models/User');
 const { body, validationResult } = require('express-validator');
 
 // Create staff
@@ -15,36 +15,53 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({ errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
 
     try {
-      const staff = new Staff(req.body);
-      if (req.body.profileImage) {
-        staff.profileImage = req.body.profileImage;
-      }
-      await staff.save();
+      const { email, name, club } = req.body;
 
-      //search for the email in users table and make a condition if found or else
-      const user = await User.findOne({ email: req.body.email });
+      // Check if user exists
+      let user = await User.findOne({ email });
 
       if (user) {
+        // ✅ User exists: update isStaff field
+        user.isStaff = club;
+        await user.save();
 
-      }else{
+        // Add user ID to staff.userRef
+        req.body.userRef = user._id;
+      } else {
+        // ❌ User doesn't exist: create new user
+        const newUser = new User({
+          name,
+          email,
+          isStaff: club,
+          personalAccount: false,
+          verified: null,
+        });
 
+        if (req.body.image) {
+          newUser.image = req.body.image;
+        }
+
+        await newUser.save();
+
+        // Add created user ID to staff.userRef
+        req.body.userRef = newUser._id;
       }
+
+      // Create and save staff
+      const staff = new Staff(req.body);
 
       res.status(201).json({ success: true, data: staff });
     } catch (err) {
       console.error(err);
-      res
-        .status(500)
-        .json({ success: false, message: 'Server error' });
+      res.status(500).json({ success: false, message: 'Server error' });
     }
   }
 );
+
 
 // Get all staff
 router.get('/', async (req, res) => {

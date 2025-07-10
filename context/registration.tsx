@@ -3,61 +3,64 @@ import React, { createContext, ReactNode, useContext, useState } from 'react';
 
 // 1. Define the shape of your form data
 interface RegistrationData {
-  name: string | null;
-  email: string | null;
-  phone: string | null;
-  country: string | null;
-  password: string | null;
+  achievements: any;
   admin: {
     id: string | null;
     name: string | null;
-    email: String | null;
+    email: string | null;
   };
+  agreed: boolean | null;
+  bio: string | null;
   children: [] | null;
-  teams: [];
+  club: string | null;
   contactInfo: {
-    phone: String | null;
-    email: String | null;
-    facebook: String | null;
-    instagram: String | null;
-    whatsapp: String | null;
-    telegram: String | null;
-    tiktok: String | null;
-    snapchat: String | null;
+    phone: string | null;
+    email: string | null;
+    facebook: string | null;
+    instagram: string | null;
+    whatsapp: string | null;
+    telegram: string | null;
+    tiktok: string | null;
+    snapchat: string | null;
     location: {
-      latitude: String | null;
-      longitude: String | null;
+      latitude: string | null;
+      longitude: string | null;
     };
-    description: String | null;
+    description: string | null;
   };
+  country: string | null;
   dob: {
     day: string | null;
     month: string | null;
     year: string | null;
   };
-  parentEmail: string | null;
-  type: string | null;
-  sport: string | null;
-  club: string | null;
+  email: string | null;
+  events: any;
+  gender: string | null;
+  height: Number | null;
+  highlights: any;
+  image: string | null;
+  isStaff: String | null;
+  name: string | null;
   organization: {
     name: string | null;
     role: string | null;
     location: string | null;
     since: string | null;
     independent: boolean;
-  }
-  gender: string | null;
-  bio: string | null;
-  height: string | null;
-  image: string | null;
-  weight: string | null;
-  agreed: boolean | null;
-  highlights: any;
-  stats: any;
-  achievements: any;
-  events: any;
+  };
+  parentEmail: string | null;
+  password: string | null;
+  personalAccount: Boolean;
+  phone: string | null;
   skills: any;
+  sport: string | null;
+  stats: any;
+  type: string | null;
+  verified: Date | null;
+  weight: Number | null;
 }
+
 
 // 2. Define the context type
 interface RegistrationContextType {
@@ -76,16 +79,16 @@ interface Props {
 
 export const RegistrationProvider = ({ children }: Props) => {
   const [formData, setFormData] = useState<RegistrationData>({
-    name: null,
-    email: null,
-    phone: null,
-    country: null,
-    password: null,
+    achievements: null,
     admin: {
       id: null,
       name: null,
       email: null
     },
+    agreed: false,
+    bio: null,
+    children: null,
+    club: null,
     contactInfo: {
       phone: null,
       email: null,
@@ -101,27 +104,20 @@ export const RegistrationProvider = ({ children }: Props) => {
       },
       description: null
     },
+    country: null,
     dob: {
       day: null,
       month: null,
       year: null
     },
-    children: null,
-    teams: [],
-    parentEmail: null,
-    type: null,
-    sport: null,
-    club: null,
-    gender: null,
-    bio: null,
-    height: null,
-    image: null,
-    weight: null,
-    agreed: false,
-    highlights: null,
-    stats: null,
-    achievements: null,
+    email: null,
     events: null,
+    gender: null,
+    height: null,
+    highlights: null,
+    image: null,
+    isStaff: null,
+    name: null,
     organization: {
       name: null,
       role: null,
@@ -129,14 +125,24 @@ export const RegistrationProvider = ({ children }: Props) => {
       since: null,
       independent: false
     },
+    parentEmail: null,
+    password: null,
+    personalAccount: true,
+    phone: null,
     skills: {
       attack: 0,
       skill: 0,
       stamina: 0,
       speed: 0,
       defense: 0
-    }
+    },
+    sport: null,
+    stats: null,
+    type: null,
+    verified: null,
+    weight: null
   });
+
 
   const updateFormData = (newData: Partial<RegistrationData>) => {
     setFormData((prev) => ({ ...prev, ...newData }));
@@ -144,17 +150,16 @@ export const RegistrationProvider = ({ children }: Props) => {
 
   const resetFormData = () => {
     setFormData({
-      name: null,
-      email: null,
-      phone: null,
-      country: null,
-      password: null,
-      teams: [],
+      achievements: null,
       admin: {
         id: null,
         name: null,
         email: null
       },
+      agreed: false,
+      bio: null,
+      children: null,
+      club: null,
       contactInfo: {
         phone: null,
         email: null,
@@ -170,11 +175,20 @@ export const RegistrationProvider = ({ children }: Props) => {
         },
         description: null
       },
+      country: null,
       dob: {
         day: null,
         month: null,
         year: null
       },
+      email: null,
+      events: null,
+      gender: null,
+      height: null,
+      highlights: null,
+      image: null,
+      isStaff:null,
+      name: null,
       organization: {
         name: null,
         role: null,
@@ -182,29 +196,24 @@ export const RegistrationProvider = ({ children }: Props) => {
         since: null,
         independent: false
       },
-      children: null,
       parentEmail: null,
-      type: null,
-      sport: null,
-      club: null,
-      gender: null,
-      bio: null,
-      height: null,
-      image: null,
-      weight: null,
-      agreed: false,
-      highlights: null,
-      stats: null,
-      achievements: null,
-      events: null,
+      password: null,
+      personalAccount:true,
+      phone: null,
       skills: {
         attack: 0,
         skill: 0,
         stamina: 0,
         speed: 0,
         defense: 0
-      }
+      },
+      sport: null,
+      stats: null,
+      type: null,
+      verified:null,
+      weight: null
     });
+
   };
 
   return (

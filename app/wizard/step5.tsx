@@ -88,15 +88,17 @@ export default function WizardStep5() {
             // Combine all data from registration context
             const newUserData = {
                 ...formData,
-                bio: bio,
-                gender: selectedGender,
-                image: null,
                 admin: {
                     ...formData.admin,
                     name: adminName,
                     email: adminEmail,
-                }
-
+                },
+                bio: bio,
+                gender: selectedGender,
+                image: null,
+                isStaff:null,
+                personalAccount:true,
+                verified:null
             };
 
             console.log('Submitting user data:', newUserData);

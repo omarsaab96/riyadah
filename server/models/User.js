@@ -1,78 +1,78 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-    agreed: Boolean,
+  achievements: String,
+  admin: {
     name: String,
     email: String,
+    id: String
+  },
+  agreed: Boolean,
+  bio: String,
+  children: [String],
+  club: String,
+  contactInfo: {
     phone: String,
-    country: String,
-    password: String,
-    children: [String],
-    admin: {
-        name: String,
-        email: String,
-        id: String
+    email: String,
+    facebook: String,
+    instagram: String,
+    whatsapp: String,
+    telegram: String,
+    tiktok: String,
+    snapchat: String,
+    location: {
+      latitude: String,
+      longitude: String
     },
-    contactInfo: {
-        phone: String,
-        email: String,
-        facebook: String,
-        instagram: String,
-        whatsapp: String,
-        telegram: String,
-        tiktok: String,
-        snapchat: String,
-        location: {
-            latitude: String,
-            longitude: String
-        },
-        description: String
-    },
-    dob: {
-        day: String,
-        month: String,
-        year: String
-    },
-    parentEmail: String,
-    type: String,
-    sport: [String],
-    club: String,
-    organization: {
-        name: String,
-        role: String,
-        location: String,
-        since: String,
-        independent: Boolean
-    },
-    gender: String,
-    image: String,
-    bio: String,
-    height: Number,
-    weight: Number,
-    highlights: String,
-    stats: String,
-    achievements: String,
-    events: String,
-    isStaff: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Club',
-        default: null
-    },
-    personalAccount: {
-        type: Boolean,
-        default: true
-    },
-    verified: {
-        type: Date,
-        default: null
-    },
-    skills: {
-        attack: Number,
-        skill: Number,
-        stamina: Number,
-        speed: Number,
-        defense: Number
-    }
+    description: String
+  },
+  country: String,
+  dob: {
+    day: String,
+    month: String,
+    year: String
+  },
+  email: String,
+  events: String,
+  gender: String,
+  height: Number,
+  highlights: String,
+  image: String,
+  isStaff: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Club',
+    default: null
+  },
+  name: String,
+  organization: {
+    name: String,
+    role: String,
+    location: String,
+    since: String,
+    independent: Boolean
+  },
+  parentEmail: String,
+  password: String,
+  personalAccount: {
+    type: Boolean,
+    default: true
+  },
+  phone: String,
+  skills: {
+    attack: Number,
+    skill: Number,
+    stamina: Number,
+    speed: Number,
+    defense: Number
+  },
+  sport: [String],
+  stats: String,
+  type: String,
+  verified: {
+    type: Date,
+    default: null
+  },
+  weight: Number
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

@@ -1,5 +1,4 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker, Picker as RNPicker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -20,7 +19,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import CountryPicker from 'react-native-country-picker-modal';
 
 const { width } = Dimensions.get('window');
 
@@ -40,7 +38,6 @@ const CreateStaffScreen = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searching, setSearching] = useState(false);
-    const [dob, setDob] = useState(new Date());
     const [qualificationInput, setQualificationInput] = useState('');
     const [certificationInput, setCertificationInput] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -51,30 +48,14 @@ const CreateStaffScreen = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        phone: '',
         role: 'Coach',
-        specialization: '',
-        bio: '',
         club: '',
         qualifications: [],
         certifications: [],
         employmentType: 'Full-time',
         salary: '0 EUR',
-        emergencyContact: {
-            name: '',
-            relationship: '',
-            phone: ''
-        },
-        address: {
-            street: '',
-            city: '',
-            state: '',
-            postalCode: '',
-            country: ''
-        },
         teams: [],
         isActive: true,
-        dob: null
     });
 
     useEffect(() => {
@@ -167,6 +148,10 @@ const CreateStaffScreen = () => {
             }
 
             setImage(base64);
+            setFormData(prev => ({
+                ...prev,
+                image: "data:image/png;base64"+base64,
+            }));
             setUploading(false);
         }
     };
@@ -183,20 +168,6 @@ const CreateStaffScreen = () => {
                 [name]: value
             }
         }));
-    };
-
-    const handleDateChange = (event, selectedDate) => {
-        setShowDatePicker(false);
-        if (selectedDate) {
-            setDob(selectedDate);
-            const day = selectedDate.getDate();
-            const month = selectedDate.getMonth() + 1;
-            const year = selectedDate.getFullYear();
-            setFormData(prev => ({
-                ...prev,
-                dob: { day, month, year }
-            }));
-        }
     };
 
     const addQualification = () => {
@@ -332,9 +303,7 @@ const CreateStaffScreen = () => {
                 ...prev,
                 name: '',
                 email: '',
-                phone: '',
-                dob: null
-                // Add profile image if available
+                userRef:null
             }));
 
             setImage(null);
@@ -355,28 +324,12 @@ const CreateStaffScreen = () => {
             ...prev,
             name: user.name,
             email: user.email,
-            phone: user.phone || '',
-            // Add profile image if available
+            userRef: user._id
         }));
 
-        // Set date of birth if available
-        if (user.dob) {
-            const dobDate = new Date(user.dob.year, user.dob.month - 1, user.dob.day);
-            setDob(dobDate);
-            setFormData(prev => ({
-                ...prev,
-                dob: {
-                    day: user.dob.day,
-                    month: user.dob.month,
-                    year: user.dob.year
-                }
-            }));
-        }
+        console.log("image=", user.image)
 
-        // Set image if available
-        if (user.profileImage) {
-            setImage(user.profileImage);
-        }
+        setImage(user.image)
     };
 
     const handleClearSelection = () => {
@@ -389,10 +342,7 @@ const CreateStaffScreen = () => {
             ...prev,
             name: '',
             email: '',
-            phone: '',
-            dob: null
         }));
-        setDob(new Date());
         setImage(null);
     };
 
@@ -512,7 +462,7 @@ const CreateStaffScreen = () => {
                                 <View style={styles.selectedUserContainer}>
                                     <Image
                                         source={
-                                            selectedUser.image
+                                            selectedUser.image!=null
                                                 ? { uri: selectedUser.image }
                                                 : require('../../assets/avatar.png')
                                         }
@@ -555,7 +505,6 @@ const CreateStaffScreen = () => {
 
                             <View style={styles.formGroup}>
                                 <Text style={styles.label}>Image</Text>
-
 
                                 {!uploading && (
                                     <TouchableOpacity style={styles.uploadBox} onPress={handleImagePick}>
@@ -601,72 +550,6 @@ const CreateStaffScreen = () => {
                                 />
                             </View>
 
-                            <View style={styles.formGroup}>
-                                <Text style={styles.label}>Phone</Text>
-
-                                <View style={styles.phoneContainer}>
-                                    <View style={styles.phonePicker}>
-                                        <CountryPicker
-                                            countryCode={countryCode}
-                                            withFilter
-                                            withFlag
-                                            withCallingCode
-                                            withAlphaFilter
-                                            withCallingCodeButton
-                                            withEmoji={false}
-                                            theme={{
-                                                itemHeight: 44,
-                                                fontSize: 14
-                                            }}
-                                            onSelect={(country) => {
-                                                setCountryCode(country.cca2);
-                                                setCallingCode(country.callingCode[0]);
-                                            }}
-                                        />
-                                    </View>
-                                    <TextInput
-                                        style={[styles.input, styles.phoneInput]}
-                                        placeholder="Phone number"
-                                        keyboardType="phone-pad"
-                                        value={formData.phone}
-                                        onChangeText={(text) => handleChange('phone', text)}
-                                    />
-                                </View>
-                            </View>
-
-                            <View style={styles.formGroup}>
-                                <Text style={styles.label}>Date of Birth</Text>
-                                <TouchableOpacity
-                                    style={styles.dateInput}
-                                    onPress={() => setShowDatePicker(true)}
-                                >
-                                    <Text>
-                                        {dob ? dob.toLocaleDateString() : 'Select date of birth'}
-                                    </Text>
-                                    <MaterialIcons name="date-range" size={20} color="#666" />
-                                </TouchableOpacity>
-                                {showDatePicker && (
-                                    <DateTimePicker
-                                        value={dob || new Date()}
-                                        mode="date"
-                                        display="default"
-                                        onChange={(event, selectedDate) => {
-                                            setShowDatePicker(Platform.OS === 'ios'); // for iOS modal
-                                            if (selectedDate) {
-                                                setDob(selectedDate);
-                                                const day = selectedDate.getDate();
-                                                const month = selectedDate.getMonth() + 1;
-                                                const year = selectedDate.getFullYear();
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    dob: { day, month, year }
-                                                }));
-                                            }
-                                        }}
-                                        maximumDate={new Date()}
-                                    />
-                                )}
-                            </View>
                         </View>}
 
                         {/* Professional Information */}
@@ -693,7 +576,7 @@ const CreateStaffScreen = () => {
                             </View>
 
                             {/* Team Assignments */}
-                            {/* {formData.role == "Coach" && <View>
+                            {formData.role == "Coach" && <View>
                             <View style={[styles.formGroup, {marginBottom:20}]}>
                                 <Text style={styles.label}>Assigned Teams</Text>
                                 {teams.length > 0 ? (
@@ -729,7 +612,7 @@ const CreateStaffScreen = () => {
                                     <Text style={styles.noTeamsText}>No teams available</Text>
                                 )}
                             </View>
-                        </View>} */}
+                        </View>}
 
                             {/* <View style={styles.formGroup}>
                             <Text style={styles.label}>Specialization</Text>
@@ -1340,23 +1223,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#f4f4f4',
         marginBottom: 5
-    },
-    phoneContainer: {
-        flexDirection: 'row',
-        alignItems: 'stretch',
-        width: '100%',
-        marginBottom: 20,
-        backgroundColor: '#F4F4F4',
-        borderRadius: 10,
-        paddingLeft: 15,
-    },
-    phonePicker: {
-        paddingTop: 10
-    },
-    phoneInput: {
-        marginBottom: 0,
-        flexGrow: 1,
-        backgroundColor: 'transparent',
     },
     searchContainer: {
         flexDirection: 'row',
