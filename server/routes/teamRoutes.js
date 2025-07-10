@@ -129,7 +129,6 @@ router.get('/:id', async (req, res) => {
 // @route   GET /api/teams/club/:id
 // @access  Public
 router.get('/club/:clubId',authenticateToken, async (req, res) => {
-  console.log("clibId received=", req.params.clubId)
   try {
     const teams = await Team.find({ club: req.params.clubId })
       // .populate('club', 'name image')
