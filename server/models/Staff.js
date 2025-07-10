@@ -25,7 +25,6 @@ const staffSchema = new mongoose.Schema(
       ],
       default: 'Coach',
     },
-    specialization: String,
     employmentType: {
       type: String,
       enum: ['Full-time', 'Part-time', 'Contract', 'Volunteer'],

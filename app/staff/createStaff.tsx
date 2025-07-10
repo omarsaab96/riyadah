@@ -244,43 +244,45 @@ const CreateStaffScreen = () => {
             club: userId
         };
 
-        try {
-            setSaving(true);
-            const token = await SecureStore.getItemAsync('userToken');
+        console.log("dataToSubmit= ",dataToSubmit)
 
-            const response = await fetch('https://riyadah.onrender.com/api/staff', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(dataToSubmit)
-            });
+        // try {
+        //     setSaving(true);
+        //     const token = await SecureStore.getItemAsync('userToken');
+
+        //     const response = await fetch('https://riyadah.onrender.com/api/staff', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Authorization': `Bearer ${token}`,
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify(dataToSubmit)
+        //     });
 
 
-            console.log('Final FormData:', formData);
+        //     console.log('Final FormData:', formData);
 
-            const data = await response.json();
+        //     const data = await response.json();
 
-            console.log("response ", data)
+        //     console.log("response ", data)
 
-            if (!response.ok) {
-                // Handle validation errors from server
-                const errorMsg = data.errors?.map(e => `${e.path}: ${e.msg}`).join('\n') ||
-                    data.message ||
-                    'Failed to create staff';
-                throw new Error(errorMsg);
-            }
+        //     if (!response.ok) {
+        //         // Handle validation errors from server
+        //         const errorMsg = data.errors?.map(e => `${e.path}: ${e.msg}`).join('\n') ||
+        //             data.message ||
+        //             'Failed to create staff';
+        //         throw new Error(errorMsg);
+        //     }
 
-            Alert.alert('Success', 'Staff member created successfully!', [
-                { text: 'OK', onPress: () => router.back() }
-            ]);
-        } catch (error) {
-            console.error('Error creating staff:', error);
-            Alert.alert('Error', error.message);
-        } finally {
-            setSaving(false);
-        }
+        //     Alert.alert('Success', 'Staff member created successfully!', [
+        //         { text: 'OK', onPress: () => router.back() }
+        //     ]);
+        // } catch (error) {
+        //     console.error('Error creating staff:', error);
+        //     Alert.alert('Error', error.message);
+        // } finally {
+        //     setSaving(false);
+        // }
     };
 
     const handleCancel = () => {
