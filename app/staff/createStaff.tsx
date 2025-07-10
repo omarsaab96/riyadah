@@ -10,8 +10,10 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
+    FlatList,
     Image,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
     StyleSheet,
@@ -36,7 +38,10 @@ const CreateStaffScreen = () => {
     const [uploading, setUploading] = useState(false);
     const [countryCode, setCountryCode] = useState('LB');
     const [callingCode, setCallingCode] = useState('961');
-
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -281,6 +286,88 @@ const CreateStaffScreen = () => {
         router.back();
     };
 
+    const searchUsers = async () => {
+        if (!searchQuery.trim()) {
+            Alert.alert('Error', 'Please enter a name to search');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const token = await SecureStore.getItemAsync('userToken');
+            const response = await fetch(`https://riyadah.onrender.com/api/users/search?name=${searchQuery}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setSearchResults(data);
+                setShowUserModal(true);
+            } else {
+                Alert.alert('Error', 'Failed to search users');
+            }
+        } catch (error) {
+            console.error('Error searching users:', error);
+            Alert.alert('Error', 'Failed to search users');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUserSelect = (user) => {
+        setSelectedUser(user);
+        setFormData(prev => ({
+            ...prev,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            // Add any other fields you want to pre-fill
+        }));
+        setShowUserModal(false);
+    };
+
+    const UserSelectionModal = () => (
+        <Modal
+            visible={showUserModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setShowUserModal(false)}
+        >
+            <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Select Staff Member</Text>
+                    
+                    {searchResults.length > 0 ? (
+                        <FlatList
+                            data={searchResults}
+                            keyExtractor={(item) => item._id}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity 
+                                    style={styles.userItem}
+                                    onPress={() => handleUserSelect(item)}
+                                >
+                                    <Text style={styles.userName}>{item.name}</Text>
+                                    <Text style={styles.userEmail}>{item.email}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+                    ) : (
+                        <Text style={styles.noResultsText}>No users found</Text>
+                    )}
+                    
+                    <TouchableOpacity 
+                        style={styles.modalCloseButton}
+                        onPress={() => setShowUserModal(false)}
+                    >
+                        <Text style={styles.modalCloseButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -308,6 +395,39 @@ const CreateStaffScreen = () => {
                             <View style={styles.errorIcon}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
+
+                        <View style={styles.formGroup}>
+                            <Text style={styles.label}>Check for Existing Account</Text>
+                            <View style={styles.searchContainer}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                                    placeholder="Search by name"
+                                    value={searchQuery}
+                                    onChangeText={setSearchQuery}
+                                />
+                                <TouchableOpacity
+                                    style={styles.searchButton}
+                                    onPress={searchUsers}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator size="small" color="#fff" />
+                                    ) : (
+                                        <Text style={styles.searchButtonText}>Search</Text>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                            {selectedUser && (
+                                <View style={styles.selectedUserContainer}>
+                                    <Text style={styles.selectedUserText}>
+                                        Using existing account: {selectedUser.name} ({selectedUser.email})
+                                    </Text>
+                                    <TouchableOpacity onPress={() => setSelectedUser(null)}>
+                                        <MaterialIcons name="close" size={20} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>
 
                         {/* Basic Information */}
                         <Text style={styles.sectionTitle}>Basic Information</Text>
@@ -757,6 +877,8 @@ const CreateStaffScreen = () => {
                                 )}
                             </TouchableOpacity>
                         </View>
+
+                        <UserSelectionModal />
                     </View>
                 </ScrollView>
             </View>
@@ -1099,6 +1221,86 @@ const styles = StyleSheet.create({
         marginBottom: 0,
         flexGrow: 1,
         backgroundColor: 'transparent',
+    },
+
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    searchButton: {
+        backgroundColor: '#FF4000',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        marginLeft: 10,
+    },
+    searchButtonText: {
+        color: '#fff',
+        fontFamily: 'Bebas',
+        fontSize: 16,
+    },
+    selectedUserContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        padding: 10,
+        borderRadius: 8,
+        marginTop: 10,
+    },
+    selectedUserText: {
+        flex: 1,
+        fontFamily: 'Manrope',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        width: '90%',
+        maxHeight: '80%',
+        borderRadius: 10,
+        padding: 20,
+    },
+    modalTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 22,
+        marginBottom: 15,
+    },
+    userItem: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    userName: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    userEmail: {
+        fontFamily: 'Manrope',
+        color: '#666',
+    },
+    noResultsText: {
+        fontFamily: 'Manrope',
+        textAlign: 'center',
+        padding: 20,
+        color: '#666',
+    },
+    modalCloseButton: {
+        marginTop: 20,
+        backgroundColor: '#FF4000',
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalCloseButtonText: {
+        color: '#fff',
+        fontFamily: 'Bebas',
+        fontSize: 18,
     },
 });
 
