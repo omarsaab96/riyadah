@@ -132,7 +132,9 @@ router.post('/byClub/:id', async (req, res) => {
   }
 
   try {
-    const staff = await Staff.find({ club: id }).populate('teams,userRef');
+    const staff = await Staff.find({ club: id })
+      .populate('teams')
+      .populate('userRef');
 
     res.json({
       success: true,
