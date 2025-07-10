@@ -44,6 +44,10 @@ const CreateStaffScreen = () => {
     const [qualificationInput, setQualificationInput] = useState('');
     const [certificationInput, setCertificationInput] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [showBasicInfo, setShowBasicInfo] = useState(false);
+    const [showSearchSection, setShowSearchSection] = useState(true);
+    const [showProfessionalInfo, setShowProfessionalInfo] = useState(false);
+    const [searchindex, setSearchindex] = useState(0);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -284,6 +288,7 @@ const CreateStaffScreen = () => {
     };
 
     const searchUsers = async () => {
+        setSearchindex(1)
         if (!searchQuery.trim()) {
             Alert.alert('Error', 'Please enter a name to search');
             return;
@@ -314,10 +319,34 @@ const CreateStaffScreen = () => {
         }
     };
 
-    const handleUserSelect = (user) => {
+    const handleUserSelect = (user: any) => {
+        if (user == null) {
+            setShowBasicInfo(true)
+            setSelectedUser(user);
+            setSearchResults([]);
+            setSearchQuery('');
+
+            setFormData(prev => ({
+                ...prev,
+                name: '',
+                email: '',
+                phone: '',
+                dob: null
+                // Add profile image if available
+            }));
+
+            setImage(null);
+            setShowBasicInfo(true)
+            setShowProfessionalInfo(true)
+            setShowSearchSection(false)
+            return;
+        }
+
         setSelectedUser(user);
         setSearchResults([]);
         setSearchQuery('');
+        setShowProfessionalInfo(true)
+        setShowSearchSection(false)
 
         // Populate form fields with user data
         setFormData(prev => ({
@@ -350,6 +379,10 @@ const CreateStaffScreen = () => {
 
     const handleClearSelection = () => {
         setSelectedUser(null);
+        setShowBasicInfo(false)
+        setShowProfessionalInfo(false)
+        setShowSearchSection(true)
+        setSearchindex(0)
         setFormData(prev => ({
             ...prev,
             name: '',
@@ -390,9 +423,10 @@ const CreateStaffScreen = () => {
                         </View>}
 
                         {/* User Search Section */}
-                        <View style={styles.formGroup}>
+                        {showSearchSection && <View style={styles.formGroup}>
                             <Text style={styles.label}>Check for Existing Account</Text>
-                            <View style={styles.searchContainer}>
+
+                            {!selectedUser && <View style={styles.searchContainer}>
                                 <TextInput
                                     style={[styles.input, { flex: 1, marginBottom: 0 }]}
                                     placeholder="Search by name or email"
@@ -411,15 +445,9 @@ const CreateStaffScreen = () => {
                                         <Text style={styles.searchButtonText}>Search</Text>
                                     )}
                                 </TouchableOpacity>
-                            </View>
+                            </View>}
 
-                            {searching && (
-                                <View style={styles.loadingContainer}>
-                                    <ActivityIndicator size="small" color="#FF4000" />
-                                </View>
-                            )}
-
-                            {searchResults.length > 0 && (
+                            {!searching && !selectedUser && searchResults.length > 0 && (
                                 <View style={styles.resultsContainer}>
                                     {searchResults.map((item) => (
                                         <TouchableOpacity
@@ -427,15 +455,68 @@ const CreateStaffScreen = () => {
                                             style={styles.userItem}
                                             onPress={() => handleUserSelect(item)}
                                         >
-                                            <Text style={styles.userName}>{item.name}</Text>
-                                            <Text style={styles.userEmail}>{item.email}</Text>
+                                            <Image
+                                                source={
+                                                    item.image
+                                                        ? { uri: item.image }
+                                                        : require('../../assets/avatar.png')
+                                                }
+                                                style={styles.userAvatar}
+                                                resizeMode="contain"
+                                            />
+                                            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
+                                                <View style={{width:'60%'}}>
+                                                    <Text style={styles.userName}>{item.name}</Text>
+                                                    <Text style={styles.userEmail}>{item.email}</Text>
+                                                </View>
+                                                <View style={{width:'40%'}}>
+                                                    <Text style={{color:'#FF4000'}}>Add as staff</Text>
+                                                </View>
+                                            </View>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
                             )}
 
-                            {selectedUser && (
+                            {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && (
+                                <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
+                                    <Text style={{ fontFamily: 'Manrope', fontWeight: 'bold' }}>
+                                        No results.
+                                    </Text>
+
+                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                        Looks like the staff you are looking for does not have an account on Riyadah.
+                                    </Text>
+
+                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                        Don't worry you can still create a new staff by clicking on the button below
+                                    </Text>
+
+                                    <TouchableOpacity
+                                        style={styles.addStaffAccountBtn}
+                                        onPress={() => handleUserSelect(null)}
+                                    >
+                                        <Text style={styles.addStaffAccountBtnText}>Add new staff without account</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>}
+
+                        {selectedUser != null && !showSearchSection && (
+                            <View>
+                                <View>
+                                    <Text style={[styles.sectionTitle,{marginBottom:0}]}>Selected user</Text>
+                                </View>
                                 <View style={styles.selectedUserContainer}>
+                                    <Image
+                                        source={
+                                            selectedUser.image
+                                                ? { uri: selectedUser.image }
+                                                : require('../../assets/avatar.png')
+                                        }
+                                        style={styles.userAvatar}
+                                        resizeMode="contain"
+                                    />
                                     <View style={styles.selectedUserInfo}>
                                         <Text style={styles.selectedUserName}>{selectedUser.name}</Text>
                                         <Text style={styles.selectedUserEmail}>{selectedUser.email}</Text>
@@ -447,151 +528,170 @@ const CreateStaffScreen = () => {
                                         <MaterialIcons name="close" size={20} color="#FF4000" />
                                     </TouchableOpacity>
                                 </View>
-                            )}
-                        </View>
+                            </View>
+                        )}
+
+                        {selectedUser == null && !showSearchSection && (
+
+                            <TouchableOpacity
+                                style={[styles.clearSelectionButton, { marginLeft: 0 }]}
+                                onPress={handleClearSelection}
+                            >
+                                <View style={styles.selectedUserContainer}>
+                                    <View style={styles.selectedUserInfo}>
+                                        <Text style={styles.selectedUserName}>Tap here to retry search</Text>
+                                        <Text style={styles.selectedUserEmail}>Search for existing users</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                        )}
 
                         {/* Basic Information */}
-                        <Text style={styles.sectionTitle}>Basic Information</Text>
+                        {showBasicInfo && <View>
+                            <Text style={styles.sectionTitle}>Basic Information</Text>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Image</Text>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Image</Text>
 
 
-                            {!uploading && (
-                                <TouchableOpacity style={styles.uploadBox} onPress={handleImagePick}>
-                                    {image != null ? (
-                                        <View>
-                                            <Image
-                                                source={{ uri: `data:image/png;base64,${image}` }}
-                                                style={[styles.avatarPreview,]}
-                                            />
-                                            <Text style={styles.uploadHint}>Tap to change image</Text>
-                                        </View>
-                                    ) : (
-                                        <>
-                                            <View style={styles.emptyImage}>
-                                                <MaterialIcons name="add" size={40} color="#FF4000" />
+                                {!uploading && (
+                                    <TouchableOpacity style={styles.uploadBox} onPress={handleImagePick}>
+                                        {image != null ? (
+                                            <View>
+                                                <Image
+                                                    source={{ uri: `data:image/png;base64,${image}` }}
+                                                    style={[styles.avatarPreview,]}
+                                                />
+                                                <Text style={styles.uploadHint}>Tap to change image</Text>
                                             </View>
-                                            <Text style={styles.uploadHint}>Tap to upload new image</Text>
-                                        </>
-                                    )}
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                                        ) : (
+                                            <>
+                                                <View style={styles.emptyImage}>
+                                                    <MaterialIcons name="add" size={40} color="#FF4000" />
+                                                </View>
+                                                <Text style={styles.uploadHint}>Tap to upload new image</Text>
+                                            </>
+                                        )}
+                                    </TouchableOpacity>
+                                )}
+                            </View>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Full Name *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter full name"
-                                value={formData.name}
-                                onChangeText={(text) => handleChange('name', text)}
-                            />
-                        </View>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Full Name *</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter full name"
+                                    value={formData.name}
+                                    onChangeText={(text) => handleChange('name', text)}
+                                />
+                            </View>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Email *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter email address"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                value={formData.email}
-                                onChangeText={(text) => handleChange('email', text)}
-                            />
-                        </View>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Email *</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter email address"
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                    value={formData.email}
+                                    onChangeText={(text) => handleChange('email', text)}
+                                />
+                            </View>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Phone</Text>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Phone</Text>
 
-                            <View style={styles.phoneContainer}>
-                                <View style={styles.phonePicker}>
-                                    <CountryPicker
-                                        countryCode={countryCode}
-                                        withFilter
-                                        withFlag
-                                        withCallingCode
-                                        withAlphaFilter
-                                        withCallingCodeButton
-                                        withEmoji={false}
-                                        theme={{
-                                            itemHeight: 44,
-                                            fontSize: 14
-                                        }}
-                                        onSelect={(country) => {
-                                            setCountryCode(country.cca2);
-                                            setCallingCode(country.callingCode[0]);
-                                        }}
+                                <View style={styles.phoneContainer}>
+                                    <View style={styles.phonePicker}>
+                                        <CountryPicker
+                                            countryCode={countryCode}
+                                            withFilter
+                                            withFlag
+                                            withCallingCode
+                                            withAlphaFilter
+                                            withCallingCodeButton
+                                            withEmoji={false}
+                                            theme={{
+                                                itemHeight: 44,
+                                                fontSize: 14
+                                            }}
+                                            onSelect={(country) => {
+                                                setCountryCode(country.cca2);
+                                                setCallingCode(country.callingCode[0]);
+                                            }}
+                                        />
+                                    </View>
+                                    <TextInput
+                                        style={[styles.input, styles.phoneInput]}
+                                        placeholder="Phone number"
+                                        keyboardType="phone-pad"
+                                        value={formData.phone}
+                                        onChangeText={(text) => handleChange('phone', text)}
                                     />
                                 </View>
-                                <TextInput
-                                    style={[styles.input, styles.phoneInput]}
-                                    placeholder="Phone number"
-                                    keyboardType="phone-pad"
-                                    value={formData.phone}
-                                    onChangeText={(text) => handleChange('phone', text)}
-                                />
                             </View>
-                        </View>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Date of Birth</Text>
-                            <TouchableOpacity
-                                style={styles.dateInput}
-                                onPress={() => setShowDatePicker(true)}
-                            >
-                                <Text>
-                                    {dob ? dob.toLocaleDateString() : 'Select date of birth'}
-                                </Text>
-                                <MaterialIcons name="date-range" size={20} color="#666" />
-                            </TouchableOpacity>
-                            {showDatePicker && (
-                                <DateTimePicker
-                                    value={dob || new Date()}
-                                    mode="date"
-                                    display="default"
-                                    onChange={(event, selectedDate) => {
-                                        setShowDatePicker(Platform.OS === 'ios'); // for iOS modal
-                                        if (selectedDate) {
-                                            setDob(selectedDate);
-                                            const day = selectedDate.getDate();
-                                            const month = selectedDate.getMonth() + 1;
-                                            const year = selectedDate.getFullYear();
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                dob: { day, month, year }
-                                            }));
-                                        }
-                                    }}
-                                    maximumDate={new Date()}
-                                />
-                            )}
-                        </View>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Date of Birth</Text>
+                                <TouchableOpacity
+                                    style={styles.dateInput}
+                                    onPress={() => setShowDatePicker(true)}
+                                >
+                                    <Text>
+                                        {dob ? dob.toLocaleDateString() : 'Select date of birth'}
+                                    </Text>
+                                    <MaterialIcons name="date-range" size={20} color="#666" />
+                                </TouchableOpacity>
+                                {showDatePicker && (
+                                    <DateTimePicker
+                                        value={dob || new Date()}
+                                        mode="date"
+                                        display="default"
+                                        onChange={(event, selectedDate) => {
+                                            setShowDatePicker(Platform.OS === 'ios'); // for iOS modal
+                                            if (selectedDate) {
+                                                setDob(selectedDate);
+                                                const day = selectedDate.getDate();
+                                                const month = selectedDate.getMonth() + 1;
+                                                const year = selectedDate.getFullYear();
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    dob: { day, month, year }
+                                                }));
+                                            }
+                                        }}
+                                        maximumDate={new Date()}
+                                    />
+                                )}
+                            </View>
+                        </View>}
 
                         {/* Professional Information */}
-                        <Text style={[styles.sectionTitle, { marginTop: 30 }]}>Professional Information</Text>
+                        {showProfessionalInfo && <View>
+                            <Text style={[styles.sectionTitle, { marginTop: 30 }]}>Professional Information</Text>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Role *</Text>
-                            <View style={styles.pickerContainer}>
-                                <RNPicker
-                                    selectedValue={formData.role}
-                                    onValueChange={(value) => handleChange('role', value)}
-                                    style={styles.picker}
-                                >
-                                    <RNPicker.Item label="Coach" value="Coach" />
-                                    {/* <RNPicker.Item label="Assistant Coach" value="Assistant Coach" /> */}
-                                    <RNPicker.Item label="Manager" value="Manager" />
-                                    {/* <RNPicker.Item label="Admin" value="Admin" /> */}
-                                    <RNPicker.Item label="Board Member" value="Board Member" />
-                                    <RNPicker.Item label="Medical Staff" value="Medical Staff" />
-                                    {/* <RNPicker.Item label="Other" value="Other" /> */}
-                                </RNPicker>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Role *</Text>
+                                <View style={styles.pickerContainer}>
+                                    <RNPicker
+                                        selectedValue={formData.role}
+                                        onValueChange={(value) => handleChange('role', value)}
+                                        style={styles.picker}
+                                    >
+                                        <RNPicker.Item label="Coach" value="Coach" />
+                                        {/* <RNPicker.Item label="Assistant Coach" value="Assistant Coach" /> */}
+                                        <RNPicker.Item label="Manager" value="Manager" />
+                                        {/* <RNPicker.Item label="Admin" value="Admin" /> */}
+                                        <RNPicker.Item label="Board Member" value="Board Member" />
+                                        <RNPicker.Item label="Medical Staff" value="Medical Staff" />
+                                        {/* <RNPicker.Item label="Other" value="Other" /> */}
+                                    </RNPicker>
+                                </View>
                             </View>
-                        </View>
 
-                        {/* Team Assignments */}
-                        {/* {formData.role == "Coach" && <View>
+                            {/* Team Assignments */}
+                            {/* {formData.role == "Coach" && <View>
                             <View style={[styles.formGroup, {marginBottom:20}]}>
                                 <Text style={styles.label}>Assigned Teams</Text>
                                 {teams.length > 0 ? (
@@ -629,7 +729,7 @@ const CreateStaffScreen = () => {
                             </View>
                         </View>} */}
 
-                        {/* <View style={styles.formGroup}>
+                            {/* <View style={styles.formGroup}>
                             <Text style={styles.label}>Specialization</Text>
                             <TextInput
                                 style={styles.input}
@@ -639,54 +739,54 @@ const CreateStaffScreen = () => {
                             />
                         </View> */}
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Employment Type</Text>
-                            <View style={styles.pickerContainer}>
-                                <RNPicker
-                                    selectedValue={formData.employmentType}
-                                    onValueChange={(value) => handleChange('employmentType', value)}
-                                    style={styles.picker}
-                                >
-                                    <RNPicker.Item label="Full-time" value="Full-time" />
-                                    <RNPicker.Item label="Part-time" value="Part-time" />
-                                    <RNPicker.Item label="Contract" value="Contract" />
-                                    <RNPicker.Item label="Volunteer" value="Volunteer" />
-                                </RNPicker>
-                            </View>
-                        </View>
-
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Salary (per month)</Text>
-                            <View style={{ flexDirection: 'row', columnGap: 10 }}>
-                                <TextInput
-                                    style={[styles.input, { flex: 1 }]}
-                                    placeholder="Salary amount"
-                                    keyboardType="numeric"
-                                    value={formData.salary?.split(' ')[0] || ''}
-                                    onChangeText={(text) => {
-                                        const amount = text.trim();
-                                        const currency = formData.salary?.split(' ')[1] || 'USD';
-                                        handleChange('salary', `${amount} ${currency}`);
-                                    }}
-                                />
-                                <View style={[styles.pickerContainer, { flex: 1 }]}>
-                                    <Picker
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Employment Type</Text>
+                                <View style={styles.pickerContainer}>
+                                    <RNPicker
+                                        selectedValue={formData.employmentType}
+                                        onValueChange={(value) => handleChange('employmentType', value)}
                                         style={styles.picker}
-                                        selectedValue={formData.salary?.split(' ')[1] || 'USD'}
-                                        onValueChange={(currency) => {
-                                            const amount = formData.salary?.split(' ')[0] || '0';
-                                            handleChange('salary', `${amount} ${currency}`);
-                                        }}
                                     >
-                                        <Picker.Item label="USD" value="USD" />
-                                        <Picker.Item label="LBP" value="LBP" />
-                                        <Picker.Item label="EUR" value="EUR" />
-                                    </Picker>
+                                        <RNPicker.Item label="Full-time" value="Full-time" />
+                                        <RNPicker.Item label="Part-time" value="Part-time" />
+                                        <RNPicker.Item label="Contract" value="Contract" />
+                                        <RNPicker.Item label="Volunteer" value="Volunteer" />
+                                    </RNPicker>
                                 </View>
                             </View>
-                        </View>
 
-                        {/* <View style={styles.formGroup}>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Salary (per month)</Text>
+                                <View style={{ flexDirection: 'row', columnGap: 10 }}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1 }]}
+                                        placeholder="Salary amount"
+                                        keyboardType="numeric"
+                                        value={formData.salary?.split(' ')[0] || ''}
+                                        onChangeText={(text) => {
+                                            const amount = text.trim();
+                                            const currency = formData.salary?.split(' ')[1] || 'USD';
+                                            handleChange('salary', `${amount} ${currency}`);
+                                        }}
+                                    />
+                                    <View style={[styles.pickerContainer, { flex: 1 }]}>
+                                        <Picker
+                                            style={styles.picker}
+                                            selectedValue={formData.salary?.split(' ')[1] || 'USD'}
+                                            onValueChange={(currency) => {
+                                                const amount = formData.salary?.split(' ')[0] || '0';
+                                                handleChange('salary', `${amount} ${currency}`);
+                                            }}
+                                        >
+                                            <Picker.Item label="USD" value="USD" />
+                                            <Picker.Item label="LBP" value="LBP" />
+                                            <Picker.Item label="EUR" value="EUR" />
+                                        </Picker>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* <View style={styles.formGroup}>
                             <Text style={styles.label}>Bio</Text>
                             <TextInput
                                 style={styles.textarea}
@@ -700,69 +800,69 @@ const CreateStaffScreen = () => {
                             />
                         </View> */}
 
-                        {/* Qualifications */}
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Qualifications</Text>
-                            <View style={styles.listInputContainer}>
-                                <TextInput
-                                    style={[styles.input, { marginBottom: 0, flex: 1 }]}
-                                    placeholder="Add qualification"
-                                    value={qualificationInput}
-                                    onChangeText={setQualificationInput}
-                                    onSubmitEditing={addQualification}
-                                />
-                                <TouchableOpacity
-                                    style={styles.addItemButton}
-                                    onPress={addQualification}
-                                >
-                                    <Text style={styles.addItemButtonText}>Add</Text>
-                                </TouchableOpacity>
+                            {/* Qualifications */}
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Qualifications</Text>
+                                <View style={styles.listInputContainer}>
+                                    <TextInput
+                                        style={[styles.input, { marginBottom: 0, flex: 1 }]}
+                                        placeholder="Add qualification"
+                                        value={qualificationInput}
+                                        onChangeText={setQualificationInput}
+                                        onSubmitEditing={addQualification}
+                                    />
+                                    <TouchableOpacity
+                                        style={styles.addItemButton}
+                                        onPress={addQualification}
+                                    >
+                                        <Text style={styles.addItemButtonText}>Add</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={styles.itemsList}>
+                                    {formData.qualifications.map((item, index) => (
+                                        <View key={index} style={styles.item}>
+                                            <Text style={styles.itemText}>{item}</Text>
+                                            <TouchableOpacity onPress={() => removeQualification(index)}>
+                                                <MaterialIcons name="close" size={18} color="#FF4000" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </View>
                             </View>
-                            <View style={styles.itemsList}>
-                                {formData.qualifications.map((item, index) => (
-                                    <View key={index} style={styles.item}>
-                                        <Text style={styles.itemText}>{item}</Text>
-                                        <TouchableOpacity onPress={() => removeQualification(index)}>
-                                            <MaterialIcons name="close" size={18} color="#FF4000" />
-                                        </TouchableOpacity>
-                                    </View>
-                                ))}
-                            </View>
-                        </View>
 
-                        {/* Certifications */}
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Certifications</Text>
-                            <View style={styles.listInputContainer}>
-                                <TextInput
-                                    style={[styles.input, { marginBottom: 0, flex: 1 }]}
-                                    placeholder="Add certification"
-                                    value={certificationInput}
-                                    onChangeText={setCertificationInput}
-                                    onSubmitEditing={addCertification}
-                                />
-                                <TouchableOpacity
-                                    style={styles.addItemButton}
-                                    onPress={addCertification}
-                                >
-                                    <Text style={styles.addItemButtonText}>Add</Text>
-                                </TouchableOpacity>
+                            {/* Certifications */}
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Certifications</Text>
+                                <View style={styles.listInputContainer}>
+                                    <TextInput
+                                        style={[styles.input, { marginBottom: 0, flex: 1 }]}
+                                        placeholder="Add certification"
+                                        value={certificationInput}
+                                        onChangeText={setCertificationInput}
+                                        onSubmitEditing={addCertification}
+                                    />
+                                    <TouchableOpacity
+                                        style={styles.addItemButton}
+                                        onPress={addCertification}
+                                    >
+                                        <Text style={styles.addItemButtonText}>Add</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={styles.itemsList}>
+                                    {formData.certifications.map((item, index) => (
+                                        <View key={index} style={styles.item}>
+                                            <Text style={styles.itemText}>{item}</Text>
+                                            <TouchableOpacity onPress={() => removeCertification(index)}>
+                                                <MaterialIcons name="close" size={18} color="#FF4000" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </View>
                             </View>
-                            <View style={styles.itemsList}>
-                                {formData.certifications.map((item, index) => (
-                                    <View key={index} style={styles.item}>
-                                        <Text style={styles.itemText}>{item}</Text>
-                                        <TouchableOpacity onPress={() => removeCertification(index)}>
-                                            <MaterialIcons name="close" size={18} color="#FF4000" />
-                                        </TouchableOpacity>
-                                    </View>
-                                ))}
-                            </View>
-                        </View>
 
 
-                        {/* Emergency Contact */}
-                        {/* <Text style={styles.sectionTitle}>Emergency Contact</Text>
+                            {/* Emergency Contact */}
+                            {/* <Text style={styles.sectionTitle}>Emergency Contact</Text>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Full Name</Text>
@@ -795,8 +895,8 @@ const CreateStaffScreen = () => {
                             />
                         </View> */}
 
-                        {/* Address */}
-                        {/* <Text style={styles.sectionTitle}>Address</Text>
+                            {/* Address */}
+                            {/* <Text style={styles.sectionTitle}>Address</Text>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Street Address</Text>
@@ -848,61 +948,62 @@ const CreateStaffScreen = () => {
                             />
                         </View> */}
 
-                        {/* Status */}
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Status</Text>
-                            <View style={styles.statusContainer}>
-                                <TouchableOpacity
-                                    style={[
-                                        styles.statusButton,
-                                        formData.isActive && styles.activeStatusButton
-                                    ]}
-                                    onPress={() => handleChange('isActive', true)}
-                                >
-                                    <Text style={[
-                                        styles.statusButtonText,
-                                        formData.isActive && styles.activeStatusButtonText
-                                    ]}>
-                                        Active
-                                    </Text>
+                            {/* Status */}
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Status</Text>
+                                <View style={styles.statusContainer}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.statusButton,
+                                            formData.isActive && styles.activeStatusButton
+                                        ]}
+                                        onPress={() => handleChange('isActive', true)}
+                                    >
+                                        <Text style={[
+                                            styles.statusButtonText,
+                                            formData.isActive && styles.activeStatusButtonText
+                                        ]}>
+                                            Active
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.statusButton,
+                                            !formData.isActive && styles.inactiveStatusButton
+                                        ]}
+                                        onPress={() => handleChange('isActive', false)}
+                                    >
+                                        <Text style={[
+                                            styles.statusButtonText,
+                                            !formData.isActive && styles.inactiveStatusButtonText
+                                        ]}>
+                                            Inactive
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <View style={[styles.profileActions, styles.inlineActions]}>
+                                <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                    <Text style={styles.profileButtonText}>Cancel</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[
-                                        styles.statusButton,
-                                        !formData.isActive && styles.inactiveStatusButton
-                                    ]}
-                                    onPress={() => handleChange('isActive', false)}
-                                >
-                                    <Text style={[
-                                        styles.statusButtonText,
-                                        !formData.isActive && styles.inactiveStatusButtonText
-                                    ]}>
-                                        Inactive
-                                    </Text>
+                                <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
+                                    <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
+                                    {saving && (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#111111"
+                                            style={styles.saveLoaderContainer}
+                                        />
+                                    )}
                                 </TouchableOpacity>
                             </View>
-                        </View>
-
-                        <View style={[styles.profileActions, styles.inlineActions]}>
-                            <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>Save</Text>
-                                {saving && (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#111111"
-                                        style={styles.saveLoaderContainer}
-                                    />
-                                )}
-                            </TouchableOpacity>
-                        </View>
+                        </View>}
 
                     </View>
                 </ScrollView>
-            </View>
-        </KeyboardAvoidingView>
+            </View >
+        </KeyboardAvoidingView >
     );
 };
 
@@ -1138,12 +1239,13 @@ const styles = StyleSheet.create({
     profileActions: {
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.2)',
-        paddingTop: 10
+        paddingTop: 10,
+        marginTop:20
     },
     inlineActions: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        columnGap: 15
+        columnGap: 15,
     },
     saveLoaderContainer: {
         marginLeft: 10
@@ -1161,6 +1263,18 @@ const styles = StyleSheet.create({
     },
     savebtn: {
         flexDirection: 'row'
+    },
+    addStaffAccountBtn: {
+        borderRadius: 5,
+        padding: 10,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        marginBottom: 10,
+        alignSelf: 'flex-start'
+    },
+    addStaffAccountBtnText: {
+        fontSize: 18,
+        color: '#150000',
+        fontFamily: 'Bebas',
     },
     textarea: {
         fontSize: 14,
@@ -1272,6 +1386,8 @@ const styles = StyleSheet.create({
     },
     userItem: {
         padding: 15,
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     userName: {
         fontFamily: 'Manrope',
@@ -1310,6 +1426,13 @@ const styles = StyleSheet.create({
     },
     clearSelectionButton: {
         marginLeft: 10,
+    },
+    userAvatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 10,
+        backgroundColor: "#FF4000"
     },
 });
 

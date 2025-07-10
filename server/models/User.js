@@ -53,7 +53,19 @@ const userSchema = new mongoose.Schema({
     stats: String,
     achievements: String,
     events: String,
-    teams: [String],
+    isStaff: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Club',
+        default: null
+    },
+    personalAccount: {
+        type: Boolean,
+        default: true
+    },
+    verified: {
+        type: Date,
+        default: null
+    },
     skills: {
         attack: Number,
         skill: Number,

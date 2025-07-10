@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Staff = require('../models/Staff');
+const User = require('../models/User'); 
 const { body, validationResult } = require('express-validator');
 
 // Create staff
@@ -25,6 +26,16 @@ router.post(
         staff.profileImage = req.body.profileImage;
       }
       await staff.save();
+
+      //search for the email in users table and make a condition if found or else
+      const user = await User.findOne({ email: req.body.email });
+
+      if (user) {
+
+      }else{
+
+      }
+
       res.status(201).json({ success: true, data: staff });
     } catch (err) {
       console.error(err);

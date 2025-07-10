@@ -2,25 +2,10 @@ const mongoose = require('mongoose');
 
 const staffSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      trim: true,
-      unique: true,
-      lowercase: true,
-    },
-    phone: {
-      type: String,
-    },
-    dob: {
-      day: Number,
-      month: Number,
-      year: Number,
+    userRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
     },
     club: {
       type: mongoose.Schema.Types.ObjectId,
@@ -47,21 +32,8 @@ const staffSchema = new mongoose.Schema(
       default: 'Full-time',
     },
     salary: String,
-    bio: String,
     qualifications: [String],
     certifications: [String],
-    emergencyContact: {
-      name: String,
-      relationship: String,
-      phone: String,
-    },
-    address: {
-      street: String,
-      city: String,
-      state: String,
-      postalCode: String,
-      country: String,
-    },
     teams: [
       {
         type: mongoose.Schema.Types.ObjectId,

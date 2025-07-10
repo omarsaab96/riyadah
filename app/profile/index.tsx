@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
@@ -150,8 +151,6 @@ export default function Profile() {
 
         getCoachesIds();
     }, [teams]);
-
-
 
     const getAdminInfo = async () => {
         if (user.type == "Club") {
@@ -1387,14 +1386,14 @@ export default function Profile() {
                                                     <Text style={styles.staffName}>{member.name}</Text>
                                                     <Text style={styles.staffRole}>{member.role || 'Staff Member'}</Text>
                                                 </View>
-                                                <View style={styles.staffStats}>
+                                                {member.role == "Coach" && <View style={styles.staffStats}>
                                                     <Text style={styles.staffStatValue}>
                                                         {member.teams?.length || 0}
                                                     </Text>
                                                     <Text style={styles.staffStatLabel}>
                                                         {member.teams?.length === 1 ? 'Team' : 'Teams'}
                                                     </Text>
-                                                </View>
+                                                </View>}
                                             </View>
 
                                             <View style={styles.staffContact}>
@@ -1414,6 +1413,15 @@ export default function Profile() {
                                                     >
                                                         <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
                                                         <Text style={styles.contactButtonText}>Email</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                                {member.role == "Coach" && (
+                                                    <TouchableOpacity
+                                                        style={styles.contactButton}
+                                                        onPress={() => console.log(member._id)}
+                                                    >
+                                                        <AntDesign name="team" size={16} color="#FF4000" />
+                                                        <Text style={styles.contactButtonText}>View teams</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
