@@ -165,7 +165,7 @@ router.get('/search', async (req, res) => {
     const regex = new RegExp(name, 'i');
     const users = await User.find({
       name: { $regex: regex }
-    }).select('-password');
+    }).select('-password -__v -createdAt -updatedAt');
 
     res.json(users);
   } catch (err) {
