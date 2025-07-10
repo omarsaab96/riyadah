@@ -25,14 +25,11 @@ router.post(
       let user = await User.findOne({ email });
 
       if (user) {
-        // ✅ User exists: update isStaff field
         user.isStaff = club;
         await user.save();
 
-        // Add user ID to staff.userRef
         req.body.userRef = user._id;
       } else {
-        // ❌ User doesn't exist: create new user
         const newUser = new User({
           achievements: null,
           admin: {
@@ -93,13 +90,12 @@ router.post(
         });
 
         await newUser.save();
-
-        // Add created user ID to staff.userRef
         req.body.userRef = newUser._id;
       }
 
       // Create and save staff
       const staff = new Staff(req.body);
+      await staff.save();
 
       res.status(201).json({ success: true, data: staff });
     } catch (err) {
