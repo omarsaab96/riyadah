@@ -239,6 +239,8 @@ export default function Profile() {
                 });
                 const data = await response.json();
 
+                console.log("data= ",data.userRef)
+
                 if (response.ok) {
                     setStaff(data);
                 } else {
