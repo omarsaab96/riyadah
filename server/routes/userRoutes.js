@@ -67,7 +67,6 @@ router.get('/find-children', async (req, res) => {
   }
 });
 
-
 router.post('/check', async (req, res) => {
   const { email, phone } = req.body;
 
@@ -155,17 +154,28 @@ router.get('/', async (req, res) => {
 
 // Search users by name (case-insensitive, partial match)
 router.get('/search', async (req, res) => {
-  const { name } = req.query;
+  const { keyword, type } = req.query;
 
-  if (!name) {
-    return res.status(400).json({ error: 'Name query parameter is required' });
+  if (!keyword) {
+    return res.status(400).json({ error: 'Keyword is required' });
   }
 
   try {
-    const regex = new RegExp(name, 'i');
-    const users = await User.find({
-      name: { $regex: regex }
-    }).select('-password -__v -createdAt -updatedAt');
+    const regex = new RegExp(keyword, 'i');
+
+    const query = {
+      $or: [
+        { name: { $regex: regex } },
+        { email: { $regex: regex } }
+      ]
+    };
+
+    if (type) {
+      query.type = type;
+    }
+
+    const users = await User.find(query).select('-password -__v -createdAt -updatedAt');
+
 
     res.json(users);
   } catch (err) {

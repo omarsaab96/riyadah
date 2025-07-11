@@ -168,7 +168,7 @@ export default function AddChildren() {
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/users/search?name=${name}`);
+            const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&type=Athlete`);
 
             if (res.ok) {
                 const data = await res.json();

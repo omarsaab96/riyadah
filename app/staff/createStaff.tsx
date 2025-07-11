@@ -150,7 +150,7 @@ const CreateStaffScreen = () => {
             setImage(base64);
             setFormData(prev => ({
                 ...prev,
-                image: "data:image/png;base64,"+base64,
+                image: "data:image/png;base64," + base64,
             }));
             setUploading(false);
         }
@@ -302,7 +302,7 @@ const CreateStaffScreen = () => {
                 ...prev,
                 name: '',
                 email: '',
-                userRef:null
+                userRef: null
             }));
 
             setImage(null);
@@ -399,33 +399,52 @@ const CreateStaffScreen = () => {
                             </View>}
 
                             {!searching && !selectedUser && searchResults.length > 0 && (
-                                <View style={styles.resultsContainer}>
-                                    {searchResults.map((item) => (
-                                        <TouchableOpacity
-                                            key={item._id}
-                                            style={styles.userItem}
-                                            onPress={() => handleUserSelect(item)}
-                                        >
-                                            <Image
-                                                source={
-                                                    item.image
-                                                        ? { uri: item.image }
-                                                        : require('../../assets/avatar.png')
-                                                }
-                                                style={styles.userAvatar}
-                                                resizeMode="contain"
-                                            />
-                                            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-                                                <View style={{width:'60%'}}>
-                                                    <Text style={styles.userName}>{item.name}</Text>
-                                                    <Text style={styles.userEmail}>{item.email}</Text>
+                                <View>
+
+                                    <View style={styles.resultsContainer}>
+                                        {searchResults.map((item) => (
+                                            <TouchableOpacity
+                                                key={item._id}
+                                                style={styles.userItem}
+                                                onPress={() => handleUserSelect(item)}
+                                            >
+                                                <Image
+                                                    source={
+                                                        item.image
+                                                            ? { uri: item.image }
+                                                            : require('../../assets/avatar.png')
+                                                    }
+                                                    style={styles.userAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <View style={{ width: '60%' }}>
+                                                        <Text style={styles.userName}>{item.name}</Text>
+                                                        <Text style={styles.userEmail}>{item.email}</Text>
+                                                    </View>
+                                                    <View style={{ width: '40%' }}>
+                                                        <Text style={{ color: '#FF4000' }}>Add as staff</Text>
+                                                    </View>
                                                 </View>
-                                                <View style={{width:'40%'}}>
-                                                    <Text style={{color:'#FF4000'}}>Add as staff</Text>
-                                                </View>
-                                            </View>
-                                        </TouchableOpacity>
-                                    ))}
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+
+                                    <Text style={{ fontFamily: 'Manrope', marginTop: 10, fontWeight: 'bold' }}>
+                                        Can't find the account you are looking for?
+                                    </Text>
+
+                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                        Don't worry you can still create a new staff by clicking on the button below
+                                    </Text>
+
+                                    <TouchableOpacity
+                                        style={styles.addStaffAccountBtn}
+                                        onPress={() => handleUserSelect(null)}
+                                    >
+                                        <Text style={styles.addStaffAccountBtnText}>Add new staff without account</Text>
+                                    </TouchableOpacity>
+
                                 </View>
                             )}
 
@@ -456,12 +475,12 @@ const CreateStaffScreen = () => {
                         {selectedUser != null && !showSearchSection && (
                             <View>
                                 <View>
-                                    <Text style={[styles.sectionTitle,{marginBottom:0}]}>Selected user</Text>
+                                    <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Selected user</Text>
                                 </View>
                                 <View style={styles.selectedUserContainer}>
                                     <Image
                                         source={
-                                            selectedUser.image!=null
+                                            selectedUser.image != null
                                                 ? { uri: selectedUser.image }
                                                 : require('../../assets/avatar.png')
                                         }
@@ -491,7 +510,7 @@ const CreateStaffScreen = () => {
                                 <View style={styles.selectedUserContainer}>
                                     <View style={styles.selectedUserInfo}>
                                         <Text style={styles.selectedUserName}>Tap here to retry search</Text>
-                                        <Text style={styles.selectedUserEmail}>Search for existing users</Text>
+                                        <Text style={styles.selectedUserEmail}>Search for an existing account and skip basic information</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -576,42 +595,42 @@ const CreateStaffScreen = () => {
 
                             {/* Team Assignments */}
                             {formData.role == "Coach" && <View>
-                            <View style={[styles.formGroup, {marginBottom:20}]}>
-                                <Text style={styles.label}>Assigned Teams</Text>
-                                {teams.length > 0 ? (
-                                    teams.map(team => (
-                                        <TouchableOpacity
-                                            key={team._id}
-                                            style={styles.teamItem}
-                                            onPress={() => {
-                                                const isSelected = formData.teams.includes(team._id);
-                                                if (isSelected) {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        teams: prev.teams.filter(id => id !== team._id)
-                                                    }));
-                                                } else {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        teams: [...prev.teams, team._id]
-                                                    }));
-                                                }
-                                            }}
-                                        >
-                                            <View style={styles.checkbox}>
-                                                {formData.teams.includes(team._id) && <View style={styles.checked} >
-                                                    <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+                                <View style={[styles.formGroup, { marginBottom: 20 }]}>
+                                    <Text style={styles.label}>Assigned Teams</Text>
+                                    {teams.length > 0 ? (
+                                        teams.map(team => (
+                                            <TouchableOpacity
+                                                key={team._id}
+                                                style={styles.teamItem}
+                                                onPress={() => {
+                                                    const isSelected = formData.teams.includes(team._id);
+                                                    if (isSelected) {
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            teams: prev.teams.filter(id => id !== team._id)
+                                                        }));
+                                                    } else {
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            teams: [...prev.teams, team._id]
+                                                        }));
+                                                    }
+                                                }}
+                                            >
+                                                <View style={styles.checkbox}>
+                                                    {formData.teams.includes(team._id) && <View style={styles.checked} >
+                                                        <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+                                                    </View>
+                                                    }
                                                 </View>
-                                                }
-                                            </View>
-                                            <Text style={styles.teamName}>{team.name} ({team.sport})</Text>
-                                        </TouchableOpacity>
-                                    ))
-                                ) : (
-                                    <Text style={styles.noTeamsText}>No teams available</Text>
-                                )}
-                            </View>
-                        </View>}
+                                                <Text style={styles.teamName}>{team.name} ({team.sport})</Text>
+                                            </TouchableOpacity>
+                                        ))
+                                    ) : (
+                                        <Text style={styles.noTeamsText}>No teams available</Text>
+                                    )}
+                                </View>
+                            </View>}
 
                             {/* <View style={styles.formGroup}>
                             <Text style={styles.label}>Specialization</Text>
@@ -1124,7 +1143,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.2)',
         paddingTop: 10,
-        marginTop:20
+        marginTop: 20
     },
     inlineActions: {
         flexDirection: 'row',
