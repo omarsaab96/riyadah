@@ -152,7 +152,10 @@ router.post('/byClub/:id', async (req, res) => {
 // Get staff by ID
 router.get('/:id', async (req, res) => {
   try {
-    const staff = await Staff.findById(req.params.id).populate('teams');
+    const staff = await Staff.findById(req.params.id)
+    .populate('teams')
+    .populate('userRef');
+    
     if (!staff) {
       return res
         .status(404)
