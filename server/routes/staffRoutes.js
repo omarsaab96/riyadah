@@ -25,9 +25,20 @@ router.post(
       let user = await User.findOne({ email });
 
       if (user) {
-        user.isStaff = club;
-        await user.save();
+        if (!Array.isArray(user.isStaff)) {
+          user.isStaff = user.isStaff ? [user.isStaff] : [];
+        }
 
+        // Check if club is already in isStaff
+        const clubExists = user.isStaff.some(
+          (clubId) => clubId.toString() === club.toString()
+        );
+
+        if (!clubExists) {
+          user.isStaff.push(club);
+        }
+
+        await user.save();
         req.body.userRef = user._id;
       } else {
         const newUser = new User({
@@ -68,7 +79,7 @@ router.post(
           height: null,
           highlights: null,
           image: req.body.image ? req.body.image : null,
-          isStaff: club,
+          isStaff: [],
           name: name,
           organization: null,
           parentEmail: null,
@@ -88,7 +99,8 @@ router.post(
           verified: null,
           weight: null
         });
-
+        newUser.isStaff.push(club);
+        
         await newUser.save();
         req.body.userRef = newUser._id;
         console.log("Added user with id: ", newUser._id)
@@ -107,6 +119,8 @@ router.post(
     }
   }
 );
+
+
 // Get all staff
 router.get('/', async (req, res) => {
   try {
@@ -153,9 +167,9 @@ router.post('/byClub/:id', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const staff = await Staff.findById(req.params.id)
-    .populate('teams')
-    .populate('userRef');
-    
+      .populate('teams')
+      .populate('userRef');
+
     if (!staff) {
       return res
         .status(404)

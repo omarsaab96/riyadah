@@ -148,13 +148,17 @@ export default function AddChildren() {
 
     const handleSearchInput = (text: string) => {
         setKeyword(text);
+        if(text.trim().length<3){
+            setSearchResults([]);
+            return;
+        }
 
         // Clear previous timeout
         if (debounceTimeout) clearTimeout(debounceTimeout);
 
         // Set new debounce timeout
         const timeout = setTimeout(() => {
-            if (text.trim().length > 0) {
+            if (text.trim().length >= 3) {
                 searchAthletes(text);
             } else {
                 setSearchResults([]);
@@ -207,178 +211,182 @@ export default function AddChildren() {
     }
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-        >
-            <View style={styles.container}>
-                <View style={styles.pageHeader}>
-                    <Image
-                        source={require('../../assets/logo_white.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
+        <View>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={{ flex: 1 }}
+            >
+                <View style={styles.container}>
+                    <View style={styles.pageHeader}>
+                        <Image
+                            source={require('../../assets/logo_white.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Add Children</Text>
-                        {!loading && <Text style={styles.pageDesc}>Search for an athlete to add as your child</Text>}
+                        <View style={styles.headerTextBlock}>
+                            <Text style={styles.pageTitle}>Add Children</Text>
+                            {!loading && <Text style={styles.pageDesc}>Search for an athlete to add as your child</Text>}
 
-                        {loading &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
-                                <ActivityIndicator
-                                    size="small"
-                                    color="#ffffff"
-                                    style={{ transform: [{ scale: 1.25 }] }}
-                                />
-                            </View>
-                        }
+                            {loading &&
+                                <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#ffffff"
+                                        style={{ transform: [{ scale: 1.25 }] }}
+                                    />
+                                </View>
+                            }
+                        </View>
+
+                        <Text style={styles.ghostText}>Children</Text>
                     </View>
 
-                    <Text style={styles.ghostText}>Children</Text>
-                </View>
+                    {user && !loading && <ScrollView>
 
-                {user && !loading && <ScrollView>
-
-                    <View style={styles.contentContainer}>
-                        {error != '' && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
-                            <Text style={styles.errorText}>{error}</Text>
-                        </View>}
-                        {user.type == "Parent" && <View style={styles.entity}>
-                            <View style={styles.noChildrenView}>
-                                <Text style={[styles.title, { marginBottom: 0 }]}>
-                                    Children ({children?.length || 0})
-                                </Text>
-                            </View>
-                            {children?.length > 0 ? (<View style={styles.childrenList}>
-                                {children.map((child, index) => (
-                                    <View key={index} style={styles.childItem}>
-                                        <Text>{child.name}</Text>
+                        <View style={styles.contentContainer}>
+                            {error != '' && <View style={styles.error}>
+                                <View style={styles.errorIcon}></View>
+                                <Text style={styles.errorText}>{error}</Text>
+                            </View>}
+                            {user.type == "Parent" && <View style={styles.entity}>
+                                <View style={styles.noChildrenView}>
+                                    <Text style={[styles.title, { marginBottom: 0 }]}>
+                                        Children ({children?.length || 0})
+                                    </Text>
+                                </View>
+                                {children?.length > 0 ? (<View style={styles.childrenList}>
+                                    {children.map((child, index) => (
+                                        <View key={index} style={styles.childItem}>
+                                            <Text>{child.name}</Text>
+                                        </View>
+                                    ))}
+                                </View>) : (
+                                    <View>
+                                        <Text style={styles.noChildrenText}>No children added yet</Text>
                                     </View>
-                                ))}
-                            </View>) : (
+                                )}
+                            </View>}
+
+                            <View style={styles.entity}>
                                 <View>
-                                    <Text style={styles.noChildrenText}>No children added yet</Text>
-                                </View>
-                            )}
-                        </View>}
-
-                        <View style={styles.entity}>
-                            <View>
-                                <Text style={styles.title}>
-                                    Search
-                                </Text>
-                                <View style={{
-                                    marginBottom: 16,
-                                }}>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Athlete name or email"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={keyword}
-                                        onChangeText={handleSearchInput}
-                                    />
-                                    {searching &&
-                                        <ActivityIndicator
-                                            size="small"
-                                            color="#FF4000"
-                                            style={styles.searchLoader}
+                                    <Text style={styles.title}>
+                                        Search
+                                    </Text>
+                                    <View style={{
+                                        marginBottom: 16,
+                                    }}>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Athlete name or email (min. 3 characters)"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={keyword}
+                                            onChangeText={handleSearchInput}
                                         />
-                                    }
+                                        {searching &&
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#FF4000"
+                                                style={styles.searchLoader}
+                                            />
+                                        }
+                                    </View>
                                 </View>
-                            </View>
 
-                            {keyword.trim().length > 0 && !searching && (
-                                <View style={{ marginTop: 10 }}>
-                                    {searchResults.length > 0 && !searching &&
-                                        searchResults.map((athlete, i) => (
-                                            <View key={i} >
-                                                <TouchableOpacity
-                                                    style={styles.searchResultItem}
-                                                    onPress={() => { handleAddChildToParent(athlete) }}>
-                                                    <View style={styles.searchResultItemImageContainer}>
-                                                        <Image
-                                                            style={styles.searchResultItemImage}
-                                                            source={{ uri: athlete.image }}
-                                                        />
-                                                    </View>
-                                                    <View style={styles.searchResultItemInfo}>
-                                                        <View>
-                                                            <Text style={styles.searchResultItemName}>{athlete.name}</Text>
-                                                            <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                {keyword.trim().length >= 3 && !searching && (
+                                    <View style={{ marginTop: 10 }}>
+                                        {searchResults.length > 0 && !searching &&
+                                            searchResults.map((athlete, i) => (
+                                                <View key={i} >
+                                                    <TouchableOpacity
+                                                        style={styles.searchResultItem}
+                                                        onPress={() => { handleAddChildToParent(athlete) }}>
+                                                        <View style={styles.searchResultItemImageContainer}>
+                                                            <Image
+                                                                style={styles.searchResultItemImage}
+                                                                source={{ uri: athlete.image }}
+                                                            />
                                                         </View>
-                                                        <Text style={styles.searchResultItemLink}>+ Add As Child</Text>
-                                                    </View>
+                                                        <View style={styles.searchResultItemInfo}>
+                                                            <View>
+                                                                <Text style={styles.searchResultItemName}>{athlete.name}</Text>
+                                                                <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                                            </View>
+                                                            <Text style={styles.searchResultItemLink}>+ Add As Child</Text>
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            ))
+                                        }
+
+                                        {searchResults.length == 0 && !searching && user.type == "Parent" &&
+                                            <View>
+                                                <Text style={styles.searchNoResultText}>
+                                                    No results.{'\n'}Can't find your child's account?
+                                                </Text>
+
+                                                <TouchableOpacity style={styles.createChildAccountBtn} onPress={handleCreateNewAthlete}>
+                                                    <Text style={styles.createChildAccountBtnText}>Create a New Account</Text>
                                                 </TouchableOpacity>
                                             </View>
-                                        ))
-                                    }
+                                        }
 
-                                    {searchResults.length == 0 && !searching && user.type == "Parent" &&
-                                        <View>
-                                            <Text style={styles.searchNoResultText}>
-                                                No results.{'\n'}Can't find your child's account?
-                                            </Text>
-
-                                            <TouchableOpacity style={styles.createChildAccountBtn} onPress={handleCreateNewAthlete}>
-                                                <Text style={styles.createChildAccountBtnText}>Create a New Account</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    }
-
-                                    {/* {searchResults.length == 0 && !searching && user.type != "Parent" &&
+                                        {/* {searchResults.length == 0 && !searching && user.type != "Parent" &&
                                         <View>
                                             <Text style={styles.searchNoResultText}>
                                                 No results
                                             </Text>
                                         </View>
                                     } */}
-                                </View>
-                            )}
-                        </View>
-
-                        <View style={[styles.profileActions, styles.inlineActions]}>
-                            <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>Save</Text>
-                                {saving && (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#111111"
-                                        style={styles.saveLoaderContainer}
-                                    />
+                                    </View>
                                 )}
-                            </TouchableOpacity>
+                            </View>
+
+                            <View style={[styles.profileActions, styles.inlineActions]}>
+                                <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
+                                    <Text style={styles.profileButtonText}>Save</Text>
+                                    {saving && (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#111111"
+                                            style={styles.saveLoaderContainer}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
-                </ScrollView>
-                }
+                    </ScrollView>
+                    }
 
-                <View style={styles.navBar}>
-                    <TouchableOpacity onPress={() => router.replace('/settings')}>
-                        <Image source={require('../../assets/settings.png')} style={styles.icon} />
-                    </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.replace('/search')}>
-                        <Image source={require('../../assets/search.png')} style={styles.icon} />
-                    </TouchableOpacity>
+                </View >
+            </KeyboardAvoidingView>
+            
+            <View style={styles.navBar}>
+                <TouchableOpacity onPress={() => router.replace('/settings')}>
+                    <Image source={require('../../assets/settings.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.replace('/landing')}>
-                        <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.replace('/search')}>
+                    <Image source={require('../../assets/search.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                        <Image source={require('../../assets/notifications.png')} style={styles.icon} />
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.replace('/landing')}>
+                    <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
+                </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.replace('/profile')}>
-                        <Image source={require('../../assets/profile.png')} style={styles.icon} />
-                    </TouchableOpacity>
-                </View>
-            </View >
-        </KeyboardAvoidingView>
+                <TouchableOpacity onPress={() => router.replace('/notifications')}>
+                    <Image source={require('../../assets/notifications.png')} style={styles.icon} />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => router.replace('/profile')}>
+                    <Image source={require('../../assets/profile.png')} style={styles.icon} />
+                </TouchableOpacity>
+            </View>
+        </View>
     );
 }
 

@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -26,6 +26,7 @@ const CreateStaffScreen = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    const scrollViewRef = useRef();
     const [error, setError] = useState(null);
     const [image, setImage] = useState(null);
     const [teams, setTeams] = useState([]);
@@ -142,6 +143,7 @@ const CreateStaffScreen = () => {
 
             if (sizeInMB > 2) {
                 setError("Image too large. Max 2MB");
+                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                 setUploading(false)
                 return;
             } else {
@@ -207,8 +209,24 @@ const CreateStaffScreen = () => {
 
     const handleSubmit = async () => {
         if (!formData.name || !formData.email || !formData.role) {
-            Alert.alert('Error', 'Please fill in all required fields');
+            setError("Please fill in all required fields");
+            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
             return;
+        } else {
+            setError(null)
+        }
+
+        if (selectedUser == null && formData.email != null) {
+            const checkResult = await checkAvailability(formData.email);
+
+            if (!checkResult.success) {
+                setError(checkResult.msg);
+                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                setSaving(false);
+                return;
+            } else {
+                setError(null)
+            }
         }
 
         const dataToSubmit = {
@@ -250,7 +268,8 @@ const CreateStaffScreen = () => {
             ]);
         } catch (error) {
             console.error('Error creating staff:', error);
-            Alert.alert('Error', error.message);
+            setError(error.message);
+            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
         } finally {
             setSaving(false);
         }
@@ -262,12 +281,17 @@ const CreateStaffScreen = () => {
 
     const handleSearchInput = (text: string) => {
         setKeyword(text);
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
         // Clear previous timeout
         if (debounceTimeout) clearTimeout(debounceTimeout);
 
         // Set new debounce timeout
         const timeout = setTimeout(() => {
-            if (text.trim().length > 0) {
+            if (text.trim().length >= 3) {
                 searchUsers(text);
             } else {
                 setSearchResults([]);
@@ -277,13 +301,13 @@ const CreateStaffScreen = () => {
         setDebounceTimeout(timeout);
     };
 
-    const searchUsers = async (keyword: string) => {
+    const searchUsers = async (text: string) => {
         setSearchindex(1)
 
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const response = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${keyword}`, {
+            const response = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${text}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 }
@@ -310,7 +334,7 @@ const CreateStaffScreen = () => {
             setShowBasicInfo(true)
             setSelectedUser(user);
             setSearchResults([]);
-            setSearchQuery('');
+            setKeyword('');
 
             setFormData(prev => ({
                 ...prev,
@@ -328,7 +352,7 @@ const CreateStaffScreen = () => {
 
         setSelectedUser(user);
         setSearchResults([]);
-        setSearchQuery('');
+        setKeyword('');
         setShowProfessionalInfo(true)
         setShowSearchSection(false)
 
@@ -351,12 +375,31 @@ const CreateStaffScreen = () => {
         setShowProfessionalInfo(false)
         setShowSearchSection(true)
         setSearchindex(0)
+        setError(null);
         setFormData(prev => ({
             ...prev,
             name: '',
             email: '',
         }));
         setImage(null);
+    };
+
+    const checkAvailability = async (email: string) => {
+        try {
+            const response = await fetch('https://riyadah.onrender.com/api/users/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            console.error('Availability check error:', err);
+            return { success: false, msg: 'Server error' };
+        }
     };
 
     return (
@@ -380,7 +423,7 @@ const CreateStaffScreen = () => {
                     <Text style={styles.ghostText}>Staff</Text>
                 </View>
 
-                <ScrollView>
+                <ScrollView ref={scrollViewRef}>
                     <View style={styles.contentContainer}>
                         {error != null && <View style={styles.error}>
                             <View style={styles.errorIcon}></View>
@@ -398,7 +441,7 @@ const CreateStaffScreen = () => {
                                 }}>
                                     <TextInput
                                         style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                        placeholder="Search by name or email"
+                                        placeholder="Search by name or email (min. 3 characters)"
                                         placeholderTextColor="#A8A8A8"
                                         value={keyword}
                                         onChangeText={handleSearchInput}
@@ -429,15 +472,15 @@ const CreateStaffScreen = () => {
                                                             ? { uri: item.image }
                                                             : require('../../assets/avatar.png')
                                                     }
-                                                    style={styles.userAvatar}
+                                                    style={[styles.userAvatar]}
                                                     resizeMode="contain"
                                                 />
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                    <View style={{ width: '60%' }}>
+                                                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <View>
                                                         <Text style={styles.userName}>{item.name}</Text>
                                                         <Text style={styles.userEmail}>{item.email}</Text>
                                                     </View>
-                                                    <View style={{ width: '40%' }}>
+                                                    <View>
                                                         <Text style={{ color: '#FF4000' }}>Add as staff</Text>
                                                     </View>
                                                 </View>
@@ -463,7 +506,7 @@ const CreateStaffScreen = () => {
                                 </View>
                             )}
 
-                            {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && (
+                            {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && keyword.trim().length >= 3 && (
                                 <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
                                     <Text style={{ fontFamily: 'Manrope', fontWeight: 'bold' }}>
                                         No results.
@@ -1266,33 +1309,20 @@ const styles = StyleSheet.create({
     searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
-    },
-    searchButton: {
-        backgroundColor: '#FF4000',
-        paddingVertical: 15,
-        paddingHorizontal: 20,
-        borderRadius: 10,
-        marginLeft: 10,
-    },
-    searchButtonText: {
-        color: '#fff',
-        fontFamily: 'Bebas',
-        fontSize: 16,
     },
     loadingContainer: {
         padding: 10,
         alignItems: 'center',
     },
     resultsContainer: {
-        maxHeight: 200,
+
+    },
+    userItem: {
         borderWidth: 1,
         borderColor: '#eee',
         borderRadius: 8,
-        marginTop: 10,
-    },
-    userItem: {
-        padding: 15,
+        padding: 5,
+        marginBottom: 10,
         flexDirection: 'row',
         alignItems: 'center'
     },

@@ -38,11 +38,16 @@ const userSchema = new mongoose.Schema({
   height: Number,
   highlights: String,
   image: String,
-  isStaff: {
+  // isStaff: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Club',
+  //   default: null
+  // },
+  isStaff: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Club',
-    default: null
-  },
+    default: []
+  }],
   name: String,
   organization: {
     name: String,

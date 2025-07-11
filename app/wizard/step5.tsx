@@ -96,7 +96,7 @@ export default function WizardStep5() {
                 bio: bio,
                 gender: selectedGender,
                 image: null,
-                isStaff:null,
+                isStaff:[],
                 personalAccount:true,
                 verified:null
             };

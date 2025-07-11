@@ -199,7 +199,10 @@ export default function ParentCreateAthlete() {
                 month: month,
                 year: year
             },
-            club: independent ? 'Independent' : selectedClub
+            club: independent ? 'Independent' : selectedClub,
+            verified:null,
+            personalAccount:false,
+            isStaff:[]
         });
 
         try {

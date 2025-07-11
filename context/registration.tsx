@@ -40,7 +40,7 @@ interface RegistrationData {
   height: Number | null;
   highlights: any;
   image: string | null;
-  isStaff: String | null;
+  isStaff: [String] | [];
   name: string | null;
   organization: {
     name: string | null;
@@ -116,7 +116,7 @@ export const RegistrationProvider = ({ children }: Props) => {
     height: null,
     highlights: null,
     image: null,
-    isStaff: null,
+    isStaff: [],
     name: null,
     organization: {
       name: null,
@@ -187,7 +187,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       height: null,
       highlights: null,
       image: null,
-      isStaff:null,
+      isStaff:[],
       name: null,
       organization: {
         name: null,
