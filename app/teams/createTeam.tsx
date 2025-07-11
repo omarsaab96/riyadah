@@ -199,7 +199,7 @@ export default function CreateTeam() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    console.log("Staff=", data.data)
+                    // console.log("Staff=", data.data)
                     setStaff(data.data);
                 } else {
                     setStaff([]);
@@ -343,7 +343,7 @@ export default function CreateTeam() {
                                                             color={isSelected ? "#FF4000" : "#333"}
                                                         />
                                                         <Text style={{ marginLeft: 5, color: "#000" }}>
-                                                            {coach.name}
+                                                            {coach.userRef.name}
                                                         </Text>
                                                     </TouchableOpacity>
                                                 );

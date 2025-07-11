@@ -79,9 +79,9 @@ export default function StaffDetailsScreen() {
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
-      {staff.image ? (
+      {staff.userRef.image ? (
         <Image
-          source={{ uri: staff.image }}
+          source={{ uri: staff.userRef.image }}
           style={styles.avatar}
           resizeMode="cover"
         />
@@ -91,30 +91,30 @@ export default function StaffDetailsScreen() {
         </View>
       )}
 
-      <Text style={styles.name}>{staff.name}</Text>
+      <Text style={styles.name}>{staff.userRef.name}</Text>
       <Text style={styles.role}>{staff.role || "Staff Member"}</Text>
 
-      {staff.bio ? <Text style={styles.bio}>{staff.bio}</Text> : null}
+      {staff.bio ? <Text style={styles.bio}>{staff.userRef.bio}</Text> : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Contact</Text>
-        {staff.phone ? (
+        {staff.userRef.phone ? (
           <TouchableOpacity
             style={styles.contactButton}
-            onPress={() => Linking.openURL(`tel:${staff.phone}`)}
+            onPress={() => Linking.openURL(`tel:${staff.userRef.phone}`)}
           >
             <FontAwesome5 name="phone" size={16} color="#FF4000" />
-            <Text style={styles.contactText}>{staff.phone}</Text>
+            <Text style={styles.contactText}>{staff.userRef.phone}</Text>
           </TouchableOpacity>
         ) : null}
 
-        {staff.email ? (
+        {staff.userRef.email ? (
           <TouchableOpacity
             style={styles.contactButton}
-            onPress={() => Linking.openURL(`mailto:${staff.email}`)}
+            onPress={() => Linking.openURL(`mailto:${staff.userRef.email}`)}
           >
             <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
-            <Text style={styles.contactText}>{staff.email}</Text>
+            <Text style={styles.contactText}>{staff.userRef.email}</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -162,29 +162,12 @@ export default function StaffDetailsScreen() {
         <Text style={styles.listItem}>Status: {staff.isActive ? "Active" : "Inactive"}</Text>
       </View>
 
-      {staff.address && (
+      {staff.userRef.country && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Address</Text>
+          <Text style={styles.sectionTitle}>Country</Text>
           <Text style={styles.listItem}>
-            {[
-              staff.address.street,
-              staff.address.city,
-              staff.address.state,
-              staff.address.postalCode,
-              staff.address.country,
-            ]
-              .filter(Boolean)
-              .join(", ")}
+            {staff.userRef.country}
           </Text>
-        </View>
-      )}
-
-      {staff.emergencyContact && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Emergency Contact</Text>
-          <Text style={styles.listItem}>Name: {staff.emergencyContact.name || "N/A"}</Text>
-          <Text style={styles.listItem}>Phone: {staff.emergencyContact.phone || "N/A"}</Text>
-          <Text style={styles.listItem}>Relationship: {staff.emergencyContact.relationship || "N/A"}</Text>
         </View>
       )}
     </ScrollView>
