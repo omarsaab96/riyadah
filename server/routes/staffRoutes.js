@@ -34,9 +34,14 @@ router.post(
           (clubId) => clubId.toString() === club.toString()
         );
 
-        if (!clubExists) {
-          user.isStaff.push(club);
+        if (clubExists) {
+          return res.status(400).json({
+            success: false,
+            message: `${user.name} is already a staff member in this club`,
+          });
         }
+
+        user.isStaff.push(club);
 
         await user.save();
         req.body.userRef = user._id;
@@ -100,7 +105,7 @@ router.post(
           weight: null
         });
         newUser.isStaff.push(club);
-        
+
         await newUser.save();
         req.body.userRef = newUser._id;
         console.log("Added user with id: ", newUser._id)
