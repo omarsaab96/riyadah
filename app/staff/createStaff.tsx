@@ -34,10 +34,11 @@ const CreateStaffScreen = () => {
     const [uploading, setUploading] = useState(false);
     const [countryCode, setCountryCode] = useState('LB');
     const [callingCode, setCallingCode] = useState('961');
-    const [searchQuery, setSearchQuery] = useState('');
+    const [keyword, setKeyword] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [searching, setSearching] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [qualificationInput, setQualificationInput] = useState('');
     const [certificationInput, setCertificationInput] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -259,17 +260,30 @@ const CreateStaffScreen = () => {
         router.back();
     };
 
-    const searchUsers = async () => {
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+        // Clear previous timeout
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        // Set new debounce timeout
+        const timeout = setTimeout(() => {
+            if (text.trim().length > 0) {
+                searchUsers(text);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500); // delay: 500ms
+
+        setDebounceTimeout(timeout);
+    };
+
+    const searchUsers = async (keyword: string) => {
         setSearchindex(1)
-        if (!searchQuery.trim()) {
-            Alert.alert('Error', 'Please enter a name to search');
-            return;
-        }
 
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const response = await fetch(`https://riyadah.onrender.com/api/users/search?name=${searchQuery}`, {
+            const response = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${keyword}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 }
@@ -378,24 +392,25 @@ const CreateStaffScreen = () => {
                             <Text style={styles.label}>Check for Existing Account</Text>
 
                             {!selectedUser && <View style={styles.searchContainer}>
-                                <TextInput
-                                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                    placeholder="Search by name or email"
-                                    value={searchQuery}
-                                    onChangeText={setSearchQuery}
-                                    onSubmitEditing={searchUsers}
-                                />
-                                <TouchableOpacity
-                                    style={styles.searchButton}
-                                    onPress={searchUsers}
-                                    disabled={searching}
-                                >
-                                    {searching ? (
-                                        <ActivityIndicator size="small" color="#fff" />
-                                    ) : (
-                                        <Text style={styles.searchButtonText}>Search</Text>
-                                    )}
-                                </TouchableOpacity>
+                                <View style={{
+                                    marginBottom: 16,
+                                    flexDirection: 'row'
+                                }}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                                        placeholder="Search by name or email"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={keyword}
+                                        onChangeText={handleSearchInput}
+                                    />
+                                    {searching &&
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#FF4000"
+                                            style={styles.searchLoader}
+                                        />
+                                    }
+                                </View>
                             </View>}
 
                             {!searching && !selectedUser && searchResults.length > 0 && (
@@ -988,6 +1003,12 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
         paddingBottom: 5,
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: '50%',
+        right: 10,
+        transform: [{ translateY: '-50%' }]
     },
     label: {
         fontFamily: 'Bebas',

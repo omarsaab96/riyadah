@@ -273,7 +273,7 @@ export default function AddChildren() {
                                 }}>
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Athlete name"
+                                        placeholder="Athlete name or email"
                                         placeholderTextColor="#A8A8A8"
                                         value={keyword}
                                         onChangeText={handleSearchInput}
