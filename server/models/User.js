@@ -63,6 +63,7 @@ const userSchema = new mongoose.Schema({
     default: true
   },
   phone: String,
+  role:String,
   skills: {
     attack: Number,
     skill: Number,

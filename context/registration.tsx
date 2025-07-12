@@ -53,6 +53,7 @@ interface RegistrationData {
   password: string | null;
   personalAccount: Boolean;
   phone: string | null;
+  role: string | null;
   skills: any;
   sport: string | null;
   stats: any;
@@ -129,6 +130,7 @@ export const RegistrationProvider = ({ children }: Props) => {
     password: null,
     personalAccount: true,
     phone: null,
+    role: null,
     skills: {
       attack: 0,
       skill: 0,
@@ -187,7 +189,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       height: null,
       highlights: null,
       image: null,
-      isStaff:[],
+      isStaff: [],
       name: null,
       organization: {
         name: null,
@@ -198,8 +200,9 @@ export const RegistrationProvider = ({ children }: Props) => {
       },
       parentEmail: null,
       password: null,
-      personalAccount:true,
+      personalAccount: true,
       phone: null,
+      role: null,
       skills: {
         attack: 0,
         skill: 0,
@@ -210,7 +213,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       sport: null,
       stats: null,
       type: null,
-      verified:null,
+      verified: null,
       weight: null
     });
 

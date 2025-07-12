@@ -19,7 +19,7 @@ router.post(
     }
 
     try {
-      const { email, name, club } = req.body;
+      const { email, name, club, role } = req.body;
 
       // Check if user exists
       let user = await User.findOne({ email });
@@ -42,6 +42,7 @@ router.post(
         }
 
         user.isStaff.push(club);
+        user.role = role;
 
         await user.save();
         req.body.userRef = user._id;
@@ -91,6 +92,7 @@ router.post(
           password: null,
           personalAccount: false,
           phone: null,
+          role: role,
           skills: {
             attack: null,
             skill: null,
