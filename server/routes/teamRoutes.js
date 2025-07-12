@@ -128,12 +128,25 @@ router.get('/:id', async (req, res) => {
 // @desc    Get teams by club id
 // @route   GET /api/teams/club/:id
 // @access  Public
-router.get('/club/:clubId',authenticateToken, async (req, res) => {
+router.get('/club/:clubId', authenticateToken, async (req, res) => {
   try {
     const teams = await Team.find({ club: req.params.clubId })
       // .populate('club', 'name image')
       .populate('coaches', '_id name email image')
-      // .populate('members', 'name image');
+    // .populate('members', 'name image');
+
+    res.status(200).json({ success: true, count: teams.length, data: teams });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @desc    Get teams by coach id
+// @route   GET /api/teams/byCoach/:id
+// @access  Public
+router.get('/byCoach/:coachId', async (req, res) => {
+  try {
+    const teams = await Team.find({ coaches: req.params.coachId });
 
     res.status(200).json({ success: true, count: teams.length, data: teams });
   } catch (err) {
@@ -165,7 +178,7 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    const { name, sport, ageGroup, gender, image,coaches  } = req.body;
+    const { name, sport, ageGroup, gender, image, coaches } = req.body;
 
     // Check if team already exists for this club
     const existingTeam = await Team.findOne({ name, club: req.user.id });
@@ -183,7 +196,7 @@ router.post('/', authenticateToken, async (req, res) => {
       gender,
       club: req.user.userId,
       image,
-      coaches 
+      coaches
     };
 
     const team = await Team.create(teamData);
@@ -268,51 +281,5 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.status(400).json({ success: false, message: err.message });
   }
 });
-
-// @desc    Assign coach to team
-// @route   PUT /api/teams/:id/coach
-// @access  Private (Club admin only)
-// router.put('/:id/coach', authenticateToken, async (req, res) => {
-//   try {
-//     const { coachId } = req.body;
-
-//     const team = await Team.findById(req.params.id);
-//     if (!team) {
-//       return res.status(404).json({ success: false, message: 'Team not found' });
-//     }
-
-//     // Verify ownership
-//     if (team.club.toString() !== req.user.id) {
-//       return res.status(403).json({
-//         success: false,
-//         message: 'Not authorized to modify this team'
-//       });
-//     }
-
-//     // Check if coach exists and is actually a coach
-//     const coach = await User.findById(coachId);
-//     if (!coach || coach.type !== 'Coach') {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Invalid coach ID provided'
-//       });
-//     }
-
-//     // Update team with new coach
-//     team.coaches.push(coachId);
-//     await team.save();
-
-//     // Add team to coach's teams array
-//     await User.findByIdAndUpdate(
-//       coachId,
-//       { $addToSet: { teams: team._id } },
-//       { new: true }
-//     );
-
-//     res.status(200).json({ success: true, data: team });
-//   } catch (err) {
-//     res.status(400).json({ success: false, message: err.message });
-//   }
-// });
 
 module.exports = router;

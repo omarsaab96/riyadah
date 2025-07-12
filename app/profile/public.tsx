@@ -29,6 +29,7 @@ export default function PublicProfile() {
     const [teams, setTeams] = useState(null);
     const [schedule, setSchedule] = useState(null);
     const [staff, setStaff] = useState([]);
+    const [userCoachOf, setUserCoachOf] = useState([]);
     const [inventory, setInventory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [teamsLoading, setTeamsLoading] = useState(true);
@@ -70,6 +71,17 @@ export default function PublicProfile() {
                 if (response.ok) {
                     const userData = await response.json();
                     setUser(userData);
+
+                    if (userData.role == "Coach") {
+                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${id}`);
+
+                        if (coachteams.ok) {
+                            const coachdata = await coachteams.json();
+                            setUserCoachOf(coachdata);
+                        } else {
+                            console.log('Could not get teams of coach');
+                        }
+                    }
                 } else {
                     console.error('API error');
                 }
@@ -546,13 +558,13 @@ export default function PublicProfile() {
                             </View>}
 
                             {/* TEAM */}
-                            {user.type == "Athlete" && user.role=="Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            {user.type == "Athlete" && user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
-                                    Coach in
+                                    Coach of
                                 </Text>
-                                {user.memberOf.length > 0 ? (
+                                {userCoachOf.length > 0 ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
+                                        <Text style={styles.paragraph}>{userCoachOf.toString()}</Text>
                                     </View>
                                 ) : (
                                     <Text style={styles.paragraph}>0 teams</Text>
@@ -567,7 +579,10 @@ export default function PublicProfile() {
                                     </Text>
                                     {user.club ? (
                                         <View>
-                                            <Text style={styles.paragraph}>{user.club}</Text>
+                                            {user.isStaff.length == 0 && <Text style={styles.paragraph}>{user.club}</Text>}
+                                            {user.isStaff.length > 0 && user.isStaff.map((staff, index) => (
+                                                <Text key={index} style={styles.paragraph}>{staff.name}</Text>
+                                            ))}
                                         </View>
                                     ) : (
                                         <Text style={styles.paragraph}>-</Text>
