@@ -212,7 +212,7 @@ export default function Profile() {
                 });
                 const response = await res.json();
 
-                console.log(response)
+                // console.log(response)
 
                 if (response.success) {
                     setSchedule(response.data)
@@ -239,7 +239,7 @@ export default function Profile() {
                 });
                 const data = await response.json();
 
-                console.log("data= ", JSON.stringify(data.data, null, 2));
+                // console.log("data= ", JSON.stringify(data.data, null, 2));
 
                 if (response.ok) {
                     setStaff(data);
@@ -268,7 +268,7 @@ export default function Profile() {
                     }
                 });
                 const data = await response.json();
-                console.log(data)
+                // console.log(data)
                 if (response.ok) {
                     setInventory(data.data);
                 } else {
@@ -285,7 +285,6 @@ export default function Profile() {
 
     const handleEdit = async () => {
         router.push('/profile/editProfile');
-        console.log('Edit clicked');
     };
 
     const handleShareProfile = async () => {

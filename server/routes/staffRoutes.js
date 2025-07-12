@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Staff = require('../models/Staff');
 const User = require('../models/User');
+const Team = require('../models/Team');
 const { body, validationResult } = require('express-validator');
 
 // Create staff
@@ -114,6 +115,18 @@ router.post(
 
       }
 
+      if (role === 'Coach' && Array.isArray(req.body.teams)) {
+        for (const teamId of req.body.teams) {
+          await Team.findByIdAndUpdate(
+            teamId,
+            {
+              $addToSet: { coaches: userId } // Avoid duplicates
+            },
+            { new: true }
+          );
+        }
+      }
+
       // Create and save staff
       const staff = new Staff(req.body);
       await staff.save();
@@ -126,7 +139,6 @@ router.post(
     }
   }
 );
-
 
 // Get all staff
 router.get('/', async (req, res) => {
