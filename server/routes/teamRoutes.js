@@ -313,8 +313,13 @@ router.put('/:teamId/members', authenticateToken, async (req, res) => {
     const newUniqueMembers = memberIds.filter(id => !existingIds.includes(id));
 
     team.members.push(...newUniqueMembers);
-
     await team.save();
+
+    // Update users: add teamId to their memberOf array
+    await User.updateMany(
+      { _id: { $in: newUniqueMembers }, memberOf: { $ne: teamId } },
+      { $push: { memberOf: teamId } }
+    );
 
     const populatedTeam = await Team.findById(teamId)
       .populate('club', 'name image sport')

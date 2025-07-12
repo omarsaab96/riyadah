@@ -1,5 +1,7 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -25,6 +27,7 @@ export default function TeamDetails() {
     const [error, setError] = useState('');
     const [team, setTeam] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [addingMember, setAddingMember] = useState<string[]>([]);
     const [keyword, setKeyword] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [searching, setSearching] = useState(false);
@@ -142,17 +145,49 @@ export default function TeamDetails() {
         }
     };
 
-    const handleAddMember = (athlete: any) => {
-        const alreadyMember = team.members.some((m: any) => m._id === athlete._id);
-        if (alreadyMember) return;
+    const handleAddMember = async (athlete: any) => {
+        setAddingMember(prev => [...prev, athlete._id]); // Add to array
+        try {
+            const alreadyMember = team.members.some((m: any) => m._id === athlete._id);
+            if (alreadyMember) {
+                console.log('duplicate')
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                return;
+            };
 
-        // Add athlete to team members
-        setTeam((prev: any) => ({
-            ...prev,
-            members: [...prev.members, athlete._id]
-        }));
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setError('Authentication token missing');
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                return;
+            }
 
-    }
+            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/members`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    memberIds: [athlete._id], // sending as an array
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setTeam(data.data);
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+            } else {
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                console.error(data.message);
+                setError(data.message || 'Failed to add member.');
+            }
+        } catch (err) {
+            console.error('Error adding member:', err);
+            setError('Something went wrong while adding the member.');
+        }
+    };
 
     return (
         <KeyboardAvoidingView
@@ -182,17 +217,17 @@ export default function TeamDetails() {
                         }
                     </View>
 
+                    <Text style={styles.ghostText}>{team?.name.substring(0, 6)}</Text>
+
                     {!loading &&
                         <View style={styles.profileImage}>
-                            {team.image != null && <Image
-                                source={{ uri: team.image }}
+                            {team?.image != null && <Image
+                                source={{ uri: team?.image }}
                                 style={styles.profileImageAvatar}
                                 resizeMode="contain"
                             />}
                         </View>
                     }
-
-                    <Text style={styles.ghostText}>{team?.name.substring(0, 6)}</Text>
                 </View>
 
                 <ScrollView >
@@ -293,7 +328,7 @@ export default function TeamDetails() {
                                     <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
                                         {team.coaches.map((coach) => (
                                             <TouchableOpacity
-                                                style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30%', padding: 10, borderRadius: 8 }}
+                                                style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30.64%', padding: 10, borderRadius: 8 }}
                                                 onPress={() => router.push({
                                                     pathname: '/profile/public',
                                                     params: { id: coach._id },
@@ -319,104 +354,166 @@ export default function TeamDetails() {
                             )}
 
                             {/* members */}
-                            {team.members && team.members.length > 0 ? (
-                                <View style={{ marginVertical: 20 }}>
-                                    <Text style={styles.title}>Member{team.members.length > 1 && 's'}</Text>
-                                    <View style={{ flexWrap: 'wrap', flexDirection: 'row', marginTop: 10 }}>
-                                        {team.members.map((member) => (
-                                            <TouchableOpacity
-                                                style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30%', padding: 10, borderRadius: 8 }}
-                                                onPress={() => router.push({
-                                                    pathname: '/profile/public',
-                                                    params: { id: member._id },
-                                                })}>
-                                                <View key={member._id} style={{ alignItems: 'center' }}>
-                                                    {member.image && (
-                                                        <Image
-                                                            source={{ uri: member.image }}
-                                                            style={{ width: '100%', aspectRatio: 1, borderRadius: 25, marginBottom: 5 }}
-                                                        />
-                                                    )}
-                                                    <Text style={styles.paragraph}>{member?.name?.trim()}</Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
+                            <View style={{ marginVertical: 20 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                                    <Text style={styles.title}>Members</Text>
+                                    <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddMembers}>
+                                        <Entypo name="plus" size={20} color="#FF4000" />
+                                        <Text style={styles.addChildrenButtonText}>Add Members</Text>
+                                    </TouchableOpacity>
                                 </View>
 
-                            ) : (
-                                <View style={{ marginVertical: 20 }}>
-                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Text style={styles.title}>Members</Text>
-                                        <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddMembers}>
-                                            <Entypo name="plus" size={20} color="#FF4000" />
-                                            <Text style={styles.addChildrenButtonText}>Add Members</Text>
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {openSearch && <View style={{
-                                        marginVertical: 16
-                                    }}>
-                                        <TextInput
-                                            style={[styles.input, { marginBottom: 0 }]}
-                                            placeholder="Athlete name or email (min. 3 characters)"
-                                            placeholderTextColor="#A8A8A8"
-                                            value={keyword}
-                                            onChangeText={handleSearchInput}
+                                {openSearch && <View style={{
+                                    marginBottom: 16
+                                }}>
+                                    <TextInput
+                                        style={[styles.input, { marginBottom: 0 }]}
+                                        placeholder="Search athletes name or email (min. 3 characters)"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={keyword}
+                                        onChangeText={handleSearchInput}
+                                    />
+                                    {searching &&
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#FF4000"
+                                            style={styles.searchLoader}
                                         />
-                                        {searching &&
-                                            <ActivityIndicator
-                                                size="small"
-                                                color="#FF4000"
-                                                style={styles.searchLoader}
-                                            />
-                                        }
-                                    </View>}
+                                    }
+                                </View>}
 
-                                    {keyword.trim().length >= 3 && !searching && (
-                                        <View style={{ marginTop: 10 }}>
-                                            {searchResults.length > 0 && !searching &&
-                                                searchResults.map((athlete, i) => (
-                                                    <View key={i} >
+                                {keyword.trim().length >= 3 && !searching && (
+                                    <View style={{ marginBottom: 5 }}>
+                                        {searchResults.length > 0 && !searching &&
+                                            searchResults.map((athlete) => {
+                                                const alreadyMember = team.members.some((m) => m._id === athlete._id);
+
+                                                return (
+                                                    <View key={athlete._id}>
                                                         <TouchableOpacity
                                                             style={styles.searchResultItem}
-                                                            onPress={() => { handleAddMember(athlete) }}>
+                                                            onPress={() => !alreadyMember && handleAddMember(athlete)}
+                                                            disabled={alreadyMember}
+                                                        >
                                                             <View style={styles.searchResultItemImageContainer}>
-                                                                <Image
-                                                                    style={styles.searchResultItemImage}
-                                                                    source={{ uri: athlete.image }}
-                                                                />
+                                                                {athlete.image ? (
+                                                                    <Image
+                                                                        style={styles.searchResultItemImage}
+                                                                        source={{ uri: athlete.image }}
+                                                                    />
+                                                                ) : (
+
+                                                                    athlete.gender == "Male" ? (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatar.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    ) : (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatarF.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    )
+
+
+                                                                )}
                                                             </View>
                                                             <View style={styles.searchResultItemInfo}>
                                                                 <View>
                                                                     <Text style={styles.searchResultItemName}>{athlete.name}</Text>
-                                                                    <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                                                    <Text style={[styles.searchResultItemDescription, athlete.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{athlete.sport || 'no sport'}</Text>
                                                                 </View>
-                                                                <Text style={styles.searchResultItemLink}>+ Add As Member</Text>
+                                                                {addingMember.includes(athlete._id) ? (
+                                                                    <ActivityIndicator
+                                                                        size="small"
+                                                                        color="#FF4000"
+                                                                    />
+                                                                ) : (
+                                                                    <Text
+                                                                        style={
+                                                                            [
+                                                                                styles.searchResultItemLink,
+                                                                                alreadyMember && { color: 'gray', fontStyle: 'italic' }
+                                                                            ]
+                                                                        }
+                                                                    >
+                                                                        {alreadyMember ? 'Already a member' : '+ Add As Member'}
+                                                                    </Text>
+                                                                )}
+
                                                             </View>
                                                         </TouchableOpacity>
                                                     </View>
-                                                ))
-                                            }
+                                                );
+                                            })
+                                        }
 
-                                            {searchResults.length == 0 && !searching &&
-                                                <View>
-                                                    <Text style={styles.searchNoResultText}>
-                                                        No results.{'\n'}Can't find your child's account?
-                                                    </Text>
-                                                </View>
-                                            }
+                                        {searchResults.length == 0 && !searching &&
+                                            <View>
+                                                <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
+                                                    No results
+                                                </Text>
+                                            </View>
+                                        }
+                                    </View>
+                                )}
+
+                                {team.members && team.members.length > 0 ? (
+                                    <View style={{ marginBottom: 20 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                            {team.members.map((member) => (
+                                                <TouchableOpacity
+                                                    style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30.64%', padding: 10, borderRadius: 8 }}
+                                                    onPress={() => router.push({
+                                                        pathname: '/profile/public',
+                                                        params: { id: member._id },
+                                                    })}>
+                                                    <View key={member._id} style={{ alignItems: 'center' }}>
+                                                        <View style={{ marginBottom: 10 }}>
+                                                            {member.image ? (
+                                                                <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
+                                                                    <Image
+                                                                        source={{ uri: member.image }}
+                                                                        style={{ width: '100%', aspectRatio: 1 }}
+                                                                    />
+                                                                </View>
+                                                            ) : (
+                                                                <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
+                                                                    {member.gender == "Male" ? (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatar.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    ) : (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatarF.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    )}
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                        <Text style={styles.paragraph}>{member?.name?.trim()}</Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            ))}
                                         </View>
-                                    )}
+                                    </View>
 
+                                ) : (
                                     <Text style={styles.paragraph}>No members</Text>
-                                </View>
-                            )}
+                                )}
+                            </View>
+
                         </View>}
 
 
                     </View>
-                </ScrollView>
+                </ScrollView >
 
 
             </View >
@@ -705,12 +802,13 @@ const styles = StyleSheet.create({
     searchResultItem: {
         marginBottom: 10,
         flexDirection: 'row',
-        columnGap: 20
+        alignItems: 'center',
+        columnGap: 10,
     },
     searchResultItemImageContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 10,
+        width: 40,
+        aspectRatio: 1,
+        borderRadius: 20,
         backgroundColor: '#f4f4f4'
     },
     searchResultItemImage: {
@@ -721,7 +819,10 @@ const styles = StyleSheet.create({
     searchResultItemInfo: {
         fontFamily: 'Manrope',
         fontSize: 16,
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1
     },
     searchResultItemLink: {
         color: '#FF4000'
