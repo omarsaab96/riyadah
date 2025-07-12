@@ -112,8 +112,8 @@ router.get('/:id', async (req, res) => {
   try {
     const team = await Team.findById(req.params.id)
       .populate('club', 'name image sport')
-      .populate('coaches', 'name image')
-      .populate('members', 'name image');
+      .populate('coaches', '_id name image')
+      .populate('members', '_id name image');
 
     if (!team) {
       return res.status(404).json({ success: false, message: 'Team not found' });
@@ -279,6 +279,52 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.status(200).json({ success: true, data: {} });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
+  }
+});
+
+// @desc    Add members to a team
+// @route   PUT /api/teams/:teamId/members
+// @access  Private (Club admin or coach)
+router.put('/:teamId/members', authenticateToken, async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { memberIds } = req.body;
+
+    if (!Array.isArray(memberIds) || memberIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'memberIds must be a non-empty array' });
+    }
+
+    const team = await Team.findById(teamId);
+
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+
+    // Check if the requester is the club or one of the coaches
+    const isOwner = team.club.toString() === req.user.userId;
+    const isCoach = team.coaches.map(c => c.toString()).includes(req.user.userId);
+
+    if (!isOwner && !isCoach) {
+      return res.status(403).json({ success: false, message: 'Not authorized to add members to this team' });
+    }
+
+    // Add unique new members
+    const existingIds = team.members.map(id => id.toString());
+    const newUniqueMembers = memberIds.filter(id => !existingIds.includes(id));
+
+    team.members.push(...newUniqueMembers);
+
+    await team.save();
+
+    const populatedTeam = await Team.findById(teamId)
+      .populate('club', 'name image sport')
+      .populate('coaches', '_id name image')
+      .populate('members', '_id name image');
+
+    res.status(200).json({ success: true, data: populatedTeam });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 

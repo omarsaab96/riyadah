@@ -128,7 +128,7 @@ export default function TeamDetails() {
 
             if (res.ok) {
                 const data = await res.json();
-                console.log(data)
+                // console.log(data)
                 setSearchResults(data); // expected array
             } else {
                 console.error("Search failed");
@@ -152,7 +152,6 @@ export default function TeamDetails() {
             members: [...prev.members, athlete._id]
         }));
 
-        
     }
 
     return (
@@ -338,7 +337,7 @@ export default function TeamDetails() {
                                                             style={{ width: '100%', aspectRatio: 1, borderRadius: 25, marginBottom: 5 }}
                                                         />
                                                     )}
-                                                    <Text style={styles.paragraph}>{member.name.trim()}</Text>
+                                                    <Text style={styles.paragraph}>{member?.name?.trim()}</Text>
                                                 </View>
                                             </TouchableOpacity>
                                         ))}
