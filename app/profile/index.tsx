@@ -33,6 +33,7 @@ export default function Profile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [teams, setTeams] = useState(null);
+    const [userCoachOf, setUserCoachOf] = useState([]);
     const [schedule, setSchedule] = useState(null);
     const [staff, setStaff] = useState([]);
     const [inventory, setInventory] = useState([]);
@@ -91,6 +92,17 @@ export default function Profile() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
+
+                    if (user.role == "Coach") {
+                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${user._id}`);
+
+                        if (coachteams.ok) {
+                            const coachdata = await coachteams.json();
+                            setUserCoachOf(coachdata.data);
+                        } else {
+                            console.log('Could not get teams of coach');
+                        }
+                    }
                 } else {
                     console.error('API error')
                 }
@@ -735,17 +747,31 @@ export default function Profile() {
                                 )}
                             </View>
 
-                            {/* TEAM */}
-                            {user.type == "Athlete" && user.memberOf?.length>0 && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            {/* PLAYS IN TEAMS */}
+                            {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
-                                    {user.memberOf.length==1? 'Team' :'Teams'}
+                                    Plays in
                                 </Text>
-                                {user.club ? (
+                                {user.memberOf.length > 0 ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{user.memberOf}</Text>
+                                        <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
                                     </View>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={styles.paragraph}>0 teams</Text>
+                                )}
+                            </View>}
+
+                            {/* COACH OF TEAMS */}
+                            {user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text style={styles.title}>
+                                    Coach of
+                                </Text>
+                                {userCoachOf.length > 0 ? (
+                                    <View>
+                                        <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length == 1 ? 'team' : 'teams'}</Text>
+                                    </View>
+                                ) : (
+                                    <Text style={styles.paragraph}>0 teams</Text>
                                 )}
                             </View>}
 
@@ -756,7 +782,10 @@ export default function Profile() {
                                 </Text>
                                 {user.club ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{user.club}</Text>
+                                        {user.isStaff.length == 0 && <Text style={styles.paragraph}>{user.club}</Text>}
+                                        {user.isStaff.length > 0 && user.isStaff.map((staff, index) => (
+                                            <Text key={index} style={styles.paragraph}>{staff.name}</Text>
+                                        ))}
                                     </View>
                                 ) : (
                                     <Text style={styles.paragraph}>-</Text>

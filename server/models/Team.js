@@ -9,7 +9,7 @@ const TeamSchema = new Schema({
   image: String,
   club: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Club'
+    ref: 'User'
   },
   coaches: [{
     type: mongoose.Schema.Types.ObjectId,

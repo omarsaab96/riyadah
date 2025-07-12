@@ -73,11 +73,11 @@ export default function PublicProfile() {
                     setUser(userData);
 
                     if (userData.role == "Coach") {
-                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${id}`);
+                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${userData._id}`);
 
                         if (coachteams.ok) {
                             const coachdata = await coachteams.json();
-                            setUserCoachOf(coachdata);
+                            setUserCoachOf(coachdata.data);
                         } else {
                             console.log('Could not get teams of coach');
                         }
@@ -543,7 +543,7 @@ export default function PublicProfile() {
                                 )}
                             </View>
 
-                            {/* TEAM */}
+                            {/* PLAYS IN TEAMS */}
                             {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
                                     Plays in
@@ -557,14 +557,14 @@ export default function PublicProfile() {
                                 )}
                             </View>}
 
-                            {/* TEAM */}
-                            {user.type == "Athlete" && user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            {/* COACH OF TEAMS */}
+                            {user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
                                     Coach of
                                 </Text>
                                 {userCoachOf.length > 0 ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{userCoachOf.toString()}</Text>
+                                        <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length==1? 'team':'teams'}</Text>
                                     </View>
                                 ) : (
                                     <Text style={styles.paragraph}>0 teams</Text>
