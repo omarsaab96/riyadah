@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema({
   image: String,
   isStaff: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Club',
+    ref: 'User',
     default: []
   }],
   memberOf:[{

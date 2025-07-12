@@ -735,10 +735,24 @@ export default function Profile() {
                                 )}
                             </View>
 
-                            {/* TEAM/CLUB */}
+                            {/* TEAM */}
+                            {user.type == "Athlete" && user.memberOf?.length>0 && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text style={styles.title}>
+                                    {user.memberOf.length==1? 'Team' :'Teams'}
+                                </Text>
+                                {user.club ? (
+                                    <View>
+                                        <Text style={styles.paragraph}>{user.memberOf}</Text>
+                                    </View>
+                                ) : (
+                                    <Text style={styles.paragraph}>-</Text>
+                                )}
+                            </View>}
+
+                            {/* CLUB */}
                             {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
-                                    Team/club
+                                    Club
                                 </Text>
                                 {user.club ? (
                                     <View>

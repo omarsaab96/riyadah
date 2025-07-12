@@ -219,7 +219,7 @@ export default function PublicProfile() {
                     {!loading && <Text style={styles.pageDesc}>
                         {user?.type}
                     </Text>}
-                    
+
                     {!loading && user.role && <Text style={styles.pageDesc}>
                         {user.role}
                     </Text>}
@@ -531,11 +531,39 @@ export default function PublicProfile() {
                                 )}
                             </View>
 
-                            {/* TEAM/CLUB */}
+                            {/* TEAM */}
+                            {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text style={styles.title}>
+                                    Plays in
+                                </Text>
+                                {user.memberOf.length > 0 ? (
+                                    <View>
+                                        <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
+                                    </View>
+                                ) : (
+                                    <Text style={styles.paragraph}>0 teams</Text>
+                                )}
+                            </View>}
+
+                            {/* TEAM */}
+                            {user.type == "Athlete" && user.role=="Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Text style={styles.title}>
+                                    Coach in
+                                </Text>
+                                {user.memberOf.length > 0 ? (
+                                    <View>
+                                        <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
+                                    </View>
+                                ) : (
+                                    <Text style={styles.paragraph}>0 teams</Text>
+                                )}
+                            </View>}
+
+                            {/* CLUB */}
                             {user.type == "Athlete" && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Text style={styles.title}>
-                                        Team/club
+                                        Club
                                     </Text>
                                     {user.club ? (
                                         <View>
