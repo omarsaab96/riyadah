@@ -41,7 +41,23 @@ const scheduleSchema = new Schema({
 
     // For Training Sessions
     trainingFocus: String,
-    requiredEquipment: [String],
+    requiredEquipment: [
+        {
+            itemId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Equipment', // or whatever your equipment model is
+                required: true
+            },
+            name: {
+                type: String,
+                required: true
+            },
+            quantity: {
+                type: Number,
+                required: true
+            }
+        }
+    ],
 
     // Additional Info
     // attachments: [{

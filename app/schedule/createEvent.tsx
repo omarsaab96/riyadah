@@ -3,17 +3,19 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 const CreateEventScreen = () => {
+    const [userId, setUserId] = useState(null);
+    const [user, setUser] = useState(null);
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
-
     const [teams, setTeams] = useState([]);
     const [formData, setFormData] = useState({
         title: '',
@@ -34,7 +36,7 @@ const CreateEventScreen = () => {
             logo: ''
         },
         isHomeGame: false,
-        requiredEquipment: []
+        requiredEquipment: [] as Array<{ itemId: string, name: string, quantity: number }>
     });
 
     const [pickerState, setPickerState] = useState({
@@ -44,7 +46,12 @@ const CreateEventScreen = () => {
         tempDate: new Date(),
     });
 
-    const [equipmentInput, setEquipmentInput] = useState('');
+    const [searching, setSearching] = useState(false);
+    const [equipmentSearch, setEquipmentSearch] = useState('');
+    const [inventoryItems, setInventoryItems] = useState([]);
+    const [searchResults, setSearchResults] = useState([]);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [quantity, setQuantity] = useState(1);
 
     const [date, setDate] = useState(new Date());
     const [mode, setMode] = useState('date'); // 'date' or 'time'
@@ -89,6 +96,35 @@ const CreateEventScreen = () => {
     };
 
     useEffect(() => {
+        const fetchUser = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            console.log(token)
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                console.log("DECODED: ", decodedToken)
+                setUserId(decodedToken.userId);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
+                }
+                setLoading(false)
+            } else {
+                console.log("no token",)
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
         const fetchTeams = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
@@ -99,7 +135,6 @@ const CreateEventScreen = () => {
                     }
                 });
                 const data = await response.json();
-                console.log(data)
                 if (data.success) {
                     setTeams(data.data);
                     if (data.data.length > 0) {
@@ -112,8 +147,93 @@ const CreateEventScreen = () => {
             }
         };
 
+        const fetchInventory = async () => {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                console.log("data= ", data)
+                if (data.success) {
+                    setInventoryItems(data.data);
+                } else {
+                    console.log("Error fetching inventory")
+                }
+            } catch (error) {
+                console.error('Error fetching inventory:', error);
+            }
+        };
+
         fetchTeams();
-    }, []);
+        fetchInventory();
+    }, [user]);
+
+    useEffect(() => {
+        console.log(inventoryItems)
+    }, [inventoryItems]);
+
+    const handleSearch = (text: string) => {
+        setEquipmentSearch(text);
+
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+
+        if (text.trim().length >= 3 && inventoryItems.length > 0) {
+            setSearching(true)
+            const results = inventoryItems.filter(item =>
+                item.itemName.toLowerCase().includes(text.trim().toLowerCase())
+            );
+            setSearchResults(results);
+        } else {
+            setSearchResults([]);
+        }
+        setSearching(false)
+    };
+
+    const addEquipment = () => {
+        if (selectedItem && quantity > 0) {
+            setFormData(prev => ({
+                ...prev,
+                requiredEquipment: [
+                    ...prev.requiredEquipment,
+                    {
+                        itemId: selectedItem._id,
+                        name: selectedItem.itemName,
+                        quantity: quantity
+                    }
+                ]
+            }));
+            setSelectedItem(null);
+            setEquipmentSearch('');
+            setSearchResults([]);
+            setQuantity(1);
+        }
+    };
+
+    const removeEquipment = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            requiredEquipment: prev.requiredEquipment.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateQuantity = (index, newQuantity) => {
+        if (newQuantity >= 0) {
+            setFormData(prev => {
+                const newEquipment = [...prev.requiredEquipment];
+                newEquipment[index].quantity = newQuantity;
+                return { ...prev, requiredEquipment: newEquipment };
+            });
+        }
+    };
 
     const handleChange = (name: string, value: string) => {
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -135,23 +255,6 @@ const CreateEventScreen = () => {
                 ...prev[parent],
                 [name]: value
             }
-        }));
-    };
-
-    const addEquipment = () => {
-        if (equipmentInput.trim()) {
-            setFormData(prev => ({
-                ...prev,
-                requiredEquipment: [...prev.requiredEquipment, equipmentInput.trim()]
-            }));
-            setEquipmentInput('');
-        }
-    };
-
-    const removeEquipment = (index) => {
-        setFormData(prev => ({
-            ...prev,
-            requiredEquipment: prev.requiredEquipment.filter((_, i) => i !== index)
         }));
     };
 
@@ -193,10 +296,7 @@ const CreateEventScreen = () => {
                 body: JSON.stringify(requestBody)
             });
 
-            console.log(formData)
-
             const data = await response.json();
-            console.log(data)
 
             if (response.ok) {
                 Alert.alert('Success', 'Event created successfully!', [
@@ -206,7 +306,7 @@ const CreateEventScreen = () => {
                 throw new Error(data.message || 'Failed to create event');
             }
         } catch (error) {
-            console.error('Error creating event:', error);
+            // console.error('Error creating event:', error);
             Alert.alert('Error', error.message);
         } finally {
             setSaving(false);
@@ -253,6 +353,7 @@ const CreateEventScreen = () => {
                         <View style={styles.errorIcon}></View>
                         <Text style={styles.errorText}>{error}</Text>
                     </View>}
+
                     <View style={styles.contentContainer}>
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Event Title *</Text>
@@ -399,45 +500,125 @@ const CreateEventScreen = () => {
                         )}
 
                         {formData.eventType === 'Training' && (
-                            <>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Training Focus</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="E.g. Passing drills, defensive positioning"
-                                        value={formData.trainingFocus}
-                                        onChangeText={(text) => handleChange('trainingFocus', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Required Equipment</Text>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Training Focus</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="E.g. Passing drills, defensive positioning"
+                                    value={formData.trainingFocus}
+                                    onChangeText={(text) => handleChange('trainingFocus', text)}
+                                />
+                            </View>
+                        )}
+
+                        {formData.eventType === 'Training' && inventoryItems.length > 0 && (
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Required Equipment</Text>
+                                <View>
                                     <View style={styles.equipmentContainer}>
                                         <TextInput
                                             style={[styles.input, { marginBottom: 0, flex: 1 }]}
-                                            placeholder="Add equipment (e.g. cones, balls)"
-                                            value={equipmentInput}
-                                            onChangeText={setEquipmentInput}
-                                            onSubmitEditing={addEquipment}
+                                            placeholder="Search equipment (min. 3 characters)"
+                                            value={equipmentSearch}
+                                            onChangeText={handleSearch}
                                         />
-                                        <TouchableOpacity
-                                            style={styles.addButton}
-                                            onPress={addEquipment}
-                                        >
-                                            <Text style={styles.addButtonText}>Add</Text>
-                                        </TouchableOpacity>
                                     </View>
-                                    <View style={styles.equipmentList}>
-                                        {formData.requiredEquipment.map((item, index) => (
-                                            <View key={index} style={styles.equipmentItem}>
-                                                <Text style={styles.equipmentText}>{item}</Text>
-                                                <TouchableOpacity onPress={() => removeEquipment(index)}>
-                                                    <FontAwesome5 name="times" size={14} color="#FF4000" />
-                                                </TouchableOpacity>
-                                            </View>
+                                    {searching &&
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#FF4000"
+                                            style={styles.searchLoader}
+                                        />
+                                    }
+                                </View>
+
+                                {!searching && searchResults.length > 0 && (
+                                    <View style={styles.searchResults}>
+                                        {searchResults.map(item => (
+                                            <TouchableOpacity
+                                                key={item._id}
+                                                style={styles.searchResultItem}
+                                                onPress={() => {
+                                                    setSelectedItem(item);
+                                                    setEquipmentSearch('');
+                                                    setSearchResults([]);
+                                                }}
+                                            >
+                                                <Text style={styles.searchResultText}>{item.itemName}</Text>
+                                                <Text style={styles.searchResultSubText}>Available: {item.quantity}</Text>
+                                            </TouchableOpacity>
                                         ))}
                                     </View>
+                                )}
+                                {!searching && equipmentSearch.trim().length >= 3 && searchResults.length == 0 && (
+                                    <Text style={{ fontFamily: 'Manrope' }}>
+                                        No results. Try another keyword
+                                    </Text>
+                                )}
+
+                                {selectedItem && (
+                                    <View style={styles.quantitySelector}>
+                                        <Text style={styles.selectedItemText}>{selectedItem.itemName}</Text>
+                                        <View style={styles.quantityControls}>
+                                            <TouchableOpacity
+                                                style={styles.quantityButton}
+                                                onPress={() => setQuantity(Math.max(1, quantity - 1))}
+                                            >
+                                                <Text style={styles.quantityButtonText}>-</Text>
+                                            </TouchableOpacity>
+                                            <TextInput
+                                                style={styles.quantityInput}
+                                                value={quantity.toString()}
+                                                onChangeText={(text) => setQuantity(parseInt(text) || 0)}
+                                                keyboardType="numeric"
+                                            />
+                                            <TouchableOpacity
+                                                style={styles.quantityButton}
+                                                onPress={() => setQuantity(quantity + 1)}
+                                            >
+                                                <Text style={styles.quantityButtonText}>+</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={styles.addSelectedButton}
+                                                onPress={addEquipment}
+                                            >
+                                                <Text style={styles.addSelectedButtonText}>Add</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
+
+                                <View style={styles.equipmentList}>
+                                    {formData.requiredEquipment.map((item, index) => (
+                                        <View key={index} style={styles.equipmentItem}>
+                                            <Text style={styles.equipmentText}>{item.name}</Text>
+                                            <View style={styles.equipmentQuantity}>
+                                                <TouchableOpacity
+                                                    style={styles.quantityButtonSmall}
+                                                    onPress={() => updateQuantity(index, item.quantity - 1)}
+                                                >
+                                                    <Text style={styles.quantityButtonText}>-</Text>
+                                                </TouchableOpacity>
+                                                <TextInput
+                                                    style={styles.quantityInputSmall}
+                                                    value={item.quantity.toString()}
+                                                    onChangeText={(text) => updateQuantity(index, parseInt(text) || 0)}
+                                                    keyboardType="numeric"
+                                                />
+                                                <TouchableOpacity
+                                                    style={styles.quantityButtonSmall}
+                                                    onPress={() => updateQuantity(index, item.quantity + 1)}
+                                                >
+                                                    <Text style={styles.quantityButtonText}>+</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                            <TouchableOpacity onPress={() => removeEquipment(index)}>
+                                                <FontAwesome5 name="times" size={14} color="#FF4000" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
                                 </View>
-                            </>
+                            </View>
                         )}
 
                         {formData.eventType === 'Match' && (
@@ -480,7 +661,9 @@ const CreateEventScreen = () => {
                                 <Text style={styles.profileButtonText}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>Save</Text>
+                                <Text style={styles.profileButtonText}>
+                                    {saving ? 'Saving' : 'save'}
+                                </Text>
                                 {saving && (
                                     <ActivityIndicator
                                         size="small"
@@ -509,6 +692,12 @@ const styles = StyleSheet.create({
     formGroup: {
         marginBottom: 20,
     },
+    searchLoader: {
+        position: 'absolute',
+        top: '50%',
+        right: 10,
+        transform: [{ translateY: '-50%' }]
+    },
     equipmentContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -526,21 +715,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     equipmentList: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-    },
-    equipmentItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
-        padding: 8,
-        borderRadius: 20,
-        marginRight: 8,
-        marginBottom: 8,
-    },
-    equipmentText: {
-        marginRight: 8,
-        fontFamily: 'Manrope',
+        // flexDirection: 'row',
+        // flexWrap: 'wrap',
     },
     submitButton: {
         backgroundColor: '#FF4000',
@@ -683,6 +859,117 @@ const styles = StyleSheet.create({
     inputText: {
         fontSize: 16,
         color: '#333',
+    },
+    searchResults: {
+        marginTop: 5,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+        maxHeight: 200,
+    },
+    searchResultItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    searchResultText: {
+        fontSize: 16,
+        fontFamily: 'Manrope',
+    },
+    searchResultSubText: {
+        fontSize: 12,
+        color: '#666',
+        fontFamily: 'Manrope',
+    },
+    quantitySelector: {
+        marginTop: 10,
+        padding: 10,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+    },
+    selectedItemText: {
+        fontSize: 16,
+        fontFamily: 'Manrope',
+        marginBottom: 8,
+    },
+    quantityControls: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    quantityButton: {
+        backgroundColor: '#FF4000',
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 4,
+    },
+    quantityButtonSmall: {
+        backgroundColor: '#FF4000',
+        width: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 4,
+    },
+    quantityButtonText: {
+        color: '#fff',
+        fontSize: 24,
+        lineHeight:24
+    },
+    quantityInput: {
+        width: 50,
+        height: 30,
+        textAlign: 'center',
+        marginHorizontal: 5,
+        backgroundColor: '#fff',
+        borderRadius: 4,
+        fontSize: 16,
+        padding:0,
+        lineHeight:1
+    },
+    quantityInputSmall: {
+        width: 40,
+        // height: 24,
+        textAlign: 'center',
+        marginHorizontal: 5,
+        backgroundColor: '#fff',
+        borderRadius: 4,
+        fontSize: 14,
+        lineHeight:1
+    },
+    addSelectedButton: {
+        backgroundColor: '#FF4000',
+        paddingHorizontal: 15,
+        paddingVertical: 6,
+        borderRadius: 4,
+        marginLeft: 10,
+    },
+    addSelectedButtonText: {
+        color: '#fff',
+        fontFamily: 'Manrope',
+        fontWeight: 'bold',
+    },
+    equipmentItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        padding: 8,
+        borderRadius: 20,
+        marginRight: 8,
+        marginBottom: 8,
+        flex:1
+    },
+    equipmentText: {
+        marginRight: 8,
+        fontFamily: 'Manrope',
+        fontSize:14,
+        flex: 1,
+    },
+    equipmentQuantity: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 8,
     },
 });
 

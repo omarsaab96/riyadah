@@ -267,7 +267,7 @@ const CreateStaffScreen = () => {
                 { text: 'OK', onPress: () => router.back() }
             ]);
         } catch (error) {
-            console.error('Error creating staff:', error);
+            // console.error('Error creating staff:', error);
             setError(error.message);
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
         } finally {
