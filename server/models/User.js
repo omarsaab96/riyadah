@@ -38,14 +38,14 @@ const userSchema = new mongoose.Schema({
   height: Number,
   highlights: String,
   image: String,
-  // isStaff: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'Club',
-  //   default: null
-  // },
   isStaff: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Club',
+    default: []
+  }],
+  memberOf:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
     default: []
   }],
   name: String,

@@ -219,6 +219,10 @@ export default function PublicProfile() {
                     {!loading && <Text style={styles.pageDesc}>
                         {user?.type}
                     </Text>}
+                    
+                    {!loading && user.role && <Text style={styles.pageDesc}>
+                        {user.role}
+                    </Text>}
 
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>

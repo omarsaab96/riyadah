@@ -41,6 +41,7 @@ interface RegistrationData {
   highlights: any;
   image: string | null;
   isStaff: [String] | [];
+  memberOf:[String] | [];
   name: string | null;
   organization: {
     name: string | null;
@@ -118,6 +119,7 @@ export const RegistrationProvider = ({ children }: Props) => {
     highlights: null,
     image: null,
     isStaff: [],
+    memberOf: [],
     name: null,
     organization: {
       name: null,
@@ -190,6 +192,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       highlights: null,
       image: null,
       isStaff: [],
+      memberOf: [],
       name: null,
       organization: {
         name: null,

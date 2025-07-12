@@ -105,52 +105,7 @@ export default function Profile() {
 
     useEffect(() => {
         getAdminInfo();
-        getTeams();
     }, [user]);
-
-    useEffect(() => {
-        if (!teams || teams.length === 0) return;
-
-        const getCoachesIds = async () => {
-            const updatedTeams = await Promise.all(
-                teams.map(async (team) => {
-                    if (!Array.isArray(team.coaches)) return team;
-
-                    const updatedCoaches = await Promise.all(
-                        team.coaches.map(async (coach) => {
-                            try {
-                                const response = await fetch(`https://riyadah.onrender.com/api/users/getUserId`, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({ email: coach.email }),
-                                });
-
-                                const data = await response.json();
-
-                                if (response.ok && data.success && data.id) {
-                                    return { ...coach, profileId: data.id };
-                                } else {
-                                    return coach;
-                                }
-                            } catch (err) {
-                                console.error('Error fetching coach ID for', coach.email, err);
-                                return coach;
-                            }
-                        })
-                    );
-
-                    return { ...team, coaches: updatedCoaches };
-                })
-            );
-
-            // Set state with enriched data (assumes you have setTeams state function)
-            setTeams(updatedTeams);
-        };
-
-        getCoachesIds();
-    }, [teams]);
 
     const getAdminInfo = async () => {
         if (user.type == "Club") {
@@ -403,6 +358,9 @@ export default function Profile() {
                         {user?.type}
                     </Text>}
 
+                    {!loading && user.role && <Text style={styles.pageDesc}>
+                        {user.role}
+                    </Text>}
 
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -826,10 +784,10 @@ export default function Profile() {
                                 <Text style={styles.title}>
                                     Total number of teams
                                 </Text>
-                                {teams ? (
+                                {user.teams ? (
                                     <View>
                                         <Text style={styles.paragraph}>
-                                            {teams?.length}
+                                            {user.teams.length}
                                         </Text>
                                     </View>
                                 ) : (
@@ -1073,7 +1031,7 @@ export default function Profile() {
                                                         <TouchableOpacity
                                                             onPress={() => router.push({
                                                                 pathname: '/profile/public',
-                                                                params: { id: coach.profileId },
+                                                                params: { id: coach._id },
                                                             })}
                                                             key={index} style={styles.coachInfo}>
                                                             {coach.image ? (
@@ -1088,7 +1046,7 @@ export default function Profile() {
                                                                     resizeMode="contain"
                                                                 />
                                                             )}
-                                                            <Text style={styles.coachName}>{coach.name} hi</Text>
+                                                            <Text style={styles.coachName}>{coach.name}</Text>
                                                         </TouchableOpacity>
                                                     ))}
                                                 </View>
