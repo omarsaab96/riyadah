@@ -1,3 +1,4 @@
+import Entypo from '@expo/vector-icons/Entypo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -9,6 +10,8 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
+    TouchableOpacity,
     View
 } from 'react-native';
 
@@ -22,6 +25,12 @@ export default function TeamDetails() {
     const [error, setError] = useState('');
     const [team, setTeam] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [keyword, setKeyword] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const [openSearch, setOpenSearch] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
+
 
     const { id } = useLocalSearchParams();
 
@@ -43,11 +52,108 @@ export default function TeamDetails() {
             }
         };
 
+        const fetchUser = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            console.log(token)
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                console.log("DECODED: ", decodedToken)
+                setUserId(decodedToken.userId);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+
+                    if (user.role == "Coach") {
+                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${user._id}`);
+
+                        if (coachteams.ok) {
+                            const coachdata = await coachteams.json();
+                            setUserCoachOf(coachdata.data);
+                        } else {
+                            console.log('Could not get teams of coach');
+                        }
+                    }
+                } else {
+                    console.error('API error')
+                }
+                setLoading(false)
+            } else {
+                console.log("no token",)
+            }
+        };
+
+        fetchUser();
         fetchTeam();
     }, [id]);
 
     useEffect(() => {
     }, [team]);
+
+    const handleAddMembers = () => {
+        setOpenSearch(true)
+    }
+
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        // Clear previous timeout
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        // Set new debounce timeout
+        const timeout = setTimeout(() => {
+            if (text.trim().length >= 3) {
+                searchAthletes(text);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500); // delay: 500ms
+
+        setDebounceTimeout(timeout);
+    };
+
+    const searchAthletes = async (name: string) => {
+        try {
+            setSearching(true);
+            const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&type=Athlete`);
+
+            if (res.ok) {
+                const data = await res.json();
+                console.log(data)
+                setSearchResults(data); // expected array
+            } else {
+                console.error("Search failed");
+                setSearchResults([]);
+            }
+        } catch (err) {
+            console.error("Error during search:", err);
+            setSearchResults([]);
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleAddMember = (athlete: any) => {
+        const alreadyMember = team.members.some((m: any) => m._id === athlete._id);
+        if (alreadyMember) return;
+
+        // Add athlete to team members
+        setTeam((prev: any) => ({
+            ...prev,
+            members: [...prev.members, athlete._id]
+        }));
+
+        
+    }
 
     return (
         <KeyboardAvoidingView
@@ -99,6 +205,8 @@ export default function TeamDetails() {
                         </View>}
 
                         {team && <View style={styles.profileSection}>
+
+                            {/* age group */}
                             {team.ageGroup && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
                                     Age Group
@@ -112,6 +220,7 @@ export default function TeamDetails() {
                                 )}
                             </View>}
 
+                            {/* gender */}
                             {team.gender && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
                                     Gender
@@ -125,63 +234,185 @@ export default function TeamDetails() {
                                 )}
                             </View>}
 
+                            {/* club */}
                             {team.club && (
-                                <View style={{ marginBottom: 20 }}>
-                                    <Text style={styles.title}>Club</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-                                        {team.club.image ? (
-                                            <Image
-                                                source={{ uri: team.club.image }}
-                                                style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                                            />
-                                        ) : (
-                                            <Image
-                                                source={require('../../assets/clublogo.png')}
-                                                style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                                            />
-                                        )}
-                                        <View>
-                                            <Text style={styles.paragraph}>
-                                                {team.club.name}
-                                            </Text>
+                                <View style={{ marginVertical: 20 }}>
+                                    <Text style={[styles.title, { marginBottom: 10 }]}>Club</Text>
+                                    <View>
+                                        <TouchableOpacity
+                                            style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                            onPress={() => router.push({
+                                                pathname: '/profile/public',
+                                                params: { id: team.club._id },
+                                            })}>
+                                            {team.club.image ? (
+                                                <Image
+                                                    source={{ uri: team.club.image }}
+                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                />
+                                            ) : (
+                                                <Image
+                                                    source={require('../../assets/clublogo.png')}
+                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                />
+                                            )}
 
-                                            <Text style={styles.paragraph}>
-                                                {team.club.sport.toString()}
-                                            </Text>
+                                            <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
 
-                                        </View>
+                                                <Text
+                                                    style={[styles.paragraph, { fontWeight: 'bold' }]}
+                                                    numberOfLines={1}
+                                                    ellipsizeMode="tail"
+                                                >
+                                                    {team.club.name}
+                                                </Text>
 
+                                                <Text
+                                                    style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
+                                                    numberOfLines={1}
+                                                    ellipsizeMode="tail"
+                                                >
+                                                    {team.club.sport.toString().replaceAll(',', ', ')}
+                                                </Text>
+
+                                                {/* <View style={styles.locationLink}>
+                                                    <Text style={styles.locationLinkText}>View club profile</Text>
+                                                </View> */}
+
+
+                                            </View>
+                                        </TouchableOpacity>
                                     </View>
+
                                 </View>
                             )}
 
-                            {team.coaches && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Coaches
-                                </Text>
-                                {team.coaches ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{team.coaches[0].name}</Text>
+                            {/* coaches */}
+                            {team.coaches && team.coaches.length > 0 ? (
+                                <View style={{ marginVertical: 20 }}>
+                                    <Text style={[styles.title, { marginBottom: 10 }]}>Coach{team.coaches.length > 1 && 'es'}</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                        {team.coaches.map((coach) => (
+                                            <TouchableOpacity
+                                                style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30%', padding: 10, borderRadius: 8 }}
+                                                onPress={() => router.push({
+                                                    pathname: '/profile/public',
+                                                    params: { id: coach._id },
+                                                })}>
+                                                <View key={coach._id} style={{ alignItems: 'center' }}>
+                                                    {coach.image && (
+                                                        <Image
+                                                            source={{ uri: coach.image }}
+                                                            style={{ width: '100%', aspectRatio: 1, borderRadius: 25, marginBottom: 5 }}
+                                                        />
+                                                    )}
+                                                    <Text style={styles.paragraph}>{coach.name.trim()}</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        ))}
                                     </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>}
+                                </View>
+                            ) : (
+                                <View style={{ marginVertical: 20 }}>
+                                    <Text style={styles.title}>Coaches</Text>
+                                    <Text style={styles.paragraph}>No coaches</Text>
+                                </View>
+                            )}
 
-
-
-                            {team.members && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    members
-                                </Text>
-                                {team.members ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{team.members}</Text>
+                            {/* members */}
+                            {team.members && team.members.length > 0 ? (
+                                <View style={{ marginVertical: 20 }}>
+                                    <Text style={styles.title}>Member{team.members.length > 1 && 's'}</Text>
+                                    <View style={{ flexWrap: 'wrap', flexDirection: 'row', marginTop: 10 }}>
+                                        {team.members.map((member) => (
+                                            <TouchableOpacity
+                                                style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30%', padding: 10, borderRadius: 8 }}
+                                                onPress={() => router.push({
+                                                    pathname: '/profile/public',
+                                                    params: { id: member._id },
+                                                })}>
+                                                <View key={member._id} style={{ alignItems: 'center' }}>
+                                                    {member.image && (
+                                                        <Image
+                                                            source={{ uri: member.image }}
+                                                            style={{ width: '100%', aspectRatio: 1, borderRadius: 25, marginBottom: 5 }}
+                                                        />
+                                                    )}
+                                                    <Text style={styles.paragraph}>{member.name.trim()}</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        ))}
                                     </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>}
+                                </View>
+
+                            ) : (
+                                <View style={{ marginVertical: 20 }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Text style={styles.title}>Members</Text>
+                                        <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddMembers}>
+                                            <Entypo name="plus" size={20} color="#FF4000" />
+                                            <Text style={styles.addChildrenButtonText}>Add Members</Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    {openSearch && <View style={{
+                                        marginVertical: 16
+                                    }}>
+                                        <TextInput
+                                            style={[styles.input, { marginBottom: 0 }]}
+                                            placeholder="Athlete name or email (min. 3 characters)"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={keyword}
+                                            onChangeText={handleSearchInput}
+                                        />
+                                        {searching &&
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#FF4000"
+                                                style={styles.searchLoader}
+                                            />
+                                        }
+                                    </View>}
+
+                                    {keyword.trim().length >= 3 && !searching && (
+                                        <View style={{ marginTop: 10 }}>
+                                            {searchResults.length > 0 && !searching &&
+                                                searchResults.map((athlete, i) => (
+                                                    <View key={i} >
+                                                        <TouchableOpacity
+                                                            style={styles.searchResultItem}
+                                                            onPress={() => { handleAddMember(athlete) }}>
+                                                            <View style={styles.searchResultItemImageContainer}>
+                                                                <Image
+                                                                    style={styles.searchResultItemImage}
+                                                                    source={{ uri: athlete.image }}
+                                                                />
+                                                            </View>
+                                                            <View style={styles.searchResultItemInfo}>
+                                                                <View>
+                                                                    <Text style={styles.searchResultItemName}>{athlete.name}</Text>
+                                                                    <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                                                </View>
+                                                                <Text style={styles.searchResultItemLink}>+ Add As Member</Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                ))
+                                            }
+
+                                            {searchResults.length == 0 && !searching &&
+                                                <View>
+                                                    <Text style={styles.searchNoResultText}>
+                                                        No results.{'\n'}Can't find your child's account?
+                                                    </Text>
+                                                </View>
+                                            }
+                                        </View>
+                                    )}
+
+                                    <Text style={styles.paragraph}>No members</Text>
+                                </View>
+                            )}
                         </View>}
 
 
@@ -430,5 +661,79 @@ const styles = StyleSheet.create({
     paragraph: {
         fontFamily: "Manrope",
         fontSize: 16
+    },
+    profileLink: {
+        color: '#FF4000',
+        fontSize: 14,
+        fontFamily: 'Manrope'
+    },
+    locationLink: {
+        backgroundColor: '#cccccc',
+        borderRadius: 8,
+        paddingVertical: 5
+    },
+    locationLinkText: {
+        color: '#000',
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        textAlign: 'center'
+    },
+    addChildrenButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    addChildrenButtonText: {
+        color: 'black',
+        fontFamily: 'Bebas',
+        fontSize: 18
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: '50%',
+        right: 10,
+        transform: [{ translateY: '-50%' }]
+    },
+    searchLoadingText: {
+        fontFamily: 'Manrope',
+        color: '#888',
+        marginVertical: 5
+    },
+    searchNoResultText: {
+        fontFamily: 'Manrope',
+        color: '#555',
+        marginVertical: 5
+    },
+    searchResultItem: {
+        marginBottom: 10,
+        flexDirection: 'row',
+        columnGap: 20
+    },
+    searchResultItemImageContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+        backgroundColor: '#f4f4f4'
+    },
+    searchResultItemImage: {
+        objectFit: 'contain',
+        height: '100%',
+        width: '100%'
+    },
+    searchResultItemInfo: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        justifyContent: 'space-between'
+    },
+    searchResultItemLink: {
+        color: '#FF4000'
+    },
+    searchResultItemDescription: {
+        // fontSize:16,
+        marginBottom: 5
+    },
+    searchResultItemName: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        // marginBottom:5
     },
 });

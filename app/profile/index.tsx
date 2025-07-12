@@ -1915,7 +1915,7 @@ const styles = StyleSheet.create({
     },
     adminLink: {
         color: '#FF4000',
-        fontSize: 12,
+        fontSize: 14,
         fontFamily: 'Manrope'
     },
     adminButton: {
