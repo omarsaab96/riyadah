@@ -1068,7 +1068,7 @@ export default function Profile() {
                                             </View>
                                         </View>
 
-                                        {team.coaches && (
+                                        {team.coaches.length > 0 && (
                                             <View style={styles.coachSection}>
                                                 <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
 
@@ -1102,24 +1102,33 @@ export default function Profile() {
                                         <View style={styles.teamActions}>
                                             <TouchableOpacity
                                                 style={styles.teamActionButton}
-                                                onPress={() => router.push(`/teams/${team._id}/members`)}
+                                                onPress={() => router.push({
+                                                    pathname: '/teams/members',
+                                                    params: { id: team._id },
+                                                })}
                                             >
                                                 <FontAwesome5 name="users" size={16} color="#FF4000" />
                                                 <Text style={styles.teamActionText}>Members</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity
                                                 style={styles.teamActionButton}
-                                                onPress={() => router.push(`/teams/${team._id}/schedule`)}
+                                                onPress={() => router.push({
+                                                    pathname: '/teams/schedule',
+                                                    params: { id: team._id },
+                                                })}
                                             >
                                                 <FontAwesome5 name="calendar-alt" size={16} color="#FF4000" />
                                                 <Text style={styles.teamActionText}>Schedule</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity
                                                 style={styles.teamActionButton}
-                                                onPress={() => router.push(`/teams/${team._id}/stats`)}
+                                                onPress={() => router.push({
+                                                    pathname: '/teams/edit',
+                                                    params: { id: team._id },
+                                                })}
                                             >
-                                                <FontAwesome5 name="chart-bar" size={16} color="#FF4000" />
-                                                <Text style={styles.teamActionText}>Stats</Text>
+                                                <FontAwesome5 name="edit" size={16} color="#FF4000" />
+                                                <Text style={styles.teamActionText}>Edit</Text>
                                             </TouchableOpacity>
                                         </View>
                                     </TouchableOpacity>

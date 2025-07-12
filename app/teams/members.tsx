@@ -1,12 +1,10 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
-import { useRouter } from 'expo-router';
+import Entypo from '@expo/vector-icons/Entypo';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Dimensions,
     Image,
     KeyboardAvoidingView,
@@ -19,21 +17,31 @@ import {
     View
 } from 'react-native';
 
-
 const { width } = Dimensions.get('window');
 
 export default function Members() {
     const router = useRouter();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [team, setTeam] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [addingMember, setAddingMember] = useState<string[]>([]);
+    const [keyword, setKeyword] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const [openSearch, setOpenSearch] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
+
+
+    const { id } = useLocalSearchParams();
 
     useEffect(() => {
         const fetchUser = async () => {
-            setLoading(true)
             const token = await SecureStore.getItemAsync('userToken');
+
+            console.log(token)
             if (token) {
                 const decodedToken = jwtDecode(token);
                 console.log("DECODED: ", decodedToken)
@@ -46,55 +54,139 @@ export default function Members() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
-                    setLoading(false)
+
+                    if (user.role == "Coach") {
+                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${user._id}`);
+
+                        if (coachteams.ok) {
+                            const coachdata = await coachteams.json();
+                            setUserCoachOf(coachdata.data);
+                        } else {
+                            console.log('Could not get teams of coach');
+                        }
+                    }
                 } else {
                     console.error('API error')
                 }
+                // setLoading(false)
+            } else {
+                console.log("no token",)
             }
         };
 
         fetchUser();
-    }, []);
+    }, [id]);
 
     useEffect(() => {
-        
-    }, [user])
+        const fetchTeam = async () => {
+            try {
+                const response = await fetch(`https://riyadah.onrender.com/api/teams/${id}`);
 
-    const handleSubmit = async () => {
-        setSaving(true);
-        try {
-            const token = await SecureStore.getItemAsync('userToken');
-
-            const response = await fetch('https://riyadah.onrender.com/api/teams', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            const data = await response.json();
-
-            // console.log("res = ", response)
-
-            if (response.ok) {
-                Alert.alert('Success', 'Team created successfully!', [
-                    { text: 'OK', onPress: () => router.back() }
-                ]);
-            } else {
-                throw new Error(data.message || 'Failed to create team');
+                if (response.ok) {
+                    const userData = await response.json();
+                    setTeam(userData.data);
+                } else {
+                    console.error('API error');
+                }
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
+            } finally {
+                setLoading(false);
             }
-        } catch (error) {
-            console.error('Error creating team:', error);
-            Alert.alert('Error', error.message);
+        };
+
+        fetchTeam();
+    }, [user]);
+
+    const handleAddMembers = () => {
+        setOpenSearch(true)
+    }
+
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        // Clear previous timeout
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        // Set new debounce timeout
+        const timeout = setTimeout(() => {
+            if (text.trim().length >= 3) {
+                searchAthletes(text);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500); // delay: 500ms
+
+        setDebounceTimeout(timeout);
+    };
+
+    const searchAthletes = async (name: string) => {
+        try {
+            setSearching(true);
+            const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&type=Athlete`);
+
+            if (res.ok) {
+                const data = await res.json();
+                // console.log(data)
+                setSearchResults(data); // expected array
+            } else {
+                console.error("Search failed");
+                setSearchResults([]);
+            }
+        } catch (err) {
+            console.error("Error during search:", err);
+            setSearchResults([]);
         } finally {
-            setSaving(false);
+            setSearching(false);
         }
     };
 
-    const handleCancel = async () => {
-        router.back()
+    const handleAddMember = async (athlete: any) => {
+        setAddingMember(prev => [...prev, athlete._id]); // Add to array
+        try {
+            const alreadyMember = team.members.some((m: any) => m._id === athlete._id);
+            if (alreadyMember) {
+                console.log('duplicate')
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                return;
+            };
+
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setError('Authentication token missing');
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                return;
+            }
+
+            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/members`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    memberIds: [athlete._id], // sending as an array
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setTeam(data.data);
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+            } else {
+                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                console.error(data.message);
+                setError(data.message || 'Failed to add member.');
+            }
+        } catch (err) {
+            console.error('Error adding member:', err);
+            setError('Something went wrong while adding the member.');
+        }
     };
 
     return (
@@ -111,8 +203,8 @@ export default function Members() {
                     />
 
                     <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Manage members</Text>
-                        {!loading && <Text style={styles.pageDesc}>Create a new team in your club</Text>}
+                        <Text style={styles.pageTitle}>Team Members</Text>
+                        {!loading && <Text style={styles.pageDesc}>Manage members of {team?.name}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -125,195 +217,191 @@ export default function Members() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Teams</Text>
+                    <Text style={styles.ghostText}>members</Text>
+
+                    {!loading &&
+                        <View style={styles.profileImage}>
+                            {team?.image != null && <Image
+                                source={{ uri: team?.image }}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                        </View>
+                    }
                 </View>
 
-                {/* <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()}>
-                        <MaterialIcons name="arrow-back" size={24} color="#FF4000" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Create New Team</Text>
-                    <View style={{ width: 24 }} />
-                </View> */}
-
                 <ScrollView >
-
                     <View style={styles.contentContainer}>
-
                         {error != '' && <View style={styles.error}>
                             <View style={styles.errorIcon}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        {/* Team Logo */}
-                        <View style={styles.imageUploadContainer}>
-                            <Text style={styles.label}>Team Logo</Text>
+                        {team && <View style={styles.profileSection}>
+                            <View style={{ marginBottom: 20 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                                    <Text style={styles.title}>Members</Text>
+                                    <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddMembers}>
+                                        <Entypo name="plus" size={20} color="#FF4000" />
+                                        <Text style={styles.addChildrenButtonText}>Add Members</Text>
+                                    </TouchableOpacity>
+                                </View>
 
-                            <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
-                                {localImg || teamData?.image ? (
-                                    <View>
-                                        <Image
-                                            source={{ uri: localImg || teamData.image }}
-                                            style={[styles.avatarPreview, , { backgroundColor: '#FF4000' }]}
+                                {openSearch && <View style={{
+                                    marginBottom: 16
+                                }}>
+                                    <TextInput
+                                        style={[styles.input, { marginBottom: 0 }]}
+                                        placeholder="Search athletes name or email (min. 3 characters)"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={keyword}
+                                        onChangeText={handleSearchInput}
+                                    />
+                                    {searching &&
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#FF4000"
+                                            style={styles.searchLoader}
                                         />
-                                        <Text style={styles.uploadHint}>Tap to change image</Text>
-                                    </View>
-                                ) : (
-                                    <>
-                                        <View style={styles.emptyImage}>
-                                            <MaterialIcons name="add" size={40} color="#FF4000" />
-                                        </View>
-                                        <Text style={styles.uploadHint}>Tap to upload new image</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        </View>
+                                    }
+                                </View>}
 
-                        {/* Team Name */}
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Team Name</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter team name"
-                                value={teamData.name}
-                                onChangeText={(text) => setTeamData({ ...teamData, name: text })}
-                            />
-                        </View>
+                                {keyword.trim().length >= 3 && !searching && (
+                                    <View style={{ marginBottom: 5 }}>
+                                        {searchResults.length > 0 && !searching &&
+                                            searchResults.map((athlete) => {
+                                                const alreadyMember = team.members.some((m) => m._id === athlete._id);
 
-                        {/* Coaches */}
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Coaches</Text>
-                            {/* <TextInput
-                                style={styles.input}
-                                placeholder="Enter coach name"
-                                value={coaches}
-                                onChangeText={(text) => setCoaches(text)}
-                            /> */}
-                            {staffLoading ? (
-                                <View style={{ alignItems: 'flex-start' }}>
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#FF4000"
-                                    />
-                                </View>
-                            ) : (
-                                <View style={styles.pickerContainer}>
-                                    <View style={{ gap: 10 }}>
-                                        {staff
-                                            .filter(member => member.role === "Coach")
-                                            .map((coach, index) => {
-                                                const isSelected = coaches.includes(coach._id);
                                                 return (
-                                                    <TouchableOpacity
-                                                        key={index}
-                                                        onPress={() => {
-                                                            let updated;
-                                                            if (isSelected) {
-                                                                updated = coaches.filter(id => id !== coach._id);
-                                                            } else {
-                                                                updated = [...coaches, coach._id];
-                                                            }
-                                                            setCoaches(updated);
-                                                            setTeamData({ ...teamData, coaches: updated });
-                                                        }}
-                                                        style={{
-                                                            flexDirection: 'row',
-                                                            alignItems: 'center',
-                                                        }}
-                                                    >
-                                                        <MaterialIcons
-                                                            name={isSelected ? "check-box" : "check-box-outline-blank"}
-                                                            size={20}
-                                                            color={isSelected ? "#FF4000" : "#333"}
-                                                        />
-                                                        <Text style={{ marginLeft: 5, color: "#000" }}>
-                                                            {coach.userRef.name}
-                                                        </Text>
-                                                    </TouchableOpacity>
+                                                    <View key={athlete._id}>
+                                                        <TouchableOpacity
+                                                            style={styles.searchResultItem}
+                                                            onPress={() => !alreadyMember && handleAddMember(athlete)}
+                                                            disabled={alreadyMember}
+                                                        >
+                                                            <View style={styles.searchResultItemImageContainer}>
+                                                                {athlete.image ? (
+                                                                    <Image
+                                                                        style={styles.searchResultItemImage}
+                                                                        source={{ uri: athlete.image }}
+                                                                    />
+                                                                ) : (
+
+                                                                    athlete.gender == "Male" ? (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatar.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    ) : (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatarF.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    )
+
+
+                                                                )}
+                                                            </View>
+                                                            <View style={styles.searchResultItemInfo}>
+                                                                <View>
+                                                                    <Text style={styles.searchResultItemName}>{athlete.name}</Text>
+                                                                    <Text style={[styles.searchResultItemDescription, athlete.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{athlete.sport || 'no sport'}</Text>
+                                                                </View>
+                                                                {addingMember.includes(athlete._id) ? (
+                                                                    <ActivityIndicator
+                                                                        size="small"
+                                                                        color="#FF4000"
+                                                                    />
+                                                                ) : (
+                                                                    <Text
+                                                                        style={
+                                                                            [
+                                                                                styles.searchResultItemLink,
+                                                                                alreadyMember && { color: 'gray', fontStyle: 'italic' }
+                                                                            ]
+                                                                        }
+                                                                    >
+                                                                        {alreadyMember ? 'Already a member' : '+ Add As Member'}
+                                                                    </Text>
+                                                                )}
+
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    </View>
                                                 );
-                                            })}
+                                            })
+                                        }
+
+                                        {searchResults.length == 0 && !searching &&
+                                            <View>
+                                                <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
+                                                    No results
+                                                </Text>
+                                            </View>
+                                        }
+                                    </View>
+                                )}
+
+                                {team.members && team.members.length > 0 ? (
+                                    <View style={{ marginBottom: 20 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                            {team.members.map((member) => (
+                                                <TouchableOpacity
+                                                    key={member._id}
+                                                    style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30.64%', padding: 10, borderRadius: 8 }}
+                                                    onPress={() => router.push({
+                                                        pathname: '/profile/public',
+                                                        params: { id: member._id },
+                                                    })}>
+                                                    <View style={{ alignItems: 'center' }}>
+                                                        <View style={{ marginBottom: 10 }}>
+                                                            {member.image ? (
+                                                                <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
+                                                                    <Image
+                                                                        source={{ uri: member.image }}
+                                                                        style={{ width: '100%', aspectRatio: 1 }}
+                                                                    />
+                                                                </View>
+                                                            ) : (
+                                                                <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
+                                                                    {member.gender == "Male" ? (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatar.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    ) : (
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={require('../../assets/avatarF.png')}
+                                                                            resizeMode="contain"
+                                                                        />
+                                                                    )}
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                        <Text style={styles.paragraph}>{member?.name?.trim()}</Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
                                     </View>
 
-                                </View>
-                            )
-                            }
-                        </View>
-
-                        {/* Sport Selection */}
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Sport</Text>
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={teamData.sport}
-                                    onValueChange={(itemValue) =>
-                                        setTeamData({ ...teamData, sport: itemValue })
-                                    }
-                                    style={styles.picker}
-                                >
-                                    {sports.map((sport, index) => (
-                                        <Picker.Item key={index} label={sport} value={sport} />
-                                    ))}
-                                </Picker>
-                            </View>
-                        </View>
-
-                        {/* Age Group */}
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Age Group</Text>
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={teamData.ageGroup}
-                                    onValueChange={(itemValue) =>
-                                        setTeamData({ ...teamData, ageGroup: itemValue })
-                                    }
-                                    style={styles.picker}
-                                >
-                                    {ageGroups.map((group, index) => (
-                                        <Picker.Item key={index} label={group} value={group} />
-                                    ))}
-                                </Picker>
-                            </View>
-                        </View>
-
-                        {/* Gender */}
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Gender</Text>
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={teamData.gender}
-                                    onValueChange={(itemValue) =>
-                                        setTeamData({ ...teamData, gender: itemValue })
-                                    }
-                                    style={styles.picker}
-                                >
-                                    {genders.map((gender, index) => (
-                                        <Picker.Item key={index} label={gender} value={gender} />
-                                    ))}
-                                </Picker>
-                            </View>
-                        </View>
-
-                        <View style={[styles.profileActions, styles.inlineActions]}>
-                            <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>Save</Text>
-                                {saving && (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#111111"
-                                        style={styles.saveLoaderContainer}
-                                    />
+                                ) : (
+                                    <Text style={styles.paragraph}>No members</Text>
                                 )}
-                            </TouchableOpacity>
-                        </View>
+                            </View>
+                        </View>}
                     </View>
-                </ScrollView>
+                </ScrollView >
+
+
             </View >
         </KeyboardAvoidingView >
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -521,5 +609,113 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#f4f4f4',
         marginBottom: 5
-    }
+    },
+    profileImage: {
+        position: 'absolute',
+        bottom: 0,
+        right: -5,
+        height: '70%',
+        maxWidth: 200,
+        overflow: 'hidden',
+    },
+    profileImageAvatar: {
+        height: '100%',
+        width: undefined,
+        aspectRatio: 1,
+        resizeMode: 'contain',
+    },
+    profileSection: {
+        marginBottom: 30
+    },
+    title: {
+        fontFamily: "Bebas",
+        fontSize: 20
+    },
+    subtitle: {
+        fontFamily: "Manrope",
+        fontSize: 16,
+        fontWeight: 'bold'
+    },
+    paragraph: {
+        fontFamily: "Manrope",
+        fontSize: 16
+    },
+    profileLink: {
+        color: '#FF4000',
+        fontSize: 14,
+        fontFamily: 'Manrope'
+    },
+    locationLink: {
+        backgroundColor: '#cccccc',
+        borderRadius: 8,
+        paddingVertical: 5
+    },
+    locationLinkText: {
+        color: '#000',
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        textAlign: 'center'
+    },
+    addChildrenButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    addChildrenButtonText: {
+        color: 'black',
+        fontFamily: 'Bebas',
+        fontSize: 18
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: '50%',
+        right: 10,
+        transform: [{ translateY: '-50%' }]
+    },
+    searchLoadingText: {
+        fontFamily: 'Manrope',
+        color: '#888',
+        marginVertical: 5
+    },
+    searchNoResultText: {
+        fontFamily: 'Manrope',
+        color: '#555',
+        marginVertical: 5
+    },
+    searchResultItem: {
+        marginBottom: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        columnGap: 10,
+    },
+    searchResultItemImageContainer: {
+        width: 40,
+        aspectRatio: 1,
+        borderRadius: 20,
+        backgroundColor: '#f4f4f4'
+    },
+    searchResultItemImage: {
+        objectFit: 'contain',
+        height: '100%',
+        width: '100%'
+    },
+    searchResultItemInfo: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1
+    },
+    searchResultItemLink: {
+        color: '#FF4000'
+    },
+    searchResultItemDescription: {
+        // fontSize:16,
+        marginBottom: 5
+    },
+    searchResultItemName: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        // marginBottom:5
+    },
 });

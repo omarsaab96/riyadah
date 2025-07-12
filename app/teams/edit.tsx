@@ -20,7 +20,7 @@ import {
 
 const { width } = Dimensions.get('window');
 
-export default function TeamDetails() {
+export default function EditTeam() {
     const router = useRouter();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
@@ -232,8 +232,8 @@ export default function TeamDetails() {
                     />
 
                     <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>{loading ? 'Team details' : team?.name}</Text>
-                        {!loading && <Text style={styles.pageDesc}>{team?.sport}</Text>}
+                        <Text style={styles.pageTitle}>edit team</Text>
+                        {!loading && <Text style={styles.pageDesc}>{team?.name}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
