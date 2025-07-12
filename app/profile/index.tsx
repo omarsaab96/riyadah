@@ -1041,7 +1041,10 @@ export default function Profile() {
                                     <TouchableOpacity
                                         key={index}
                                         style={styles.teamCard}
-                                        onPress={() => router.push(`/teams/${team._id}`)}
+                                        onPress={() => router.push({
+                                            pathname: '/teams/details',
+                                            params: { id: team._id },
+                                        })}
                                     >
                                         <View style={styles.teamHeader}>
                                             {team.image ? (
