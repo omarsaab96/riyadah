@@ -120,7 +120,7 @@ router.post(
           await Team.findByIdAndUpdate(
             teamId,
             {
-              $addToSet: { coaches: userId } // Avoid duplicates
+              $addToSet: { coaches: req.body.userRef } // Avoid duplicates
             },
             { new: true }
           );
