@@ -1088,7 +1088,7 @@ export default function Profile() {
                                                                     resizeMode="contain"
                                                                 />
                                                             )}
-                                                            <Text style={styles.coachName}>{coach.name}</Text>
+                                                            <Text style={styles.coachName}>{coach.name} hi</Text>
                                                         </TouchableOpacity>
                                                     ))}
                                                 </View>

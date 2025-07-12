@@ -7,12 +7,18 @@ const TeamSchema = new Schema({
   ageGroup: String,
   gender: String,
   image: String,
-  club: mongoose.Schema.ObjectId,
+  club: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Club'
+  },
   coaches: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Staff'
+    ref: 'User' 
   }],
-  members: [mongoose.Schema.ObjectId],
+  members: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User' 
+  }],
   createdAt: Date,
 });
 
