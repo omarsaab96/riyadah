@@ -226,8 +226,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 
     // Verify ownership or coach assignment
-    if (team.club.toString() !== req.user.id &&
-      (!team.coaches || team.coaches.toString() !== req.user.id)) {
+    if (team.club.toString() !== req.user.userId && (!team.coaches || team.coaches.toString() !== req.user.id)) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this team'

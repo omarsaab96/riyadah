@@ -30,14 +30,14 @@ export default function Coaches() {
     const [error, setError] = useState('');
     const [team, setTeam] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [addingMember, setAddingMember] = useState<string[]>([]);
+    const [addingCoach, setaddingCoach] = useState<string[]>([]);
     const [keyword, setKeyword] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [searching, setSearching] = useState(false);
     const [openSearch, setOpenSearch] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [debounceTimeout, setDebounceTimeout] = useState(null);
-    const [removingMember, setRemovingMember] = useState<string[]>([]);
+    const [removingCoach, setremovingCoach] = useState<string[]>([]);
     const [loadingRemove, setLoadingRemove] = useState<string[]>([]);
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
@@ -127,7 +127,7 @@ export default function Coaches() {
         // Set new debounce timeout
         const timeout = setTimeout(() => {
             if (text.trim().length >= 3) {
-                searchAthletes(text);
+                searchCoaches(text);
             } else {
                 setSearchResults([]);
             }
@@ -136,7 +136,7 @@ export default function Coaches() {
         setDebounceTimeout(timeout);
     };
 
-    const searchAthletes = async (name: string) => {
+    const searchCoaches = async (name: string) => {
         try {
             setSearching(true);
             const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&role=Coach`);
@@ -157,20 +157,20 @@ export default function Coaches() {
         }
     };
 
-    const handleAddMember = async (athlete: any) => {
-        setAddingMember(prev => [...prev, athlete._id]); // Add to array
+    const handleAddCoach = async (coach: any) => {
+        setaddingCoach(prev => [...prev, coach._id]); // Add to array
         try {
-            const alreadyMember = team.members.some((m: any) => m._id === athlete._id);
-            if (alreadyMember) {
+            const alreadyCoach = team.coaches.some((m: any) => m._id === coach._id);
+            if (alreadyCoach) {
                 console.log('duplicate')
-                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                setaddingCoach(prev => prev.filter(id => id !== coach._id));
                 return;
             };
 
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
                 setError('Authentication token missing');
-                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                setaddingCoach(prev => prev.filter(id => id !== coach._id));
                 return;
             }
 
@@ -181,7 +181,7 @@ export default function Coaches() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    coachIds : [athlete._id], // sending as an array
+                    coachIds : [coach._id], // sending as an array
                 }),
             });
 
@@ -189,20 +189,20 @@ export default function Coaches() {
 
             if (res.ok) {
                 setTeam(data.data);
-                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                setaddingCoach(prev => prev.filter(id => id !== coach._id));
             } else {
-                setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                setaddingCoach(prev => prev.filter(id => id !== coach._id));
                 console.error(data.message);
-                setError(data.message || 'Failed to add member.');
+                setError(data.message || 'Failed to add coach.');
             }
         } catch (err) {
-            console.error('Error adding member:', err);
-            setError('Something went wrong while adding the member.');
+            console.error('Error adding coach:', err);
+            setError('Something went wrong while adding the coach.');
         }
     };
 
-    const handleRemoveMember = async (memberid: string) => {
-        setLoadingRemove([...loadingRemove, memberid])
+    const handleRemoveCoach = async (coachid: string) => {
+        setLoadingRemove([...loadingRemove, coachid])
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
@@ -217,7 +217,7 @@ export default function Coaches() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    coachIds : [memberid],
+                    coachIds : [coachid],
                 }),
             });
 
@@ -226,31 +226,31 @@ export default function Coaches() {
             if (res.ok) {
                 setTeam(prev => ({
                     ...prev,
-                    coaches: prev.coaches.filter(coach => coach._id !== memberid),
+                    coaches: prev.coaches.filter(coach => coach._id !== coachid),
                 }));
             } else {
-                console.error(data.message || 'Failed to remove member');
+                console.error(data.message || 'Failed to remove coach');
             }
         } catch (err) {
-            setError('Error removing member')
-            console.log('Error removing member:', err);
+            setError('Error removing coach')
+            console.log('Error removing coach:', err);
         } finally {
-            setLoadingRemove(prev => prev.filter(_id => _id !== memberid));
-            setRemovingMember(prev => prev.filter(_id => _id !== memberid));
+            setLoadingRemove(prev => prev.filter(_id => _id !== coachid));
+            setremovingCoach(prev => prev.filter(_id => _id !== coachid));
         }
     }
 
     // Get or create animated value
-    const getAnimatedValue = (memberId: string) => {
-        if (!animatedValues.current[memberId]) {
-            animatedValues.current[memberId] = new Animated.Value(0);
+    const getAnimatedValue = (coachId: string) => {
+        if (!animatedValues.current[coachId]) {
+            animatedValues.current[coachId] = new Animated.Value(0);
         }
-        return animatedValues.current[memberId];
+        return animatedValues.current[coachId];
     };
 
     // Animate to 0 or 1
-    const animateRemoveBtn = (memberId: string, toValue: number) => {
-        const animVal = getAnimatedValue(memberId);
+    const animateRemoveBtn = (coachId: string, toValue: number) => {
+        const animVal = getAnimatedValue(coachId);
         Animated.timing(animVal, {
             toValue,
             duration: 300,
@@ -328,7 +328,7 @@ export default function Coaches() {
                                 {editMode && <View style={{ marginBottom: 10 }}>
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Add athletes by name or email (min. 3 characters)"
+                                        placeholder="Add coach by name or email (min. 3 characters)"
                                         placeholderTextColor="#A8A8A8"
                                         value={keyword}
                                         onChangeText={handleSearchInput}
@@ -344,25 +344,25 @@ export default function Coaches() {
                                     {keyword.trim().length >= 3 && !searching && (
                                         <View style={{ marginBottom: 15 }}>
                                             {searchResults.length > 0 && !searching &&
-                                                searchResults.map((athlete) => {
-                                                    const alreadyMember = team.members.some((m) => m._id === athlete._id);
+                                                searchResults.map((coach) => {
+                                                    const alreadyCoach = team.coaches.some((m) => m._id === coach._id);
 
                                                     return (
-                                                        <View key={athlete._id}>
+                                                        <View key={coach._id}>
                                                             <TouchableOpacity
                                                                 style={styles.searchResultItem}
-                                                                onPress={() => !alreadyMember && handleAddMember(athlete)}
-                                                                disabled={alreadyMember}
+                                                                onPress={() => !alreadyCoach && handleAddCoach(coach)}
+                                                                disabled={alreadyCoach}
                                                             >
                                                                 <View style={styles.searchResultItemImageContainer}>
-                                                                    {athlete.image ? (
+                                                                    {coach.image ? (
                                                                         <Image
                                                                             style={styles.searchResultItemImage}
-                                                                            source={{ uri: athlete.image }}
+                                                                            source={{ uri: coach.image }}
                                                                         />
                                                                     ) : (
 
-                                                                        athlete.gender == "Male" ? (
+                                                                        coach.gender == "Male" ? (
                                                                             <Image
                                                                                 style={styles.searchResultItemImage}
                                                                                 source={require('../../assets/avatar.png')}
@@ -381,10 +381,10 @@ export default function Coaches() {
                                                                 </View>
                                                                 <View style={styles.searchResultItemInfo}>
                                                                     <View>
-                                                                        <Text style={styles.searchResultItemName}>{athlete.name}</Text>
-                                                                        <Text style={[styles.searchResultItemDescription, athlete.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{athlete.sport || 'no sport'}</Text>
+                                                                        <Text style={styles.searchResultItemName}>{coach.name}</Text>
+                                                                        <Text style={[styles.searchResultItemDescription, coach.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{coach.sport || 'no sport'}</Text>
                                                                     </View>
-                                                                    {addingMember.includes(athlete._id) ? (
+                                                                    {addingCoach.includes(coach._id) ? (
                                                                         <ActivityIndicator
                                                                             size="small"
                                                                             color="#FF4000"
@@ -394,11 +394,11 @@ export default function Coaches() {
                                                                             style={
                                                                                 [
                                                                                     styles.searchResultItemLink,
-                                                                                    alreadyMember && { color: 'gray', fontStyle: 'italic' }
+                                                                                    alreadyCoach && { color: 'gray', fontStyle: 'italic' }
                                                                                 ]
                                                                             }
                                                                         >
-                                                                            {alreadyMember ? 'Already a member' : '+ Add As Member'}
+                                                                            {alreadyCoach ? 'Already a Coach' : '+ Add As Coach'}
                                                                         </Text>
                                                                     )}
 
@@ -476,7 +476,7 @@ export default function Coaches() {
                                                                     justifyContent: 'center',
                                                                 }}
                                                             >
-                                                                {removingMember.includes(coach._id) ? (
+                                                                {removingCoach.includes(coach._id) ? (
                                                                     <View style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                                                                         {loadingRemove.includes(coach._id) ? (
                                                                             <ActivityIndicator size="small" color={'#FF4000'} style={{ transform: [{ scale: 1.5 }] }} />
@@ -490,7 +490,7 @@ export default function Coaches() {
                                                                                     Sure?
                                                                                 </Text>
                                                                                 <View style={{ flexDirection: 'row', gap: 10 }}>
-                                                                                    <TouchableOpacity onPress={() => handleRemoveMember(coach._id)}>
+                                                                                    <TouchableOpacity onPress={() => handleRemoveCoach(coach._id)}>
                                                                                         <Text
                                                                                             style={{
                                                                                                 fontFamily: 'Bebas',
@@ -507,7 +507,7 @@ export default function Coaches() {
                                                                                     <TouchableOpacity
                                                                                         onPress={() => {
                                                                                             animateRemoveBtn(coach._id, 0);
-                                                                                            setRemovingMember((prev) => prev.filter((id) => id !== coach._id));
+                                                                                            setremovingCoach((prev) => prev.filter((id) => id !== coach._id));
                                                                                         }}
                                                                                     >
                                                                                         <Text
@@ -530,7 +530,7 @@ export default function Coaches() {
                                                                 ) : (
                                                                     <TouchableOpacity
                                                                         onPress={() => {
-                                                                            setRemovingMember((prev) => [...prev, coach._id]);
+                                                                            setremovingCoach((prev) => [...prev, coach._id]);
                                                                             animateRemoveBtn(coach._id, 1);
                                                                         }}
                                                                     >

@@ -1,9 +1,10 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -13,6 +14,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -27,6 +29,10 @@ export default function TeamDetails() {
     const [team, setTeam] = useState(null);
     const [schedule, setSchedule] = useState(null);
     const [loading, setLoading] = useState(true);
+    const nameEditRef = useRef(null);
+    const [isFocused, setIsFocused] = useState(false);
+    const [teamName, setTeamName] = useState('');
+    const [changeTeamNameLoading, setChangeTeamNameLoading] = useState(false);
 
     const { id } = useLocalSearchParams();
 
@@ -47,17 +53,6 @@ export default function TeamDetails() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
-
-                    if (user.role == "Coach") {
-                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${user._id}`);
-
-                        if (coachteams.ok) {
-                            const coachdata = await coachteams.json();
-                            setUserCoachOf(coachdata.data);
-                        } else {
-                            console.log('Could not get teams of coach');
-                        }
-                    }
                 } else {
                     console.error('API error')
                 }
@@ -78,6 +73,8 @@ export default function TeamDetails() {
                 if (response.ok) {
                     const userData = await response.json();
                     setTeam(userData.data);
+                    setTeamName(userData.data.name)
+
                 } else {
                     console.error('API error');
                 }
@@ -103,7 +100,7 @@ export default function TeamDetails() {
 
                 if (response.ok) {
                     const scheduleData = await response.json();
-                    console.log(scheduleData)
+                    // console.log(scheduleData)
                     setSchedule(scheduleData.data);
                 } else {
                     console.error('API error');
@@ -117,6 +114,40 @@ export default function TeamDetails() {
 
         fetchSchedule();
     }, [team]);
+
+    const updateTeamName = async () => {
+        const token = await SecureStore.getItemAsync('userToken');
+        setChangeTeamNameLoading(true);
+
+        if (token) {
+            try {
+                const response = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        name: teamName,
+                    }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    console.log('Team updated:', data);
+                    setTeamName(data.name)
+                } else {
+                    console.error('Update failed:', data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error.message);
+            } finally {
+                setChangeTeamNameLoading(false)
+            }
+        } else {
+            console.log("no token",)
+        }
+    }
 
     return (
         <KeyboardAvoidingView
@@ -132,7 +163,48 @@ export default function TeamDetails() {
                     />
 
                     <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>{loading ? 'Team details' : team?.name}</Text>
+                        {loading && <Text style={styles.pageTitle}>Team details</Text>}
+
+                        {!loading && user._id != userId &&
+                            <Text style={styles.pageTitle}>{team?.name}</Text>
+                        }
+
+                        {!loading && user._id == userId &&
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                <TextInput
+                                    style={[
+                                        styles.pageTitle,
+                                        { padding: 0 },
+                                        isFocused && styles.inputFocused
+                                    ]}
+                                    value={teamName}
+                                    onChangeText={(text) => setTeamName(text)}
+                                    placeholderTextColor="#65676b"
+                                    selectionColor="#fff"
+                                    ref={nameEditRef}
+                                    onFocus={() => setIsFocused(true)}
+                                    onBlur={() => setIsFocused(false)}
+                                />
+
+                                {changeTeamNameLoading ? (
+                                    <ActivityIndicator size="small" color="#ffffff" />
+                                ) : isFocused ? (
+                                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                                        <TouchableOpacity onPress={() => { updateTeamName(); nameEditRef.current?.blur(); }}>
+                                            <AntDesign name="check" size={24} color="#FFFFFF" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => { setTeamName(team.name); nameEditRef.current?.blur(); }}>
+                                            <AntDesign name="close" size={24} color="#FFFFFF" />
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : (
+                                    <TouchableOpacity onPress={() => nameEditRef.current?.focus()}>
+                                        <AntDesign name="edit" size={24} color="#FFFFFF" />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        }
+
                         {!loading && <Text style={styles.pageDesc}>{team?.sport}</Text>}
 
                         {loading &&
@@ -506,6 +578,15 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontFamily: 'Bebas',
         fontSize: 30,
+    },
+    inputFocused: {
+        color: '#fff',
+        paddingRight: 30,
+        marginBottom: 5,
+        lineHeight: 25,
+        borderBottomWidth: 1,
+        borderColor: '#fff',
+        maxWidth: 150
     },
     pageDesc: {
         color: '#ffffff',
