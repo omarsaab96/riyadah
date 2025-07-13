@@ -25,6 +25,7 @@ const TeamSchema = new Schema({
   },
   lastLinked: {
     type: Date,
+    default: null,
   },
   createdAt: Date,
 });

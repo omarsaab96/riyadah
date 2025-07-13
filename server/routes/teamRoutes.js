@@ -196,7 +196,9 @@ router.post('/', authenticateToken, async (req, res) => {
       gender,
       club: req.user.userId,
       image,
-      coaches
+      coaches,
+      linked,
+      lastLinked
     };
 
     const team = await Team.create(teamData);

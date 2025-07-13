@@ -399,7 +399,7 @@ export default function Profile() {
                 throw new Error('Authentication token missing');
             }
 
-            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/teams/${teamid}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -416,7 +416,7 @@ export default function Profile() {
             }
         } catch (err) {
             setError('Error removing team')
-            console.log('Error removing member:', err);
+            console.log('Error removing team:', err);
         } finally {
             setLoadingDelete(prev => prev.filter(_id => _id !== teamid));
             // setRemovingMember(prev => prev.filter(_id => _id !== memberid));
@@ -1743,7 +1743,7 @@ const TeamCard = ({ team, deleteTeam, cancelDeleteTeam, loadingDelete, handleDel
                                 Sure?
                             </Text>
                             <View style={{ flexDirection: 'row', gap: 10 }}>
-                                <TouchableOpacity onPress={() => handleRemoveMember(team._id)}>
+                                <TouchableOpacity onPress={() => handleDeleteTeam(team._id)}>
                                     <Text
                                         style={{
                                             fontFamily: 'Bebas',
