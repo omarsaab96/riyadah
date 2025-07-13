@@ -1,12 +1,14 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Animated,
     Dimensions,
+    Easing,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -33,10 +35,11 @@ export default function Members() {
     const [searchResults, setSearchResults] = useState([]);
     const [searching, setSearching] = useState(false);
     const [openSearch, setOpenSearch] = useState(false);
+    const [editMode, setEditMode] = useState(false);
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [removingMember, setRemovingMember] = useState<string[]>([]);
     const [loadingRemove, setLoadingRemove] = useState<string[]>([]);
-
+    const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const { id } = useLocalSearchParams();
 
     useEffect(() => {
@@ -99,10 +102,6 @@ export default function Members() {
 
         fetchTeam();
     }, [user]);
-
-    const openSearchPanel = () => {
-        setOpenSearch(true)
-    }
 
     const handleSearchInput = (text: string) => {
         setKeyword(text);
@@ -230,6 +229,25 @@ export default function Members() {
         }
     }
 
+    // Get or create animated value
+    const getAnimatedValue = (memberId: string) => {
+        if (!animatedValues.current[memberId]) {
+            animatedValues.current[memberId] = new Animated.Value(0);
+        }
+        return animatedValues.current[memberId];
+    };
+
+    // Animate to 0 or 1
+    const animateRemoveBtn = (memberId: string, toValue: number) => {
+        const animVal = getAnimatedValue(memberId);
+        Animated.timing(animVal, {
+            toValue,
+            duration: 300,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: false,
+        }).start();
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -283,18 +301,23 @@ export default function Members() {
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                                     <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
 
-                                    {user._id == userId && <TouchableOpacity style={styles.addChildrenButton} onPress={openSearchPanel}>
-                                        <Entypo name="plus" size={20} color="#FF4000" />
-                                        <Text style={styles.addChildrenButtonText}>Add Members</Text>
-                                    </TouchableOpacity>}
+                                    {user._id == userId && !editMode &&
+                                        <TouchableOpacity style={styles.editToggle} onPress={() => { setKeyword(''); setEditMode(true) }}>
+                                            <Entypo name="edit" size={16} color="#FF4000" />
+                                            <Text style={styles.editToggleText}>Edit</Text>
+                                        </TouchableOpacity>}
+
+                                    {user._id == userId && editMode &&
+                                        <TouchableOpacity style={styles.editToggle} onPress={() => { setEditMode(false) }}>
+                                            <AntDesign name="close" size={16} color="#FF4000" />
+                                            <Text style={styles.editToggleText}>Cancel</Text>
+                                        </TouchableOpacity>}
                                 </View>
 
-                                {openSearch && <View style={{
-                                    marginBottom: 16
-                                }}>
+                                {editMode && <View style={{ marginBottom: 10 }}>
                                     <TextInput
-                                        style={[styles.input, { marginBottom: 0 }]}
-                                        placeholder="Search athletes name or email (min. 3 characters)"
+                                        style={styles.input}
+                                        placeholder="Add athletes by name or email (min. 3 characters)"
                                         placeholderTextColor="#A8A8A8"
                                         value={keyword}
                                         onChangeText={handleSearchInput}
@@ -306,186 +329,251 @@ export default function Members() {
                                             style={styles.searchLoader}
                                         />
                                     }
-                                </View>}
 
-                                {keyword.trim().length >= 3 && !searching && (
-                                    <View style={{ marginBottom: 5 }}>
-                                        {searchResults.length > 0 && !searching &&
-                                            searchResults.map((athlete) => {
-                                                const alreadyMember = team.members.some((m) => m._id === athlete._id);
+                                    {keyword.trim().length >= 3 && !searching && (
+                                        <View style={{ marginBottom: 15 }}>
+                                            {searchResults.length > 0 && !searching &&
+                                                searchResults.map((athlete) => {
+                                                    const alreadyMember = team.members.some((m) => m._id === athlete._id);
 
-                                                return (
-                                                    <View key={athlete._id}>
-                                                        <TouchableOpacity
-                                                            style={styles.searchResultItem}
-                                                            onPress={() => !alreadyMember && handleAddMember(athlete)}
-                                                            disabled={alreadyMember}
-                                                        >
-                                                            <View style={styles.searchResultItemImageContainer}>
-                                                                {athlete.image ? (
-                                                                    <Image
-                                                                        style={styles.searchResultItemImage}
-                                                                        source={{ uri: athlete.image }}
-                                                                    />
-                                                                ) : (
-
-                                                                    athlete.gender == "Male" ? (
+                                                    return (
+                                                        <View key={athlete._id}>
+                                                            <TouchableOpacity
+                                                                style={styles.searchResultItem}
+                                                                onPress={() => !alreadyMember && handleAddMember(athlete)}
+                                                                disabled={alreadyMember}
+                                                            >
+                                                                <View style={styles.searchResultItemImageContainer}>
+                                                                    {athlete.image ? (
                                                                         <Image
                                                                             style={styles.searchResultItemImage}
-                                                                            source={require('../../assets/avatar.png')}
-                                                                            resizeMode="contain"
+                                                                            source={{ uri: athlete.image }}
                                                                         />
                                                                     ) : (
-                                                                        <Image
-                                                                            style={styles.searchResultItemImage}
-                                                                            source={require('../../assets/avatarF.png')}
-                                                                            resizeMode="contain"
-                                                                        />
-                                                                    )
+
+                                                                        athlete.gender == "Male" ? (
+                                                                            <Image
+                                                                                style={styles.searchResultItemImage}
+                                                                                source={require('../../assets/avatar.png')}
+                                                                                resizeMode="contain"
+                                                                            />
+                                                                        ) : (
+                                                                            <Image
+                                                                                style={styles.searchResultItemImage}
+                                                                                source={require('../../assets/avatarF.png')}
+                                                                                resizeMode="contain"
+                                                                            />
+                                                                        )
 
 
-                                                                )}
-                                                            </View>
-                                                            <View style={styles.searchResultItemInfo}>
-                                                                <View>
-                                                                    <Text style={styles.searchResultItemName}>{athlete.name}</Text>
-                                                                    <Text style={[styles.searchResultItemDescription, athlete.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{athlete.sport || 'no sport'}</Text>
+                                                                    )}
                                                                 </View>
-                                                                {addingMember.includes(athlete._id) ? (
-                                                                    <ActivityIndicator
-                                                                        size="small"
-                                                                        color="#FF4000"
-                                                                    />
-                                                                ) : (
-                                                                    <Text
-                                                                        style={
-                                                                            [
-                                                                                styles.searchResultItemLink,
-                                                                                alreadyMember && { color: 'gray', fontStyle: 'italic' }
-                                                                            ]
-                                                                        }
-                                                                    >
-                                                                        {alreadyMember ? 'Already a member' : '+ Add As Member'}
-                                                                    </Text>
-                                                                )}
+                                                                <View style={styles.searchResultItemInfo}>
+                                                                    <View>
+                                                                        <Text style={styles.searchResultItemName}>{athlete.name}</Text>
+                                                                        <Text style={[styles.searchResultItemDescription, athlete.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{athlete.sport || 'no sport'}</Text>
+                                                                    </View>
+                                                                    {addingMember.includes(athlete._id) ? (
+                                                                        <ActivityIndicator
+                                                                            size="small"
+                                                                            color="#FF4000"
+                                                                        />
+                                                                    ) : (
+                                                                        <Text
+                                                                            style={
+                                                                                [
+                                                                                    styles.searchResultItemLink,
+                                                                                    alreadyMember && { color: 'gray', fontStyle: 'italic' }
+                                                                                ]
+                                                                            }
+                                                                        >
+                                                                            {alreadyMember ? 'Already a member' : '+ Add As Member'}
+                                                                        </Text>
+                                                                    )}
 
-                                                            </View>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                );
-                                            })
-                                        }
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    );
+                                                })
+                                            }
 
-                                        {searchResults.length == 0 && !searching &&
-                                            <View>
-                                                <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
-                                                    No results
-                                                </Text>
-                                            </View>
-                                        }
-                                    </View>
-                                )}
+                                            {searchResults.length == 0 && !searching &&
+                                                <View>
+                                                    <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
+                                                        No results
+                                                    </Text>
+                                                </View>
+                                            }
+                                        </View>
+                                    )}
+                                </View>}
 
                                 {team.members && team.members.length > 0 ? (
                                     <View style={{ marginBottom: 20 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
-                                            {team.members.map((member) => (
-                                                <View
-                                                    key={member._id}
-                                                    style={{
-                                                        alignItems: 'center',
-                                                        width: '30.64%',
-                                                        position: 'relative',
-                                                    }}
-                                                >
-                                                    <TouchableOpacity
-                                                        style={[
-                                                            styles.removeBtn,
-                                                            removingMember.includes(member._id) && styles.removeBtnConfirmation
-                                                        ]}
-                                                        onPress={() => { setRemovingMember([...removingMember, member._id]) }}
+                                            {team.members.map((member) => {
+                                                const animVal = getAnimatedValue(member._id);
+                                                const animatedWidth = animVal.interpolate({
+                                                    inputRange: [0, 1],
+                                                    outputRange: [25, width * 0.3],
+                                                });
+
+                                                const animatedHeight = animVal.interpolate({
+                                                    inputRange: [0, 1],
+                                                    outputRange: [25, 100],
+                                                });
+
+                                                const animatedColor = animVal.interpolate({
+                                                    inputRange: [0, 1],
+                                                    outputRange: ['#FF4000', '#000000'],
+                                                });
+
+                                                return (
+                                                    <View
+                                                        key={member._id}
+                                                        style={{
+                                                            alignItems: 'center',
+                                                            width: '30.64%',
+                                                            position: 'relative',
+                                                        }}
                                                     >
-                                                        {removingMember.includes(member._id) ? (
-                                                            <View style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                {loadingRemove.includes(member._id) ? (
-                                                                    <ActivityIndicator size='small' color={'#FF4000'} style={{ transform: [{ scale: 1.5 }] }} />
-                                                                ) : (
+                                                        {user._id == userId && editMode && (
+                                                            <Animated.View
+                                                                style={{
+                                                                    width: animatedWidth,
+                                                                    height: animatedHeight,
+                                                                    backgroundColor: animatedColor,
+                                                                    borderRadius: 15,
+                                                                    position: 'absolute',
+                                                                    top: -5,
+                                                                    left: -5,
+                                                                    zIndex: 2,
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                }}
+                                                            >
+                                                                {removingMember.includes(member._id) ? (
                                                                     <View style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                        <Text style={{ color: '#FF4000', fontFamily: 'Bebas', fontSize: 22, marginBottom: 30 }}>Sure?</Text>
-                                                                        <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'space-around', alignItems: 'center' }}>
-                                                                            <TouchableOpacity onPress={() => { handleRemoveMember(member._id) }}>
-                                                                                <Text style={{ color: '#6ef99dff', fontFamily: 'Bebas', fontSize: 22, color: '#000000', paddingVertical: 1, paddingHorizontal: 5, backgroundColor: '#6ef99dff', borderRadius: 5 }}>Yes</Text>
-                                                                            </TouchableOpacity>
-                                                                            <TouchableOpacity onPress={() => { setRemovingMember(removingMember.filter(_id => _id !== member._id)) }}>
-                                                                                <Text style={{ color: '#f97d7dff', fontFamily: 'Bebas', fontSize: 22, color: '#000000', paddingVertical: 1, paddingHorizontal: 8, backgroundColor: '#f97d7dff', borderRadius: 5 }}>No</Text>
-                                                                            </TouchableOpacity>
-                                                                        </View>
+                                                                        {loadingRemove.includes(member._id) ? (
+                                                                            <ActivityIndicator size="small" color={'#FF4000'} style={{ transform: [{ scale: 1.5 }] }} />
+                                                                        ) : (
+                                                                            <>
+                                                                                <Text style={{ color: '#FF4000', fontFamily: 'Bebas', fontSize: 22, marginBottom: 30 }}>
+                                                                                    Sure?
+                                                                                </Text>
+                                                                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                                                                    <TouchableOpacity onPress={() => handleRemoveMember(member._id)}>
+                                                                                        <Text
+                                                                                            style={{
+                                                                                                fontFamily: 'Bebas',
+                                                                                                fontSize: 22,
+                                                                                                color: '#000',
+                                                                                                paddingHorizontal: 5,
+                                                                                                backgroundColor: '#6ef99dff',
+                                                                                                borderRadius: 5,
+                                                                                            }}
+                                                                                        >
+                                                                                            Yes
+                                                                                        </Text>
+                                                                                    </TouchableOpacity>
+                                                                                    <TouchableOpacity
+                                                                                        onPress={() => {
+                                                                                            animateRemoveBtn(member._id, 0);
+                                                                                            setRemovingMember((prev) => prev.filter((id) => id !== member._id));
+                                                                                        }}
+                                                                                    >
+                                                                                        <Text
+                                                                                            style={{
+                                                                                                fontFamily: 'Bebas',
+                                                                                                fontSize: 22,
+                                                                                                color: '#000',
+                                                                                                paddingHorizontal: 8,
+                                                                                                backgroundColor: '#f97d7dff',
+                                                                                                borderRadius: 5,
+                                                                                            }}
+                                                                                        >
+                                                                                            No
+                                                                                        </Text>
+                                                                                    </TouchableOpacity>
+                                                                                </View>
+                                                                            </>
+                                                                        )}
+                                                                    </View>
+                                                                ) : (
+                                                                    <TouchableOpacity
+                                                                        onPress={() => {
+                                                                            setRemovingMember((prev) => [...prev, member._id]);
+                                                                            animateRemoveBtn(member._id, 1);
+                                                                        }}
+                                                                    >
+                                                                        <AntDesign name="closecircle" size={25} color="#fff" />
+                                                                    </TouchableOpacity>
+                                                                )}
+                                                            </Animated.View>
+                                                        )}
+
+                                                        <TouchableOpacity
+                                                            style={{
+                                                                alignItems: 'center',
+                                                                padding: 10,
+                                                                borderRadius: 8,
+                                                                backgroundColor: '#eeeeee',
+                                                            }}
+                                                            onPress={() =>
+                                                                router.push({
+                                                                    pathname: '/profile/public',
+                                                                    params: { id: member._id },
+                                                                })
+                                                            }
+                                                        >
+                                                            <View style={{ marginBottom: 10 }}>
+                                                                {member.image ? (
+                                                                    <View
+                                                                        style={[
+                                                                            styles.searchResultItemImageContainer,
+                                                                            {
+                                                                                width: '100%',
+                                                                                backgroundColor: '#dddddd',
+                                                                                borderRadius: 100,
+                                                                                overflow: 'hidden',
+                                                                            },
+                                                                        ]}
+                                                                    >
+                                                                        <Image
+                                                                            source={{ uri: member.image }}
+                                                                            style={{ width: '100%', aspectRatio: 1 }}
+                                                                        />
+                                                                    </View>
+                                                                ) : (
+                                                                    <View
+                                                                        style={[
+                                                                            styles.searchResultItemImageContainer,
+                                                                            {
+                                                                                width: '100%',
+                                                                                backgroundColor: '#dddddd',
+                                                                                borderRadius: 100,
+                                                                                overflow: 'hidden',
+                                                                            },
+                                                                        ]}
+                                                                    >
+                                                                        <Image
+                                                                            style={styles.searchResultItemImage}
+                                                                            source={
+                                                                                member.gender == 'Male'
+                                                                                    ? require('../../assets/avatar.png')
+                                                                                    : require('../../assets/avatarF.png')
+                                                                            }
+                                                                            resizeMode="contain"
+                                                                        />
                                                                     </View>
                                                                 )}
                                                             </View>
-                                                        ) : (
-                                                            <FontAwesome name="remove" size={16} color="#FF4000" />
-                                                        )}
-                                                    </TouchableOpacity>
-
-                                                    <TouchableOpacity
-                                                        style={{
-                                                            alignItems: 'center', padding: 10,
-                                                            borderRadius: 8, backgroundColor: '#eeeeee',
-                                                        }}
-                                                        onPress={() =>
-                                                            router.push({
-                                                                pathname: '/profile/public',
-                                                                params: { id: member._id },
-                                                            })
-                                                        }
-                                                    >
-                                                        <View style={{ marginBottom: 10 }}>
-                                                            {member.image ? (
-                                                                <View
-                                                                    style={[
-                                                                        styles.searchResultItemImageContainer,
-                                                                        {
-                                                                            width: '100%',
-                                                                            backgroundColor: '#dddddd',
-                                                                            borderRadius: 100,
-                                                                            overflow: 'hidden',
-                                                                        },
-                                                                    ]}
-                                                                >
-                                                                    <Image
-                                                                        source={{ uri: member.image }}
-                                                                        style={{ width: '100%', aspectRatio: 1 }}
-                                                                    />
-                                                                </View>
-                                                            ) : (
-                                                                <View
-                                                                    style={[
-                                                                        styles.searchResultItemImageContainer,
-                                                                        {
-                                                                            width: '100%',
-                                                                            backgroundColor: '#dddddd',
-                                                                            borderRadius: 100,
-                                                                            overflow: 'hidden',
-                                                                        },
-                                                                    ]}
-                                                                >
-                                                                    <Image
-                                                                        style={styles.searchResultItemImage}
-                                                                        source={
-                                                                            member.gender == 'Male'
-                                                                                ? require('../../assets/avatar.png')
-                                                                                : require('../../assets/avatarF.png')
-                                                                        }
-                                                                        resizeMode="contain"
-                                                                    />
-                                                                </View>
-                                                            )}
-                                                        </View>
-                                                        <Text style={styles.paragraph}>{member?.name?.trim()}</Text>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            ))}
+                                                            <Text>{member?.name?.trim()}</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                );
+                                            })}
                                         </View>
                                     </View>
 
@@ -756,11 +844,12 @@ const styles = StyleSheet.create({
         fontSize: 20,
         textAlign: 'center'
     },
-    addChildrenButton: {
+    editToggle: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 5,
     },
-    addChildrenButtonText: {
+    editToggleText: {
         color: 'black',
         fontFamily: 'Bebas',
         fontSize: 18
@@ -822,7 +911,7 @@ const styles = StyleSheet.create({
         width: 25,
         height: 25,
         borderRadius: 15,
-        backgroundColor: '#000',
+        backgroundColor: '#FF4000',
         position: 'absolute',
         top: -5,
         left: -5,
