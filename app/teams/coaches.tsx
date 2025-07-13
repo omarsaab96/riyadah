@@ -181,7 +181,7 @@ export default function Coaches() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    coachIds : [coach._id], // sending as an array
+                    coachIds: [coach._id], // sending as an array
                 }),
             });
 
@@ -217,7 +217,7 @@ export default function Coaches() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    coachIds : [coachid],
+                    coachIds: [coachid],
                 }),
             });
 
@@ -325,22 +325,23 @@ export default function Coaches() {
                                         </TouchableOpacity>}
                                 </View>
 
-                                {editMode && <View style={{ marginBottom: 10 }}>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Add coach by name or email (min. 3 characters)"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={keyword}
-                                        onChangeText={handleSearchInput}
-                                    />
-                                    {searching &&
-                                        <ActivityIndicator
-                                            size="small"
-                                            color="#FF4000"
-                                            style={styles.searchLoader}
+                                {editMode && <View>
+                                    <View style={{ marginBottom: 16 }}>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Add coach by name or email (min. 3 characters)"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={keyword}
+                                            onChangeText={handleSearchInput}
                                         />
-                                    }
-
+                                        {searching &&
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#FF4000"
+                                                style={styles.searchLoader}
+                                            />
+                                        }
+                                    </View>
                                     {keyword.trim().length >= 3 && !searching && (
                                         <View style={{ marginBottom: 15 }}>
                                             {searchResults.length > 0 && !searching &&
@@ -739,7 +740,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         padding: 15,
         backgroundColor: '#F4F4F4',
-        marginBottom: 16,
+        // marginBottom: 16,
         color: 'black',
         borderRadius: 10
     },

@@ -171,11 +171,11 @@ export default function TeamDetails() {
                         }
 
                         {!loading && user._id == userId &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth:200, zIndex:1}}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: 200, zIndex: 1 }}>
                                 <TextInput
                                     style={[
                                         styles.pageTitle,
-                                        { padding: 0, maxWidth:140 },
+                                        { padding: 0, maxWidth: 140 },
                                         isFocused && styles.inputFocused
                                     ]}
                                     value={teamName}
@@ -221,10 +221,42 @@ export default function TeamDetails() {
 
                     <Text style={styles.ghostText}>{teamName.substring(0, 6)}</Text>
 
-                    {!loading && team && <>
-                    {userId == user._id ? (
-                        <View style={styles.profileImage}>
-                            <TouchableOpacity onPress={() => router.push('/teams/uploadLogo')}>
+                    {!loading && team && user && <>
+                        {userId == user._id ? (
+                            <View style={styles.profileImage}>
+                                <TouchableOpacity onPress={() => router.push('/teams/uploadLogo')}>
+                                    {(team.image == null || team.image == "") && <Image
+                                        source={require('../../assets/teamlogo.png')}
+                                        style={styles.profileImageAvatar}
+                                        resizeMode="contain"
+                                    />}
+                                    {team.image != null && <Image
+                                        source={{ uri: team.image }}
+                                        style={styles.profileImageAvatar}
+                                        resizeMode="contain"
+                                    />}
+                                </TouchableOpacity>
+
+                                {(team.image == null || team.image == "") &&
+                                    <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/teams/uploadLogo')}>
+                                        <Entypo name="plus" size={20} color="#FF4000" />
+                                        <Text style={styles.uploadImageText}>
+                                            Upload logo
+                                        </Text>
+                                    </TouchableOpacity>
+                                }
+
+                                {team.image != null && team.image != "" &&
+                                    <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/teams/uploadLogo')}>
+                                        <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                        <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
+                                            Change logo
+                                        </Text>
+                                    </TouchableOpacity>
+                                }
+                            </View>
+                        ) : (
+                            <View style={styles.profileImage}>
                                 {(team.image == null || team.image == "") && <Image
                                     source={require('../../assets/teamlogo.png')}
                                     style={styles.profileImageAvatar}
@@ -235,41 +267,9 @@ export default function TeamDetails() {
                                     style={styles.profileImageAvatar}
                                     resizeMode="contain"
                                 />}
-                            </TouchableOpacity>
-
-                            {(team.image == null || team.image == "") &&
-                                <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/teams/uploadLogo')}>
-                                    <Entypo name="plus" size={20} color="#FF4000" />
-                                    <Text style={styles.uploadImageText}>
-                                        Upload logo
-                                    </Text>
-                                </TouchableOpacity>
-                            }
-
-                            {team.image != null && team.image != "" &&
-                                <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/teams/uploadLogo')}>
-                                    <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                    <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
-                                        Change logo
-                                    </Text>
-                                </TouchableOpacity>
-                            }
-                        </View>
-                    ) : (
-                        <View style={styles.profileImage}>
-                            {(team.image == null || team.image == "") && <Image
-                                source={require('../../assets/teamlogo.png')}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                            {team.image != null && <Image
-                                source={{ uri: team.image }}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                        </View>
-                    )}
-                </>}
+                            </View>
+                        )}
+                    </>}
                 </View>
 
                 <ScrollView >
