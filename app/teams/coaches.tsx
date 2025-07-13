@@ -22,7 +22,7 @@ import {
 
 const { width } = Dimensions.get('window');
 
-export default function Members() {
+export default function Coaches() {
     const router = useRouter();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
@@ -210,7 +210,7 @@ export default function Members() {
                 throw new Error('Authentication token missing');
             }
 
-            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/remove-members`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/remove-coaches`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -226,7 +226,7 @@ export default function Members() {
             if (res.ok) {
                 setTeam(prev => ({
                     ...prev,
-                    members: prev.members.filter(member => member._id !== memberid),
+                    coaches: prev.coaches.filter(coach => coach._id !== memberid),
                 }));
             } else {
                 console.error(data.message || 'Failed to remove member');
@@ -273,8 +273,8 @@ export default function Members() {
                     />
 
                     <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Team Members</Text>
-                        {!loading && <Text style={styles.pageDesc}>Manage members of {team?.name}</Text>}
+                        <Text style={styles.pageTitle}>Team Coaches</Text>
+                        {!loading && <Text style={styles.pageDesc}>Manage coaches of {team?.name}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -287,7 +287,7 @@ export default function Members() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>members</Text>
+                    <Text style={styles.ghostText}>coaches</Text>
 
                     {!loading &&
                         <View style={styles.profileImage}>
@@ -310,7 +310,7 @@ export default function Members() {
                         {team && <View style={styles.profileSection}>
                             <View style={{ marginBottom: 20 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                                    <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
+                                    <Text style={styles.title}>{team.coaches.length} coach{team.coaches.length == 1 ? '' : 'es'}</Text>
 
                                     {user._id == userId && !editMode &&
                                         <TouchableOpacity style={styles.editToggle} onPress={() => { setKeyword(''); setEditMode(true) }}>
@@ -420,11 +420,11 @@ export default function Members() {
                                     )}
                                 </View>}
 
-                                {team.members && team.members.length > 0 ? (
+                                {team.coaches && team.coaches.length > 0 ? (
                                     <View style={{ marginBottom: 20 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
-                                            {team.members.map((member) => {
-                                                const animVal = getAnimatedValue(member._id);
+                                            {team.coaches.map((coach) => {
+                                                const animVal = getAnimatedValue(coach._id);
                                                 const animatedWidth = animVal.interpolate({
                                                     inputRange: [0, 1],
                                                     outputRange: [25, cellWidth],
@@ -454,7 +454,7 @@ export default function Members() {
                                                     <View
                                                         ref={flexDivRef}
                                                         onLayout={handleLayout}
-                                                        key={member._id}
+                                                        key={coach._id}
                                                         style={{
                                                             alignItems: 'center',
                                                             width: '30.64%',
@@ -476,21 +476,21 @@ export default function Members() {
                                                                     justifyContent: 'center',
                                                                 }}
                                                             >
-                                                                {removingMember.includes(member._id) ? (
+                                                                {removingMember.includes(coach._id) ? (
                                                                     <View style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                        {loadingRemove.includes(member._id) ? (
+                                                                        {loadingRemove.includes(coach._id) ? (
                                                                             <ActivityIndicator size="small" color={'#FF4000'} style={{ transform: [{ scale: 1.5 }] }} />
                                                                         ) : (
                                                                             <Animated.View style={{
                                                                                 opacity: animatedOpacity,
-                                                                                alignItems:'center',
-                                                                                justifyContent:'center'
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center'
                                                                             }}>
                                                                                 <Text style={{ color: '#FF4000', fontFamily: 'Bebas', fontSize: 22, marginBottom: 30 }}>
                                                                                     Sure?
                                                                                 </Text>
                                                                                 <View style={{ flexDirection: 'row', gap: 10 }}>
-                                                                                    <TouchableOpacity onPress={() => handleRemoveMember(member._id)}>
+                                                                                    <TouchableOpacity onPress={() => handleRemoveMember(coach._id)}>
                                                                                         <Text
                                                                                             style={{
                                                                                                 fontFamily: 'Bebas',
@@ -506,8 +506,8 @@ export default function Members() {
                                                                                     </TouchableOpacity>
                                                                                     <TouchableOpacity
                                                                                         onPress={() => {
-                                                                                            animateRemoveBtn(member._id, 0);
-                                                                                            setRemovingMember((prev) => prev.filter((id) => id !== member._id));
+                                                                                            animateRemoveBtn(coach._id, 0);
+                                                                                            setRemovingMember((prev) => prev.filter((id) => id !== coach._id));
                                                                                         }}
                                                                                     >
                                                                                         <Text
@@ -530,8 +530,8 @@ export default function Members() {
                                                                 ) : (
                                                                     <TouchableOpacity
                                                                         onPress={() => {
-                                                                            setRemovingMember((prev) => [...prev, member._id]);
-                                                                            animateRemoveBtn(member._id, 1);
+                                                                            setRemovingMember((prev) => [...prev, coach._id]);
+                                                                            animateRemoveBtn(coach._id, 1);
                                                                         }}
                                                                     >
                                                                         <AntDesign name="closecircle" size={25} color="#000" />
@@ -550,12 +550,12 @@ export default function Members() {
                                                             onPress={() =>
                                                                 router.push({
                                                                     pathname: '/profile/public',
-                                                                    params: { id: member._id },
+                                                                    params: { id: coach._id },
                                                                 })
                                                             }
                                                         >
                                                             <View style={{ marginBottom: 10 }}>
-                                                                {member.image ? (
+                                                                {coach.image ? (
                                                                     <View
                                                                         style={[
                                                                             styles.searchResultItemImageContainer,
@@ -568,7 +568,7 @@ export default function Members() {
                                                                         ]}
                                                                     >
                                                                         <Image
-                                                                            source={{ uri: member.image }}
+                                                                            source={{ uri: coach.image }}
                                                                             style={{ width: '100%', aspectRatio: 1 }}
                                                                         />
                                                                     </View>
@@ -587,7 +587,7 @@ export default function Members() {
                                                                         <Image
                                                                             style={styles.searchResultItemImage}
                                                                             source={
-                                                                                member.gender == 'Male'
+                                                                                coach.gender == 'Male'
                                                                                     ? require('../../assets/avatar.png')
                                                                                     : require('../../assets/avatarF.png')
                                                                             }
@@ -596,7 +596,7 @@ export default function Members() {
                                                                     </View>
                                                                 )}
                                                             </View>
-                                                            <Text>{member?.name?.trim()}</Text>
+                                                            <Text>{coach?.name?.trim()}</Text>
                                                         </TouchableOpacity>
                                                     </View>
                                                 );
@@ -605,7 +605,7 @@ export default function Members() {
                                     </View>
 
                                 ) : (
-                                    <Text style={styles.paragraph}>No members</Text>
+                                    <Text style={styles.paragraph}>No coaches</Text>
                                 )}
                             </View>
                         </View>}

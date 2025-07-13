@@ -375,5 +375,79 @@ router.put('/:teamId/remove-members', authenticateToken, async (req, res) => {
   }
 });
 
+// @desc    Add coaches to a team
+// @route   PUT /api/teams/:teamId/coaches
+// @access  Private (Club admin only)
+router.put('/:teamId/coaches', authenticateToken, async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { coachIds } = req.body;
+
+    if (!Array.isArray(coachIds) || coachIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'coachIds must be a non-empty array' });
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+
+    // Only the club can add coaches
+    if (team.club.toString() !== req.user.userId) {
+      return res.status(403).json({ success: false, message: 'Not authorized to add coaches' });
+    }
+
+    // Add unique new coaches
+    const existingIds = team.coaches.map(id => id.toString());
+    const newUniqueCoaches = coachIds.filter(id => !existingIds.includes(id));
+
+    team.coaches.push(...newUniqueCoaches);
+    await team.save();
+
+    const populatedTeam = await Team.findById(teamId)
+      .populate('club', 'name image sport')
+      .populate('coaches', '_id name image email')
+      .populate('members', '_id name image');
+
+    res.status(200).json({ success: true, data: populatedTeam });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// @desc    Remove coaches from a team
+// @route   PUT /api/teams/:teamId/remove-coaches
+// @access  Private (Club admin only)
+router.put('/:teamId/remove-coaches', authenticateToken, async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { coachIds } = req.body;
+
+    if (!Array.isArray(coachIds) || coachIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'coachIds must be a non-empty array' });
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+
+    // Only the club can remove coaches
+    if (team.club.toString() !== req.user.userId) {
+      return res.status(403).json({ success: false, message: 'Not authorized to remove coaches' });
+    }
+
+    // Remove coaches from team
+    team.coaches = team.coaches.filter(id => !coachIds.includes(id.toString()));
+    await team.save();
+
+    res.status(200).json({ success: true, message: 'Coaches removed successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 module.exports = router;
