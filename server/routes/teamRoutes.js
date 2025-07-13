@@ -130,7 +130,7 @@ router.get('/:id', async (req, res) => {
 // @access  Public
 router.get('/club/:clubId', authenticateToken, async (req, res) => {
   try {
-    const teams = await Team.find({ club: req.params.clubId })
+    const teams = await Team.find({ club: req.params.clubId, linked: true })
       // .populate('club', 'name image')
       .populate('coaches', '_id name email image')
     // .populate('members', 'name image');
@@ -146,7 +146,7 @@ router.get('/club/:clubId', authenticateToken, async (req, res) => {
 // @access  Public
 router.get('/byCoach/:coachId', async (req, res) => {
   try {
-    const teams = await Team.find({ coaches: req.params.coachId });
+    const teams = await Team.find({ coaches: req.params.coachId, linked: true  });
 
     res.status(200).json({ success: true, count: teams.length, data: teams });
   } catch (err) {
@@ -266,7 +266,12 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       });
     }
 
-    await team.remove();
+    if (team.members && team.members.length > 0) {
+      await User.updateMany(
+        { _id: { $in: team.members } },
+        { $pull: { memberOf: team._id } }
+      );
+    }
 
     // Remove team from club's teams array
     await User.findByIdAndUpdate(
@@ -275,7 +280,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json({ success: true, data: {} });
+    team.linked = false;
+    team.lastLinked = new Date();
+    await team.save();
+
+    res.status(200).json({ success: true, message: 'Team unlinked successfully' });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }

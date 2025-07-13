@@ -13,6 +13,7 @@ import {
     ActivityIndicator,
     Animated,
     Dimensions,
+    Easing,
     Image,
     Linking,
     StyleSheet,
@@ -44,9 +45,12 @@ export default function Profile() {
     const [inventoryLoading, setInventoryLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [adminUser, setAdminUser] = useState(null);
+    const [error, setError] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory'];
+    const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
+
 
     //graph data
     const data = [
@@ -352,6 +356,70 @@ export default function Profile() {
         if (label == "Staff") {
             setInventoryLoading(true);
             getInventory();
+        }
+    }
+
+    // Get or create animated value
+    const getAnimatedValue = (memberId: string) => {
+        if (!animatedValues.current[memberId]) {
+            animatedValues.current[memberId] = new Animated.Value(0);
+        }
+        return animatedValues.current[memberId];
+    };
+
+    // Animate to 0 or 1
+    const animateDeleteBtn = (memberId: string, toValue: number) => {
+        const animVal = getAnimatedValue(memberId);
+        Animated.timing(animVal, {
+            toValue,
+            duration: 300,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: false,
+        }).start();
+    };
+
+    const [loadingDelete, setLoadingDelete] = useState<string[]>([]);
+
+
+    const deleteTeam = (teamid: string) => {
+        animateDeleteBtn(teamid, 1);
+    }
+
+    const cancelDeleteTeam = (teamid: string) => {
+        // setLoadingDelete((prev) => prev.filter((id) => id !== teamid));
+        animateDeleteBtn(teamid, 0);
+    }
+
+    const handleDeleteTeam = async (teamid: string) => {
+        setLoadingDelete((prev) => [...prev, teamid]);
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                throw new Error('Authentication token missing');
+            }
+
+            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setTeams(prev => prev.filter(team => team._id !== teamid));
+            } else {
+                console.error(data.message || 'Failed to remove member');
+            }
+        } catch (err) {
+            setError('Error removing team')
+            console.log('Error removing member:', err);
+        } finally {
+            setLoadingDelete(prev => prev.filter(_id => _id !== teamid));
+            // setRemovingMember(prev => prev.filter(_id => _id !== memberid));
         }
     }
 
@@ -1036,103 +1104,16 @@ export default function Profile() {
                             </View>
 
                             {teams && teams.length > 0 ? (
-                                teams.map((team, index) => (
-
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={styles.teamCard}
-                                        onPress={() => router.push({
-                                            pathname: '/teams/details',
-                                            params: { id: team._id },
-                                        })}
-                                    >
-                                        <View style={styles.teamHeader}>
-                                            {team.image ? (
-                                                <Image
-                                                    source={{ uri: team.image }}
-                                                    style={styles.teamLogo}
-                                                    resizeMode="contain"
-                                                />
-                                            ) : (
-                                                <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
-                                                    <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
-                                                </View>
-                                            )}
-                                            <View style={styles.teamInfo}>
-                                                <Text style={styles.teamName}>{team.name}</Text>
-                                                <Text style={styles.teamSport}>{team.sport}</Text>
-                                            </View>
-                                            <View style={styles.teamStats}>
-                                                <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
-                                                <Text style={styles.teamStatLabel}>Members</Text>
-                                            </View>
-                                        </View>
-
-                                        {team.coaches.length > 0 && (
-                                            <View style={styles.coachSection}>
-                                                <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
-
-                                                <View style={styles.coachInfoDiv}>
-                                                    {team.coaches.map((coach, index) => (
-                                                        <TouchableOpacity
-                                                            onPress={() => router.push({
-                                                                pathname: '/profile/public',
-                                                                params: { id: coach._id },
-                                                            })}
-                                                            key={index} style={styles.coachInfo}>
-                                                            {coach.image ? (
-                                                                <Image
-                                                                    source={{ uri: coach.image }}
-                                                                    style={styles.coachAvatar}
-                                                                />
-                                                            ) : (
-                                                                <Image
-                                                                    source={require('../../assets/avatar.png')}
-                                                                    style={styles.coachAvatar}
-                                                                    resizeMode="contain"
-                                                                />
-                                                            )}
-                                                            <Text style={styles.coachName}>{coach.name}</Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </View>
-                                            </View >
-                                        )}
-
-                                        <View style={styles.teamActions}>
-                                            <TouchableOpacity
-                                                style={styles.teamActionButton}
-                                                onPress={() => router.push({
-                                                    pathname: '/teams/members',
-                                                    params: { id: team._id },
-                                                })}
-                                            >
-                                                <FontAwesome5 name="users" size={16} color="#FF4000" />
-                                                <Text style={styles.teamActionText}>Members</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={styles.teamActionButton}
-                                                onPress={() => router.push({
-                                                    pathname: '/teams/schedule',
-                                                    params: { id: team._id },
-                                                })}
-                                            >
-                                                <FontAwesome5 name="calendar-alt" size={16} color="#FF4000" />
-                                                <Text style={styles.teamActionText}>Schedule</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={styles.teamActionButton}
-                                                onPress={() => router.push({
-                                                    pathname: '/teams/edit',
-                                                    params: { id: team._id },
-                                                })}
-                                            >
-                                                <FontAwesome5 name="edit" size={16} color="#FF4000" />
-                                                <Text style={styles.teamActionText}>Edit</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </TouchableOpacity>
-
+                                teams.map((team) => (
+                                    <TeamCard
+                                        key={team._id}
+                                        team={team}
+                                        getAnimatedValue={getAnimatedValue}
+                                        loadingDelete={loadingDelete}
+                                        deleteTeam={deleteTeam}
+                                        cancelDeleteTeam={cancelDeleteTeam}
+                                        handleDeleteTeam={handleDeleteTeam}
+                                    />
                                 ))
                             ) : (
                                 <View style={styles.emptyState}>
@@ -1612,6 +1593,198 @@ export default function Profile() {
     );
 }
 
+const TeamCard = ({ team, deleteTeam, cancelDeleteTeam, loadingDelete, handleDeleteTeam, getAnimatedValue }) => {
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+    const router = useRouter();
+
+    const animVal = getAnimatedValue(team._id);
+
+    const animatedStyle = {
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        right: animVal.interpolate({
+            inputRange: [0, 1],
+            outputRange: [60, 0],
+        }),
+        bottom: animVal.interpolate({
+            inputRange: [0, 1],
+            outputRange: [30, 0],
+        }),
+        backgroundColor: 'rgba(0,0,0,1)',
+        borderRadius: 12,
+        width: animVal.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, dimensions.width],
+        }),
+        height: animVal.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, dimensions.height],
+        }),
+        opacity: animVal.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 1],
+        })
+    };
+
+    return (
+        <TouchableOpacity
+            key={team._id}
+            onLayout={(event) => {
+                const { width, height } = event.nativeEvent.layout;
+                setDimensions({ width, height });
+            }}
+            style={styles.teamCard}
+            onPress={() => router.push({
+                pathname: '/teams/details',
+                params: { id: team._id },
+            })}
+        >
+            <View style={styles.teamHeader}>
+                {team.image ? (
+                    <Image
+                        source={{ uri: team.image }}
+                        style={styles.teamLogo}
+                        resizeMode="contain"
+                    />
+                ) : (
+                    <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
+                        <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
+                    </View>
+                )}
+                <View style={styles.teamInfo}>
+                    <Text style={styles.teamName}>{team.name}</Text>
+                    <Text style={styles.teamSport}>{team.sport}</Text>
+                </View>
+                <View style={styles.teamStats}>
+                    <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
+                    <Text style={styles.teamStatLabel}>Members</Text>
+                </View>
+            </View>
+
+            {team.coaches.length > 0 && (
+                <View style={styles.coachSection}>
+                    <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
+
+                    <View style={styles.coachInfoDiv}>
+                        {team.coaches.map((coach, index) => (
+                            <TouchableOpacity
+                                onPress={() => router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: coach._id },
+                                })}
+                                key={index} style={styles.coachInfo}>
+                                {coach.image ? (
+                                    <Image
+                                        source={{ uri: coach.image }}
+                                        style={styles.coachAvatar}
+                                    />
+                                ) : (
+                                    <Image
+                                        source={require('../../assets/avatar.png')}
+                                        style={styles.coachAvatar}
+                                        resizeMode="contain"
+                                    />
+                                )}
+                                <Text style={styles.coachName}>{coach.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View >
+            )}
+
+            <View style={styles.teamActions}>
+                <TouchableOpacity
+                    style={styles.teamActionButton}
+                    onPress={() => router.push({
+                        pathname: '/teams/members',
+                        params: { id: team._id },
+                    })}
+                >
+                    <FontAwesome5 name="users" size={18} color="#FF4000" />
+                    <Text style={styles.teamActionText}>Members</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.teamActionButton}
+                    onPress={() => router.push({
+                        pathname: '/teams/schedule',
+                        params: { id: team._id },
+                    })}
+                >
+                    <FontAwesome5 name="calendar-alt" size={18} color="#FF4000" />
+                    <Text style={styles.teamActionText}>Schedule</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.teamActionButton}
+                    onPress={() => deleteTeam(team._id)}
+                >
+                    <MaterialCommunityIcons name="delete" size={18} color="#FF4000" />
+                    <Text style={styles.teamActionText}>Delete</Text>
+                </TouchableOpacity>
+            </View>
+
+            <Animated.View style={animatedStyle}>
+                <View style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                    {loadingDelete.includes(team._id) ? (
+                        <ActivityIndicator size="small" color={'#FF4000'} style={{ transform: [{ scale: 1.5 }] }} />
+                    ) : (
+                        <Animated.View style={{
+                            opacity: animVal.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 1],
+                            }),
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Text style={{ color: '#FF4000', fontFamily: 'Bebas', fontSize: 22, marginBottom: 30 }}>
+                                Sure?
+                            </Text>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <TouchableOpacity onPress={() => handleRemoveMember(team._id)}>
+                                    <Text
+                                        style={{
+                                            fontFamily: 'Bebas',
+                                            fontSize: 22,
+                                            color: '#000',
+                                            paddingHorizontal: 5,
+                                            backgroundColor: '#6ef99dff',
+                                            borderRadius: 5,
+                                        }}
+                                    >
+                                        Yes
+                                    </Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        cancelDeleteTeam(team._id);
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            fontFamily: 'Bebas',
+                                            fontSize: 22,
+                                            color: '#000',
+                                            paddingHorizontal: 8,
+                                            backgroundColor: '#f97d7dff',
+                                            borderRadius: 5,
+                                        }}
+                                    >
+                                        No
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </Animated.View>
+                    )}
+                </View>
+            </Animated.View>
+        </TouchableOpacity>
+    )
+};
+
+
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
@@ -1963,6 +2136,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
+        position: 'relative'
+    },
+    teamDelete: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 30,
+        height: 30,
+        backgroundColor: 'black',
+        borderRadius: 20
     },
     teamHeader: {
         flexDirection: 'row',

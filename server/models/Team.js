@@ -19,6 +19,13 @@ const TeamSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User' 
   }],
+  linked: {
+    type: Boolean,
+    default: true,
+  },
+  lastLinked: {
+    type: Date,
+  },
   createdAt: Date,
 });
 
