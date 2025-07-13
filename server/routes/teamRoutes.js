@@ -261,7 +261,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     // Verify ownership
-    if (team.club.toString() !== req.user.id) {
+    if (team.club.toString() !== req.user.userId) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this team'
