@@ -1,5 +1,6 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -134,8 +135,8 @@ export default function TeamDetails() {
 
                 const data = await response.json();
                 if (response.ok) {
-                    console.log('Team updated:', data);
-                    setTeamName(data.name)
+                    setTeamName(data.data.name)
+                    team.name = data.data.name;
                 } else {
                     console.error('Update failed:', data.message);
                 }
@@ -170,11 +171,11 @@ export default function TeamDetails() {
                         }
 
                         {!loading && user._id == userId &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth:200, zIndex:1}}>
                                 <TextInput
                                     style={[
                                         styles.pageTitle,
-                                        { padding: 0 },
+                                        { padding: 0, maxWidth:140 },
                                         isFocused && styles.inputFocused
                                     ]}
                                     value={teamName}
@@ -218,17 +219,57 @@ export default function TeamDetails() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>{team?.name.substring(0, 6)}</Text>
+                    <Text style={styles.ghostText}>{teamName.substring(0, 6)}</Text>
 
-                    {!loading &&
+                    {!loading && team && <>
+                    {userId == user._id ? (
                         <View style={styles.profileImage}>
-                            {team?.image != null && <Image
-                                source={{ uri: team?.image }}
+                            <TouchableOpacity onPress={() => router.push('/teams/uploadLogo')}>
+                                {(team.image == null || team.image == "") && <Image
+                                    source={require('../../assets/teamlogo.png')}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                                {team.image != null && <Image
+                                    source={{ uri: team.image }}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
+                            </TouchableOpacity>
+
+                            {(team.image == null || team.image == "") &&
+                                <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/teams/uploadLogo')}>
+                                    <Entypo name="plus" size={20} color="#FF4000" />
+                                    <Text style={styles.uploadImageText}>
+                                        Upload logo
+                                    </Text>
+                                </TouchableOpacity>
+                            }
+
+                            {team.image != null && team.image != "" &&
+                                <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/teams/uploadLogo')}>
+                                    <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                    <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
+                                        Change logo
+                                    </Text>
+                                </TouchableOpacity>
+                            }
+                        </View>
+                    ) : (
+                        <View style={styles.profileImage}>
+                            {(team.image == null || team.image == "") && <Image
+                                source={require('../../assets/teamlogo.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {team.image != null && <Image
+                                source={{ uri: team.image }}
                                 style={styles.profileImageAvatar}
                                 resizeMode="contain"
                             />}
                         </View>
-                    }
+                    )}
+                </>}
                 </View>
 
                 <ScrollView >
@@ -586,7 +627,6 @@ const styles = StyleSheet.create({
         lineHeight: 25,
         borderBottomWidth: 1,
         borderColor: '#fff',
-        maxWidth: 150
     },
     pageDesc: {
         color: '#ffffff',
@@ -901,5 +941,24 @@ const styles = StyleSheet.create({
         width: 30,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    uploadImage: {
+        backgroundColor: '#000000',
+        padding: 2,
+        paddingRight: 5,
+        borderRadius: 10,
+        textAlign: 'center',
+        position: 'absolute',
+        bottom: 5,
+        left: '50%',
+        transform: [{ translateX: '-50%' }],
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    uploadImageText: {
+        color: '#FF4000',
+        fontFamily: 'Bebas',
+        fontSize: 16,
     },
 });
