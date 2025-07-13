@@ -139,7 +139,7 @@ export default function Coaches() {
     const searchAthletes = async (name: string) => {
         try {
             setSearching(true);
-            const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&type=Athlete`);
+            const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&role=Coach`);
 
             if (res.ok) {
                 const data = await res.json();
@@ -174,14 +174,14 @@ export default function Coaches() {
                 return;
             }
 
-            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/members`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/coaches`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    memberIds: [athlete._id], // sending as an array
+                    coachIds : [athlete._id], // sending as an array
                 }),
             });
 
@@ -217,7 +217,7 @@ export default function Coaches() {
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    memberIds: [memberid],
+                    coachIds : [memberid],
                 }),
             });
 

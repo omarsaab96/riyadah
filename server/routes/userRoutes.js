@@ -154,7 +154,7 @@ router.get('/', async (req, res) => {
 
 // Search users by name (case-insensitive, partial match)
 router.get('/search', async (req, res) => {
-  const { keyword, type } = req.query;
+  const { keyword, type, role } = req.query;
 
   if (!keyword) {
     return res.status(400).json({ error: 'Keyword is required' });
@@ -172,6 +172,10 @@ router.get('/search', async (req, res) => {
 
     if (type) {
       query.type = type;
+    }
+
+    if (role) {
+      query.role = role;
     }
 
     const users = await User.find(query).select('-password -__v -createdAt -updatedAt');
