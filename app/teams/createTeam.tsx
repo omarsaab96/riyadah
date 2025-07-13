@@ -414,7 +414,7 @@ export default function CreateTeam() {
                                 <Text style={styles.profileButtonText}>Cancel</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>Save</Text>
+                                <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
                                 {saving && (
                                     <ActivityIndicator
                                         size="small"
