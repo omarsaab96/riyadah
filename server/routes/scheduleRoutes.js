@@ -152,7 +152,7 @@ router.get('/', authenticate, async (req, res) => {
     try {
         const { team, startDate, endDate, eventType } = req.query;
         const filters = {
-            club: req.user.club || req.user._id,
+            club: req.user._id,
             status: { $ne: 'cancelled' }
         };
 
@@ -210,7 +210,7 @@ router.post('/',
                 endDateTime,
                 eventType,
                 team,
-                club: req.user.club || req.user._id,
+                club: req.user._id,
                 createdBy: req.user._id,
                 ...rest
             });

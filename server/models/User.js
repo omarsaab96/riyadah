@@ -10,7 +10,11 @@ const userSchema = new mongoose.Schema({
   agreed: Boolean,
   bio: String,
   children: [String],
-  club: String,
+  clubs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }],
   contactInfo: {
     phone: String,
     email: String,
@@ -43,7 +47,7 @@ const userSchema = new mongoose.Schema({
     ref: 'User',
     default: []
   }],
-  memberOf:[{
+  memberOf: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team',
     default: []
@@ -63,7 +67,7 @@ const userSchema = new mongoose.Schema({
     default: true
   },
   phone: String,
-  role:String,
+  role: String,
   skills: {
     attack: Number,
     skill: Number,
