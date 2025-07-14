@@ -217,15 +217,11 @@ router.put('/:userId', authenticateToken, async (req, res) => {
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
-  // Optional: Make sure the token's userId matches the request param
-  // if (req.user.userId !== userId) {
-  //   return res.status(403).json({ error: 'Unauthorized access to user data' });
-  // }
-
   try {
     const user = await User.findById(userId)
     .select('-password')
-    .populate('isStaff');
+    .populate('isStaff')
+    .populate('memberOf');
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 

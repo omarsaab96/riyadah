@@ -423,6 +423,12 @@ export default function Profile() {
         }
     }
 
+    const getUserClubs = ()=>{
+        const teams = user.memberOf;
+        const clubs = user.isStaff;
+
+    }
+
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -848,15 +854,16 @@ export default function Profile() {
                                 <Text style={styles.title}>
                                     Club
                                 </Text>
-                                {user.club ? (
+                                {user.club && (
                                     <View>
-                                        {user.isStaff.length == 0 && <Text style={styles.paragraph}>{user.club}</Text>}
-                                        {user.isStaff.length > 0 && user.isStaff.map((staff, index) => (
-                                            <Text key={index} style={styles.paragraph}>{staff.name}</Text>
-                                        ))}
+                                        {(user.club == "Independent" && (!user.memberOf || user.memberOf == null || user.memberOf.length == 0) && (!user.isStaff || user.isStaff == null || user.isStaff.length == 0)) &&
+                                            <Text style={styles.paragraph}>Independent</Text>
+                                        }
+
+                                        {user.club == "Independent" && ((user.memberOf && user.memberOf != null && user.memberOf.length > 0) || (user.isStaff && user.isStaff != null && user.isStaff.length > 0)) && 
+                                            <Text style={styles.paragraph}>{getUserClubs()}</Text>
+                                        }
                                     </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
                                 )}
                             </View>}
 

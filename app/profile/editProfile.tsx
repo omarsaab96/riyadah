@@ -483,7 +483,7 @@ export default function EditProfile() {
                                 </View>
                             </View>
 
-                            {/* TEAM/CLUB */}
+                            {/* TEAM/CLUB
                             {user.type == "Athlete" && <View style={styles.entity}>
                                 <Text style={styles.title}>
                                     Team/club
@@ -495,7 +495,7 @@ export default function EditProfile() {
                                     value={user.club}
                                     onChangeText={(text) => updateField('club', text)}
                                 />
-                            </View>}
+                            </View>} */}
 
                             {/* DOB */}
                             <View style={styles.entity}>
