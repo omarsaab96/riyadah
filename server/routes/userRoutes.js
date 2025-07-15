@@ -153,36 +153,50 @@ router.post('/findAdmin', async (req, res) => {
 // @access  Private (Club or admin)
 router.get('/byClub/:clubId', async (req, res) => {
   const { clubId } = req.params;
+  const { keyword } = req.query;
 
   if (!mongoose.Types.ObjectId.isValid(clubId)) {
     return res.status(400).json({ success: false, message: 'Invalid club ID' });
   }
 
   try {
-    // Step 1: Find teams belonging to this club
+    // Find all teams that belong to the club
     const teams = await Team.find({ club: clubId }).select('_id');
     const teamIds = teams.map(team => team._id);
 
-    // Step 2: Find users who:
-    // - are members of one of these teams (memberOf)
-    // - or have clubId in their `clubs` array
-    // - or have clubId in their `isStaff` array
-    const athletes = await User.find({
+    // Build the base filter for membership/staff/club
+    const baseConditions = {
       $or: [
         { memberOf: { $in: teamIds } },
         { clubs: clubId },
         { isStaff: clubId }
       ]
-    })
+    };
+
+    // Add keyword search on name OR email if keyword is provided
+    const keywordFilter = keyword?.trim()
+      ? {
+        $or: [
+          { name: { $regex: keyword, $options: 'i' } },
+          { email: { $regex: keyword, $options: 'i' } }
+        ]
+      }
+      : {};
+
+    // Combine filters
+    const finalQuery = {
+      $and: [baseConditions, keywordFilter]
+    };
+
+    const users = await User.find(finalQuery)
       .select('_id name email image memberOf clubs isStaff')
-      .populate('memberOf', 'name') // optional: to show team names
-      .populate('clubs', 'name')    // optional
-      .populate('isStaff', 'name'); // optional
+      .populate('memberOf', 'name')
+      // .populate('clubs', 'name')
+      // .populate('isStaff', 'name');
 
-    res.status(200).json({ success: true, count: athletes.length, data: athletes });
-
+    res.status(200).json({ success: true, count: users.length, data: users });
   } catch (err) {
-    console.error('Error fetching club athletes:', err);
+    console.error('Error fetching club users:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -260,9 +274,9 @@ router.get('/:userId', async (req, res) => {
 
   try {
     const user = await User.findById(userId)
-    .select('-password')
-    .populate('isStaff')
-    .populate('memberOf');
+      .select('-password')
+      .populate('isStaff')
+      .populate('memberOf');
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 

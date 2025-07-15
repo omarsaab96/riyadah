@@ -1,4 +1,3 @@
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -28,6 +27,13 @@ export default function AddPayment() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [athletes, setAthletes] = useState([]);
+    const [keyword, setKeyword] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
+    const [searchindex, setSearchindex] = useState(0);
+    const [selectedUser, setSelectedUser] = useState(null);
+
 
     const [payment, setPayment] = useState({
         athleteId: '',
@@ -67,50 +73,78 @@ export default function AddPayment() {
     }, []);
 
     useEffect(() => {
-        const fetchAthletes = async () => {
-            try {
-                const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`https://riyadah.onrender.com/api/users/byclub/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    setAthletes(data.data);
-                    setLoading(false)
-                }
-            } catch (error) {
-                console.error('Error fetching teams:', error);
-            }
-        };
+        // const fetchAthletes = async () => {
+        //     try {
+        //         const token = await SecureStore.getItemAsync('userToken');
+        //         const response = await fetch(`https://riyadah.onrender.com/api/users/byclub/${userId}`, {
+        //             method: 'GET',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             }
+        //         });
+        //         const data = await response.json();
+        //         if (data.success) {
+        //             setAthletes(data.data);
+        //             setLoading(false)
+        //         }
+        //     } catch (error) {
+        //         console.error('Error fetching teams:', error);
+        //     }
+        // };
 
-        const fetchInventory = async () => {
-            try {
-                const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                console.log("data= ", data)
-                if (data.success) {
-                    setInventoryItems(data.data);
-                } else {
-                    console.log("Error fetching inventory")
-                }
-            } catch (error) {
-                console.error('Error fetching inventory:', error);
-            }
-        };
-
-        fetchTeams();
-        fetchInventory();
+        // fetchAthletes();
     }, [user]);
+
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        // Clear previous timeout
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        // Set new debounce timeout
+        const timeout = setTimeout(() => {
+            if (text.trim().length >= 3) {
+                searchUsers(text);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500); // delay: 500ms
+
+        setDebounceTimeout(timeout);
+    };
+
+    const searchUsers = async (text: string) => {
+        setSearchindex(1)
+
+        try {
+            setSearching(true);
+            const token = await SecureStore.getItemAsync('userToken');
+            const response = await fetch(`https://riyadah.onrender.com/api/users/byclub/${userId}?keyword=${encodeURIComponent(keyword)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setSearchResults(data.data);
+            } else {
+                Alert.alert('Error', 'Failed to search users');
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error('Error searching users:', error);
+            Alert.alert('Error', 'Failed to search users');
+            setSearchResults([]);
+        } finally {
+            setSearching(false);
+        }
+    };
 
     const handleSave = async () => {
         setSaving(true);
@@ -136,6 +170,10 @@ export default function AddPayment() {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleUserSelect = (user: any) => {
+
     };
 
     return (
@@ -177,63 +215,134 @@ export default function AddPayment() {
 
                     <View style={styles.contentContainer}>
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Athlete</Text>
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={payment.athleteId}
-                                    onValueChange={(val) => setPayment({ ...payment, athleteId: val })}
-                                    style={styles.picker}
-                                >
-                                    <Picker.Item label="Select Athlete" value="" />
-                                    {athletes.map((athlete) => (
-                                        <Picker.Item
-                                            key={athlete._id}
-                                            label={athlete.name}
-                                            value={athlete._id}
+                            <Text style={styles.label}>Athlete or coach</Text>
+                            <View style={styles.formGroup}>
+                                <View style={styles.searchContainer}>
+                                    <View style={{
+                                        marginBottom: 16,
+                                        flexDirection: 'row'
+                                    }}>
+                                        <TextInput
+                                            style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                                            placeholder="Search by name or email (min. 3 characters)"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={keyword}
+                                            onChangeText={handleSearchInput}
                                         />
-                                    ))}
-                                </Picker>
+                                        {searching &&
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#FF4000"
+                                                style={styles.searchLoader}
+                                            />
+                                        }
+                                    </View>
+                                </View>
+
+                                {!searching && !selectedUser && searchResults.length > 0 && (
+                                    <View>
+
+                                        <View style={styles.resultsContainer}>
+                                            {searchResults.map((item) => (
+                                                <TouchableOpacity
+                                                    key={item._id}
+                                                    style={styles.userItem}
+                                                    onPress={() => handleUserSelect(item)}
+                                                >
+                                                    <Image
+                                                        source={
+                                                            item.image
+                                                                ? { uri: item.image }
+                                                                : require('../../assets/avatar.png')
+                                                        }
+                                                        style={[styles.userAvatar]}
+                                                        resizeMode="contain"
+                                                    />
+                                                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <View>
+                                                            <Text style={styles.userName}>{item.name}</Text>
+                                                            <Text style={styles.userEmail}>{item.email}</Text>
+                                                        </View>
+                                                        <View>
+                                                            <Text style={{ color: '#FF4000' }}>Add as staff</Text>
+                                                        </View>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+
+                                        <Text style={{ fontFamily: 'Manrope', marginTop: 10, fontWeight: 'bold' }}>
+                                            Can't find the account you are looking for?
+                                        </Text>
+
+                                        <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                            Don't worry you can still create a new staff by clicking on the button below
+                                        </Text>
+
+                                        <TouchableOpacity
+                                            style={styles.addStaffAccountBtn}
+                                            onPress={() => handleUserSelect(null)}
+                                        >
+                                            <Text style={styles.addStaffAccountBtnText}>Add new staff without account</Text>
+                                        </TouchableOpacity>
+
+                                    </View>
+                                )}
+
+                                {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && keyword.trim().length >= 3 && (
+                                    <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
+                                        <Text style={{ fontFamily: 'Manrope', fontWeight: 'bold' }}>
+                                            No results.
+                                        </Text>
+
+                                        <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                            Looks like the user you are looking for does not have an account on Riyadah.
+                                        </Text>
+                                    </View>
+                                )}
                             </View>
                         </View>
 
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Amount (USD)</Text>
-                            <TextInput
-                                style={styles.input}
-                                keyboardType="numeric"
-                                value={payment.amount}
-                                onChangeText={(val) => setPayment({ ...payment, amount: val })}
-                                placeholder="e.g. 50.00"
-                            />
-                        </View>
+                        {selectedUser && <View>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Amount (USD)</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    keyboardType="numeric"
+                                    value={payment.amount}
+                                    onChangeText={(val) => setPayment({ ...payment, amount: val })}
+                                    placeholder="e.g. 50.00"
+                                />
+                            </View>
 
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Description</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={payment.description}
-                                onChangeText={(val) => setPayment({ ...payment, description: val })}
-                                placeholder="e.g. Registration Fee"
-                            />
-                        </View>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Description</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={payment.description}
+                                    onChangeText={(val) => setPayment({ ...payment, description: val })}
+                                    placeholder="e.g. Registration Fee"
+                                />
+                            </View>
 
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Due Date</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={payment.dueDate}
-                                onChangeText={(val) => setPayment({ ...payment, dueDate: val })}
-                                placeholder="YYYY-MM-DD"
-                            />
-                        </View>
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Due Date</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={payment.dueDate}
+                                    onChangeText={(val) => setPayment({ ...payment, dueDate: val })}
+                                    placeholder="YYYY-MM-DD"
+                                />
+                            </View>
 
-                        <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
-                            {saving ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Text style={styles.saveButtonText}>Save Payment</Text>
-                            )}
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+                                {saving ? (
+                                    <ActivityIndicator size="small" color="#fff" />
+                                ) : (
+                                    <Text style={styles.saveButtonText}>Save Payment</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>}
                     </View>
                 </ScrollView>
             </View>
@@ -358,5 +467,59 @@ const styles = StyleSheet.create({
     contentContainer: {
         padding: 20,
         paddingBottom: 130
+    },
+    formGroup: {
+        marginBottom: 10,
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: '50%',
+        right: 10,
+        transform: [{ translateY: '-50%' }]
+    },
+    resultsContainer: {
+
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    userItem: {
+        borderWidth: 1,
+        borderColor: '#eee',
+        borderRadius: 8,
+        padding: 5,
+        marginBottom: 10,
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    userName: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    userEmail: {
+        fontFamily: 'Manrope',
+        color: '#666',
+        fontSize: 14,
+    },
+    userAvatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 10,
+        backgroundColor: "#FF4000"
+    },
+    addStaffAccountBtn: {
+        borderRadius: 5,
+        padding: 10,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        marginBottom: 10,
+        alignSelf: 'flex-start'
+    },
+    addStaffAccountBtnText: {
+        fontSize: 18,
+        color: '#150000',
+        fontFamily: 'Bebas',
     },
 });
