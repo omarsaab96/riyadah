@@ -1,3 +1,4 @@
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -173,7 +174,14 @@ export default function AddPayment() {
     };
 
     const handleUserSelect = (user: any) => {
+        setSelectedUser(user)
+    };
 
+    const handleClearSelection = () => {
+        setSelectedUser(null);
+        setKeyword('');
+        setSearchResults([])
+        setSearchindex(0)
     };
 
     return (
@@ -214,7 +222,7 @@ export default function AddPayment() {
                     </View>}
 
                     <View style={styles.contentContainer}>
-                        <View style={styles.inputContainer}>
+                        {!selectedUser && <View style={styles.inputContainer}>
                             <Text style={styles.label}>Athlete or coach</Text>
                             <View style={styles.formGroup}>
                                 <View style={styles.searchContainer}>
@@ -241,7 +249,6 @@ export default function AddPayment() {
 
                                 {!searching && !selectedUser && searchResults.length > 0 && (
                                     <View>
-
                                         <View style={styles.resultsContainer}>
                                             {searchResults.map((item) => (
                                                 <TouchableOpacity
@@ -264,28 +271,12 @@ export default function AddPayment() {
                                                             <Text style={styles.userEmail}>{item.email}</Text>
                                                         </View>
                                                         <View>
-                                                            <Text style={{ color: '#FF4000' }}>Add as staff</Text>
+                                                            <Text style={{ color: '#FF4000' }}>Select</Text>
                                                         </View>
                                                     </View>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
-
-                                        <Text style={{ fontFamily: 'Manrope', marginTop: 10, fontWeight: 'bold' }}>
-                                            Can't find the account you are looking for?
-                                        </Text>
-
-                                        <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
-                                            Don't worry you can still create a new staff by clicking on the button below
-                                        </Text>
-
-                                        <TouchableOpacity
-                                            style={styles.addStaffAccountBtn}
-                                            onPress={() => handleUserSelect(null)}
-                                        >
-                                            <Text style={styles.addStaffAccountBtnText}>Add new staff without account</Text>
-                                        </TouchableOpacity>
-
                                     </View>
                                 )}
 
@@ -301,9 +292,34 @@ export default function AddPayment() {
                                     </View>
                                 )}
                             </View>
-                        </View>
+                        </View>}
 
                         {selectedUser && <View>
+
+                            <Text style={styles.label}>Selected athlete or coach</Text>
+
+                            <View style={styles.selectedUserContainer}>
+                                <Image
+                                    source={
+                                        selectedUser.image != null
+                                            ? { uri: selectedUser.image }
+                                            : require('../../assets/avatar.png')
+                                    }
+                                    style={styles.userAvatar}
+                                    resizeMode="contain"
+                                />
+                                <View style={styles.selectedUserInfo}>
+                                    <Text style={styles.selectedUserName}>{selectedUser.name}</Text>
+                                    <Text style={styles.selectedUserEmail}>{selectedUser.email}</Text>
+                                </View>
+                                <TouchableOpacity
+                                    style={styles.clearSelectionButton}
+                                    onPress={handleClearSelection}
+                                >
+                                    <MaterialIcons name="close" size={20} color="#FF4000" />
+                                </TouchableOpacity>
+                            </View>
+
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Amount (USD)</Text>
                                 <TextInput
@@ -345,8 +361,8 @@ export default function AddPayment() {
                         </View>}
                     </View>
                 </ScrollView>
-            </View>
-        </KeyboardAvoidingView>
+            </View >
+        </KeyboardAvoidingView >
     );
 }
 
@@ -521,5 +537,29 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#150000',
         fontFamily: 'Bebas',
+    },
+    selectedUserContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 20,
+    },
+    selectedUserInfo: {
+        flex: 1,
+    },
+    selectedUserName: {
+        fontFamily: 'Manrope',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    selectedUserEmail: {
+        fontFamily: 'Manrope',
+        color: '#666',
+        fontSize: 14,
+    },
+    clearSelectionButton: {
+        marginLeft: 10,
     },
 });

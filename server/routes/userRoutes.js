@@ -165,7 +165,7 @@ router.get('/byClub/:clubId', async (req, res) => {
     const teams = await Team.find({ club: clubId }).select('_id');
     const teamIds = teams.map(team => team._id);
 
-    // Build the base filter for membership/staff/club
+    // Base condition for users linked to this club
     const baseConditions = {
       $or: [
         { memberOf: { $in: teamIds } },
@@ -174,26 +174,26 @@ router.get('/byClub/:clubId', async (req, res) => {
       ]
     };
 
-    // Add keyword search on name OR email if keyword is provided
-    const keywordFilter = keyword?.trim()
-      ? {
-        $or: [
-          { name: { $regex: keyword, $options: 'i' } },
-          { email: { $regex: keyword, $options: 'i' } }
-        ]
-      }
-      : {};
+    // If keyword exists, add keyword filter
+    let finalQuery = baseConditions;
 
-    // Combine filters
-    const finalQuery = {
-      $and: [baseConditions, keywordFilter]
-    };
+    if (keyword?.trim()) {
+      finalQuery = {
+        $and: [
+          baseConditions,
+          {
+            $or: [
+              { name: { $regex: keyword, $options: 'i' } },
+              { email: { $regex: keyword, $options: 'i' } }
+            ]
+          }
+        ]
+      };
+    }
 
     const users = await User.find(finalQuery)
       .select('_id name email image memberOf clubs isStaff')
-      .populate('memberOf', 'name')
-      // .populate('clubs', 'name')
-      // .populate('isStaff', 'name');
+      .populate('memberOf', 'name');
 
     res.status(200).json({ success: true, count: users.length, data: users });
   } catch (err) {
@@ -201,6 +201,7 @@ router.get('/byClub/:clubId', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 // Get all users
 router.get('/', async (req, res) => {
