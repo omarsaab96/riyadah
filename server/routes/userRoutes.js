@@ -183,8 +183,8 @@ router.get('/byClub/:clubId', async (req, res) => {
           baseConditions,
           {
             $or: [
-              { name: { $regex: '^', $options: 'i' } },
-              { email: { $regex: '^', $options: 'i' } }
+              { name: { $regex: trimmedKeyword, $options: 'i' } },
+              { email: { $regex: trimmedKeyword, $options: 'i' } }
             ]
           }
         ]
