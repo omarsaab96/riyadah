@@ -178,6 +178,7 @@ router.get('/byClub/:clubId', async (req, res) => {
     let finalQuery = baseConditions;
 
     if (keyword?.trim()) {
+      const trimmedKeyword = keyword.trim();
       finalQuery = {
         $and: [
           baseConditions,
