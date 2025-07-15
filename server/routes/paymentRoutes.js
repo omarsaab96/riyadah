@@ -21,13 +21,11 @@ const authenticateToken = (req, res, next) => {
 
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { user, club, team, type, amount, dueDate, note } = req.body;
+    const { user, club, type, amount, dueDate, note } = req.body;
 
     const payment = await Payment.create({
       user,
       club,
-      team,
-      type,
       amount,
       dueDate,
       note,

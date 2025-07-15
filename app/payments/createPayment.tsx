@@ -37,15 +37,6 @@ export default function AddPayment() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState('0 USD');
 
-
-    const [payment, setPayment] = useState({
-        athleteId: '',
-        amount: '',
-        description: '',
-        dueDate: '',
-        status: 'Pending'
-    });
-
     useEffect(() => {
         const fetchUser = async () => {
             const token = await SecureStore.getItemAsync('userToken');
@@ -157,16 +148,26 @@ export default function AddPayment() {
 
     const handleSave = async () => {
         setSaving(true);
+        
+        const paymentObject = useState({
+            user: selectedUser._id,
+            club: userId,
+            amount: paymentAmount,
+            note: '',
+            dueDate: '',
+            status: 'Pending'
+        });
+
         const token = await SecureStore.getItemAsync('userToken');
 
         try {
-            const res = await fetch(`https://riyadah.onrender.com/api/payments`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/financials`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(payment)
+                body: JSON.stringify(paymentObject)
             });
 
             console.log(res)
