@@ -1,0 +1,362 @@
+import { Picker } from '@react-native-picker/picker';
+import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
+
+const { width } = Dimensions.get('window');
+
+export default function AddPayment() {
+    const [userId, setUserId] = useState(null);
+    const [user, setUser] = useState(null);
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState('');
+    const [athletes, setAthletes] = useState([]);
+
+    const [payment, setPayment] = useState({
+        athleteId: '',
+        amount: '',
+        description: '',
+        dueDate: '',
+        status: 'Pending'
+    });
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            console.log(token)
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                console.log("DECODED: ", decodedToken)
+                setUserId(decodedToken.userId);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
+                }
+                setLoading(false)
+            } else {
+                console.log("no token",)
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
+        const fetchAthletes = async () => {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const response = await fetch(`https://riyadah.onrender.com/api/users/byclub/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setAthletes(data.data);
+                    setLoading(false)
+                }
+            } catch (error) {
+                console.error('Error fetching teams:', error);
+            }
+        };
+
+        const fetchInventory = async () => {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                console.log("data= ", data)
+                if (data.success) {
+                    setInventoryItems(data.data);
+                } else {
+                    console.log("Error fetching inventory")
+                }
+            } catch (error) {
+                console.error('Error fetching inventory:', error);
+            }
+        };
+
+        fetchTeams();
+        fetchInventory();
+    }, [user]);
+
+    const handleSave = async () => {
+        setSaving(true);
+        const token = await SecureStore.getItemAsync('userToken');
+
+        try {
+            const res = await fetch(`https://riyadah.onrender.com/api/payments`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payment)
+            });
+
+            if (!res.ok) throw new Error('Failed to save payment');
+
+            Alert.alert('Success', 'Payment recorded successfully', [
+                { text: 'OK', onPress: () => router.back() }
+            ]);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+        >
+            <View style={styles.container}>
+                <View style={styles.pageHeader}>
+                    <Image
+                        source={require('../../assets/logo_white.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
+
+                    <View style={styles.headerTextBlock}>
+                        <Text style={styles.pageTitle}>New Payment</Text>
+                        {!loading && <Text style={styles.pageDesc}>Create a new payment for your club</Text>}
+
+                        {loading &&
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#fff"
+                                    style={{ transform: [{ scale: 1.25 }] }}
+                                />
+                            </View>
+                        }
+                    </View>
+
+                    <Text style={styles.ghostText}>Payment</Text>
+                </View>
+
+                <ScrollView>
+                    {error != '' && <View style={styles.error}>
+                        <View style={styles.errorIcon}></View>
+                        <Text style={styles.errorText}>{error}</Text>
+                    </View>}
+
+                    <View style={styles.contentContainer}>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Athlete</Text>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={payment.athleteId}
+                                    onValueChange={(val) => setPayment({ ...payment, athleteId: val })}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item label="Select Athlete" value="" />
+                                    {athletes.map((athlete) => (
+                                        <Picker.Item
+                                            key={athlete._id}
+                                            label={athlete.name}
+                                            value={athlete._id}
+                                        />
+                                    ))}
+                                </Picker>
+                            </View>
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Amount (USD)</Text>
+                            <TextInput
+                                style={styles.input}
+                                keyboardType="numeric"
+                                value={payment.amount}
+                                onChangeText={(val) => setPayment({ ...payment, amount: val })}
+                                placeholder="e.g. 50.00"
+                            />
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Description</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={payment.description}
+                                onChangeText={(val) => setPayment({ ...payment, description: val })}
+                                placeholder="e.g. Registration Fee"
+                            />
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Due Date</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={payment.dueDate}
+                                onChangeText={(val) => setPayment({ ...payment, dueDate: val })}
+                                placeholder="YYYY-MM-DD"
+                            />
+                        </View>
+
+                        <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+                            {saving ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.saveButtonText}>Save Payment</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </View>
+        </KeyboardAvoidingView>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        backgroundColor: '#fff',
+        height: '100%'
+    },
+    inputContainer: {
+        marginBottom: 15
+    },
+    label: {
+        fontWeight: 'bold',
+        marginBottom: 5,
+        color: '#444'
+    },
+    input: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 20,
+        color: 'black',
+        borderRadius: 10
+    },
+    pickerContainer: {
+        borderRadius: 8,
+        overflow: 'hidden',
+        marginBottom: 20,
+    },
+    picker: {
+        width: '100%',
+        fontFamily: 'Manrope',
+        borderWidth: 0,
+        backgroundColor: '#F4F4F4',
+    },
+    saveButton: {
+        backgroundColor: '#FF4000',
+        padding: 15,
+        borderRadius: 6,
+        alignItems: 'center',
+        marginTop: 20
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontWeight: 'bold'
+    },
+    pageHeader: {
+        backgroundColor: '#FF4000',
+        height: 270,
+        // marginBottom: 30
+    },
+    logo: {
+        width: 120,
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 1,
+    },
+    headerTextBlock: {
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        width: width - 40,
+    },
+    pageTitle: {
+        color: '#ffffff',
+        fontFamily: 'Bebas',
+        fontSize: 30,
+    },
+    pageDesc: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontFamily: 'Manrope'
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    headerTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 24,
+        color: '#111',
+    },
+    ghostText: {
+        color: '#ffffff',
+        fontSize: 128,
+        fontFamily: 'Bebas',
+        position: 'absolute',
+        bottom: 20,
+        right: -5,
+        opacity: 0.2
+    },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
+    },
+    contentContainer: {
+        padding: 20,
+        paddingBottom: 130
+    },
+});

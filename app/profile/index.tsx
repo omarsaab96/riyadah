@@ -1670,9 +1670,9 @@ export default function Profile() {
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.addButton}
-                                            onPress={() => router.push('/inventory/createInventory')}
+                                            onPress={() => router.push('/payments/createPayment')}
                                         >
-                                            <Text style={styles.addButtonText}>+ Add Item</Text>
+                                            <Text style={styles.addButtonText}>+ Add Payment</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -1714,18 +1714,18 @@ export default function Profile() {
                                     ))
                                 ) : (
                                     <View style={styles.emptyState}>
-                                        <Text style={styles.emptyStateTitle}>No Items</Text>
+                                        <Text style={styles.emptyStateTitle}>No payments</Text>
                                         <Text style={styles.emptyStateText}>
                                             {userId == user._id
-                                                ? "Add your first inventory item to get started"
-                                                : "This club hasn't added any inventory items yet"}
+                                                ? "Add your first payment to get started"
+                                                : "This club hasn't added any payments yet"}
                                         </Text>
                                         {userId == user._id && (
                                             <TouchableOpacity
                                                 style={styles.emptyStateButton}
-                                                onPress={() => router.push('/inventory/createInventory')}
+                                                onPress={() => router.push('/payments/createPayment')}
                                             >
-                                                <Text style={styles.emptyStateButtonText}>Add Item</Text>
+                                                <Text style={styles.emptyStateButtonText}>Add Payment</Text>
                                             </TouchableOpacity>
                                         )}
                                     </View>

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Team = require('../models/Team');
+
 const jwt = require("jsonwebtoken");
 
 // Middleware to verify token
@@ -146,6 +148,45 @@ router.post('/findAdmin', async (req, res) => {
   }
 });
 
+// @desc    Get all athletes in a club
+// @route   GET /api/users/byclub/:clubId
+// @access  Private (Club or admin)
+router.get('/byClub/:clubId', async (req, res) => {
+  const { clubId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(clubId)) {
+    return res.status(400).json({ success: false, message: 'Invalid club ID' });
+  }
+
+  try {
+    // Step 1: Find teams belonging to this club
+    const teams = await Team.find({ club: clubId }).select('_id');
+    const teamIds = teams.map(team => team._id);
+
+    // Step 2: Find users who:
+    // - are members of one of these teams (memberOf)
+    // - or have clubId in their `clubs` array
+    // - or have clubId in their `isStaff` array
+    const athletes = await User.find({
+      $or: [
+        { memberOf: { $in: teamIds } },
+        { clubs: clubId },
+        { isStaff: clubId }
+      ]
+    })
+      .select('_id name email image memberOf clubs isStaff')
+      .populate('memberOf', 'name') // optional: to show team names
+      .populate('clubs', 'name')    // optional
+      .populate('isStaff', 'name'); // optional
+
+    res.status(200).json({ success: true, count: athletes.length, data: athletes });
+
+  } catch (err) {
+    console.error('Error fetching club athletes:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Get all users
 router.get('/', async (req, res) => {
   const users = await User.find();
@@ -231,6 +272,5 @@ router.get('/:userId', async (req, res) => {
     res.status(500).json({ error: 'Something went wrong' });
   }
 });
-
 
 module.exports = router;

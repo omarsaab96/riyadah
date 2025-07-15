@@ -915,7 +915,7 @@ const styles = StyleSheet.create({
     quantityButtonText: {
         color: '#fff',
         fontSize: 24,
-        lineHeight:24
+        lineHeight: 24
     },
     quantityInput: {
         width: 50,
@@ -925,8 +925,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 4,
         fontSize: 16,
-        padding:0,
-        lineHeight:1
+        padding: 0,
+        lineHeight: 1
     },
     quantityInputSmall: {
         width: 40,
@@ -936,7 +936,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 4,
         fontSize: 14,
-        lineHeight:1
+        lineHeight: 1
     },
     addSelectedButton: {
         backgroundColor: '#FF4000',
@@ -958,12 +958,12 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginRight: 8,
         marginBottom: 8,
-        flex:1
+        flex: 1
     },
     equipmentText: {
         marginRight: 8,
         fontFamily: 'Manrope',
-        fontSize:14,
+        fontSize: 14,
         flex: 1,
     },
     equipmentQuantity: {
@@ -971,6 +971,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 8,
     },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
+    }
 });
 
 export default CreateEventScreen;
