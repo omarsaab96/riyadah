@@ -149,18 +149,29 @@ router.post('/findAdmin', async (req, res) => {
   }
 });
 
+// @desc    Get all athletes in a club
+// @route   GET /api/users/byclub/:clubId
+// @access  Private (Club or admin)
 router.get('/byClub/:clubId', async (req, res) => {
   const { clubId } = req.params;
-  const keyword = req.query.keyword?.trim();
+  const { keyword } = req.query;
+
+  console.log('Received search for club:', clubId, 'keyword:', keyword); // 👈 Log input
+
 
   if (!mongoose.Types.ObjectId.isValid(clubId)) {
     return res.status(400).json({ success: false, message: 'Invalid club ID' });
   }
 
   try {
+    // Find all teams that belong to the club
     const teams = await Team.find({ club: clubId }).select('_id');
     const teamIds = teams.map(team => team._id);
 
+    console.log('Found teams for club:', teamIds); // 👈 Log teams
+
+
+    // Base condition for users linked to this club
     const baseConditions = {
       $or: [
         { memberOf: { $in: teamIds } },
@@ -169,18 +180,28 @@ router.get('/byClub/:clubId', async (req, res) => {
       ]
     };
 
-    const searchConditions = keyword
-      ? {
-          $or: [
-            { name: { $regex: keyword, $options: 'i' } },
-            { email: { $regex: keyword, $options: 'i' } }
-          ]
-        }
-      : {};
+    // If keyword exists, add keyword filter
+    let finalQuery = baseConditions;
 
-    const finalQuery = keyword
-      ? { $and: [baseConditions, searchConditions] }
-      : baseConditions;
+    if (keyword?.trim()) {
+      const trimmedKeyword = keyword.trim();
+
+      console.log('Searching with keyword:', trimmedKeyword); // 👈 Log keyword
+
+      finalQuery = {
+        $and: [
+          baseConditions,
+          {
+            $or: [
+              { name: { $regex: trimmedKeyword, $options: 'i' } },
+              { email: { $regex: trimmedKeyword, $options: 'i' } }
+            ]
+          }
+        ]
+      };
+    }
+
+    console.log('Final MongoDB query:', JSON.stringify(finalQuery, null, 2)); // 👈 Log full query
 
     const users = await User.find(finalQuery)
       .select('_id name email image memberOf clubs isStaff')
@@ -192,7 +213,6 @@ router.get('/byClub/:clubId', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
 
 
 // Get all users

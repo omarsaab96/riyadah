@@ -124,7 +124,10 @@ export default function AddPayment() {
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const response = await fetch(`https://riyadah.onrender.com/api/users/byclub/${userId}?keyword=${encodeURIComponent(keyword)}`, {
+            const url = `https://riyadah.onrender.com/api/users/byclub/${userId}?keyword=${encodeURIComponent(text)}`;
+            console.log('Search URL:', url); // 👈 Log the URL being called
+
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -132,6 +135,9 @@ export default function AddPayment() {
             });
 
             const data = await response.json();
+
+            console.log('API Response:', data); // 👈 Log the full response
+
             if (data.success) {
                 setSearchResults(data.data);
             } else {
