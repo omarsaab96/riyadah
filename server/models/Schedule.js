@@ -104,13 +104,13 @@ scheduleSchema.virtual('duration').get(function () {
 });
 
 // Pre-save hook to validate dates
-scheduleSchema.pre('save', function (next) {
-    if (this.repeats !== 'No' && !this.repeatEndDate) {
-        throw new Error('Repeat end date is required for recurring events');
-    }
-    this.updatedAt = Date.now();
-    next();
-});
+// scheduleSchema.pre('save', function (next) {
+//     if (this.repeats !== 'No' && !this.repeatEndDate) {
+//         throw new Error('Repeat end date is required for recurring events');
+//     }
+//     this.updatedAt = Date.now();
+//     next();
+// });
 
 // Static method to get events in date range
 scheduleSchema.statics.getEventsInRange = async function (clubId, startDate, endDate) {

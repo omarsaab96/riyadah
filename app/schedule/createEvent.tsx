@@ -17,6 +17,7 @@ const CreateEventScreen = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [teams, setTeams] = useState([]);
+    const [repeat, setRepeat] = useState('No');
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -31,6 +32,7 @@ const CreateEventScreen = () => {
         },
         onlineLink: '',
         trainingFocus: '',
+        repeats:'No',
         opponent: {
             name: '',
             logo: ''
@@ -278,7 +280,8 @@ const CreateEventScreen = () => {
                 ...formData,
                 startDateTime: formData.startDateTime.toISOString(),
                 endDateTime: formData.endDateTime.toISOString(),
-                team: formData.team
+                team: formData.team,
+                repeats:repeat
             };
 
             // Clean up empty fields
@@ -448,6 +451,23 @@ const CreateEventScreen = () => {
                                 onChange={onChange}
                             />
                         )}
+
+                        <View style={styles.formGroup}>
+                            <Text style={styles.label}>Recurring event</Text>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={'No'}
+                                    onValueChange={setRepeat}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item label="No" value="No" />
+                                    <Picker.Item label="Daily" value="Daily" />
+                                    <Picker.Item label="Weekly" value="Weekly" />
+                                    <Picker.Item label="Monthly" value="Monthly" />
+                                    <Picker.Item label="Yearly" value="Yearly" />
+                                </Picker>
+                            </View>
+                        </View>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Location Type</Text>

@@ -48,6 +48,7 @@ export default function Profile() {
     const [inventoryLoading, setInventoryLoading] = useState(true);
     const [financialsLoading, setFinancialsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
+    const [activePaymentTab, setActivePaymentTab] = useState('pending');
     const [adminUser, setAdminUser] = useState(null);
     const [error, setError] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -1565,7 +1566,7 @@ export default function Profile() {
                 >
                     <View style={styles.contentContainer}>
                         {inventoryLoading ? (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 20 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#FF4000"
@@ -1656,7 +1657,7 @@ export default function Profile() {
                 >
                     <View style={styles.contentContainer}>
                         {financialsLoading ? (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 0 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#FF4000"
@@ -1677,41 +1678,101 @@ export default function Profile() {
                                     )}
                                 </View>
 
-                                {inventory && inventory.length > 0 ? (
-                                    inventory.map((item) => (
-                                        <TouchableOpacity
-                                            key={item._id}
-                                            style={styles.inventoryCard}
-                                            onPress={() => router.push(`/inventory/${item._id}`)}
-                                        >
-                                            <View style={styles.inventoryHeader}>
-                                                <View style={[styles.inventoryIcon, styles.defaultInventoryIcon]}>
-                                                    <FontAwesome5 name="box-open" size={24} color="#fff" />
-                                                </View>
-                                                <View style={styles.inventoryInfo}>
-                                                    <Text style={styles.inventoryName}>{item.itemName}</Text>
-                                                    <Text style={styles.inventoryCategory}>{item.category}</Text>
-                                                </View>
-                                                <View style={styles.inventoryStats}>
-                                                    <Text style={styles.inventoryStatValue}>{item.quantity}</Text>
-                                                    <Text style={styles.inventoryStatLabel}>In Stock</Text>
-                                                </View>
-                                            </View>
+                                {(unpaidPayments && unpaidPayments.length > 0) || (paidPayments && paidPayments.length > 0) ? (
+                                    <View>
+                                        <View style={styles.sectionTabs}>
+                                            <TouchableOpacity style={[
+                                                styles.sectionTab,
+                                                activePaymentTab == "pending" && styles.sectionTabActive
+                                            ]}
+                                                onPress={() => { setActivePaymentTab('pending') }}
+                                            >
+                                                <Text style={styles.sectionTabText}>Pending</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity style={[
+                                                styles.sectionTab,
+                                                activePaymentTab == "paid" && styles.sectionTabActive
+                                            ]}
+                                                onPress={() => { setActivePaymentTab('paid') }}
+                                            >
+                                                <Text style={styles.sectionTabText}>Paid</Text>
+                                            </TouchableOpacity>
+                                        </View>
 
-                                            <View style={styles.inventoryDetails}>
-                                                <View style={styles.inventoryDetailRow}>
-                                                    <Text style={styles.inventoryDetailLabel}>Unit Price:</Text>
-                                                    <Text style={styles.inventoryDetailValue}>{item.unitPrice}</Text>
-                                                </View>
-                                                {item.description && (
-                                                    <View style={[styles.inventoryDetailRow, { marginTop: 5 }]}>
-                                                        <Text style={styles.inventoryDetailLabel}>Description:</Text>
-                                                        <Text style={styles.inventoryDetailValue} numberOfLines={1}>{item.description}</Text>
+                                        {activePaymentTab == "pending" &&
+                                            <>
+                                                {/* <Text style={[styles.title, { marginBottom: 10 }]}>Pending payments</Text> */}
+                                                {unpaidPayments && unpaidPayments.length > 0 ? (
+                                                    <View>
+                                                        {unpaidPayments.map((item) => (
+                                                            <TouchableOpacity
+                                                                key={item._id}
+                                                                style={styles.inventoryCard}
+                                                                onPress={() => router.push(`/payments/details/${item._id}`)}
+                                                            >
+                                                                <View style={styles.inventoryHeader}>
+                                                                    <View style={styles.inventoryInfo}>
+                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                                    </View>
+                                                                    <View style={styles.inventoryStats}>
+                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                                    </View>
+                                                                </View>
+
+                                                                <View style={styles.inventoryDetails}>
+                                                                    <View style={styles.inventoryDetailRow}>
+                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
+                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                                    </View>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        ))}
                                                     </View>
+                                                ) : (
+                                                    <Text>No pending payments</Text>
                                                 )}
-                                            </View>
-                                        </TouchableOpacity>
-                                    ))
+                                            </>
+                                        }
+
+                                        {activePaymentTab == "paid" &&
+                                            <>
+                                                {/* <Text style={[styles.title, { marginBottom: 10 }]}>Paid payments</Text> */}
+                                                {paidPayments && paidPayments.length > 0 ? (
+                                                    <View>
+                                                        {paidPayments.map((item) => (
+                                                            <TouchableOpacity
+                                                                key={item._id}
+                                                                style={styles.inventoryCard}
+                                                                onPress={() => router.push(`/payments/details/${item._id}`)}
+                                                            >
+                                                                <View style={styles.inventoryHeader}>
+                                                                    <View style={styles.inventoryInfo}>
+                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                                    </View>
+                                                                    <View style={styles.inventoryStats}>
+                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                                    </View>
+                                                                </View>
+
+                                                                <View style={styles.inventoryDetails}>
+                                                                    <View style={styles.inventoryDetailRow}>
+                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
+                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                                    </View>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </View>
+                                                ) : (
+                                                    <Text>No paid payments</Text>
+                                                )}
+                                            </>
+                                        }
+                                    </View>
                                 ) : (
                                     <View style={styles.emptyState}>
                                         <Text style={styles.emptyStateTitle}>No payments</Text>
@@ -2748,6 +2809,29 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         marginLeft: 10,
     },
-
+    sectionTabs: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+        borderWidth: 1,
+        borderRadius: 20,
+        borderColor: '#ddd',
+        padding: 3,
+        gap: 5
+    },
+    sectionTab: {
+        flex: 1,
+        backgroundColor: '#ddd',
+        borderRadius: 20,
+        alignItems: 'center'
+    },
+    sectionTabText: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        padding: 5,
+    },
+    sectionTabActive: {
+        backgroundColor: '#FF4000'
+    }
 
 });
