@@ -36,6 +36,8 @@ export default function AddPayment() {
     const [searchindex, setSearchindex] = useState(0);
     const [selectedUser, setSelectedUser] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState('0 USD');
+    const [paymentNote, setPaymentNote] = useState('');
+    const [paymentDueDate, setPaymentDueDate] = useState(Date.now());
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -148,7 +150,7 @@ export default function AddPayment() {
 
     const handleSave = async () => {
         setSaving(true);
-        
+
         const paymentObject = useState({
             user: selectedUser._id,
             club: userId,
@@ -157,10 +159,11 @@ export default function AddPayment() {
             dueDate: '',
             status: 'Pending'
         });
-
+        console.log('getting token')
         const token = await SecureStore.getItemAsync('userToken');
-
+        console.log('got token')
         try {
+            console.log(paymentObject)
             const res = await fetch(`https://riyadah.onrender.com/api/financials`, {
                 method: 'POST',
                 headers: {
@@ -364,12 +367,12 @@ export default function AddPayment() {
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Description</Text>
+                                <Text style={styles.label}>Note</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={payment.description}
-                                    onChangeText={(val) => setPayment({ ...payment, description: val })}
-                                    placeholder="e.g. Registration Fee"
+                                    value={paymentNote}
+                                    onChangeText={(val) => setPaymentNote(val)}
+                                    placeholder="Comment or note ..."
                                 />
                             </View>
 
@@ -377,8 +380,8 @@ export default function AddPayment() {
                                 <Text style={styles.label}>Due Date</Text>
                                 <TextInput
                                     style={styles.input}
-                                    value={payment.dueDate}
-                                    onChangeText={(val) => setPayment({ ...payment, dueDate: val })}
+                                    value={paymentDueDate}
+                                    onChangeText={(val) => setPaymentDueDate(val)}
                                     placeholder="YYYY-MM-DD"
                                 />
                             </View>
