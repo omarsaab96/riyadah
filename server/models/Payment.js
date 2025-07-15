@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const paymentSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   club: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { type: String, default: null }, // e.g., "registration", "monthly"
+  type: { type: String, default: null },
   amount: { type: String, required: true },
   dueDate: Date,
   paid: { type: Boolean, default: false },

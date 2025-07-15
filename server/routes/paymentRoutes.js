@@ -42,7 +42,6 @@ router.get('/club/:clubId', authenticateToken, async (req, res) => {
     try {
         const payments = await Payment.find({ club: req.params.clubId })
             .populate('user', 'name email image')
-            .populate('team', 'name');
 
         res.status(200).json({ success: true, data: payments });
     } catch (err) {

@@ -1,4 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -19,6 +21,7 @@ import {
     View
 } from 'react-native';
 
+
 const { width } = Dimensions.get('window');
 
 export default function AddPayment() {
@@ -37,7 +40,11 @@ export default function AddPayment() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState('0 USD');
     const [paymentNote, setPaymentNote] = useState('');
-    const [paymentDueDate, setPaymentDueDate] = useState(Date.now());
+    const [paymentDueDate, setPaymentDueDate] = useState(new Date());
+    const [pickerShow, setPickerShow] = useState(false);
+    const [isPaid, setIsPaid] = useState(false);
+    const [paymentType, setPaymentType] = useState(null);
+    const [paymentTypeOther, setPaymentTypeOther] = useState('');
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -148,43 +155,45 @@ export default function AddPayment() {
         }
     };
 
+    const showPicker = () => {
+        setPickerShow(true)
+    };
+
+    const onChange = (event, selectedDate) => {
+        if (event.type === 'dismissed') {
+            setPickerShow(false);
+            return;
+        }
+
+        setPaymentDueDate(selectedDate);
+        setPickerShow(false);
+    };
+
     const handleSave = async () => {
+        if (paymentType == "Other" && paymentTypeOther.trim() == '') {
+            setError('Kindly specify payment type')
+            return;
+        }
         setSaving(true);
 
-        const paymentObject = useState({
+        const paymentObject = {
             user: selectedUser._id,
             club: userId,
             amount: paymentAmount,
-            note: '',
-            dueDate: '',
-            status: 'Pending'
-        });
-        console.log('getting token')
-        const token = await SecureStore.getItemAsync('userToken');
-        console.log('got token')
-        try {
-            console.log(paymentObject)
-            const res = await fetch(`https://riyadah.onrender.com/api/financials`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(paymentObject)
-            });
+            type: paymentType == "Other" ? paymentTypeOther : paymentType,
+            note: paymentNote,
+            dueDate: isPaid ? null : paymentDueDate,
+            status: isPaid ? 'Paid' : 'Pending'
+        };
 
-            console.log(res)
+        console.log(paymentObject)
 
-            if (!res.ok) throw new Error('Failed to save payment');
 
-            Alert.alert('Success', 'Payment recorded successfully', [
-                { text: 'OK', onPress: () => router.back() }
-            ]);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setSaving(false);
-        }
+
+    };
+
+    const handleCancel = async () => {
+        router.back()
     };
 
     const handleUserSelect = (user: any) => {
@@ -367,6 +376,31 @@ export default function AddPayment() {
                             </View>
 
                             <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Payment type</Text>
+                                <View style={[styles.pickerContainer, { flex: 1 }]}>
+                                    <Picker
+                                        style={styles.picker}
+                                        onValueChange={setPaymentType}
+                                    >
+                                        <Picker.Item label="Club registration fees" value="Club registration fees" />
+                                        <Picker.Item label="Monthly subscription fees" value="Monthly subscription fees" />
+                                        <Picker.Item label="Equipment purchase" value="Equipment purchase" />
+                                        <Picker.Item label="Other" value="Other" />
+                                    </Picker>
+                                </View>
+                                {paymentType == "Other" && <View style={styles.inputContainer}>
+                                <TextInput
+                                    style={styles.input}
+                                    value={paymentTypeOther}
+                                    onChangeText={setPaymentTypeOther}
+                                    placeholder="Specify payment type"
+                                />
+                            </View>}
+                            </View>
+
+                            
+
+                            <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Note</Text>
                                 <TextInput
                                     style={styles.input}
@@ -377,22 +411,85 @@ export default function AddPayment() {
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Due Date</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={paymentDueDate}
-                                    onChangeText={(val) => setPaymentDueDate(val)}
-                                    placeholder="YYYY-MM-DD"
-                                />
+                                <Text style={styles.label}>Paid?</Text>
+
+                                <View style={styles.statusContainer}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.statusButton,
+                                            isPaid && styles.activeStatusButton
+                                        ]}
+                                        onPress={() => setIsPaid(true)}
+                                    >
+                                        <Text style={[
+                                            styles.statusButtonText,
+                                            isPaid && styles.activeStatusButtonText
+                                        ]}>
+                                            Yes
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.statusButton,
+                                            !isPaid && styles.inactiveStatusButton
+                                        ]}
+                                        onPress={() => setIsPaid(false)}
+                                    >
+                                        <Text style={[
+                                            styles.statusButtonText,
+                                            !isPaid && styles.inactiveStatusButtonText
+                                        ]}>
+                                            No
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
-                            <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
-                                {saving ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                    <Text style={styles.saveButtonText}>Save Payment</Text>
-                                )}
-                            </TouchableOpacity>
+                            {!isPaid && <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Due Date</Text>
+
+                                <TouchableOpacity
+                                    style={styles.dateInput}
+                                    onPress={() => showPicker()}
+                                >
+                                    <Text style={styles.inputText}>
+                                        {paymentDueDate.toLocaleDateString('en-US', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        })}
+                                    </Text>
+                                    <FontAwesome5 name="calendar-alt" size={18} color="#666" />
+                                </TouchableOpacity>
+                            </View>}
+
+                            {pickerShow && (
+                                <DateTimePicker
+                                    testID="dateTimePicker"
+                                    value={paymentDueDate}
+                                    mode='date'
+                                    display="default"
+                                    onChange={onChange}
+                                />
+                            )}
+
+                            <View style={[styles.profileActions, styles.inlineActions]}>
+                                <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
+                                    <Text style={styles.profileButtonText}>
+                                        {saving ? 'Saving' : 'save'}
+                                    </Text>
+                                    {saving && (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#111111"
+                                            style={styles.saveLoaderContainer}
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            </View>
                         </View>}
                     </View>
                 </ScrollView>
@@ -596,5 +693,76 @@ const styles = StyleSheet.create({
     },
     clearSelectionButton: {
         marginLeft: 10,
+    },
+    dateInput: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 0,
+        color: 'black',
+        borderRadius: 10
+    },
+    inputText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    statusContainer: {
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+        overflow: 'hidden',
+        marginBottom: 10
+    },
+    statusButton: {
+        flex: 1,
+        padding: 12,
+        alignItems: 'center',
+    },
+    activeStatusButton: {
+        backgroundColor: '#FF4000',
+    },
+    inactiveStatusButton: {
+        backgroundColor: '#111',
+    },
+    statusButtonText: {
+        fontFamily: 'Manrope',
+        fontWeight: 'bold',
+    },
+    activeStatusButtonText: {
+        color: '#fff',
+    },
+    inactiveStatusButtonText: {
+        color: '#fff',
+    },
+    profileActions: {
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.2)',
+        paddingTop: 10
+    },
+    inlineActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        columnGap: 15
+    },
+    saveLoaderContainer: {
+        marginLeft: 10
+    },
+    profileButton: {
+        borderRadius: 5,
+        padding: 10,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        marginBottom: 10
+    },
+    profileButtonText: {
+        fontSize: 18,
+        color: '#150000',
+        fontFamily: 'Bebas',
+    },
+    savebtn: {
+        flexDirection: 'row'
     },
 });
