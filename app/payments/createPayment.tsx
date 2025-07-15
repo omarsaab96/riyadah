@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -34,6 +35,7 @@ export default function AddPayment() {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchindex, setSearchindex] = useState(0);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [paymentAmount, setPaymentAmount] = useState('0 USD');
 
 
     const [payment, setPayment] = useState({
@@ -125,7 +127,7 @@ export default function AddPayment() {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
             const url = `https://riyadah.onrender.com/api/users/byclub/${userId}?keyword=${encodeURIComponent(text)}`;
-            console.log('Search URL:', url); // 👈 Log the URL being called
+            // console.log('Search URL:', url); // 👈 Log the URL being called
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -136,7 +138,7 @@ export default function AddPayment() {
 
             const data = await response.json();
 
-            console.log('API Response:', data); // 👈 Log the full response
+            // console.log('API Response:', data); // 👈 Log the full response
 
             if (data.success) {
                 setSearchResults(data.data);
@@ -166,6 +168,8 @@ export default function AddPayment() {
                 },
                 body: JSON.stringify(payment)
             });
+
+            console.log(res)
 
             if (!res.ok) throw new Error('Failed to save payment');
 
@@ -222,12 +226,12 @@ export default function AddPayment() {
                 </View>
 
                 <ScrollView>
-                    {error != '' && <View style={styles.error}>
-                        <View style={styles.errorIcon}></View>
-                        <Text style={styles.errorText}>{error}</Text>
-                    </View>}
-
                     <View style={styles.contentContainer}>
+                        {error != '' && <View style={styles.error}>
+                            <View style={styles.errorIcon}></View>
+                            <Text style={styles.errorText}>{error}</Text>
+                        </View>}
+
                         {!selectedUser && <View style={styles.inputContainer}>
                             <Text style={styles.label}>Athlete or coach</Text>
                             <View style={styles.formGroup}>
@@ -328,13 +332,34 @@ export default function AddPayment() {
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Amount (USD)</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    keyboardType="numeric"
-                                    value={payment.amount}
-                                    onChangeText={(val) => setPayment({ ...payment, amount: val })}
-                                    placeholder="e.g. 50.00"
-                                />
+
+                                <View style={{ flexDirection: 'row', columnGap: 10 }}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1 }]}
+                                        placeholder="e.g. 50.00"
+                                        keyboardType="numeric"
+                                        value={paymentAmount.split(' ')[0] || '0'}
+                                        onChangeText={(text) => {
+                                            const amount = text.trim();
+                                            const currency = paymentAmount.split(' ')[1] || 'USD';
+                                            setPaymentAmount(`${amount} ${currency}`)
+                                        }}
+                                    />
+                                    <View style={[styles.pickerContainer, { flex: 1 }]}>
+                                        <Picker
+                                            style={styles.picker}
+                                            selectedValue={paymentAmount.split(' ')[1] || 'USD'}
+                                            onValueChange={(currency) => {
+                                                const amount = paymentAmount?.split(' ')[0] || '0';
+                                                setPaymentAmount(`${amount} ${currency}`)
+                                            }}
+                                        >
+                                            <Picker.Item label="USD" value="USD" />
+                                            <Picker.Item label="LBP" value="LBP" />
+                                            <Picker.Item label="EUR" value="EUR" />
+                                        </Picker>
+                                    </View>
+                                </View>
                             </View>
 
                             <View style={styles.inputContainer}>

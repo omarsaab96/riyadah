@@ -723,7 +723,7 @@ const CreateStaffScreen = () => {
                                         style={[styles.input, { flex: 1 }]}
                                         placeholder="Salary amount"
                                         keyboardType="numeric"
-                                        value={formData.salary?.split(' ')[0] || ''}
+                                        value={formData.salary?.split(' ')[0] || '0'}
                                         onChangeText={(text) => {
                                             const amount = text.trim();
                                             const currency = formData.salary?.split(' ')[1] || 'USD';
