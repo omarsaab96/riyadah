@@ -1,17 +1,17 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
-const featuredClubs = [
-    { label: 'FC Barcelona', icon: require('../../assets/fcb.png') },
-    { label: 'Manchester United', icon: require('../../assets/manun.png') },
-    { label: 'Juventus FC', icon: require('../../assets/juvi.png') },
-    { label: 'Bayern Munich', icon: require('../../assets/bayern.png') },
-    { label: 'Paris Saint-Germain (PSG)', icon: require('../../assets/psg.png') },
-];
+// const featuredClubs = [
+//     { label: 'FC Barcelona', icon: require('../../assets/fcb.png') },
+//     { label: 'Manchester United', icon: require('../../assets/manun.png') },
+//     { label: 'Juventus FC', icon: require('../../assets/juvi.png') },
+//     { label: 'Bayern Munich', icon: require('../../assets/bayern.png') },
+//     { label: 'Paris Saint-Germain (PSG)', icon: require('../../assets/psg.png') },
+// ];
 
 export default function WizardStep4() {
     const router = useRouter();
@@ -33,7 +33,12 @@ export default function WizardStep4() {
 
         const fetchClubs = async () => {
             try {
-                const res = await fetch('https://riyadah.onrender.com/api/users/clubs');
+                const url =
+                    formData.type == 'Association'
+                        ? `https://riyadah.onrender.com/api/users/clubs?sport=${encodeURIComponent(formData.sport)}`
+                        : `https://riyadah.onrender.com/api/users/clubs`;
+
+                const res = await fetch(url);
                 const json = await res.json();
 
                 if (json.success) {
@@ -43,9 +48,12 @@ export default function WizardStep4() {
                         icon: club.image ? { uri: club.image } : require('../../assets/clublogo.png')
                     }));
                     setFeaturedClubs(formatted);
+                    console.log(formatted)
+
                 } else {
                     console.error('Failed to fetch clubs');
                 }
+
             } catch (err) {
                 console.error('Error fetching clubs:', err);
             } finally {
@@ -113,60 +121,69 @@ export default function WizardStep4() {
                 </Text>
             </View>
 
-            <View style={styles.form}>
-                {error != null && <View style={styles.error}>
-                    <View style={styles.errorIcon}></View>
-                    <Text style={styles.errorText}>{error}</Text>
-                </View>}
-
-                {formData.type != 'Association' && <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
-                    <View style={styles.checkbox}>
-                        {independent && <View style={styles.checked} >
-                            <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+            {loadingClubs ? (
+                <View>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="small" color="#FF4000" />
+                    </View>
+                </View>
+            ) : (
+                <View>
+                    <View style={styles.form}>
+                        {error != null && <View style={styles.error}>
+                            <View style={styles.errorIcon}></View>
+                            <Text style={styles.errorText}>{error}</Text>
                         </View>}
+
+                        {formData.type != 'Association' && <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+                            <View style={styles.checkbox}>
+                                {independent && <View style={styles.checked} >
+                                    <Image source={require('../../assets/check.png')} style={styles.checkImage} />
+                                </View>}
+                            </View>
+
+                            <Text style={styles.label}>
+                                I don't have a club. I am independent
+                            </Text>
+                        </TouchableOpacity>}
+
+                        {!independent && <TextInput
+                            style={styles.input}
+                            placeholder="Search"
+                            placeholderTextColor="#A8A8A8"
+                            value={keyword}
+                            onChangeText={setKeyword}
+                        />}
                     </View>
 
-                    <Text style={styles.label}>
-                        I don't have a club. I am independent
-                    </Text>
-                </TouchableOpacity>}
+                    {!independent && <ScrollView >
+                        <View style={styles.wizardContainer}>
+                            {featuredClubs.map(({ id, label, icon }) => {
+                                const isSelected = selected.includes(id);
 
-                {!independent && <TextInput
-                    style={styles.input}
-                    placeholder="Search"
-                    placeholderTextColor="#A8A8A8"
-                    value={keyword}
-                    onChangeText={setKeyword}
-                />
-                }
-            </View>
-
-            {!independent && <ScrollView >
-                <View style={styles.wizardContainer}>
-                    {featuredClubs.map(({ id,label, icon }) => {
-                        const isSelected = selected.includes(label);
-
-                        return (
-                            <TouchableOpacity
-                                key={id}
-                                style={[
-                                    styles.accountOption,
-                                    isSelected && styles.accountOptionSelected,
-                                ]}
-                                onPress={() => toggleClubSelection(id)}
-                            >
-                                <Image source={icon} style={styles.icon} resizeMode="contain" />
-                                <Text style={[styles.accountText, isSelected && styles.accountTextSelected]}>
-                                    {label}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
+                                return (
+                                    <TouchableOpacity
+                                        key={id}
+                                        style={[
+                                            styles.accountOption,
+                                            isSelected && styles.accountOptionSelected,
+                                        ]}
+                                        onPress={() => toggleClubSelection(id)}
+                                    >
+                                        <Image source={icon} style={styles.icon} resizeMode="contain" />
+                                        <Text style={[styles.accountText, isSelected && styles.accountTextSelected]}>
+                                            {label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </ScrollView>
+                    }
                 </View>
-            </ScrollView>
-            }
+            )}
 
-            <View style={styles.fixedBottomSection}>
+            {!loadingClubs && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
                     <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
                     <View style={styles.loginButton}>
@@ -174,7 +191,7 @@ export default function WizardStep4() {
                     </View>
                     <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                 </TouchableOpacity>
-            </View>
+            </View>}
         </View>
     );
 }
@@ -359,5 +376,9 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Manrope',
-    }
+    },
+    loadingContainer: {
+        paddingHorizontal: 20,
+        alignItems: 'flex-start'
+    },
 });

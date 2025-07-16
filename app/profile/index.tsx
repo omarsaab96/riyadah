@@ -38,7 +38,7 @@ export default function Profile() {
     const [schedule, setSchedule] = useState(null);
     const [staff, setStaff] = useState([]);
     const [inventory, setInventory] = useState([]);
-    const [financials, setFinancials] = useState([]);
+    const [clubs, setClubs] = useState([]);
     const [paidPayments, setPaidPayments] = useState([]);
     const [unpaidPayments, setUnpaidPayments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,6 +47,7 @@ export default function Profile() {
     const [staffLoading, setStaffLoading] = useState(true);
     const [inventoryLoading, setInventoryLoading] = useState(true);
     const [financialsLoading, setFinancialsLoading] = useState(true);
+    const [clubsLoading, setClubsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [activePaymentTab, setActivePaymentTab] = useState('pending');
     const [adminUser, setAdminUser] = useState(null);
@@ -54,6 +55,7 @@ export default function Profile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
+    const tabsAssociations = ['Profile', 'Clubs'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
 
 
@@ -284,6 +286,29 @@ export default function Profile() {
             }
         };
     }
+    
+    const getClubs = async () => {
+        if (user?.type === "Association") {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const res = await fetch(`https://riyadah.onrender.com/api/clubs/byAssociation/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    setClubs(data.data);
+                } else {
+                    console.error(data.message);
+                }
+            } catch (err) {
+                console.error('Failed to fetch clubs', err);
+                setClubs([]);
+            } finally {
+                setClubsLoading(false)
+            }
+        };
+    }
 
     const handleEdit = async () => {
         router.push('/profile/editProfile');
@@ -392,6 +417,11 @@ export default function Profile() {
         if (label == "Financials") {
             setFinancialsLoading(true);
             getFinancials();
+        }
+        
+        if (label == "Clubs") {
+            setClubsLoading(true);
+            getClubs();
         }
     }
 
@@ -531,7 +561,7 @@ export default function Profile() {
                     {userId == user._id ? (
                         <View style={styles.profileImage}>
                             <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
-                                {(user.image == null || user.image == "") && user.type == "Club" && <Image
+                                {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
                                     source={require('../../assets/clublogo.png')}
                                     style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
                                     resizeMode="contain"
@@ -557,7 +587,7 @@ export default function Profile() {
                                 <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
                                     <Entypo name="plus" size={20} color="#FF4000" />
                                     <Text style={styles.uploadImageText}>
-                                        {user.type == "Club" ? 'Upload logo' : 'Upload avatar'}
+                                        {(user.type == "Club" || user.type == "Association") ? 'Upload logo' : 'Upload avatar'}
                                     </Text>
                                 </TouchableOpacity>
                             }
@@ -566,14 +596,14 @@ export default function Profile() {
                                 <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
                                     <FontAwesome name="refresh" size={16} color="#FF4000" />
                                     <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
-                                        {user.type == "Club" ? 'Change logo' : 'Change avatar'}
+                                        {(user.type == "Club" || user.type == "Association") ? 'Change logo' : 'Change avatar'}
                                     </Text>
                                 </TouchableOpacity>
                             }
                         </View>
                     ) : (
                         <View style={styles.profileImage}>
-                            {(user.image == null || user.image == "") && user.type == "Club" && <Image
+                            {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
                                 source={require('../../assets/clublogo.png')}
                                 style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
                                 resizeMode="contain"
@@ -604,6 +634,27 @@ export default function Profile() {
 
                 <View style={styles.tabs}>
                     {tabs.map((label, index) => (
+                        <TouchableOpacity
+                            key={label}
+                            style={[
+                                styles.tab,
+                                activeTab === label && styles.activeTab,
+                            ]}
+                            onPress={() => updateTab(label)}
+                        >
+                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
+                                {label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
+
+            {/* Tabs for associations */}
+            {!loading && user?.type === "Association" && (
+
+                <View style={styles.tabs}>
+                    {tabsAssociations.map((label, index) => (
                         <TouchableOpacity
                             key={label}
                             style={[
@@ -1212,6 +1263,73 @@ export default function Profile() {
                                             onPress={() => router.push('/teams/createTeam')}
                                         >
                                             <Text style={styles.emptyStateButtonText}>Create Team</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+                    )}
+                </Animated.ScrollView>
+            }
+
+            {/* clubsTab */}
+            {
+                !loading && user && activeTab == "Clubs" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
+                    {clubsLoading ? (
+                        <View style={[styles.contentContainer, { paddingTop: 20, flexDirection: 'row', alignItems: 'center' }]}>
+                            <ActivityIndicator
+                                size="small"
+                                color="#FF4000"
+                                style={{ transform: [{ scale: 1.25 }] }}
+                            />
+                        </View>
+                    ) : (
+                        <View style={styles.contentContainer}>
+                            {/* Header with Add button */}
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>Association Clubs</Text>
+                                {userId == user._id && (
+                                    <TouchableOpacity
+                                        style={styles.addButton}
+                                        onPress={() => router.push('/clubs/manage')}
+                                    >
+                                        <Text style={styles.addButtonText}>Manage clubs</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+
+                            {clubs && clubs.length > 0 ? (
+                                clubs.map((club) => (
+                                    <TeamCard
+                                        key={club._id}
+                                        club={club}
+                                        getAnimatedValue={getAnimatedValue}
+                                        loadingDelete={loadingDelete}
+                                        deleteClub={deleteClub}
+                                        cancelDeleteClub={cancelDeleteClub}
+                                        handleDeleteClub={handleDeleteClub}
+                                    />
+                                ))
+                            ) : (
+                                <View style={styles.emptyState}>
+                                    <Text style={styles.emptyStateTitle}>No Clubs Yet</Text>
+                                    <Text style={styles.emptyStateText}>
+                                        {userId == user._id
+                                            ? "Add your first club to get started"
+                                            : "This Association hasn't added any clubs yet"}
+                                    </Text>
+                                    {userId == user._id && (
+                                        <TouchableOpacity
+                                            style={styles.emptyStateButton}
+                                            onPress={() => router.push('/clubs/manage')}
+                                        >
+                                            <Text style={styles.emptyStateButtonText}>Add Clubs</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>

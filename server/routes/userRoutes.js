@@ -260,11 +260,38 @@ router.get('/search', async (req, res) => {
 // @desc    Get all users with type "Club"
 // @access  Public or Protected (based on your app logic)
 router.get('/clubs', async (req, res) => {
+  const { sport } = req.query;
+  const filter = { type: 'Club' };
+  
+  if (sport) {
+    filter.sport = sport;
+  }
+
   try {
-    const clubs = await User.find({ type: 'Club' }).select('name image');
+    const clubs = await User.find(filter).select('name image');
     res.status(200).json({ success: true, data: clubs });
   } catch (err) {
     console.error('Error fetching clubs:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /api/clubs/byAssociation/:userId
+router.get('/clubs/byAssociation/:userId', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).populate({
+      path: 'clubs',
+      select: '_id name image',
+      match: { type: 'Club' }
+    });
+
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    res.json({ success: true, data: user.clubs });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
