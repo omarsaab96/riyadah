@@ -1,6 +1,5 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -24,6 +23,7 @@ export default function TeamDetails() {
     const router = useRouter();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
+    const [payment, setPayment] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const { id } = useLocalSearchParams();
@@ -54,6 +54,37 @@ export default function TeamDetails() {
             }
         };
 
+        const fetchPayment = async () => {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                if (!token) {
+                    setError('Authentication token missing');
+                    return;
+                }
+
+                const res = await fetch(`https://riyadah.onrender.com/api/financials/${id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    setPayment(data.data);
+                } else {
+                    setError(data.message || 'Failed to fetch payment details');
+                }
+            } catch (err) {
+                console.error('Error fetching payment:', err);
+                setError('Something went wrong while fetching payment');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPayment();
         fetchUser();
     }, [id]);
 
@@ -147,275 +178,9 @@ export default function TeamDetails() {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        {team && <View style={styles.profileSection}>
+                        {payment && <View style={styles.profileSection}>
 
-                            {/* age group */}
-                            {team.ageGroup && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Age Group
-                                </Text>
-                                {team.ageGroup ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{team.ageGroup}</Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>}
-
-                            {/* gender */}
-                            {team.gender && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Gender
-                                </Text>
-                                {team.gender ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{team.gender}</Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>}
-
-                            {/* club */}
-                            {team.club && (
-                                <View style={{ marginVertical: 20 }}>
-                                    <Text style={[styles.title, { marginBottom: 10 }]}>Club</Text>
-                                    <View>
-                                        <TouchableOpacity
-                                            style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
-                                            onPress={() => router.push({
-                                                pathname: '/profile/public',
-                                                params: { id: team.club._id },
-                                            })}>
-                                            {team.club.image ? (
-                                                <Image
-                                                    source={{ uri: team.club.image }}
-                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                                                />
-                                            ) : (
-                                                <Image
-                                                    source={require('../../assets/clublogo.png')}
-                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                                                />
-                                            )}
-
-                                            <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
-
-                                                <Text
-                                                    style={[styles.paragraph, { fontWeight: 'bold' }]}
-                                                    numberOfLines={1}
-                                                    ellipsizeMode="tail"
-                                                >
-                                                    {team.club.name}
-                                                </Text>
-
-                                                <Text
-                                                    style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
-                                                    numberOfLines={1}
-                                                    ellipsizeMode="tail"
-                                                >
-                                                    {team.club.sport.toString().replaceAll(',', ', ')}
-                                                </Text>
-
-                                                {/* <View style={styles.locationLink}>
-                                                    <Text style={styles.locationLinkText}>View club profile</Text>
-                                                </View> */}
-
-
-                                            </View>
-                                        </TouchableOpacity>
-                                    </View>
-
-                                </View>
-                            )}
-
-                            {/* coaches */}
-                            <View style={{ marginVertical: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                    <Text style={styles.title}>{team.coaches.length} Coach{team.coaches.length == 1 ? '' : 'es'}</Text>
-                                    {user._id == userId && <TouchableOpacity style={styles.editToggle}
-                                        onPress={() => router.push({
-                                            pathname: '/teams/coaches',
-                                            params: { id: team._id },
-                                        })}
-                                    >
-                                        <Entypo name="edit" size={16} color="#FF4000" />
-                                        <Text style={styles.editToggleText}>Manage</Text>
-                                    </TouchableOpacity>}
-                                </View>
-
-                                {team.coaches && team.coaches.length > 0 ? (
-                                    <View style={{ marginBottom: 20 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
-                                            {team.coaches.map((coach) => (
-                                                <TouchableOpacity
-                                                    key={coach._id}
-                                                    style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30.64%', padding: 10, borderRadius: 8 }}
-                                                    onPress={() => router.push({
-                                                        pathname: '/profile/public',
-                                                        params: { id: coach._id },
-                                                    })}>
-                                                    <View style={{ alignItems: 'center' }}>
-                                                        {coach.image ? (
-                                                            <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
-                                                                <Image
-                                                                    source={{ uri: coach.image }}
-                                                                    style={{ width: '100%', aspectRatio: 1 }}
-                                                                />
-                                                            </View>
-                                                        ) : (
-                                                            <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
-                                                                {coach.gender == "Male" ? (
-                                                                    <Image
-                                                                        style={styles.searchResultItemImage}
-                                                                        source={require('../../assets/avatar.png')}
-                                                                        resizeMode="contain"
-                                                                    />
-                                                                ) : (
-                                                                    <Image
-                                                                        style={styles.searchResultItemImage}
-                                                                        source={require('../../assets/avatarF.png')}
-                                                                        resizeMode="contain"
-                                                                    />
-                                                                )}
-                                                            </View>
-                                                        )}
-
-                                                        <Text style={styles.paragraph}>{coach.name.trim()}</Text>
-                                                    </View>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>No coaches</Text>
-                                )}
-                            </View>
-
-                            {/* members */}
-                            <View style={{ marginVertical: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                    <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
-                                    {user._id == userId && <TouchableOpacity style={styles.editToggle}
-                                        onPress={() => router.push({
-                                            pathname: '/teams/members',
-                                            params: { id: team._id },
-                                        })}
-                                    >
-                                        <Entypo name="edit" size={16} color="#FF4000" />
-                                        <Text style={styles.editToggleText}>Manage</Text>
-                                    </TouchableOpacity>}
-                                </View>
-
-                                {team.members && team.members.length > 0 ? (
-                                    <View style={{ marginBottom: 20 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
-                                            {team.members.map((member) => (
-                                                <TouchableOpacity
-                                                    key={member._id}
-                                                    style={{ alignItems: 'center', backgroundColor: '#eeeeee', width: '30.64%', padding: 10, borderRadius: 8 }}
-                                                    onPress={() => router.push({
-                                                        pathname: '/profile/public',
-                                                        params: { id: member._id },
-                                                    })}>
-                                                    <View style={{ alignItems: 'center' }}>
-                                                        <View style={{ marginBottom: 10 }}>
-                                                            {member.image ? (
-                                                                <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
-                                                                    <Image
-                                                                        source={{ uri: member.image }}
-                                                                        style={{ width: '100%', aspectRatio: 1 }}
-                                                                    />
-                                                                </View>
-                                                            ) : (
-                                                                <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
-                                                                    {member.gender == "Male" ? (
-                                                                        <Image
-                                                                            style={styles.searchResultItemImage}
-                                                                            source={require('../../assets/avatar.png')}
-                                                                            resizeMode="contain"
-                                                                        />
-                                                                    ) : (
-                                                                        <Image
-                                                                            style={styles.searchResultItemImage}
-                                                                            source={require('../../assets/avatarF.png')}
-                                                                            resizeMode="contain"
-                                                                        />
-                                                                    )}
-                                                                </View>
-                                                            )}
-                                                        </View>
-                                                        <Text style={styles.paragraph}>{member?.name?.trim()}</Text>
-                                                    </View>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-
-                                ) : (
-                                    <Text style={styles.paragraph}>No members</Text>
-                                )}
-                            </View>
-
-                            {/* events */}
-                            <View style={{ marginVertical: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                    <Text style={styles.title}>Upcoming events</Text>
-                                </View>
-
-                                {schedule && schedule.length > 0 ? (
-                                    schedule.map((event) => {
-                                        const eventDate = new Date(event.startDateTime);
-                                        const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                        const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                                        return (
-                                            <TouchableOpacity
-                                                key={event._id}
-                                                style={styles.eventCard}
-                                                onPress={() => router.push(`/schedule/${event._id}`)}
-                                            >
-                                                <View style={styles.eventDate}>
-                                                    <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
-                                                    <Text style={styles.eventMonth}>
-                                                        {eventDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
-                                                    </Text>
-                                                </View>
-                                                <View style={styles.eventDetails}>
-                                                    <Text style={styles.eventTitle}>{event.title}</Text>
-                                                    <Text style={styles.eventTime}>
-                                                        {formattedTime} - {endTime}
-                                                    </Text>
-                                                    <Text style={styles.eventLocation}>
-                                                        {event.locationType === 'online'
-                                                            ? 'Online Event'
-                                                            : event.venue?.name || 'Location TBD'}
-                                                    </Text>
-                                                    {event.eventType === 'match' && event.opponent && (
-                                                        <View style={styles.opponentContainer}>
-                                                            <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
-                                                        </View>
-                                                    )}
-                                                </View>
-                                                <TouchableOpacity
-                                                    style={styles.eventAction}
-                                                    onPress={(e) => {
-                                                        e.stopPropagation();
-                                                        // Handle menu press here
-                                                    }}
-                                                >
-                                                    <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
-                                                </TouchableOpacity>
-                                            </TouchableOpacity>
-                                        );
-                                    })
-                                ) : (
-                                    <Text style={styles.paragraph}>No events</Text>
-                                )}
-                            </View>
-
-
+                            
                         </View>}
 
 
