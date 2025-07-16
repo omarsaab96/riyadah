@@ -85,7 +85,8 @@ export default function WizardStep1() {
                         >
                             <Image source={icon} style={styles.icon} resizeMode="contain" />
                             <Text style={[styles.accountText, selected === label && styles.accountTextSelected]}>
-                                {label}
+                                {label=="Association" ? 'Association/Federation' : label}
+                                {/* {label} */}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -206,8 +207,8 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
     },
     icon: {
-        width: 120,
-        height: 120,
+        width: 100,
+        height: 100,
         position: 'absolute',
         bottom: 0,
         right: 0

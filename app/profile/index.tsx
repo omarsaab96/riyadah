@@ -370,6 +370,20 @@ export default function Profile() {
 
             progress = Math.round((filledFields / totalFields) * 100);
 
+        } else if (user.type == "Association") {
+            const totalFields = 8;
+
+            if (user.name != null) filledFields++;
+            if (user.email != null) filledFields++;
+            if (user.phone != null) filledFields++;
+            if (user.country != null) filledFields++;
+            if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
+            if (user.type != null) filledFields++;
+            if (user.sport != null && user.sport.length >= 1) filledFields++;
+            if (user.bio != null) filledFields++;
+
+            progress = Math.round((filledFields / totalFields) * 100);
+
         } else {
             const totalFields = 21;
 
@@ -559,10 +573,8 @@ export default function Profile() {
             const data = await res.json();
 
             if (res.ok) {
-                setUser(prev => ({
-                    ...prev,
-                    clubs: prev.clubs.filter(club => club._id !== clubid),
-                }));
+                setUser(prev => prev ? { ...prev, clubs: data.data } : prev);
+                setClubs(data.data); // also update clubs array shown in UI
             } else {
                 console.error(data.message || 'Failed to remove coach');
             }
@@ -834,532 +846,544 @@ export default function Profile() {
             )}
 
             {/* profileTab */}
-            {
-                !loading && user && activeTab == "Profile" && <Animated.ScrollView
-                    onScroll={Animated.event(
-                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                        { useNativeDriver: false }
-                    )}
-                    scrollEventThrottle={16}
-                >
+            {!loading && user && activeTab == "Profile" && <Animated.ScrollView
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    { useNativeDriver: false }
+                )}
+                scrollEventThrottle={16}
+            >
 
-                    <View style={styles.contentContainer}>
-                        {userId == user._id && (getProfileProgress() < 100) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
-                            <View style={styles.profileProgressPercentage}>
-                                <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
-                            </View>
-                            <View style={styles.profileProgressTextSection}>
-                                <Text style={styles.profileProgressText}>Complete your profile now</Text>
-                                <Image
-                                    style={styles.profileProgressImg}
-                                    source={require('../../assets/rightArrow.png')}
-                                    resizeMode="contain"
-                                />
-                            </View>
-                        </TouchableOpacity>
-                        }
+                <View style={styles.contentContainer}>
+                    {userId == user._id && (getProfileProgress() < 100) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
+                        <View style={styles.profileProgressPercentage}>
+                            <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
+                        </View>
+                        <View style={styles.profileProgressTextSection}>
+                            <Text style={styles.profileProgressText}>Complete your profile now</Text>
+                            <Image
+                                style={styles.profileProgressImg}
+                                source={require('../../assets/rightArrow.png')}
+                                resizeMode="contain"
+                            />
+                        </View>
+                    </TouchableOpacity>
+                    }
 
-                        {user.type == "Club" && user.admin.email != null &&
-                            <View style={styles.adminDiv}>
-                                <Text style={[styles.title, styles.contactTitle]}>
-                                    Admin
-                                </Text>
+                    {user.type == "Club" && user.admin.email != null &&
+                        <View style={styles.adminDiv}>
+                            <Text style={[styles.title, styles.contactTitle]}>
+                                Admin
+                            </Text>
 
-                                {adminUser &&
-                                    <TouchableOpacity style={styles.adminButton} onPress={() => { handleGoToAdminProfile(adminUser.id) }}>
-                                        <View style={styles.admin}>
-                                            {adminUser.image != null ? (
-                                                <Image
-                                                    source={{ uri: adminUser.image }}
-                                                    style={styles.adminAvatar}
-                                                    resizeMode="contain"
-                                                />
-                                            ) : (
-                                                <Image
-                                                    source={require('../../assets/avatar.png')}
-                                                    style={styles.adminAvatar}
-                                                    resizeMode="contain"
-                                                />
-                                            )}
-                                            <View>
-                                                <Text style={styles.adminName}>{adminUser.name}</Text>
-                                                <Text style={styles.adminLink}>Check profile</Text>
-                                            </View>
-                                        </View>
-                                    </TouchableOpacity>
-                                }
-
-                                {adminUser == null &&
+                            {adminUser &&
+                                <TouchableOpacity style={styles.adminButton} onPress={() => { handleGoToAdminProfile(adminUser.id) }}>
                                     <View style={styles.admin}>
-                                        <Image
-                                            source={require('../../assets/avatar.png')}
-                                            style={styles.adminAvatar}
-                                            resizeMode="contain"
-                                        />
+                                        {adminUser.image != null ? (
+                                            <Image
+                                                source={{ uri: adminUser.image }}
+                                                style={styles.adminAvatar}
+                                                resizeMode="contain"
+                                            />
+                                        ) : (
+                                            <Image
+                                                source={require('../../assets/avatar.png')}
+                                                style={styles.adminAvatar}
+                                                resizeMode="contain"
+                                            />
+                                        )}
                                         <View>
-                                            <Text style={styles.adminName}>{user.admin.name}</Text>
+                                            <Text style={styles.adminName}>{adminUser.name}</Text>
+                                            <Text style={styles.adminLink}>Check profile</Text>
                                         </View>
                                     </View>
-                                }
-                            </View>
-                        }
+                                </TouchableOpacity>
+                            }
 
-
-                        {/* CONTACT INFO */}
-                        {user.type != "Parent" && <View style={[styles.profileSection, { backgroundColor: '#eeeeee', borderRadius: 10, padding: 5, marginBottom: 20 }]}>
-                            {(user.contactInfo?.phone != null || user.contactInfo?.email != null || user.contactInfo?.facebook != null
-                                || user.contactInfo?.instagram != null || user.contactInfo?.whatsapp != null || user.contactInfo?.telegram != null
-                                || user.contactInfo?.tiktok != null || user.contactInfo?.snapchat != null || user.contactInfo?.location.latitude != null
-                                || user.contactInfo?.location.longitude != null || user.contactInfo?.description != null) ?
-                                (
+                            {adminUser == null &&
+                                <View style={styles.admin}>
+                                    <Image
+                                        source={require('../../assets/avatar.png')}
+                                        style={styles.adminAvatar}
+                                        resizeMode="contain"
+                                    />
                                     <View>
-                                        <Text style={[styles.title, styles.contactTitle]}>
-                                            CONTACT
-                                        </Text>
-                                        <View>
-                                            {user.contactInfo?.description != null && user.type == "Club" &&
-                                                <View style={styles.contactDescription}>
-                                                    <Text>{user.contactInfo?.description}</Text>
+                                        <Text style={styles.adminName}>{user.admin.name}</Text>
+                                    </View>
+                                </View>
+                            }
+                        </View>
+                    }
+
+
+                    {/* CONTACT INFO */}
+                    {user.type != "Parent" && <View style={[styles.profileSection, { backgroundColor: '#eeeeee', borderRadius: 10, padding: 5, marginBottom: 20 }]}>
+                        {(user.contactInfo?.phone != null || user.contactInfo?.email != null || user.contactInfo?.facebook != null
+                            || user.contactInfo?.instagram != null || user.contactInfo?.whatsapp != null || user.contactInfo?.telegram != null
+                            || user.contactInfo?.tiktok != null || user.contactInfo?.snapchat != null || user.contactInfo?.location.latitude != null
+                            || user.contactInfo?.location.longitude != null || user.contactInfo?.description != null) ?
+                            (
+                                <View>
+                                    <Text style={[styles.title, styles.contactTitle]}>
+                                        CONTACT
+                                    </Text>
+                                    <View>
+                                        {user.contactInfo?.description != null && user.type == "Club" &&
+                                            <View style={styles.contactDescription}>
+                                                <Text>{user.contactInfo?.description}</Text>
+                                            </View>
+                                        }
+                                        <View style={styles.contactInfo}>
+                                            {user.contactInfo?.phone != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`tel:${user.contactInfo.phone}`)}>
+                                                        <FontAwesome6 name="phone" size={24} color="#000" />
+                                                    </TouchableOpacity>
                                                 </View>
                                             }
-                                            <View style={styles.contactInfo}>
-                                                {user.contactInfo?.phone != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`tel:${user.contactInfo.phone}`)}>
-                                                            <FontAwesome6 name="phone" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                                {user.contactInfo?.email != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`mailto:${user.contactInfo.email}`)}>
-                                                            <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                                {user.contactInfo?.facebook != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.facebook.com/${user.contactInfo.facebook}`)}>
-                                                            <FontAwesome name="facebook" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                                {user.contactInfo?.instagram != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.instagram.com/${user.contactInfo.instagram}`)}>
-                                                            <FontAwesome name="instagram" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                                {user.contactInfo?.whatsapp != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://wa.me/${user.contactInfo.whatsapp}`)}>
-                                                            <FontAwesome name="whatsapp" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                                {user.contactInfo?.telegram != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://t.me/${user.contactInfo.telegram}`)}>
-                                                            <FontAwesome5 name="telegram-plane" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                                {user.contactInfo?.tiktok != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.tiktok.com/@${user.contactInfo.tiktok}`)}>
-                                                            <FontAwesome6 name="tiktok" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                                {user.contactInfo?.snapchat != null &&
-                                                    <View style={styles.contactItem}>
-                                                        <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.snapchat.com/add/${user.contactInfo.snapchat}`)}>
-                                                            <FontAwesome name="snapchat-ghost" size={24} color="#000" />
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                }
-                                            </View>
-
-                                            {user.contactInfo?.location.latitude != null && user.contactInfo?.location.longitude != null &&
-                                                <View style={styles.contactLocation}>
-                                                    <View style={styles.map}>
-                                                        <MapView
-                                                            style={styles.mapPreview}
-                                                            initialRegion={{
-                                                                latitude: parseFloat(user.contactInfo?.location.latitude || 0),
-                                                                longitude: parseFloat(user.contactInfo?.location.longitude || 0),
-                                                                latitudeDelta: user.contactInfo?.location.latitude ? 0.01 : 50,
-                                                                longitudeDelta: user.contactInfo?.location.longitude ? 0.01 : 50
-                                                            }}
-                                                        >
-                                                            <Marker
-                                                                coordinate={{
-                                                                    latitude: parseFloat(user.contactInfo?.location.latitude || 0),
-                                                                    longitude: parseFloat(user.contactInfo?.location.longitude || 0),
-                                                                }}
-                                                            />
-                                                        </MapView>
-                                                    </View>
-                                                    <TouchableOpacity
-                                                        style={styles.locationLink}
-                                                        onPress={async () => {
-                                                            const { latitude, longitude } = user.contactInfo?.location;
-                                                            const googleMapsURL = `comgooglemaps://?center=${latitude},${longitude}&q=${latitude},${longitude}`;
-                                                            const browserURL = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-
-                                                            try {
-                                                                const supported = await Linking.canOpenURL(googleMapsURL);
-                                                                if (supported) {
-                                                                    await Linking.openURL(googleMapsURL);
-                                                                } else {
-                                                                    await Linking.openURL(browserURL);
-                                                                }
-                                                            } catch (error) {
-                                                                Alert.alert("Error", "Could not open map.");
-                                                                console.error(error);
-                                                            }
-                                                        }}>
-                                                        <Text style={styles.locationLinkText}>Get Directions</Text>
+                                            {user.contactInfo?.email != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`mailto:${user.contactInfo.email}`)}>
+                                                        <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.facebook != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.facebook.com/${user.contactInfo.facebook}`)}>
+                                                        <FontAwesome name="facebook" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.instagram != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.instagram.com/${user.contactInfo.instagram}`)}>
+                                                        <FontAwesome name="instagram" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.whatsapp != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://wa.me/${user.contactInfo.whatsapp}`)}>
+                                                        <FontAwesome name="whatsapp" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.telegram != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://t.me/${user.contactInfo.telegram}`)}>
+                                                        <FontAwesome5 name="telegram-plane" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.tiktok != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.tiktok.com/@${user.contactInfo.tiktok}`)}>
+                                                        <FontAwesome6 name="tiktok" size={24} color="#000" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            }
+                                            {user.contactInfo?.snapchat != null &&
+                                                <View style={styles.contactItem}>
+                                                    <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`https://www.snapchat.com/add/${user.contactInfo.snapchat}`)}>
+                                                        <FontAwesome name="snapchat-ghost" size={24} color="#000" />
                                                     </TouchableOpacity>
                                                 </View>
                                             }
                                         </View>
+
+                                        {user.contactInfo?.location.latitude != null && user.contactInfo?.location.longitude != null &&
+                                            <View style={styles.contactLocation}>
+                                                <View style={styles.map}>
+                                                    <MapView
+                                                        style={styles.mapPreview}
+                                                        initialRegion={{
+                                                            latitude: parseFloat(user.contactInfo?.location.latitude || 0),
+                                                            longitude: parseFloat(user.contactInfo?.location.longitude || 0),
+                                                            latitudeDelta: user.contactInfo?.location.latitude ? 0.01 : 50,
+                                                            longitudeDelta: user.contactInfo?.location.longitude ? 0.01 : 50
+                                                        }}
+                                                    >
+                                                        <Marker
+                                                            coordinate={{
+                                                                latitude: parseFloat(user.contactInfo?.location.latitude || 0),
+                                                                longitude: parseFloat(user.contactInfo?.location.longitude || 0),
+                                                            }}
+                                                        />
+                                                    </MapView>
+                                                </View>
+                                                <TouchableOpacity
+                                                    style={styles.locationLink}
+                                                    onPress={async () => {
+                                                        const { latitude, longitude } = user.contactInfo?.location;
+                                                        const googleMapsURL = `comgooglemaps://?center=${latitude},${longitude}&q=${latitude},${longitude}`;
+                                                        const browserURL = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
+                                                        try {
+                                                            const supported = await Linking.canOpenURL(googleMapsURL);
+                                                            if (supported) {
+                                                                await Linking.openURL(googleMapsURL);
+                                                            } else {
+                                                                await Linking.openURL(browserURL);
+                                                            }
+                                                        } catch (error) {
+                                                            Alert.alert("Error", "Could not open map.");
+                                                            console.error(error);
+                                                        }
+                                                    }}>
+                                                    <Text style={styles.locationLinkText}>Get Directions</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        }
                                     </View>
-                                ) : (
+                                </View>
+                            ) : (
+                                <View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
+                                        <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
+                                            CONTACT
+                                        </Text>
+
+                                        {userId == user._id && <TouchableOpacity onPress={handleEdit} style={styles.emptyContactInfoBtn}>
+                                            <Text style={styles.emptyContactInfoBtnText}>+Add contact info</Text>
+                                        </TouchableOpacity>}
+
+                                    </View>
                                     <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
-                                            <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
-                                                CONTACT
-                                            </Text>
-
-                                            {userId == user._id && <TouchableOpacity onPress={handleEdit} style={styles.emptyContactInfoBtn}>
-                                                <Text style={styles.emptyContactInfoBtnText}>+Add contact info</Text>
-                                            </TouchableOpacity>}
-
-                                        </View>
-                                        <View>
-                                            <Text style={[styles.emptyContactInfo, { marginBottom: 5 }]}>
-                                                No contact info
-                                            </Text>
-                                        </View>
+                                        <Text style={[styles.emptyContactInfo, { marginBottom: 5 }]}>
+                                            No contact info
+                                        </Text>
                                     </View>
-                                )
+                                </View>
+                            )
+                        }
+                    </View>}
+
+                    {/* BIO */}
+                    {user.type != "Parent" && <View style={styles.profileSection}>
+                        <Text style={styles.title}>
+                            {(user.type != "Club" && user.type != "Association") ? 'Bio' : 'Summary'}
+                        </Text>
+                        {user.bio ? (
+                            <Text style={styles.paragraph}>
+                                {user.bio}
+                            </Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+
+                    </View>}
+
+                    {/* SPORT */}
+                    {user.type != "Parent" && <View style={styles.profileSection}>
+                        <Text style={styles.title}>
+                            {user.type === "Scout" || user.type === "Sponsor"
+                                ? 'Interested in'
+                                : `Sport${user.sport?.length > 1 ? 's' : ''}`
                             }
-                        </View>}
-
-                        {/* BIO */}
-                        {user.type != "Parent" && <View style={styles.profileSection}>
-                            <Text style={styles.title}>
-                                {user.type != "Club" ? 'Bio' : 'Summary'}
+                        </Text>
+                        {user.sport && user.sport.length > 0 ? (
+                            <Text style={styles.paragraph}>
+                                {user.sport.toString()}
                             </Text>
-                            {user.bio ? (
-                                <Text style={styles.paragraph}>
-                                    {user.bio}
-                                </Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+                    </View>}
+
+
+                    <View style={styles.profileSection}>
+                        {/* COUNTRY */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Country
+                            </Text>
+                            {user.country ? (
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{ marginRight: 8 }}>
+                                        <CountryFlag isoCode={user.country} size={14} />
+                                    </View>
+                                    <Text style={styles.paragraph}>
+                                        {user.country}
+                                    </Text>
+                                </View>
                             ) : (
                                 <Text style={styles.paragraph}>-</Text>
                             )}
-
-                        </View>}
-
-                        {/* SPORT */}
-                        {user.type != "Parent" && <View style={styles.profileSection}>
-                            <Text style={styles.title}>
-                                {user.type === "Scout" || user.type === "Sponsor"
-                                    ? 'Interested in'
-                                    : `Sport${user.sport?.length > 1 ? 's' : ''}`
-                                }
-                            </Text>
-                            {user.sport && user.sport.length > 0 ? (
-                                <Text style={styles.paragraph}>
-                                    {user.sport.toString()}
-                                </Text>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
-                        </View>}
-
-
-                        <View style={styles.profileSection}>
-                            {/* COUNTRY */}
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Country
-                                </Text>
-                                {user.country ? (
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{ marginRight: 8 }}>
-                                            <CountryFlag isoCode={user.country} size={14} />
-                                        </View>
-                                        <Text style={styles.paragraph}>
-                                            {user.country}
-                                        </Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>
-
-                            {/* PLAYS IN TEAMS */}
-                            {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Plays in
-                                </Text>
-                                {user.memberOf.length > 0 ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>0 teams</Text>
-                                )}
-                            </View>}
-
-                            {/* COACH OF TEAMS */}
-                            {user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Coach of
-                                </Text>
-                                {userCoachOf.length > 0 ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length == 1 ? 'team' : 'teams'}</Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>0 teams</Text>
-                                )}
-                            </View>}
-
-                            {/* CLUB */}
-                            {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Club
-                                </Text>
-                                {user.club && (
-                                    <View>
-                                        {(user.club == "Independent" && (!user.memberOf || user.memberOf == null || user.memberOf.length == 0) && (!user.isStaff || user.isStaff == null || user.isStaff.length == 0)) &&
-                                            <Text style={styles.paragraph}>Independent</Text>
-                                        }
-
-                                        {user.club == "Independent" && ((user.memberOf && user.memberOf != null && user.memberOf.length > 0) || (user.isStaff && user.isStaff != null && user.isStaff.length > 0)) &&
-                                            <Text style={styles.paragraph}>{getUserClubs()}</Text>
-                                        }
-
-                                        {user.club != "Independent" && ((user.memberOf && user.memberOf != null && user.memberOf.length > 0) || (user.isStaff && user.isStaff != null && user.isStaff.length > 0)) &&
-                                            <Text style={styles.paragraph}>{user.club} and {getUserClubs().replace('clubs', 'more clubs')}</Text>
-                                        }
-                                    </View>
-                                )}
-                            </View>}
-
-                            {/* Organization */}
-                            {(user.type == "Scout" || user.type == "Sponsor") && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Organization
-                                </Text>
-                                {!user.organization.independent ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{user.organization.name}</Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>Independent</Text>
-                                )}
-                            </View>}
-
-                            {/* NUMBER OF SPORTS */}
-                            {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Total number of sports
-                                </Text>
-                                {user.sport ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>
-                                            {user.sport.length}
-                                        </Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>}
-
-                            {/* NUMBER OF TEAMS */}
-                            {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Total number of teams
-                                </Text>
-                                {user.teams ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>
-                                            {user.teams.length}
-                                        </Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>}
-
-                            {/* NUMBER OF MEMBERS */}
-                            {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Total number of members
-                                </Text>
-                                {teams ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>
-                                            {teams.reduce((total, team) => total + (team.members?.length || 0), 0)}
-                                        </Text>
-                                    </View>
-                                ) : (
-                                    <Text style={styles.paragraph}>-</Text>
-                                )}
-                            </View>}
-
-                            {/* DOB */}
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    {user.type == "Club" ? 'Established' : 'Date of Birth'}
-                                </Text>
-                                {(user.dob.day && user.dob.month && user.dob.year) ? (
-                                    <View>
-                                        <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>
-                                    </View>
-                                ) : (
-                                    <View>
-                                        <Text style={styles.paragraph}>-</Text>
-                                    </View>
-                                )}
-                            </View>
-
-                            {/* HEIGHT */}
-                            {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Height
-                                </Text>
-                                <View>
-                                    {user.height ? (
-                                        <Text style={styles.paragraph}>{user.height} cm</Text>
-                                    ) : (
-                                        <Text style={styles.paragraph}>-</Text>
-                                    )}
-                                </View>
-                            </View>}
-
-                            {/* WEIGHT */}
-                            {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Weight
-                                </Text>
-                                <View>
-                                    {user.weight ? (
-                                        <Text style={styles.paragraph}>{user.weight} kg</Text>
-                                    ) : (
-                                        <Text style={styles.paragraph}>-</Text>
-                                    )}
-                                </View>
-                            </View>}
                         </View>
 
-                        {/* HIGHLIGHTS */}
-                        {user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
-                            {user.type != "Parent" && <Text style={styles.title}>
-                                Highlights
-                            </Text>}
-                            {user.type == "Parent" && <Text style={styles.title}>
-                                Children's Highlights
-                            </Text>}
-                            {user.highlights ? (
-                                <Text style={styles.paragraph}>{user.highlights}</Text>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
-
-                        </View>}
-
-                        {/* STATS */}
-                        {user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
-                            {user.type != "Parent" && <Text style={styles.title}>
-                                Stats
-                            </Text>}
-                            {user.type == "Parent" && <Text style={styles.title}>
-                                Children's Stats
-                            </Text>}
-                            {user.stats ? (
-                                <Text style={styles.paragraph}>{user.stats}</Text>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
-                        </View>}
-
-                        {/* ACHIEVEMENTS */}
-                        {user.type != "Club" && user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
-                            {user.type != "Parent" && <Text style={styles.title}>
-                                Achievements
-                            </Text>
-                            }
-                            {user.type == "Parent" && <Text style={styles.title}>
-                                Children's Achievements
-                            </Text>
-                            }
-                            {user.achievements ? (
-                                <Text style={styles.paragraph}>{user.achievements}</Text>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
-                        </View>}
-
-                        {/* EVENTS */}
-                        {user.type != "Scout" && user.type != "Sponsor" && <View style={styles.profileSection}>
-                            {user.type != "Parent" && <Text style={styles.title}>
-                                Upcoming Events
-                            </Text>}
-                            {user.type == "Parent" && <Text style={styles.title}>
-                                Children's Upcoming Events
-                            </Text>}
-                            {user.events ? (
-                                <Text style={styles.paragraph}>{user.events}</Text>
-                            ) : (
-                                <Text style={styles.paragraph}>-</Text>
-                            )}
-                        </View>}
-
-                        {/* SKILLS */}
-                        {user.type == "Athlete" && <View style={styles.profileSection}>
+                        {/* PLAYS IN TEAMS */}
+                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
-                                Skills
+                                Plays in
                             </Text>
-                            <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
-                                <RadarChart
-                                    data={data}
-                                    maxValue={100}
-                                    gradientColor={{
-                                        startColor: '#FF9432',
-                                        endColor: '#FFF8F1',
-                                        count: 5,
-                                    }}
-                                    stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
-                                    strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
-                                    strokeOpacity={[1, 1, 1, 1, 0.13]}
-                                    labelColor="#111111"
-                                    dataFillColor="#FF9432"
-                                    dataFillOpacity={0.8}
-                                    dataStroke="#FF4000"
-                                    dataStrokeWidth={2}
-                                    isCircle
-                                />
+                            {user.memberOf.length > 0 ? (
+                                <View>
+                                    <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>0 teams</Text>
+                            )}
+                        </View>}
 
+                        {/* COACH OF TEAMS */}
+                        {user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Coach of
+                            </Text>
+                            {userCoachOf.length > 0 ? (
+                                <View>
+                                    <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length == 1 ? 'team' : 'teams'}</Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>0 teams</Text>
+                            )}
+                        </View>}
+
+                        {/* CLUB */}
+                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Club
+                            </Text>
+                            {user.clubs && (
+                                <View>
+                                    {(user.clubs.length == 0 && (!user.memberOf || user.memberOf == null || user.memberOf.length == 0) && (!user.isStaff || user.isStaff == null || user.isStaff.length == 0)) &&
+                                        <Text style={styles.paragraph}>Independent</Text>
+                                    }
+
+                                    {user.clubs.length == 0 && ((user.memberOf && user.memberOf != null && user.memberOf.length > 0) || (user.isStaff && user.isStaff != null && user.isStaff.length > 0)) &&
+                                        <Text style={styles.paragraph}>{getUserClubs()}</Text>
+                                    }
+
+                                    {user.clubs.length > 0 && ((user.memberOf && user.memberOf != null && user.memberOf.length > 0) || (user.isStaff && user.isStaff != null && user.isStaff.length > 0)) && (
+                                        (() => {
+                                            const additionalClubs = getUserClubs();
+                                            const currentClubName = user.clubs[0].name;
+
+                                            if (!additionalClubs || additionalClubs === currentClubName) {
+                                                return <Text style={styles.paragraph}>{currentClubName}</Text>;
+                                            } else {
+                                                return (
+                                                    <Text style={styles.paragraph}>
+                                                        {currentClubName} and {additionalClubs.replace('clubs', 'more clubs')}
+                                                    </Text>
+                                                );
+                                            }
+                                        })
+                                    )}
+                                </View>
+                            )}
+                        </View>}
+
+                        {/* Organization */}
+                        {(user.type == "Scout" || user.type == "Sponsor") && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Organization
+                            </Text>
+                            {!user.organization.independent ? (
+                                <View>
+                                    <Text style={styles.paragraph}>{user.organization.name}</Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>Independent</Text>
+                            )}
+                        </View>}
+
+                        {/* NUMBER OF SPORTS */}
+                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Total number of sports
+                            </Text>
+                            {user.sport ? (
+                                <View>
+                                    <Text style={styles.paragraph}>
+                                        {user.sport.length}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
+                        </View>}
+
+                        {/* NUMBER OF TEAMS */}
+                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Total number of teams
+                            </Text>
+                            {user.teams ? (
+                                <View>
+                                    <Text style={styles.paragraph}>
+                                        {user.teams.length}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
+                        </View>}
+
+                        {/* NUMBER OF MEMBERS */}
+                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Total number of members
+                            </Text>
+                            {teams ? (
+                                <View>
+                                    <Text style={styles.paragraph}>
+                                        {teams.reduce((total, team) => total + (team.members?.length || 0), 0)}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <Text style={styles.paragraph}>-</Text>
+                            )}
+                        </View>}
+
+                        {/* DOB */}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                {(user.type == "Club" || user.type == "Association") ? 'Established' : 'Date of Birth'}
+                            </Text>
+                            {(user.dob.day && user.dob.month && user.dob.year) ? (
+                                <View>
+                                    <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>
+                                </View>
+                            ) : (
+                                <View>
+                                    <Text style={styles.paragraph}>-</Text>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* HEIGHT */}
+                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Height
+                            </Text>
+                            <View>
+                                {user.height ? (
+                                    <Text style={styles.paragraph}>{user.height} cm</Text>
+                                ) : (
+                                    <Text style={styles.paragraph}>-</Text>
+                                )}
                             </View>
                         </View>}
 
-                        {/* ACIONS */}
-                        {userId == user._id && <View style={[styles.profileSection, styles.profileActions]}>
-                            <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Edit profile</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleShareProfile} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Share Profile</Text>
-                            </TouchableOpacity>
+                        {/* WEIGHT */}
+                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={styles.title}>
+                                Weight
+                            </Text>
+                            <View>
+                                {user.weight ? (
+                                    <Text style={styles.paragraph}>{user.weight} kg</Text>
+                                ) : (
+                                    <Text style={styles.paragraph}>-</Text>
+                                )}
+                            </View>
                         </View>}
                     </View>
-                </Animated.ScrollView>
+
+                    {/* HIGHLIGHTS */}
+                    {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
+                        {user.type != "Parent" && <Text style={styles.title}>
+                            Highlights
+                        </Text>}
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Highlights
+                        </Text>}
+                        {user.highlights ? (
+                            <Text style={styles.paragraph}>{user.highlights}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+
+                    </View>}
+
+                    {/* STATS */}
+                    {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
+                        {user.type != "Parent" && <Text style={styles.title}>
+                            Stats
+                        </Text>}
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Stats
+                        </Text>}
+                        {user.stats ? (
+                            <Text style={styles.paragraph}>{user.stats}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+                    </View>}
+
+                    {/* ACHIEVEMENTS */}
+                    {user.type != "Club" && user.type != "Scout" && user.type != "Association" && user.type != "Sponsor" && <View style={styles.profileSection}>
+                        {user.type != "Parent" && <Text style={styles.title}>
+                            Achievements
+                        </Text>
+                        }
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Achievements
+                        </Text>
+                        }
+                        {user.achievements ? (
+                            <Text style={styles.paragraph}>{user.achievements}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+                    </View>}
+
+                    {/* EVENTS */}
+                    {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
+                        {user.type != "Parent" && <Text style={styles.title}>
+                            Upcoming Events
+                        </Text>}
+                        {user.type == "Parent" && <Text style={styles.title}>
+                            Children's Upcoming Events
+                        </Text>}
+                        {user.events ? (
+                            <Text style={styles.paragraph}>{user.events}</Text>
+                        ) : (
+                            <Text style={styles.paragraph}>-</Text>
+                        )}
+                    </View>}
+
+                    {/* SKILLS */}
+                    {user.type == "Athlete" && <View style={styles.profileSection}>
+                        <Text style={styles.title}>
+                            Skills
+                        </Text>
+                        <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
+                            <RadarChart
+                                data={data}
+                                maxValue={100}
+                                gradientColor={{
+                                    startColor: '#FF9432',
+                                    endColor: '#FFF8F1',
+                                    count: 5,
+                                }}
+                                stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
+                                strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
+                                strokeOpacity={[1, 1, 1, 1, 0.13]}
+                                labelColor="#111111"
+                                dataFillColor="#FF9432"
+                                dataFillOpacity={0.8}
+                                dataStroke="#FF4000"
+                                dataStrokeWidth={2}
+                                isCircle
+                            />
+
+                        </View>
+                    </View>}
+
+                    {/* ACIONS */}
+                    {userId == user._id && <View style={[styles.profileSection, styles.profileActions]}>
+                        <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Edit profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleShareProfile} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Share Profile</Text>
+                        </TouchableOpacity>
+                    </View>}
+                </View>
+            </Animated.ScrollView>
             }
 
             {/* teamsTab */}
@@ -1759,7 +1783,7 @@ export default function Profile() {
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.emptyStateButton}
-                                            onPress={() => router.push('/clubs/manage')}
+                                            onPress={() => { setKeyword(''); setEditMode(true) }}
                                         >
                                             <Text style={styles.emptyStateButtonText}>Add Clubs</Text>
                                         </TouchableOpacity>
@@ -2258,116 +2282,119 @@ export default function Profile() {
                                                             <TouchableOpacity
                                                                 key={item._id}
                                                                 style={styles.inventoryCard}
-                                                                onPress={() => router.push(`/payments/details/${item._id}`)}
-                                                            >
-                                                                <View style={styles.inventoryHeader}>
-                                                                    <View style={styles.inventoryInfo}>
-                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
-                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
-                                                                    </View>
-                                                                    <View style={styles.inventoryStats}>
-                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
-                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
-                                                                    </View>
-                                                                </View>
+                                                                onPress={() => router.push({
+                                                                    pathname: '/payments/details',
+                                                                    params: { id: item._id },
+                                                                })}
+                                                                    >
+                                                        <View style={styles.inventoryHeader}>
+                                                            <View style={styles.inventoryInfo}>
+                                                                <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                                <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                            </View>
+                                                            <View style={styles.inventoryStats}>
+                                                                <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                                <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                            </View>
+                                                        </View>
 
-                                                                <View style={styles.inventoryDetails}>
-                                                                    <View style={styles.inventoryDetailRow}>
-                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
-                                                                    </View>
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </View>
-                                                ) : (
-                                                    <Text>No pending payments</Text>
+                                                        <View style={styles.inventoryDetails}>
+                                                            <View style={styles.inventoryDetailRow}>
+                                                                <Text style={styles.inventoryDetailLabel}>Due date:</Text>
+                                                                <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                            </View>
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        ) : (
+                                        <Text>No pending payments</Text>
                                                 )}
-                                            </>
+                                    </>
                                         }
 
-                                        {activePaymentTab == "paid" &&
-                                            <>
-                                                {/* <Text style={[styles.title, { marginBottom: 10 }]}>Paid payments</Text> */}
-                                                {paidPayments && paidPayments.length > 0 ? (
-                                                    <View>
-                                                        {paidPayments.map((item) => (
-                                                            <TouchableOpacity
-                                                                key={item._id}
-                                                                style={styles.inventoryCard}
-                                                                onPress={() => router.push(`/payments/details/${item._id}`)}
-                                                            >
-                                                                <View style={styles.inventoryHeader}>
-                                                                    <View style={styles.inventoryInfo}>
-                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
-                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
-                                                                    </View>
-                                                                    <View style={styles.inventoryStats}>
-                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
-                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
-                                                                    </View>
-                                                                </View>
+                                {activePaymentTab == "paid" &&
+                                    <>
+                                        {/* <Text style={[styles.title, { marginBottom: 10 }]}>Paid payments</Text> */}
+                                        {paidPayments && paidPayments.length > 0 ? (
+                                            <View>
+                                                {paidPayments.map((item) => (
+                                                    <TouchableOpacity
+                                                        key={item._id}
+                                                        style={styles.inventoryCard}
+                                                        onPress={() => router.push(`/payments/details/${item._id}`)}
+                                                    >
+                                                        <View style={styles.inventoryHeader}>
+                                                            <View style={styles.inventoryInfo}>
+                                                                <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                                <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                            </View>
+                                                            <View style={styles.inventoryStats}>
+                                                                <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                                <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                            </View>
+                                                        </View>
 
-                                                                <View style={styles.inventoryDetails}>
-                                                                    <View style={styles.inventoryDetailRow}>
-                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
-                                                                    </View>
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </View>
-                                                ) : (
-                                                    <Text>No paid payments</Text>
-                                                )}
-                                            </>
-                                        }
-                                    </View>
-                                ) : (
-                                    <View style={styles.emptyState}>
-                                        <Text style={styles.emptyStateTitle}>No payments</Text>
-                                        <Text style={styles.emptyStateText}>
-                                            {userId == user._id
-                                                ? "Add your first payment to get started"
-                                                : "This club hasn't added any payments yet"}
-                                        </Text>
-                                        {userId == user._id && (
-                                            <TouchableOpacity
-                                                style={styles.emptyStateButton}
-                                                onPress={() => router.push('/payments/createPayment')}
-                                            >
-                                                <Text style={styles.emptyStateButtonText}>Add Payment</Text>
-                                            </TouchableOpacity>
+                                                        <View style={styles.inventoryDetails}>
+                                                            <View style={styles.inventoryDetailRow}>
+                                                                <Text style={styles.inventoryDetailLabel}>Due date:</Text>
+                                                                <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                            </View>
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        ) : (
+                                            <Text>No paid payments</Text>
                                         )}
-                                    </View>
-                                )}
+                                    </>
+                                }
                             </View>
-                        )}
+                        ) : (
+                        <View style={styles.emptyState}>
+                            <Text style={styles.emptyStateTitle}>No payments</Text>
+                            <Text style={styles.emptyStateText}>
+                                {userId == user._id
+                                    ? "Add your first payment to get started"
+                                    : "This club hasn't added any payments yet"}
+                            </Text>
+                            {userId == user._id && (
+                                <TouchableOpacity
+                                    style={styles.emptyStateButton}
+                                    onPress={() => router.push('/payments/createPayment')}
+                                >
+                                    <Text style={styles.emptyStateButtonText}>Add Payment</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                                )}
                     </View>
+                        )}
+                </View>
                 </Animated.ScrollView>
             }
 
-            <View style={styles.navBar}>
-                <TouchableOpacity onPress={() => router.replace('/settings')}>
-                    <Image source={require('../../assets/settings.png')} style={styles.icon} />
-                </TouchableOpacity>
+<View style={styles.navBar}>
+    <TouchableOpacity onPress={() => router.replace('/settings')}>
+        <Image source={require('../../assets/settings.png')} style={styles.icon} />
+    </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/search')}>
-                    <Image source={require('../../assets/search.png')} style={styles.icon} />
-                </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.replace('/search')}>
+        <Image source={require('../../assets/search.png')} style={styles.icon} />
+    </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/landing')}>
-                    <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
-                </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.replace('/landing')}>
+        <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
+    </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                    <Image source={require('../../assets/notifications.png')} style={styles.icon} />
-                </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.replace('/notifications')}>
+        <Image source={require('../../assets/notifications.png')} style={styles.icon} />
+    </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/profile')}>
-                    <Image source={require('../../assets/profile.png')} style={styles.activeIcon} />
-                </TouchableOpacity>
-            </View>
+    <TouchableOpacity onPress={() => router.replace('/profile')}>
+        <Image source={require('../../assets/profile.png')} style={styles.activeIcon} />
+    </TouchableOpacity>
+</View>
         </View >
     );
 }

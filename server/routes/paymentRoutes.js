@@ -7,17 +7,33 @@ const jwt = require("jsonwebtoken");
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader?.split(' ')[1];
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
 
-    if (!token) return res.status(401).json({ error: 'Token missing' });
+  if (!token) return res.status(401).json({ error: 'Token missing' });
 
-    jwt.verify(token, '123456', (err, decoded) => {
-        if (err) return res.status(403).json({ error: 'Invalid token' });
-        req.user = decoded; // decoded contains userId
-        next();
-    });
+  jwt.verify(token, '123456', (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = decoded; // decoded contains userId
+    next();
+  });
 };
+
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const payment = await Payment.findById(req.params.id)
+      .populate('user', 'name email image')  // Optional: Populate user info
+      .populate('club', 'name email');       // Optional: Populate club info
+
+    if (!payment) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
+
+    res.status(200).json({ success: true, data: payment });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 router.post('/', authenticateToken, async (req, res) => {
   try {
@@ -39,14 +55,14 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 router.get('/club/:clubId', authenticateToken, async (req, res) => {
-    try {
-        const payments = await Payment.find({ club: req.params.clubId })
-            .populate('user', 'name email image')
+  try {
+    const payments = await Payment.find({ club: req.params.clubId })
+      .populate('user', 'name email image')
 
-        res.status(200).json({ success: true, data: payments });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
+    res.status(200).json({ success: true, data: payments });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 router.put('/:id/pay', authenticateToken, async (req, res) => {

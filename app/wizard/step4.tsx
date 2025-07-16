@@ -35,7 +35,7 @@ export default function WizardStep4() {
             try {
                 const url =
                     formData.type == 'Association'
-                        ? `https://riyadah.onrender.com/api/users/clubs?sport=${encodeURIComponent(formData.sport)}`
+                        ? `https://riyadah.onrender.com/api/users/clubs?sport=${encodeURIComponent(formData.sport[0])}`
                         : `https://riyadah.onrender.com/api/users/clubs`;
 
                 const res = await fetch(url);
@@ -158,25 +158,30 @@ export default function WizardStep4() {
 
                     {!independent && <ScrollView >
                         <View style={styles.wizardContainer}>
-                            {featuredClubs.map(({ id, label, icon }) => {
-                                const isSelected = selected.includes(id);
+                            {featuredClubs.length > 0 ? (
+                                featuredClubs.map(({ id, label, icon }) => {
+                                    const isSelected = selected.includes(id);
 
-                                return (
-                                    <TouchableOpacity
-                                        key={id}
-                                        style={[
-                                            styles.accountOption,
-                                            isSelected && styles.accountOptionSelected,
-                                        ]}
-                                        onPress={() => toggleClubSelection(id)}
-                                    >
-                                        <Image source={icon} style={styles.icon} resizeMode="contain" />
-                                        <Text style={[styles.accountText, isSelected && styles.accountTextSelected]}>
-                                            {label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
+                                    return (
+                                        <TouchableOpacity
+                                            key={id}
+                                            style={[
+                                                styles.accountOption,
+                                                isSelected && styles.accountOptionSelected,
+                                            ]}
+                                            onPress={() => toggleClubSelection(id)}
+                                        >
+                                            <Image source={icon} style={styles.icon} resizeMode="contain" />
+                                            <Text style={[styles.accountText, isSelected && styles.accountTextSelected]}>
+                                                {label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })
+                            ) : (
+                                <Text style={styles.paragraph}>No clubs</Text>
+                            )}
+
                         </View>
                     </ScrollView>
                     }
@@ -243,6 +248,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 4,
+    },
+    paragraph:{
+        fontSize:14,
+        fontFamily:'Manrope',
     },
     loginButton: {
         flex: 1,

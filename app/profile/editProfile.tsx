@@ -372,7 +372,7 @@ export default function EditProfile() {
                                         />
                                     </View>
 
-                                    {user.type == "Club" && <View>
+                                    {(user.type == "Club" || user.type == "Association") && <View>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
                                             <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
                                                 Location
@@ -448,11 +448,11 @@ export default function EditProfile() {
                             {/* BIO */}
                             {user.type != "Parent" && <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    {user.type == "Club" ? 'Summary' : 'Bio'}
+                                    {(user.type == "Club" || user.type == "Association") ? 'Summary' : 'Bio'}
                                 </Text>
                                 <TextInput
                                     style={styles.textarea}
-                                    placeholder={user.type == "Club" ? 'About the club' : 'About you'}
+                                    placeholder={(user.type == "Club"||user.type == "Association") ? `About the ${user.type}` : 'About you'}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.bio || ""}
                                     onChangeText={(text) => updateField('bio', text)}
@@ -500,7 +500,7 @@ export default function EditProfile() {
                             {/* DOB */}
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    {user.type == "Club" ? 'Establishment date' : 'Date of Birth'}
+                                    {(user.type == "Club" || user.type == "Association") ? 'Establishment date' : 'Date of Birth'}
                                 </Text>
                                 <View style={styles.dobRow}>
                                     <TextInput
@@ -564,7 +564,7 @@ export default function EditProfile() {
                             </View>}
 
                             {/* HIGHLIGHTS */}
-                            {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
+                            {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
                                 <Text style={styles.title}>
                                     Highlights
                                 </Text>
@@ -581,7 +581,7 @@ export default function EditProfile() {
                             </View>}
 
                             {/* STATS */}
-                            {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
+                            {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
 
                                 <Text style={styles.title}>
                                     Stats
@@ -616,7 +616,7 @@ export default function EditProfile() {
                             </View>}
 
                             {/* EVENTS */}
-                            {user.type != "Parent" && user.type != "Scout" && <View style={styles.entity}>
+                            {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
 
                                 <Text style={styles.title}>
                                     Upcoming Events
