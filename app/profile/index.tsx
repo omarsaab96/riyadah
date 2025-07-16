@@ -286,7 +286,7 @@ export default function Profile() {
             }
         };
     }
-    
+
     const getClubs = async () => {
         if (user?.type === "Association") {
             try {
@@ -295,11 +295,15 @@ export default function Profile() {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                const data = await res.json();
-                if (res.ok) {
-                    setClubs(data.data);
+                if (!res.ok) {
+                    throw new Error(`Server error: ${res.status}`);
+                }
+
+                const json = await res.json();
+                if (json.success) {
+                    setClubs(json.data);
                 } else {
-                    console.error(data.message);
+                    console.warn('Backend returned error:', json.message);
                 }
             } catch (err) {
                 console.error('Failed to fetch clubs', err);
@@ -418,7 +422,7 @@ export default function Profile() {
             setFinancialsLoading(true);
             getFinancials();
         }
-        
+
         if (label == "Clubs") {
             setClubsLoading(true);
             getClubs();

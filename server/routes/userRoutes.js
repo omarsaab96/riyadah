@@ -287,12 +287,14 @@ router.get('/clubs/byAssociation/:userId', authenticateToken, async (req, res) =
       match: { type: 'Club' }
     });
 
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
-    res.json({ success: true, data: user.clubs });
+    return res.json({ success: true, data: user.clubs || [] });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
