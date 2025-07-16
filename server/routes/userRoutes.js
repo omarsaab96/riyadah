@@ -214,7 +214,6 @@ router.get('/byClub/:clubId', async (req, res) => {
   }
 });
 
-
 // Get all users
 router.get('/', async (req, res) => {
   const users = await User.find();
@@ -254,6 +253,19 @@ router.get('/search', async (req, res) => {
   } catch (err) {
     console.error('Error searching athletes:', err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// @route   GET /api/users/clubs
+// @desc    Get all users with type "Club"
+// @access  Public or Protected (based on your app logic)
+router.get('/clubs', async (req, res) => {
+  try {
+    const clubs = await User.find({ type: 'Club' }).select('name image');
+    res.status(200).json({ success: true, data: clubs });
+  } catch (err) {
+    console.error('Error fetching clubs:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

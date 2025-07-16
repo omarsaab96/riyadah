@@ -118,7 +118,7 @@ export default function WizardStep2() {
                 setError('Kindly fill all fields')
             }
 
-        } else if (formData.type == "Club") {
+        } else if (formData.type == "Club" || formData.type == "Association") {
             if (day != null && month != null && year != null) {
                 updateFormData({
                     dob: {
@@ -189,20 +189,20 @@ export default function WizardStep2() {
                     resizeMode="contain"
                 />
 
-                {formData.type != "Club" && <View style={styles.headerTextBlock}>
+                {(formData.type != "Club" && formData.type != "Association") && <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Date of birth</Text>
                     <Text style={styles.pageDesc}>When were you born?</Text>
                 </View>
                 }
 
-                {formData.type == "Club" && <View style={styles.headerTextBlock}>
+                {(formData.type == "Club" || formData.type == "Association") && <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Established On</Text>
-                    <Text style={styles.pageDesc}>When was your club established?</Text>
+                    <Text style={styles.pageDesc}>When was the {formData.type == "Club" ? 'club':'association'} established?</Text>
                 </View>
                 }
 
                 <Text style={styles.ghostText}>
-                    {formData.type == "Club" ? 'SINCE' : 'DOB'}
+                    {(formData.type == "Club" || formData.type == "Association") ? 'SINCE' : 'DOB'}
                 </Text>
             </View>
 

@@ -45,7 +45,7 @@ export default function WizardStep5() {
     };
 
     const handleNext = async () => {
-        if (!selectedGender && formData.type != "Club") {
+        if (!selectedGender && formData.type != "Club" && formData.type != "Association") {
             setError('Kindly select a gender')
             return;
         }
@@ -193,7 +193,7 @@ export default function WizardStep5() {
                     <Text style={styles.errorText}>{error}</Text>
                 </View>}
 
-                {formData.type != "Club" && <View style={styles.inputEntity}>
+                {(formData.type != "Club" && formData.type != "Association") && <View style={styles.inputEntity}>
                     <Text style={styles.label}>Gender</Text>
                     <View style={styles.wizardContainer}>
                         {genders.map(({ label, icon }, idx) => (
@@ -241,7 +241,7 @@ export default function WizardStep5() {
 
                 {formData.type != "Parent" &&
                     <View style={styles.inputEntity}>
-                        {formData.type == "Club" ? (
+                        {(formData.type == "Club" || formData.type == "Association") ? (
                             <Text style={styles.label}>Summary</Text>
                         ) : (
                             <Text style={styles.label}>BIO</Text>
@@ -249,7 +249,7 @@ export default function WizardStep5() {
 
                         <TextInput
                             style={styles.textarea}
-                            placeholder={formData.type == "Club" ? "Describe the club" : "Describe yourself"}
+                            placeholder={(formData.type == "Club" || formData.type == "Association") ? `Describe the ${formData.type.toLowerCase()}` : "Describe yourself"}
                             placeholderTextColor="#A8A8A8"
                             value={bio}
                             onChangeText={setBio}

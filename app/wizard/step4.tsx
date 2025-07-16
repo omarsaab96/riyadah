@@ -15,10 +15,12 @@ const featuredClubs = [
 
 export default function WizardStep4() {
     const router = useRouter();
+    const [featuredClubs, setFeaturedClubs] = useState<{ label: string; icon: any }[]>([]);
+    const [loadingClubs, setLoadingClubs] = useState(true);
     const [keyword, setKeyword] = useState('');
     const { formData, updateFormData } = useRegistration();
-    const [independent, setIndependent] = useState<boolean>(formData.club == 'Independent' ? true : false);
-    const [selected, setSelected] = useState<string | null>(formData.club != 'Independent' ? formData.club : null);
+    const [independent, setIndependent] = useState<boolean>(formData.clubs === [] ? true : false);
+    const [selected, setSelected] = useState<any[]>(formData.clubs === [] ? [] : (formData.clubs || []));
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -29,6 +31,29 @@ export default function WizardStep4() {
             }
         };
 
+        const fetchClubs = async () => {
+            try {
+                const res = await fetch('https://riyadah.onrender.com/api/users/clubs');
+                const json = await res.json();
+
+                if (json.success) {
+                    const formatted = json.data.map(club => ({
+                        id: club._id,
+                        label: club.name,
+                        icon: club.image ? { uri: club.image } : require('../../assets/clublogo.png')
+                    }));
+                    setFeaturedClubs(formatted);
+                } else {
+                    console.error('Failed to fetch clubs');
+                }
+            } catch (err) {
+                console.error('Error fetching clubs:', err);
+            } finally {
+                setLoadingClubs(false);
+            }
+        };
+
+        fetchClubs();
         checkAuth();
     }, []);
 
@@ -38,21 +63,32 @@ export default function WizardStep4() {
     };
 
     const handleNext = () => {
-        if (!independent && !selected) {
+        if (!independent && selected.length === 0) {
             setError('Kindly select a club')
             return;
         }
+
         if (independent) {
-            updateFormData({ club: 'Independent' });
-            console.log(formData)
-            router.push('/wizard/step5')
-            setSelected(null)
+            updateFormData({ clubs: [] });
+            setSelected([])
         } else {
-            updateFormData({ club: selected });
-            console.log(formData)
-            router.push('/wizard/step5')
+            updateFormData({ clubs: [selected] });
         }
+
+        router.push('/wizard/step5')
     }
+
+    const toggleClubSelection = (clubLabel: string) => {
+        if (formData.type == 'Association') {
+            // Toggle club in multi-select
+            setSelected(prev =>
+                prev.includes(clubLabel) ? prev.filter(c => c !== clubLabel) : [...prev, clubLabel]
+            );
+        } else {
+            // Single select
+            setSelected([clubLabel]);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -65,15 +101,15 @@ export default function WizardStep4() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>
-                        Select your club
+                        {formData.type == 'Association' ? 'Add clubs' : 'Select your club'}
                     </Text>
                     <Text style={styles.pageDesc}>
-                        What club do you play with?
+                        {formData.type == 'Association' ? 'What clubs fit under your association?' : 'What club do you play with?'}
                     </Text>
                 </View>
 
                 <Text style={styles.ghostText}>
-                    Club
+                    Club{formData.type == 'Association' ? 's' : ''}
                 </Text>
             </View>
 
@@ -82,7 +118,8 @@ export default function WizardStep4() {
                     <View style={styles.errorIcon}></View>
                     <Text style={styles.errorText}>{error}</Text>
                 </View>}
-                <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+
+                {formData.type != 'Association' && <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
                     <View style={styles.checkbox}>
                         {independent && <View style={styles.checked} >
                             <Image source={require('../../assets/check.png')} style={styles.checkImage} />
@@ -92,7 +129,7 @@ export default function WizardStep4() {
                     <Text style={styles.label}>
                         I don't have a club. I am independent
                     </Text>
-                </TouchableOpacity>
+                </TouchableOpacity>}
 
                 {!independent && <TextInput
                     style={styles.input}
@@ -106,21 +143,25 @@ export default function WizardStep4() {
 
             {!independent && <ScrollView >
                 <View style={styles.wizardContainer}>
-                    {featuredClubs.map(({ label, icon }, idx) => (
-                        <TouchableOpacity
-                            key={label}
-                            style={[
-                                styles.accountOption,
-                                selected === label && styles.accountOptionSelected,
-                            ]}
-                            onPress={() => setSelected(label)}
-                        >
-                            <Image source={icon} style={styles.icon} resizeMode="contain" />
-                            <Text style={[styles.accountText, selected === label && styles.accountTextSelected]}>
-                                {label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                    {featuredClubs.map(({ id,label, icon }) => {
+                        const isSelected = selected.includes(label);
+
+                        return (
+                            <TouchableOpacity
+                                key={id}
+                                style={[
+                                    styles.accountOption,
+                                    isSelected && styles.accountOptionSelected,
+                                ]}
+                                onPress={() => toggleClubSelection(id)}
+                            >
+                                <Image source={icon} style={styles.icon} resizeMode="contain" />
+                                <Text style={[styles.accountText, isSelected && styles.accountTextSelected]}>
+                                    {label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
                 </View>
             </ScrollView>
             }

@@ -9,6 +9,7 @@ const accountTypes = [
     { label: 'Parent', icon: require('../../assets/parent.png') },
     { label: 'Athlete', icon: require('../../assets/athlete.png') },
     { label: 'Club', icon: require('../../assets/club.png') },
+    { label: 'Association', icon: require('../../assets/association.png') },
     { label: 'Scout', icon: require('../../assets/scout.png') },
     { label: 'Sponsor', icon: require('../../assets/sponsor.png') },
 ];
