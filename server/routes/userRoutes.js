@@ -156,9 +156,6 @@ router.get('/byClub/:clubId', async (req, res) => {
   const { clubId } = req.params;
   const { keyword } = req.query;
 
-  console.log('Received search for club:', clubId, 'keyword:', keyword); // 👈 Log input
-
-
   if (!mongoose.Types.ObjectId.isValid(clubId)) {
     return res.status(400).json({ success: false, message: 'Invalid club ID' });
   }
@@ -186,7 +183,6 @@ router.get('/byClub/:clubId', async (req, res) => {
     if (keyword?.trim()) {
       const trimmedKeyword = keyword.trim();
 
-      console.log('Searching with keyword:', trimmedKeyword); // 👈 Log keyword
 
       finalQuery = {
         $and: [
@@ -297,6 +293,63 @@ router.get('/clubs/byAssociation/:userId', authenticateToken, async (req, res) =
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
+// PUT /api/users/association/:userId/add-club
+router.put('/association/:userId/add-club', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { coachIds } = req.body;
+
+    if (!Array.isArray(coachIds) || coachIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'coachIds must be a non-empty array' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user || user.type !== 'Association') {
+      return res.status(404).json({ success: false, message: 'Association not found' });
+    }
+
+    // Prevent duplicates
+    const uniqueIds = coachIds.filter(id => !user.clubs.includes(id));
+    user.clubs.push(...uniqueIds);
+
+    await user.save();
+    const populatedUser = await User.findById(userId).populate('clubs');
+
+    res.json({ success: true, data: populatedUser.clubs });
+  } catch (err) {
+    console.error('Add club error:', err);
+    res.status(500).json({ success: false, message: 'Server error while adding club' });
+  }
+});
+
+// PUT /api/users/association/:userId/remove-clubs
+router.put('/association/:userId/remove-clubs', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { clubsIds } = req.body;
+
+    if (!Array.isArray(clubsIds) || clubsIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'clubsIds must be a non-empty array' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user || user.type !== 'Association') {
+      return res.status(404).json({ success: false, message: 'Association not found' });
+    }
+
+    user.clubs = user.clubs.filter(id => !clubsIds.includes(id.toString()));
+
+    await user.save();
+    const populatedUser = await User.findById(userId).populate('clubs');
+
+    res.json({ success: true, data: populatedUser.clubs });
+  } catch (err) {
+    console.error('Remove club error:', err);
+    res.status(500).json({ success: false, message: 'Server error while removing club' });
+  }
+});
+
 
 //Edit user
 router.put('/:userId', authenticateToken, async (req, res) => {

@@ -18,6 +18,7 @@ import {
     Linking,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -57,7 +58,17 @@ export default function Profile() {
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
-
+    const flexDivRef = useRef(null);
+    const [cellWidth, setCellWidth] = useState(0);
+    const [cellHeight, setCellHeight] = useState(0);
+    const [addingClub, setaddingClub] = useState<string[]>([]);
+    const [keyword, setKeyword] = useState('');
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [removingClub, setremovingClub] = useState<string[]>([]);
+    const [loadingRemoveClub, setLoadingRemoveClub] = useState<string[]>([]);
 
     //graph data
     const data = [
@@ -431,6 +442,139 @@ export default function Profile() {
         }
     }
 
+    const handleLayout = (event) => {
+        const { width } = event.nativeEvent.layout;
+        const { height } = event.nativeEvent.layout;
+        setCellWidth(width);
+        setCellHeight(height);
+    };
+
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        // Clear previous timeout
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        // Set new debounce timeout
+        const timeout = setTimeout(() => {
+            if (text.trim().length >= 3) {
+                searchClubs(text);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500); // delay: 500ms
+
+        setDebounceTimeout(timeout);
+    };
+
+    const searchClubs = async (name: string) => {
+        try {
+            setSearching(true);
+            const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&type=Club`);
+
+            if (res.ok) {
+                const data = await res.json();
+                // console.log(data)
+                setSearchResults(data); // expected array
+            } else {
+                console.error("Search failed");
+                setSearchResults([]);
+            }
+        } catch (err) {
+            console.error("Error during search:", err);
+            setSearchResults([]);
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleAddClub = async (club: any) => {
+        setaddingClub(prev => [...prev, club._id]); // Add to array
+        try {
+            const alreadyCoach = clubs.some((m: any) => m._id === club._id);
+            if (alreadyCoach) {
+                console.log('duplicate')
+                setaddingClub(prev => prev.filter(id => id !== club._id));
+                return;
+            };
+
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setError('Authentication token missing');
+                setaddingClub(prev => prev.filter(id => id !== club._id));
+                return;
+            }
+
+            const res = await fetch(`https://riyadah.onrender.com/api/users/association/${user._id}/add-club`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    coachIds: [club._id], // sending as an array
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setClubs(data.data);
+                setaddingClub(prev => prev.filter(id => id !== club._id));
+            } else {
+                setaddingClub(prev => prev.filter(id => id !== club._id));
+                console.error(data.message);
+                setError(data.message || 'Failed to add coach.');
+            }
+        } catch (err) {
+            console.error('Error adding coach:', err);
+            setError('Something went wrong while adding the coach.');
+        }
+    };
+
+    const handleRemoveClub = async (clubid: string) => {
+        setLoadingRemoveClub([...loadingRemoveClub, clubid])
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                throw new Error('Authentication token missing');
+            }
+
+            const res = await fetch(`https://riyadah.onrender.com/api/users/association/${user._id}/remove-clubs`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    clubsIds: [clubid],
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setUser(prev => ({
+                    ...prev,
+                    clubs: prev.clubs.filter(club => club._id !== clubid),
+                }));
+            } else {
+                console.error(data.message || 'Failed to remove coach');
+            }
+        } catch (err) {
+            setError('Error removing coach')
+            console.log('Error removing coach:', err);
+        } finally {
+            setLoadingRemoveClub(prev => prev.filter(_id => _id !== clubid));
+            setremovingClub(prev => prev.filter(_id => _id !== clubid));
+        }
+    }
+
     // Get or create animated value
     const getAnimatedValue = (memberId: string) => {
         if (!animatedValues.current[memberId]) {
@@ -442,6 +586,16 @@ export default function Profile() {
     // Animate to 0 or 1
     const animateDeleteBtn = (memberId: string, toValue: number) => {
         const animVal = getAnimatedValue(memberId);
+        Animated.timing(animVal, {
+            toValue,
+            duration: 300,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: false,
+        }).start();
+    };
+
+    const animateRemoveBtn = (coachId: string, toValue: number) => {
+        const animVal = getAnimatedValue(coachId);
         Animated.timing(animVal, {
             toValue,
             duration: 300,
@@ -529,6 +683,8 @@ export default function Profile() {
             return null;
         }
     };
+
+
 
 
     return (
@@ -1298,7 +1454,7 @@ export default function Profile() {
                     ) : (
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
-                            <View style={styles.sectionHeader}>
+                            {/* <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>Association Clubs</Text>
                                 {userId == user._id && (
                                     <TouchableOpacity
@@ -1308,12 +1464,290 @@ export default function Profile() {
                                         <Text style={styles.addButtonText}>Manage clubs</Text>
                                     </TouchableOpacity>
                                 )}
+                            </View> */}
+
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                <Text style={styles.sectionTitle}>{clubs.length} Association club{clubs.length == 1 ? '' : 's'}</Text>
+
+                                {user._id == userId && !editMode &&
+                                    <TouchableOpacity style={styles.editToggle} onPress={() => { setKeyword(''); setEditMode(true) }}>
+                                        <Entypo name="edit" size={16} color="#FF4000" />
+                                        <Text style={styles.editToggleText}>Manage</Text>
+                                    </TouchableOpacity>}
+
+                                {user._id == userId && editMode &&
+                                    <TouchableOpacity style={styles.editToggle} onPress={() => { setEditMode(false) }}>
+                                        <AntDesign name="close" size={16} color="#FF4000" />
+                                        <Text style={styles.editToggleText}>Cancel</Text>
+                                    </TouchableOpacity>}
                             </View>
 
+                            {editMode && <View>
+                                <View style={{ marginBottom: 16 }}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="search clubs (min. 3 characters)"
+                                        placeholderTextColor="#A8A8A8"
+                                        value={keyword}
+                                        onChangeText={handleSearchInput}
+                                    />
+                                    {searching &&
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#FF4000"
+                                            style={styles.searchLoader}
+                                        />
+                                    }
+                                </View>
+                                {keyword.trim().length >= 3 && !searching && (
+                                    <View style={{ marginBottom: 15 }}>
+                                        {searchResults.length > 0 && !searching &&
+                                            searchResults.map((club) => {
+                                                const alreadyCoach = clubs.some((m) => m._id === club._id);
+
+                                                return (
+                                                    <View key={club._id}>
+                                                        <TouchableOpacity
+                                                            style={styles.searchResultItem}
+                                                            onPress={() => !alreadyCoach && handleAddClub(club)}
+                                                            disabled={alreadyCoach}
+                                                        >
+                                                            <View style={styles.searchResultItemImageContainer}>
+                                                                {club.image ? (
+                                                                    <Image
+                                                                        style={styles.searchResultItemImage}
+                                                                        source={{ uri: club.image }}
+                                                                    />
+                                                                ) : (
+                                                                    <Image
+                                                                        style={styles.searchResultItemImage}
+                                                                        source={require('../../assets/clublogo.png')}
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                )}
+                                                            </View>
+                                                            <View style={styles.searchResultItemInfo}>
+                                                                <View>
+                                                                    <Text style={styles.searchResultItemName}>{club.name}</Text>
+                                                                    {/* <Text style={[styles.searchResultItemDescription, club.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{club.sport || 'no sport'}</Text> */}
+                                                                </View>
+                                                                {addingClub.includes(club._id) ? (
+                                                                    <ActivityIndicator
+                                                                        size="small"
+                                                                        color="#FF4000"
+                                                                    />
+                                                                ) : (
+                                                                    <Text
+                                                                        style={
+                                                                            [
+                                                                                styles.searchResultItemLink,
+                                                                                alreadyCoach && { color: 'gray', fontStyle: 'italic' }
+                                                                            ]
+                                                                        }
+                                                                    >
+                                                                        {alreadyCoach ? 'Already added' : '+ Add'}
+                                                                    </Text>
+                                                                )}
+
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                );
+                                            })
+                                        }
+
+                                        {searchResults.length == 0 && !searching &&
+                                            <View>
+                                                <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
+                                                    No results
+                                                </Text>
+                                            </View>
+                                        }
+                                    </View>
+                                )}
+                            </View>}
+
                             {clubs && clubs.length > 0 ? (
-                                clubs.map((club) => (
-                                    <Text key={club._id}>{club.name}</Text>
-                                ))
+                                <View style={{ marginBottom: 20 }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                        {clubs.map((club) => {
+                                            const animVal = getAnimatedValue(club._id);
+                                            const animatedWidth = animVal.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [25, cellWidth],
+                                            });
+                                            const animatedHeight = animVal.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [25, cellHeight],
+                                            });
+                                            const animatedColor = animVal.interpolate({
+                                                inputRange: [0, 0],
+                                                outputRange: ['#FF4000', '#000000'],
+                                            });
+                                            const animatedPositionTopLeft = animVal.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [-5, 0],
+                                            });
+                                            const animatedRadius = animVal.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [15, 8],
+                                            });
+                                            const animatedOpacity = animVal.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0, 1],
+                                            });
+
+                                            return (
+                                                <View
+                                                    ref={flexDivRef}
+                                                    onLayout={handleLayout}
+                                                    key={club._id}
+                                                    style={{
+                                                        alignItems: 'center',
+                                                        width: '30.64%',
+                                                        position: 'relative',
+                                                    }}
+                                                >
+                                                    {user._id == userId && editMode && (
+                                                        <Animated.View
+                                                            style={{
+                                                                width: animatedWidth,
+                                                                height: animatedHeight,
+                                                                backgroundColor: animatedColor,
+                                                                borderRadius: animatedRadius,
+                                                                position: 'absolute',
+                                                                top: animatedPositionTopLeft,
+                                                                left: animatedPositionTopLeft,
+                                                                zIndex: 2,
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                            }}
+                                                        >
+                                                            {removingClub.includes(club._id) ? (
+                                                                <View style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                    {loadingRemoveClub.includes(club._id) ? (
+                                                                        <ActivityIndicator size="small" color={'#FF4000'} style={{ transform: [{ scale: 1.5 }] }} />
+                                                                    ) : (
+                                                                        <Animated.View style={{
+                                                                            opacity: animatedOpacity,
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center'
+                                                                        }}>
+                                                                            <Text style={{ color: '#FF4000', fontFamily: 'Bebas', fontSize: 22, marginBottom: 30 }}>
+                                                                                Sure?
+                                                                            </Text>
+                                                                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                                                                <TouchableOpacity onPress={() => handleRemoveClub(club._id)}>
+                                                                                    <Text
+                                                                                        style={{
+                                                                                            fontFamily: 'Bebas',
+                                                                                            fontSize: 22,
+                                                                                            color: '#000',
+                                                                                            paddingHorizontal: 5,
+                                                                                            backgroundColor: '#6ef99dff',
+                                                                                            borderRadius: 5,
+                                                                                        }}
+                                                                                    >
+                                                                                        Yes
+                                                                                    </Text>
+                                                                                </TouchableOpacity>
+                                                                                <TouchableOpacity
+                                                                                    onPress={() => {
+                                                                                        animateRemoveBtn(club._id, 0);
+                                                                                        setremovingClub((prev) => prev.filter((id) => id !== club._id));
+                                                                                    }}
+                                                                                >
+                                                                                    <Text
+                                                                                        style={{
+                                                                                            fontFamily: 'Bebas',
+                                                                                            fontSize: 22,
+                                                                                            color: '#000',
+                                                                                            paddingHorizontal: 8,
+                                                                                            backgroundColor: '#f97d7dff',
+                                                                                            borderRadius: 5,
+                                                                                        }}
+                                                                                    >
+                                                                                        No
+                                                                                    </Text>
+                                                                                </TouchableOpacity>
+                                                                            </View>
+                                                                        </Animated.View>
+                                                                    )}
+                                                                </View>
+                                                            ) : (
+                                                                <TouchableOpacity
+                                                                    onPress={() => {
+                                                                        setremovingClub((prev) => [...prev, club._id]);
+                                                                        animateRemoveBtn(club._id, 1);
+                                                                    }}
+                                                                >
+                                                                    <AntDesign name="closecircle" size={25} color="#000" />
+                                                                </TouchableOpacity>
+                                                            )}
+                                                        </Animated.View>
+                                                    )}
+
+                                                    <TouchableOpacity
+                                                        style={{
+                                                            alignItems: 'center',
+                                                            padding: 10,
+                                                            borderRadius: 8,
+                                                            backgroundColor: '#eeeeee',
+                                                        }}
+                                                        onPress={() =>
+                                                            router.push({
+                                                                pathname: '/profile/public',
+                                                                params: { id: club._id },
+                                                            })
+                                                        }
+                                                    >
+                                                        <View style={{ marginBottom: 10 }}>
+                                                            {club.image ? (
+                                                                <View
+                                                                    style={[
+                                                                        styles.searchResultItemImageContainer,
+                                                                        {
+                                                                            width: '100%',
+                                                                            backgroundColor: '#dddddd',
+                                                                            borderRadius: 100,
+                                                                            overflow: 'hidden',
+                                                                        },
+                                                                    ]}
+                                                                >
+                                                                    <Image
+                                                                        source={{ uri: club.image }}
+                                                                        style={{ width: '100%', aspectRatio: 1 }}
+                                                                    />
+                                                                </View>
+                                                            ) : (
+                                                                <View
+                                                                    style={[
+                                                                        styles.searchResultItemImageContainer,
+                                                                        {
+                                                                            width: '100%',
+                                                                            backgroundColor: '#dddddd',
+                                                                            borderRadius: 100,
+                                                                            overflow: 'hidden',
+                                                                        },
+                                                                    ]}
+                                                                >
+                                                                    <Image
+                                                                        style={styles.searchResultItemImage}
+                                                                        source={
+                                                                            require('../../assets/clublogo.png')
+                                                                        }
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                        <Text>{club?.name?.trim()}</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                </View>
                             ) : (
                                 <View style={styles.emptyState}>
                                     <Text style={styles.emptyStateTitle}>No Clubs Yet</Text>
@@ -2948,6 +3382,99 @@ const styles = StyleSheet.create({
     },
     sectionTabActive: {
         backgroundColor: '#FF4000'
-    }
-
+    },
+    searchResultItemImageContainer: {
+        width: 40,
+        aspectRatio: 1,
+        borderRadius: 20,
+        backgroundColor: '#f4f4f4'
+    },
+    searchResultItemImage: {
+        objectFit: 'contain',
+        height: '100%',
+        width: '100%'
+    },
+    editToggle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+    },
+    editToggleText: {
+        color: 'black',
+        fontFamily: 'Bebas',
+        fontSize: 18
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: '50%',
+        right: 10,
+        transform: [{ translateY: '-50%' }]
+    },
+    searchLoadingText: {
+        fontFamily: 'Manrope',
+        color: '#888',
+        marginVertical: 5
+    },
+    searchNoResultText: {
+        fontFamily: 'Manrope',
+        color: '#555',
+        marginVertical: 5
+    },
+    searchResultItem: {
+        marginBottom: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        columnGap: 10,
+    },
+    searchResultItemInfo: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1
+    },
+    searchResultItemLink: {
+        color: '#FF4000'
+    },
+    searchResultItemDescription: {
+        // fontSize:16,
+        marginBottom: 5
+    },
+    searchResultItemName: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        // marginBottom:5
+    },
+    removeBtn: {
+        width: 25,
+        height: 25,
+        borderRadius: 15,
+        backgroundColor: '#FF4000',
+        position: 'absolute',
+        top: -5,
+        left: -5,
+        zIndex: 2,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    removeBtnConfirmation: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 15,
+        backgroundColor: '#000',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        zIndex: 2,
+    },
+    input: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        // marginBottom: 16,
+        color: 'black',
+        borderRadius: 10
+    },
 });
