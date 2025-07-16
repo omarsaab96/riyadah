@@ -1,5 +1,3 @@
-import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -19,7 +17,7 @@ import {
 
 const { width } = Dimensions.get('window');
 
-export default function TeamDetails() {
+export default function PaymentDetails() {
     const router = useRouter();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
@@ -88,6 +86,30 @@ export default function TeamDetails() {
         fetchUser();
     }, [id]);
 
+    const settlePayment = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`https://riyadah.onrender.com/api/financials/${payment._id}/pay`, {
+                method: 'PUT',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert('Payment settled successfully');
+                setPayment(data.data);
+            } else {
+                alert(data.message || 'Failed to settle payment');
+            }
+        } catch (err) {
+            console.error('Error settling payment:', err);
+            alert('Error settling payment');
+        }
+    }
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -104,7 +126,7 @@ export default function TeamDetails() {
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>Payment details</Text>
 
-                        {!loading && <Text style={styles.pageDesc}>Payment details</Text>}
+                        {!loading && <Text style={styles.pageDesc}>Payment# {payment._id}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -118,56 +140,6 @@ export default function TeamDetails() {
                     </View>
 
                     <Text style={styles.ghostText}>Payment</Text>
-
-                    {!loading && team && user && <>
-                        {userId == user._id ? (
-                            <View style={styles.profileImage}>
-                                <TouchableOpacity onPress={() => router.push('/teams/uploadLogo')}>
-                                    {(team.image == null || team.image == "") && <Image
-                                        source={require('../../assets/teamlogo.png')}
-                                        style={styles.profileImageAvatar}
-                                        resizeMode="contain"
-                                    />}
-                                    {team.image != null && <Image
-                                        source={{ uri: team.image }}
-                                        style={styles.profileImageAvatar}
-                                        resizeMode="contain"
-                                    />}
-                                </TouchableOpacity>
-
-                                {(team.image == null || team.image == "") &&
-                                    <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/teams/uploadLogo')}>
-                                        <Entypo name="plus" size={20} color="#FF4000" />
-                                        <Text style={styles.uploadImageText}>
-                                            Upload logo
-                                        </Text>
-                                    </TouchableOpacity>
-                                }
-
-                                {team.image != null && team.image != "" &&
-                                    <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/teams/uploadLogo')}>
-                                        <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                        <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
-                                            Change logo
-                                        </Text>
-                                    </TouchableOpacity>
-                                }
-                            </View>
-                        ) : (
-                            <View style={styles.profileImage}>
-                                {(team.image == null || team.image == "") && <Image
-                                    source={require('../../assets/teamlogo.png')}
-                                    style={styles.profileImageAvatar}
-                                    resizeMode="contain"
-                                />}
-                                {team.image != null && <Image
-                                    source={{ uri: team.image }}
-                                    style={styles.profileImageAvatar}
-                                    resizeMode="contain"
-                                />}
-                            </View>
-                        )}
-                    </>}
                 </View>
 
                 <ScrollView >
@@ -178,15 +150,170 @@ export default function TeamDetails() {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        {payment && <View style={styles.profileSection}>
+                        {payment && (
+                            <View>
+                                <View style={{ marginBottom: 30 }}>
+                                    <View style={[styles.row, { alignItems: 'center' }]}>
+                                        <Text style={styles.title}>Status</Text>
+                                        <Text style={[styles.value, { padding: 5, color: 'white', borderRadius: 5, backgroundColor: payment.paid ? '#009933' : '#FF4000' }]}>
+                                            {payment.paid ? `Paid on ${new Date(payment.paidDate).toLocaleDateString()}` : 'Pending'}
+                                        </Text>
+                                    </View>
 
-                            
-                        </View>}
+                                    {!payment.paid && <View style={styles.row}>
+                                        <Text style={styles.title}>Due Date</Text>
+                                        <Text style={styles.value}>
+                                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : 'N/A'}
+                                        </Text>
+                                    </View>}
+
+                                    <View style={styles.row}>
+                                        <Text style={styles.title}>Amount</Text>
+                                        <Text style={styles.value}>${payment.amount}</Text>
+                                    </View>
+                                </View>
+
+                                <View>
+                                    {payment.note && (
+                                        <View style={{ marginBottom: 30 }}>
+                                            <Text style={styles.title}>Note</Text>
+                                            <Text style={styles.value}>{payment.note}</Text>
+                                        </View>
+                                    )}
+
+                                    <View style={{ marginBottom: 30 }}>
+                                        <Text style={styles.title}>User</Text>
+                                        <Text style={styles.value}>{payment.user?.name}</Text>
+                                    </View>
+
+                                    {payment.user && (
+                                        <View style={{ marginVertical: 20 }}>
+                                            <Text style={[styles.title, { marginBottom: 10 }]}>Payee</Text>
+                                            <View>
+                                                <TouchableOpacity
+                                                    style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                                    onPress={() => router.push({
+                                                        pathname: '/profile/public',
+                                                        params: { id: payment.user._id },
+                                                    })}>
+                                                    {!payment.user.image ? (
+                                                        <Image
+                                                            source={{ uri: payment.user.image }}
+                                                            style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                        />
+                                                    ) : (
+                                                        <View>
+                                                            {payment.user.gender == "Male" ? (
+                                                                <Image
+                                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                                    source={require('../../assets/avatar.png')}
+                                                                    resizeMode="contain"
+                                                                />
+                                                            ) : (
+                                                                <Image
+                                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                                    source={require('../../assets/avatarF.png')}
+                                                                    resizeMode="contain"
+                                                                />
+                                                            )}
+                                                        </View>
+                                                    )}
+
+                                                    <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
+
+                                                        <Text
+                                                            style={[styles.paragraph, { fontWeight: 'bold' }]}
+                                                            numberOfLines={1}
+                                                            ellipsizeMode="tail"
+                                                        >
+                                                            {payment.user.name}
+                                                        </Text>
+
+                                                        {/* <Text
+                                                            style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
+                                                            numberOfLines={1}
+                                                            ellipsizeMode="tail"
+                                                        >
+                                                            {payment.club.sport.toString().replaceAll(',', ', ')}
+                                                        </Text> */}
 
 
+                                                    </View>
+                                                </TouchableOpacity>
+                                            </View>
+
+                                        </View>
+                                    )}
+
+                                    {/* <View style={{ marginBottom: 30 }}>
+                                        <Text style={styles.title}>Club</Text>
+                                        <Text style={styles.value}>{payment.club?.name}</Text>
+                                    </View> */}
+
+                                    {payment.club && (
+                                        <View style={{ marginVertical: 20 }}>
+                                            <Text style={[styles.title, { marginBottom: 10 }]}>Payable</Text>
+                                            <View>
+                                                <TouchableOpacity
+                                                    style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                                    onPress={() => router.push({
+                                                        pathname: '/profile/public',
+                                                        params: { id: payment.club._id },
+                                                    })}>
+                                                    {payment.club.image ? (
+                                                        <Image
+                                                            source={{ uri: payment.club.image }}
+                                                            style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                        />
+                                                    ) : (
+                                                        <Image
+                                                            source={require('../../assets/clublogo.png')}
+                                                            style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                        />
+                                                    )}
+
+                                                    <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
+
+                                                        <Text
+                                                            style={[styles.paragraph, { fontWeight: 'bold' }]}
+                                                            numberOfLines={1}
+                                                            ellipsizeMode="tail"
+                                                        >
+                                                            {payment.club.name}
+                                                        </Text>
+
+                                                        {/* <Text
+                                                            style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
+                                                            numberOfLines={1}
+                                                            ellipsizeMode="tail"
+                                                        >
+                                                            {payment.club.sport.toString().replaceAll(',', ', ')}
+                                                        </Text> */}
+
+
+                                                    </View>
+                                                </TouchableOpacity>
+                                            </View>
+
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        )}
                     </View>
                 </ScrollView >
 
+                {payment && !payment.paid && (
+                    <View style={styles.fixedBottomSection}>
+                        <TouchableOpacity style={styles.fullButtonRow} onPress={settlePayment}>
+                            <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
+                            <View style={styles.loginButton}>
+                                <Text style={styles.loginText}>Settle Payment</Text>
+                            </View>
+                            <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+                        </TouchableOpacity>
+                    </View>
+                )}
 
             </View >
         </KeyboardAvoidingView >
@@ -202,30 +329,11 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 130
     },
-    profileActions: {
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(0,0,0,0.2)',
-        paddingTop: 10
-    },
-    inlineActions: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        columnGap: 15
-    },
+
     saveLoaderContainer: {
         marginLeft: 10
     },
-    profileButton: {
-        borderRadius: 5,
-        padding: 10,
-        backgroundColor: 'rgba(0,0,0,0.05)',
-        marginBottom: 10
-    },
-    profileButtonText: {
-        fontSize: 18,
-        color: '#150000',
-        fontFamily: 'Bebas',
-    },
+
     savebtn: {
         flexDirection: 'row'
     },
@@ -278,45 +386,8 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: '#111',
     },
-    formContainer: {
-        padding: 20,
-    },
-    imageUploadContainer: {
-        // alignItems: 'center',
-        marginBottom: 25,
-    },
-    imageUploadButton: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: '#f5f5f5',
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-        borderWidth: 2,
-        borderColor: '#FF4000',
-    },
-    imagePlaceholder: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    imageUploadText: {
-        marginTop: 10,
-        fontFamily: 'Manrope',
-        fontSize: 14,
-        color: '#FF4000',
-    },
-    teamImage: {
-        width: '100%',
-        height: '100%',
-    },
     inputContainer: {
         marginBottom: 20,
-    },
-    label: {
-        fontFamily: "Bebas",
-        fontSize: 20,
-        marginBottom: 10
     },
     input: {
         fontSize: 14,
@@ -328,28 +399,6 @@ const styles = StyleSheet.create({
     },
     inputError: {
         borderColor: '#FF4000',
-    },
-    pickerContainer: {
-        borderRadius: 8,
-        overflow: 'hidden',
-    },
-    picker: {
-        width: '100%',
-        fontFamily: 'Manrope',
-        borderWidth: 0,
-        backgroundColor: '#F4F4F4',
-    },
-    submitButton: {
-        backgroundColor: '#FF4000',
-        padding: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    submitButtonText: {
-        color: '#fff',
-        fontFamily: 'Bebas',
-        fontSize: 20,
     },
     ghostText: {
         color: '#ffffff',
@@ -381,49 +430,11 @@ const styles = StyleSheet.create({
         color: 'red',
         fontFamily: 'Manrope',
     },
-    uploadBox: {
-        // marginBottom: 30,
-        // flexDirection:'row'
-    },
     avatarPreview: {
         height: 100,
         width: 100,
         borderRadius: 20,
         marginBottom: 5
-    },
-    uploadHint: {
-        fontFamily: 'Manrope',
-        marginBottom: 10
-    },
-    emptyImage: {
-        height: 100,
-        width: 100,
-        borderRadius: 20,
-        marginRight: 20,
-        borderWidth: 1,
-        borderStyle: 'dashed',
-        borderColor: '#333333',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f4f4f4',
-        marginBottom: 5
-    },
-    profileImage: {
-        position: 'absolute',
-        bottom: 0,
-        right: -5,
-        height: '70%',
-        maxWidth: 200,
-        overflow: 'hidden',
-    },
-    profileImageAvatar: {
-        height: '100%',
-        width: undefined,
-        aspectRatio: 1,
-        resizeMode: 'contain',
-    },
-    profileSection: {
-        marginBottom: 30
     },
     title: {
         fontFamily: "Bebas",
@@ -464,116 +475,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 18
     },
-    searchLoader: {
-        position: 'absolute',
-        top: '50%',
-        right: 10,
-        transform: [{ translateY: '-50%' }]
-    },
-    searchLoadingText: {
-        fontFamily: 'Manrope',
-        color: '#888',
-        marginVertical: 5
-    },
-    searchNoResultText: {
-        fontFamily: 'Manrope',
-        color: '#555',
-        marginVertical: 5
-    },
-    searchResultItem: {
-        marginBottom: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        columnGap: 10,
-    },
-    searchResultItemImageContainer: {
-        width: 40,
-        aspectRatio: 1,
-        borderRadius: 20,
-        backgroundColor: '#f4f4f4'
-    },
-    searchResultItemImage: {
-        objectFit: 'contain',
-        height: '100%',
-        width: '100%'
-    },
-    searchResultItemInfo: {
-        fontFamily: 'Manrope',
-        fontSize: 16,
-        justifyContent: 'space-between',
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1
-    },
-    searchResultItemLink: {
-        color: '#FF4000'
-    },
-    searchResultItemDescription: {
-        // fontSize:16,
-        marginBottom: 5
-    },
-    searchResultItemName: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        // marginBottom:5
-    },
-    eventCard: {
-        flexDirection: 'row',
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 15,
-        marginBottom: 15,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    eventDate: {
-        width: 60,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRightWidth: 1,
-        borderRightColor: '#eeeeee',
-        marginRight: 15,
-    },
-    eventDay: {
-        fontFamily: 'Bebas',
-        fontSize: 24,
-        color: '#FF4000',
-    },
-    eventMonth: {
-        fontFamily: 'Manrope',
-        fontSize: 14,
-        color: '#666666',
-        textTransform: 'uppercase',
-    },
-    eventDetails: {
-        flex: 1,
-    },
-    eventTitle: {
-        fontFamily: 'Manrope',
-        fontSize: 16,
-        color: '#111111',
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    eventTime: {
-        fontFamily: 'Manrope',
-        fontSize: 14,
-        color: '#666666',
-        marginBottom: 3,
-    },
-    eventLocation: {
-        fontFamily: 'Manrope',
-        fontSize: 14,
-        color: '#666666',
-    },
-    eventAction: {
-        width: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
     uploadImage: {
         backgroundColor: '#000000',
         padding: 2,
@@ -592,5 +493,71 @@ const styles = StyleSheet.create({
         color: '#FF4000',
         fontFamily: 'Bebas',
         fontSize: 16,
+    },
+    sectionTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 24,
+        color: '#111',
+        marginBottom: 10
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10
+    },
+    label: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        color: '#777'
+    },
+    value: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        color: '#111'
+    },
+    payButton: {
+        backgroundColor: '#cccccc',
+        borderRadius: 8,
+        paddingVertical: 5
+    },
+    payButtonText: {
+        color: '#000',
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        textAlign: 'center'
+    },
+    fixedBottomSection: {
+        position: 'absolute',
+        bottom: 60,
+        left: 0,
+        width: width,
+        paddingLeft: 20,
+        paddingRight: 20
+    },
+    fullButtonRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 4,
+    },
+    loginButton: {
+        flex: 1,
+        backgroundColor: '#000000',
+        height: 48,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loginText: {
+        fontSize: 20,
+        color: 'white',
+        fontFamily: 'Bebas',
+    },
+    sideRect: {
+        height: 48,
+        width: 13,
+    },
+    sideRectAfter: {
+        height: 48,
+        width: 13,
+        marginLeft: -1
     },
 });

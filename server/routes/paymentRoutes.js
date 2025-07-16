@@ -22,8 +22,8 @@ const authenticateToken = (req, res, next) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const payment = await Payment.findById(req.params.id)
-      .populate('user', 'name email image')  // Optional: Populate user info
-      .populate('club', 'name email');       // Optional: Populate club info
+      .populate('user', 'name email image gender')  // Optional: Populate user info
+      .populate('club', 'name email sport');       // Optional: Populate club info
 
     if (!payment) {
       return res.status(404).json({ success: false, message: 'Payment not found' });

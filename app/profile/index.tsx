@@ -2285,116 +2285,117 @@ export default function Profile() {
                                                                 onPress={() => router.push({
                                                                     pathname: '/payments/details',
                                                                     params: { id: item._id },
-                                                                })}
-                                                                    >
-                                                        <View style={styles.inventoryHeader}>
-                                                            <View style={styles.inventoryInfo}>
-                                                                <Text style={styles.inventoryName}>{item.user.name}</Text>
-                                                                <Text style={styles.inventoryCategory}>{item.type}</Text>
-                                                            </View>
-                                                            <View style={styles.inventoryStats}>
-                                                                <Text style={styles.inventoryStatValue}>{item.amount}</Text>
-                                                                <Text style={styles.inventoryStatLabel}>Amount</Text>
-                                                            </View>
-                                                        </View>
+                                                                })}>
+                                                                <View style={styles.inventoryHeader}>
+                                                                    <View style={styles.inventoryInfo}>
+                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                                    </View>
+                                                                    <View style={styles.inventoryStats}>
+                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                                    </View>
+                                                                </View>
 
-                                                        <View style={styles.inventoryDetails}>
-                                                            <View style={styles.inventoryDetailRow}>
-                                                                <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                                <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
-                                                            </View>
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                ))}
-                                            </View>
-                                        ) : (
-                                        <Text>No pending payments</Text>
+                                                                <View style={styles.inventoryDetails}>
+                                                                    <View style={styles.inventoryDetailRow}>
+                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
+                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                                    </View>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </View>
+                                                ) : (
+                                                    <Text>No pending payments</Text>
                                                 )}
-                                    </>
+                                            </>
                                         }
 
-                                {activePaymentTab == "paid" &&
-                                    <>
-                                        {/* <Text style={[styles.title, { marginBottom: 10 }]}>Paid payments</Text> */}
-                                        {paidPayments && paidPayments.length > 0 ? (
-                                            <View>
-                                                {paidPayments.map((item) => (
-                                                    <TouchableOpacity
-                                                        key={item._id}
-                                                        style={styles.inventoryCard}
-                                                        onPress={() => router.push(`/payments/details/${item._id}`)}
-                                                    >
-                                                        <View style={styles.inventoryHeader}>
-                                                            <View style={styles.inventoryInfo}>
-                                                                <Text style={styles.inventoryName}>{item.user.name}</Text>
-                                                                <Text style={styles.inventoryCategory}>{item.type}</Text>
-                                                            </View>
-                                                            <View style={styles.inventoryStats}>
-                                                                <Text style={styles.inventoryStatValue}>{item.amount}</Text>
-                                                                <Text style={styles.inventoryStatLabel}>Amount</Text>
-                                                            </View>
-                                                        </View>
+                                        {activePaymentTab == "paid" &&
+                                            <>
+                                                {/* <Text style={[styles.title, { marginBottom: 10 }]}>Paid payments</Text> */}
+                                                {paidPayments && paidPayments.length > 0 ? (
+                                                    <View>
+                                                        {paidPayments.map((item) => (
+                                                            <TouchableOpacity
+                                                                key={item._id}
+                                                                style={styles.inventoryCard}
+                                                                onPress={() => router.push({
+                                                                    pathname: '/payments/details',
+                                                                    params: { id: item._id },
+                                                                })}>
+                                                                <View style={styles.inventoryHeader}>
+                                                                    <View style={styles.inventoryInfo}>
+                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                                    </View>
+                                                                    <View style={styles.inventoryStats}>
+                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                                    </View>
+                                                                </View>
 
-                                                        <View style={styles.inventoryDetails}>
-                                                            <View style={styles.inventoryDetailRow}>
-                                                                <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                                <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
-                                                            </View>
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                ))}
-                                            </View>
-                                        ) : (
-                                            <Text>No paid payments</Text>
+                                                                <View style={styles.inventoryDetails}>
+                                                                    <View style={styles.inventoryDetailRow}>
+                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
+                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                                    </View>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </View>
+                                                ) : (
+                                                    <Text>No paid payments</Text>
+                                                )}
+                                            </>
+                                        }
+                                    </View>
+                                ) : (
+                                    <View style={styles.emptyState}>
+                                        <Text style={styles.emptyStateTitle}>No payments</Text>
+                                        <Text style={styles.emptyStateText}>
+                                            {userId == user._id
+                                                ? "Add your first payment to get started"
+                                                : "This club hasn't added any payments yet"}
+                                        </Text>
+                                        {userId == user._id && (
+                                            <TouchableOpacity
+                                                style={styles.emptyStateButton}
+                                                onPress={() => router.push('/payments/createPayment')}
+                                            >
+                                                <Text style={styles.emptyStateButtonText}>Add Payment</Text>
+                                            </TouchableOpacity>
                                         )}
-                                    </>
-                                }
-                            </View>
-                        ) : (
-                        <View style={styles.emptyState}>
-                            <Text style={styles.emptyStateTitle}>No payments</Text>
-                            <Text style={styles.emptyStateText}>
-                                {userId == user._id
-                                    ? "Add your first payment to get started"
-                                    : "This club hasn't added any payments yet"}
-                            </Text>
-                            {userId == user._id && (
-                                <TouchableOpacity
-                                    style={styles.emptyStateButton}
-                                    onPress={() => router.push('/payments/createPayment')}
-                                >
-                                    <Text style={styles.emptyStateButtonText}>Add Payment</Text>
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                                    </View>
                                 )}
-                    </View>
+                            </View>
                         )}
-                </View>
+                    </View>
                 </Animated.ScrollView>
             }
 
-<View style={styles.navBar}>
-    <TouchableOpacity onPress={() => router.replace('/settings')}>
-        <Image source={require('../../assets/settings.png')} style={styles.icon} />
-    </TouchableOpacity>
+            <View style={styles.navBar}>
+                <TouchableOpacity onPress={() => router.replace('/settings')}>
+                    <Image source={require('../../assets/settings.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-    <TouchableOpacity onPress={() => router.replace('/search')}>
-        <Image source={require('../../assets/search.png')} style={styles.icon} />
-    </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.replace('/search')}>
+                    <Image source={require('../../assets/search.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-    <TouchableOpacity onPress={() => router.replace('/landing')}>
-        <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
-    </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.replace('/landing')}>
+                    <Image source={require('../../assets/home.png')} style={[styles.icon, styles.icon]} />
+                </TouchableOpacity>
 
-    <TouchableOpacity onPress={() => router.replace('/notifications')}>
-        <Image source={require('../../assets/notifications.png')} style={styles.icon} />
-    </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.replace('/notifications')}>
+                    <Image source={require('../../assets/notifications.png')} style={styles.icon} />
+                </TouchableOpacity>
 
-    <TouchableOpacity onPress={() => router.replace('/profile')}>
-        <Image source={require('../../assets/profile.png')} style={styles.activeIcon} />
-    </TouchableOpacity>
-</View>
+                <TouchableOpacity onPress={() => router.replace('/profile')}>
+                    <Image source={require('../../assets/profile.png')} style={styles.activeIcon} />
+                </TouchableOpacity>
+            </View>
         </View >
     );
 }
