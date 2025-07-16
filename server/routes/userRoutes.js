@@ -331,7 +331,8 @@ router.get('/:userId', async (req, res) => {
     const user = await User.findById(userId)
       .select('-password')
       .populate('isStaff')
-      .populate('memberOf');
+      .populate('memberOf')
+      .populate('clubs');
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 

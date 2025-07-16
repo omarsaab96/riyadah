@@ -288,30 +288,32 @@ export default function Profile() {
     }
 
     const getClubs = async () => {
-        if (user?.type === "Association") {
-            try {
-                const token = await SecureStore.getItemAsync('userToken');
-                const res = await fetch(`https://riyadah.onrender.com/api/clubs/byAssociation/${userId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+        setClubs(user.clubs);
+        setClubsLoading(false)
+        // if (user?.type === "Association") {
+        //     try {
+        //         const token = await SecureStore.getItemAsync('userToken');
+        //         const res = await fetch(`https://riyadah.onrender.com/api/users/clubs/byAssociation/${userId}`, {
+        //             headers: { Authorization: `Bearer ${token}` }
+        //         });
 
-                if (!res.ok) {
-                    throw new Error(`Server error: ${res.status}`);
-                }
+        //         if (!res.ok) {
+        //             throw new Error(`Server error: ${res.status}`);
+        //         }
 
-                const json = await res.json();
-                if (json.success) {
-                    setClubs(json.data);
-                } else {
-                    console.warn('Backend returned error:', json.message);
-                }
-            } catch (err) {
-                console.error('Failed to fetch clubs', err);
-                setClubs([]);
-            } finally {
-                setClubsLoading(false)
-            }
-        };
+        //         const json = await res.json();
+        //         if (json.success) {
+        //             setClubs(json.data);
+        //         } else {
+        //             console.warn('Backend returned error:', json.message);
+        //         }
+        //     } catch (err) {
+        //         console.error('Failed to fetch clubs', err);
+        //         setClubs([]);
+        //     } finally {
+        //         setClubsLoading(false)
+        //     }
+        // };
     }
 
     const handleEdit = async () => {
@@ -1310,15 +1312,7 @@ export default function Profile() {
 
                             {clubs && clubs.length > 0 ? (
                                 clubs.map((club) => (
-                                    <TeamCard
-                                        key={club._id}
-                                        club={club}
-                                        getAnimatedValue={getAnimatedValue}
-                                        loadingDelete={loadingDelete}
-                                        deleteClub={deleteClub}
-                                        cancelDeleteClub={cancelDeleteClub}
-                                        handleDeleteClub={handleDeleteClub}
-                                    />
+                                    <Text key={club._id}>{club.name}</Text>
                                 ))
                             ) : (
                                 <View style={styles.emptyState}>
