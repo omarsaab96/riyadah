@@ -181,14 +181,9 @@ export default function PaymentDetails() {
                                         </View>
                                     )}
 
-                                    <View style={{ marginBottom: 30 }}>
-                                        <Text style={styles.title}>User</Text>
-                                        <Text style={styles.value}>{payment.user?.name}</Text>
-                                    </View>
-
                                     {payment.user && (
                                         <View style={{ marginVertical: 20 }}>
-                                            <Text style={[styles.title, { marginBottom: 10 }]}>Payee</Text>
+                                            <Text style={[styles.title, { marginBottom: 10 }]}>payable</Text>
                                             <View>
                                                 <TouchableOpacity
                                                     style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
@@ -196,7 +191,7 @@ export default function PaymentDetails() {
                                                         pathname: '/profile/public',
                                                         params: { id: payment.user._id },
                                                     })}>
-                                                    {!payment.user.image ? (
+                                                    {payment.user.image ? (
                                                         <Image
                                                             source={{ uri: payment.user.image }}
                                                             style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
@@ -229,13 +224,13 @@ export default function PaymentDetails() {
                                                             {payment.user.name}
                                                         </Text>
 
-                                                        {/* <Text
+                                                        <Text
                                                             style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
-                                                            {payment.club.sport.toString().replaceAll(',', ', ')}
-                                                        </Text> */}
+                                                            {payment.user.email}
+                                                        </Text>
 
 
                                                     </View>
@@ -252,7 +247,7 @@ export default function PaymentDetails() {
 
                                     {payment.club && (
                                         <View style={{ marginVertical: 20 }}>
-                                            <Text style={[styles.title, { marginBottom: 10 }]}>Payable</Text>
+                                            <Text style={[styles.title, { marginBottom: 10 }]}>Recipient</Text>
                                             <View>
                                                 <TouchableOpacity
                                                     style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
@@ -282,13 +277,13 @@ export default function PaymentDetails() {
                                                             {payment.club.name}
                                                         </Text>
 
-                                                        {/* <Text
+                                                        <Text
                                                             style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
                                                             {payment.club.sport.toString().replaceAll(',', ', ')}
-                                                        </Text> */}
+                                                        </Text>
 
 
                                                     </View>

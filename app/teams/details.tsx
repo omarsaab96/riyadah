@@ -53,9 +53,10 @@ export default function TeamDetails() {
 
                 if (response.ok) {
                     const user = await response.json();
+                    // console.log('user=',user)
                     setUser(user)
                 } else {
-                    console.error('API error')
+                    console.error('userAPI error')
                 }
                 // setLoading(false)
             } else {
@@ -77,7 +78,7 @@ export default function TeamDetails() {
                     setTeamName(userData.data.name)
 
                 } else {
-                    console.error('API error');
+                    console.error('teamAPI error');
                 }
             } catch (error) {
                 console.error('Failed to fetch user:', error);
@@ -99,12 +100,13 @@ export default function TeamDetails() {
                     },
                 });
 
+                console.log(response)
+
                 if (response.ok) {
                     const scheduleData = await response.json();
-                    // console.log(scheduleData)
                     setSchedule(scheduleData.data);
                 } else {
-                    console.error('API error');
+                    console.error('scheduleAPI error');
                 }
             } catch (error) {
                 console.error('Failed to fetch user:', error);

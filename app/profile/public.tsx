@@ -4,6 +4,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -40,7 +41,7 @@ export default function PublicProfile() {
     const [adminUser, setAdminUser] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory'];
+    const tabs = ['Profile', 'Teams', 'Schedule'];
 
     // Graph data
     const data = [
@@ -123,9 +124,19 @@ export default function PublicProfile() {
 
     const getTeams = async () => {
         if (user.type == "Club") {
+            const token = await SecureStore.getItemAsync('userToken');
+
             try {
-                const res = await fetch(`https://riyadah.onrender.com/api/teams/byClub/${user._id}`);
+                const res = await fetch(`https://riyadah.onrender.com/api/teams/club/${user._id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 const response = await res.json();
+
+                console.log(response)
 
                 if (response.success) {
                     setTeams(response.data);
@@ -564,7 +575,7 @@ export default function PublicProfile() {
                                 </Text>
                                 {userCoachOf.length > 0 ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length==1? 'team':'teams'}</Text>
+                                        <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length == 1 ? 'team' : 'teams'}</Text>
                                     </View>
                                 ) : (
                                     <Text style={styles.paragraph}>0 teams</Text>
@@ -817,8 +828,8 @@ export default function PublicProfile() {
             )}
 
             {/* teamsTab */}
-            {!loading && user && activeTab == "Teams" && (
-                <Animated.ScrollView
+            {
+                !loading && user && activeTab == "Teams" && <Animated.ScrollView
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                         { useNativeDriver: false }
@@ -835,95 +846,28 @@ export default function PublicProfile() {
                         </View>
                     ) : (
                         <View style={styles.contentContainer}>
+                            {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>Club Teams</Text>
                             </View>
 
                             {teams && teams.length > 0 ? (
-                                teams.map((team, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={styles.teamCard}
-                                        onPress={() => router.push(`/teams/${team._id}`)}
-                                    >
-                                        <View style={styles.teamHeader}>
-                                            {team.image ? (
-                                                <Image
-                                                    source={{ uri: team.image }}
-                                                    style={styles.teamLogo}
-                                                    resizeMode="contain"
-                                                />
-                                            ) : (
-                                                <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
-                                                    <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
-                                                </View>
-                                            )}
-                                            <View style={styles.teamInfo}>
-                                                <Text style={styles.teamName}>{team.name}</Text>
-                                                <Text style={styles.teamSport}>{team.sport}</Text>
-                                            </View>
-                                            <View style={styles.teamStats}>
-                                                <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
-                                                <Text style={styles.teamStatLabel}>Members</Text>
-                                            </View>
-                                        </View>
-
-                                        {team.coaches && team.coaches.length > 0 && (
-                                            <View style={styles.coachSection}>
-                                                <Text style={styles.coachLabel}>Coach:</Text>
-                                                <View style={styles.coachInfo}>
-                                                    {team.coaches.image ? (
-                                                        <Image
-                                                            source={{ uri: team.coaches.image }}
-                                                            style={styles.coachAvatar}
-                                                        />
-                                                    ) : (
-                                                        <View style={styles.coachAvatar}>
-                                                            <FontAwesome name="user" size={16} color="#fff" />
-                                                        </View>
-                                                    )}
-                                                    <Text style={styles.coachName}>{team.coaches[0]}</Text>
-                                                </View>
-                                            </View>
-                                        )}
-
-                                        <View style={styles.teamActions}>
-                                            <TouchableOpacity
-                                                style={styles.teamActionButton}
-                                                onPress={() => router.push(`/teams/${team._id}/members`)}
-                                            >
-                                                <FontAwesome5 name="users" size={16} color="#FF4000" />
-                                                <Text style={styles.teamActionText}>Members</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={styles.teamActionButton}
-                                                onPress={() => router.push(`/teams/${team._id}/schedule`)}
-                                            >
-                                                <FontAwesome5 name="calendar-alt" size={16} color="#FF4000" />
-                                                <Text style={styles.teamActionText}>Schedule</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={styles.teamActionButton}
-                                                onPress={() => router.push(`/teams/${team._id}/stats`)}
-                                            >
-                                                <FontAwesome5 name="chart-bar" size={16} color="#FF4000" />
-                                                <Text style={styles.teamActionText}>Stats</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </TouchableOpacity>
+                                teams.map((team) => (
+                                    <TeamCard
+                                        key={team._id}
+                                        team={team}
+                                    />
                                 ))
                             ) : (
                                 <View style={styles.emptyState}>
                                     <Text style={styles.emptyStateTitle}>No Teams Yet</Text>
-                                    <Text style={styles.emptyStateText}>
-                                        This club hasn't created any teams yet
-                                    </Text>
+                                    <Text style={styles.emptyStateText}>This club hasn't created any teams yet</Text>
                                 </View>
                             )}
                         </View>
                     )}
                 </Animated.ScrollView>
-            )}
+            }
 
             {/* scheduleTab */}
             {!loading && user && activeTab == "Schedule" &&
@@ -1283,6 +1227,98 @@ export default function PublicProfile() {
     );
 }
 
+const TeamCard = ({ team }) => {
+    const router = useRouter();
+
+    return (
+        <TouchableOpacity
+            key={team._id}
+            style={styles.teamCard}
+            onPress={() => router.push({
+                pathname: '/teams/details',
+                params: { id: team._id },
+            })}
+        >
+            <View style={styles.teamHeader}>
+                {team.image ? (
+                    <Image
+                        source={{ uri: team.image }}
+                        style={styles.teamLogo}
+                        resizeMode="contain"
+                    />
+                ) : (
+                    <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
+                        <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
+                    </View>
+                )}
+                <View style={styles.teamInfo}>
+                    <Text style={styles.teamName}>{team.name}</Text>
+                    <Text style={styles.teamSport}>{team.sport}</Text>
+                </View>
+                <View style={styles.teamStats}>
+                    <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
+                    <Text style={styles.teamStatLabel}>Members</Text>
+                </View>
+            </View>
+
+            {team.coaches.length > 0 && (
+                <View style={styles.coachSection}>
+                    <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
+
+                    <View style={styles.coachInfoDiv}>
+                        {team.coaches.map((coach, index) => (
+                            <TouchableOpacity
+                                onPress={() => router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: coach._id },
+                                })}
+                                key={index} style={styles.coachInfo}>
+                                {coach.image ? (
+                                    <Image
+                                        source={{ uri: coach.image }}
+                                        style={styles.coachAvatar}
+                                    />
+                                ) : (
+                                    <Image
+                                        source={require('../../assets/avatar.png')}
+                                        style={styles.coachAvatar}
+                                        resizeMode="contain"
+                                    />
+                                )}
+                                <Text style={styles.coachName}>{coach.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View >
+            )}
+
+            <View style={styles.teamActions}>
+                <TouchableOpacity
+                    style={styles.teamActionButton}
+                    onPress={() => router.push({
+                        pathname: '/teams/members',
+                        params: { id: team._id },
+                    })}
+                >
+                    <FontAwesome5 name="users" size={18} color="#FF4000" />
+                    <Text style={styles.teamActionText}>Members</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.teamActionButton}
+                    onPress={() => router.push({
+                        pathname: '/teams/schedule',
+                        params: { id: team._id },
+                    })}
+                >
+                    <FontAwesome5 name="calendar-alt" size={18} color="#FF4000" />
+                    <Text style={styles.teamActionText}>Schedule</Text>
+                </TouchableOpacity>
+            </View>
+        </TouchableOpacity>
+    )
+};
+
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
@@ -1296,6 +1332,33 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         height: 270,
         // marginBottom: 30
+    },
+    coachInfoDiv: {
+        flex: 1,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 5
+    },
+    coachInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#eeeeee',
+        padding: 5,
+        borderRadius: 20,
+    },
+    coachAvatar: {
+        width: 25,
+        height: 25,
+        borderRadius: 15,
+        backgroundColor: '#FF4000',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    coachName: {
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#111111',
     },
     logo: {
         width: 120,

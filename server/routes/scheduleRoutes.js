@@ -327,7 +327,6 @@ router.post('/:id/rsvp',
 // @access  Private (Team members)
 router.get('/team/:teamId',
     authenticate,
-    checkTeamMembership,
     async (req, res) => {
         try {
             const { startDate, endDate } = req.query;

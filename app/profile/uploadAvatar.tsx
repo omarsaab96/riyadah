@@ -156,10 +156,10 @@ export default function UploadAvatar() {
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>
-                            {user?.type == "Club" ? 'Upload logo' : 'Upload Avatar'}
+                            {(user?.type == "Club" || user?.type == "Association") ? 'Upload logo' : 'Upload Avatar'}
                         </Text>
                         {!loading && <Text style={styles.pageDesc}>
-                            {user?.type == "Club" ? 'Change your logo' : 'Change your profile picture'}
+                            {(user?.type == "Club" || user?.type == "Association") ? 'Change your logo' : 'Change your profile picture'}
                         </Text>}
                         {loading && (
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -169,7 +169,7 @@ export default function UploadAvatar() {
                     </View>
 
                     <Text style={styles.ghostText}>
-                        {user?.type == "Club" ? 'Logo' : 'Avatar'}
+                        {(user?.type == "Club" || user?.type == "Association") ? 'Logo' : 'Avatar'}
                     </Text>
                 </View>
 
@@ -217,7 +217,7 @@ export default function UploadAvatar() {
                                         <Text style={styles.profileButtonText}>Cancel</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
-                                        <Text style={styles.profileButtonText}>Save</Text>
+                                        <Text style={styles.profileButtonText}>{saving ? 'saving':'save'}</Text>
                                         {saving && <ActivityIndicator size="small" color="#111" style={styles.saveLoaderContainer} />}
                                     </TouchableOpacity>
                                 </View>
