@@ -146,8 +146,7 @@ const validate = (validations) => {
 };
 
 // @route   GET /api/schedules
-// @desc    Get all events for a club with filters
-// @access  Private (Club members)
+// @desc    Get all events for a club with filters (private access)
 router.get('/', authenticate, async (req, res) => {
     try {
         const { team, startDate, endDate, eventType } = req.query;
@@ -158,6 +157,36 @@ router.get('/', authenticate, async (req, res) => {
 
         console.log('Incoming request with query:', req.query);
         console.log('User making request:', req.user);
+
+        if (team) filters.team = team;
+        if (eventType) filters.eventType = eventType;
+        if (startDate && endDate) {
+            filters.startDateTime = { $gte: new Date(startDate) };
+            filters.endDateTime = { $lte: new Date(endDate) };
+        }
+
+        const events = await Schedule.find(filters)
+            .populate('team', 'name sport ageGroup')
+            .populate('participants.user', 'name image')
+            .populate('coaches', 'name image')
+            .sort({ startDateTime: 1 });
+
+        res.json({ success: true, data: events });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+// @route   GET /api/schedules/club/:clubId
+// @desc    Get all events for a specific club (public access)
+router.get('/club/:clubId', async (req, res) => {
+    try {
+        const { team, startDate, endDate, eventType } = req.query;
+        const filters = {
+            club: req.params.clubId,
+            status: { $ne: 'cancelled' }
+        };
 
         if (team) filters.team = team;
         if (eventType) filters.eventType = eventType;

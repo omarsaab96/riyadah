@@ -136,7 +136,7 @@ export default function PublicProfile() {
                 });
                 const response = await res.json();
 
-                console.log(response)
+                // console.log(response)
 
                 if (response.success) {
                     setTeams(response.data);
@@ -162,11 +162,7 @@ export default function PublicProfile() {
                 }
 
                 const token = await SecureStore.getItemAsync("token");
-                const res = await fetch(`https://riyadah.onrender.com/api/schedules?${params.toString()}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const res = await fetch(`https://riyadah.onrender.com/api/schedules/club/${user._id}?${params.toString()}`);
 
                 const response = await res.json();
 
