@@ -125,7 +125,6 @@ export default function PublicProfile() {
     const getTeams = async () => {
         if (user.type == "Club") {
             const token = await SecureStore.getItemAsync('userToken');
-
             try {
                 const res = await fetch(`https://riyadah.onrender.com/api/teams/club/${user._id}`, {
                     method: 'GET',
@@ -1303,7 +1302,7 @@ const TeamCard = ({ team }) => {
                 </View >
             )}
 
-            <View style={styles.teamActions}>
+            {/* <View style={styles.teamActions}>
                 <TouchableOpacity
                     style={styles.teamActionButton}
                     onPress={() => router.push({
@@ -1325,7 +1324,7 @@ const TeamCard = ({ team }) => {
                     <FontAwesome5 name="calendar-alt" size={18} color="#FF4000" />
                     <Text style={styles.teamActionText}>Schedule</Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
         </TouchableOpacity>
     )
 };

@@ -117,7 +117,6 @@ export default function TeamDetails() {
     }, [team]);
 
     const updateTeamName = async () => {
-        console.log("UUUUUUUUUUUUUUUUUUU")
         const token = await SecureStore.getItemAsync('userToken');
         setChangeTeamNameLoading(true);
 
@@ -167,11 +166,11 @@ export default function TeamDetails() {
                     <View style={styles.headerTextBlock}>
                         {loading && <Text style={styles.pageTitle}>Team details</Text>}
 
-                        {!loading && user && user._id != userId &&
+                        {!loading && user && team.club != userId &&
                             <Text style={styles.pageTitle}>{team?.name}</Text>
                         }
 
-                        {!loading && user && user._id == userId &&
+                        {!loading && user && team.club == userId &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: 200, zIndex: 1 }}>
                                 <TextInput
                                     style={[

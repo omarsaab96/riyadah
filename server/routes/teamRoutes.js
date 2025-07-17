@@ -129,8 +129,21 @@ router.get('/:id', async (req, res) => {
 // @route   GET /api/teams/club/:id
 // @access  Public
 router.get('/club/:clubId', authenticateToken, async (req, res) => {
+
+  const filters = { club: req.params.clubId, linked: true };
+
+  const user = await User.findById(req.user.userId);
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  // If user is Association, filter by sport
+  if (user.type == "Association" && user.sport) {
+    filters.sport = user.sport;
+  }
+
   try {
-    const teams = await Team.find({ club: req.params.clubId, linked: true })
+    const teams = await Team.find(filters)
       // .populate('club', 'name image')
       .populate('coaches', '_id name email image')
     // .populate('members', 'name image');
@@ -146,7 +159,7 @@ router.get('/club/:clubId', authenticateToken, async (req, res) => {
 // @access  Public
 router.get('/byCoach/:coachId', async (req, res) => {
   try {
-    const teams = await Team.find({ coaches: req.params.coachId, linked: true  });
+    const teams = await Team.find({ coaches: req.params.coachId, linked: true });
 
     res.status(200).json({ success: true, count: teams.length, data: teams });
   } catch (err) {
@@ -197,8 +210,8 @@ router.post('/', authenticateToken, async (req, res) => {
       club: req.user.userId,
       image,
       coaches,
-      linked:true,
-      lastLinked:null
+      linked: true,
+      lastLinked: null
     };
 
     const team = await Team.create(teamData);
