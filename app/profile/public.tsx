@@ -149,10 +149,25 @@ export default function PublicProfile() {
         }
     }
 
-    const getSchedule = async () => {
-        if (user.type == "Club") {
+    const getSchedule = async ({ team = null, startDate = null, endDate = null, eventType = null } = {}) => {
+        if (user.type === "Club") {
             try {
-                const res = await fetch(`https://riyadah.onrender.com/api/schedules/byClub/${user._id}`);
+                const params = new URLSearchParams();
+
+                if (team) params.append('team', team);
+                if (eventType) params.append('eventType', eventType);
+                if (startDate && endDate) {
+                    params.append('startDate', startDate);
+                    params.append('endDate', endDate);
+                }
+
+                const token = await SecureStore.getItemAsync("token");
+                const res = await fetch(`https://riyadah.onrender.com/api/schedules?${params.toString()}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
                 const response = await res.json();
 
                 if (response.success) {
@@ -164,7 +179,7 @@ export default function PublicProfile() {
                 setScheduleLoading(false);
             }
         }
-    }
+    };
 
     const getStaff = async () => {
         if (user.type == "Club") {

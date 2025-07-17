@@ -100,8 +100,6 @@ export default function TeamDetails() {
                     },
                 });
 
-                console.log(response)
-
                 if (response.ok) {
                     const scheduleData = await response.json();
                     setSchedule(scheduleData.data);
@@ -119,6 +117,7 @@ export default function TeamDetails() {
     }, [team]);
 
     const updateTeamName = async () => {
+        console.log("UUUUUUUUUUUUUUUUUUU")
         const token = await SecureStore.getItemAsync('userToken');
         setChangeTeamNameLoading(true);
 
@@ -168,11 +167,11 @@ export default function TeamDetails() {
                     <View style={styles.headerTextBlock}>
                         {loading && <Text style={styles.pageTitle}>Team details</Text>}
 
-                        {!loading && user._id != userId &&
+                        {!loading && user && user._id != userId &&
                             <Text style={styles.pageTitle}>{team?.name}</Text>
                         }
 
-                        {!loading && user._id == userId &&
+                        {!loading && user && user._id == userId &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: 200, zIndex: 1 }}>
                                 <TextInput
                                     style={[
@@ -224,7 +223,7 @@ export default function TeamDetails() {
                     <Text style={styles.ghostText}>{teamName.substring(0, 6)}</Text>
 
                     {!loading && team && user && <>
-                        {userId == user._id ? (
+                        {user && user._id == team.club ? (
                             <View style={styles.profileImage}>
                                 <TouchableOpacity onPress={() => router.push('/teams/uploadLogo')}>
                                     {(team.image == null || team.image == "") && <Image
@@ -282,7 +281,7 @@ export default function TeamDetails() {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        {team && <View style={styles.profileSection}>
+                        {user && team && <View style={styles.profileSection}>
 
                             {/* age group */}
                             {team.ageGroup && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -369,7 +368,7 @@ export default function TeamDetails() {
                             <View style={{ marginVertical: 20 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                     <Text style={styles.title}>{team.coaches.length} Coach{team.coaches.length == 1 ? '' : 'es'}</Text>
-                                    {user._id == userId && <TouchableOpacity style={styles.editToggle}
+                                    {user && user._id == team.club && <TouchableOpacity style={styles.editToggle}
                                         onPress={() => router.push({
                                             pathname: '/teams/coaches',
                                             params: { id: team._id },
@@ -432,7 +431,7 @@ export default function TeamDetails() {
                             <View style={{ marginVertical: 20 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                     <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
-                                    {user._id == userId && <TouchableOpacity style={styles.editToggle}
+                                    {user && user._id == team.club && <TouchableOpacity style={styles.editToggle}
                                         onPress={() => router.push({
                                             pathname: '/teams/members',
                                             params: { id: team._id },
@@ -556,8 +555,6 @@ export default function TeamDetails() {
 
                     </View>
                 </ScrollView >
-
-
             </View >
         </KeyboardAvoidingView >
     );

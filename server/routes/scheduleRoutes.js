@@ -156,6 +156,9 @@ router.get('/', authenticate, async (req, res) => {
             status: { $ne: 'cancelled' }
         };
 
+        console.log('Incoming request with query:', req.query);
+        console.log('User making request:', req.user);
+
         if (team) filters.team = team;
         if (eventType) filters.eventType = eventType;
         if (startDate && endDate) {
