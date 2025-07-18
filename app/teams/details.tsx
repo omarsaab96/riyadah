@@ -166,11 +166,11 @@ export default function TeamDetails() {
                     <View style={styles.headerTextBlock}>
                         {loading && <Text style={styles.pageTitle}>Team details</Text>}
 
-                        {!loading && user && team.club != userId &&
+                        {!loading && user && team && team.club != userId &&
                             <Text style={styles.pageTitle}>{team?.name}</Text>
                         }
 
-                        {!loading && user && team.club == userId &&
+                        {!loading && user && team && team.club == userId &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: 200, zIndex: 1 }}>
                                 <TextInput
                                     style={[
@@ -547,8 +547,6 @@ export default function TeamDetails() {
                                     <Text style={styles.paragraph}>No events</Text>
                                 )}
                             </View>
-
-
                         </View>}
 
 

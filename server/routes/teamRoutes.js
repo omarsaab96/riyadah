@@ -159,7 +159,7 @@ router.get('/club/:clubId', authenticateToken, async (req, res) => {
 // @access  Public
 router.get('/byCoach/:coachId', async (req, res) => {
   try {
-    const teams = await Team.find({ coaches: req.params.coachId, linked: true });
+    const teams = await Team.find({ coaches: req.params.coachId, linked: true }).populate('coaches', '_id name email image');
 
     res.status(200).json({ success: true, count: teams.length, data: teams });
   } catch (err) {

@@ -57,6 +57,7 @@ export default function Profile() {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
+    const tabsCoach = ['Profile', 'Teams'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -169,6 +170,30 @@ export default function Profile() {
 
             try {
                 const res = await fetch(`https://riyadah.onrender.com/api/teams/club/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const response = await res.json();
+
+                if (response.success) {
+                    setTeams(response.data)
+                    setTeamsLoading(false);
+                } else {
+                    setTeams(null)
+                }
+            } catch (err) {
+                console.error('Failed to fetch teams', err);
+            }
+        }
+
+        if (user.role=="Coach") {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            try {
+                const res = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -711,11 +736,7 @@ export default function Profile() {
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
                     {!loading && <Text style={styles.pageDesc}>
-                        {user?.type}
-                    </Text>}
-
-                    {!loading && user.role && <Text style={styles.pageDesc}>
-                        {user.role}
+                        {user?.type} {user.role ? `/ ${user.role}`:''}
                     </Text>}
 
                     {loading &&
@@ -829,6 +850,27 @@ export default function Profile() {
 
                 <View style={styles.tabs}>
                     {tabsAssociations.map((label, index) => (
+                        <TouchableOpacity
+                            key={label}
+                            style={[
+                                styles.tab,
+                                activeTab === label && styles.activeTab,
+                            ]}
+                            onPress={() => updateTab(label)}
+                        >
+                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
+                                {label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
+
+            {/* Tabs for Coach */}
+            {!loading && user?.role === "Coach" && (
+
+                <View style={styles.tabs}>
+                    {tabsCoach.map((label, index) => (
                         <TouchableOpacity
                             key={label}
                             style={[
