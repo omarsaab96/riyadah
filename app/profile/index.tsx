@@ -25,7 +25,6 @@ import {
 import CountryFlag from "react-native-country-flag";
 import MapView, { Marker } from 'react-native-maps';
 
-
 const { width } = Dimensions.get('window');
 
 export default function Profile() {
@@ -536,7 +535,6 @@ export default function Profile() {
         try {
             const alreadyCoach = clubs.some((m: any) => m._id === club._id);
             if (alreadyCoach) {
-                console.log('duplicate')
                 setaddingClub(prev => prev.filter(id => id !== club._id));
                 return;
             };
@@ -709,8 +707,6 @@ export default function Profile() {
             }
         });
 
-        // Log unique club names and IDs
-        uniqueClubs.forEach(c => console.log(`${c._id}: ${c.name}`));
 
         if (uniqueClubs.length > 1) {
             return `${uniqueClubs.length} clubs`;
@@ -885,18 +881,21 @@ export default function Profile() {
                 </View>
             )}
 
-            <TouchableOpacity onPress={() => { router.push("/feedbackForm") }}>
-                <Text>Form</Text>
-            </TouchableOpacity>
+            {false && <View>
+                <TouchableOpacity onPress={() => { router.push("/feedbackForm") }}>
+                    <Text>Form</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                onPress={() => router.push({
-                    pathname: '/attendanceSheet',
-                    params: { teamId : '686e736b35ef2e1ae46fb24b' },
-                })}
-            >
-                <Text>Attendance</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => router.push({
+                        pathname: '/attendanceSheet',
+                        params: { teamId: '686e736b35ef2e1ae46fb24b' },
+                    })}
+                >
+                    <Text>Attendance</Text>
+                </TouchableOpacity>
+            </View>}
+
 
             {/* profileTab */}
             {!loading && user && activeTab == "Profile" && <Animated.ScrollView

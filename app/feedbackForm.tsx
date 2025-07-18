@@ -1,15 +1,20 @@
 import Slider from '@react-native-community/slider';
-import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 const { width } = Dimensions.get('window');
 
 const FeedbackForm = () => {
+    const router = useRouter();
+
     const [soreness, setSoreness] = useState(5);
     const [mentalHealth, setMentalHealth] = useState(5);
     const [physicalHealth, setPhysicalHealth] = useState(5);
     const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [timer, setTimer] = useState(2);
 
 
     const handleSubmit = () => {
@@ -20,11 +25,35 @@ const FeedbackForm = () => {
             notes,
         };
 
-        // Replace this with your API call or local storage logic
-        console.log('Feedback submitted:', feedbackData);
-        setSubmitted(true)
-        setNotes('');
+
+        try {
+            setSaving(true);
+            console.log('Feedback submitted:', feedbackData);
+            setSubmitted(true)
+            setNotes('');
+
+            setInterval(() => {
+                setTimer(prev => {
+                    if (prev <= 1) {
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+        } catch (err) {
+            Alert.alert('Error', 'Failed to submit attendance.');
+        } finally {
+            setSaving(false);
+        }
     };
+
+    useEffect(() => {
+        if (timer == 0) {
+            router.replace("/landing");
+        }
+
+    }, [timer]);
 
     return (
         <View style={styles.container}>
@@ -37,7 +66,7 @@ const FeedbackForm = () => {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Post-Session Feedback</Text>
-                    {/* {!loading && <Text style={styles.pageDesc}>Feedback</Text>} */}
+                    {!loading && <Text style={styles.pageDesc}>Event name</Text>}
 
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -53,7 +82,7 @@ const FeedbackForm = () => {
                 <Text style={styles.ghostText}>Survey</Text>
             </View>
 
-            <KeyboardAvoidingView
+            {!loading && !submitted && <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
             >
@@ -125,17 +154,55 @@ const FeedbackForm = () => {
                         />
                     </View>
                 </ScrollView>
-            </KeyboardAvoidingView>
+            </KeyboardAvoidingView>}
 
-            <View style={styles.fixedBottomSection}>
+            {!submitted && !loading && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
                     <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>Submit Feedback</Text>
+                        <Text style={styles.loginText}>
+                            {saving ? 'Submitting' : 'Submit Feedback'}
+                        </Text>
+                        {saving && (
+                            <ActivityIndicator
+                                size="small"
+                                color="#FFFFFF"
+                                style={styles.loginLoader}
+                            />
+                        )}
                     </View>
                     <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                 </TouchableOpacity>
-            </View>
+            </View>}
+
+            {submitted && !loading && !saving && <View>
+                <View style={styles.childConfirmation}>
+                    <View style={{
+                        backgroundColor: '#009933',
+                        borderRadius: 50,
+                        width: 50,
+                        height: 50,
+                        marginBottom: 20,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}>
+                        <Image
+                            source={require('../assets/check.png')}
+                            style={{ width: 30, height: 30 }}
+                            resizeMode="contain"
+                            tintColor={'#ffffff'}
+                        />
+                    </View>
+
+                    <Text style={styles.confirmationTitle}>
+                        Feedback submitted successfully!
+                    </Text>
+
+                    <Text style={[styles.hint, { marginTop: 10, marginBottom: 50 }]}>
+                        You will be redirected in {timer}
+                    </Text>
+                </View>
+            </View>}
         </View >
 
 
@@ -243,6 +310,7 @@ const styles = StyleSheet.create({
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
+        flexDirection: 'row'
     },
     loginText: {
         fontSize: 20,
@@ -257,5 +325,23 @@ const styles = StyleSheet.create({
         height: 48,
         width: 13,
         marginLeft: -1
+    },
+    loginLoader: {
+        marginLeft: 10
+    },
+    childConfirmation: {
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        alignItems: 'center',
+    },
+    confirmationTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+    },
+    hint: {
+        marginBottom: 20,
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#000000'
     },
 });

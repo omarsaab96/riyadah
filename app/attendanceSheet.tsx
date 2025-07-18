@@ -1,19 +1,19 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 const { width } = Dimensions.get('window');
 
 
 const AttendanceSheet = () => {
-    const [soreness, setSoreness] = useState(5);
-    const [mentalHealth, setMentalHealth] = useState(5);
-    const [physicalHealth, setPhysicalHealth] = useState(5);
-    const [notes, setNotes] = useState('');
-    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [agreed, setAgreed] = useState<boolean | null>(false);
+    const [teamName, setTeamName] = useState([]);
     const [athletes, setAthletes] = useState([]);
     const [presentAthletes, setPresentAthletes] = useState({});
+    const [timer, setTimer] = useState(2);
 
     const { teamId } = useLocalSearchParams();
 
@@ -31,9 +31,8 @@ const AttendanceSheet = () => {
 
                 const data = await response.json();
 
-                console.log(data)
-
                 if (data.success) {
+                    setTeamName(data.data.name);
                     setAthletes(data.data.members);
                     let initialAttendance = {};
 
@@ -48,28 +47,44 @@ const AttendanceSheet = () => {
 
             } catch (err) {
                 console.error('Error fetching athletes:', err);
+            } finally {
+                setLoading(false)
             }
         };
 
         fetchTeamMembers();
     }, [teamId]);
 
+    useEffect(() => {
+        if (timer == 0) {
+            router.replace("/profile");
+        }
+
+    }, [timer]);
+
     const handleSubmit = () => {
-        const feedbackData = {
-            soreness,
-            mentalHealth,
-            physicalHealth,
-            notes,
-        };
+        const attendedAthletes = Object.keys(presentAthletes).filter(id => presentAthletes[id]);
 
-        // Replace this with your API call or local storage logic
-        console.log('Feedback submitted:', feedbackData);
-        setSubmitted(true)
-        setNotes('');
-    };
+        try {
+            setSaving(true);
+            console.log(attendedAthletes)
+            setSubmitted(true);
 
-    const toggleCheckbox = () => {
-        setAgreed(prev => !prev);
+            setInterval(() => {
+                setTimer(prev => {
+                    if (prev <= 1) {
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+        } catch (err) {
+            Alert.alert('Error', 'Failed to submit attendance.');
+        } finally {
+            setSaving(false);
+        }
+
     };
 
     return (
@@ -84,7 +99,7 @@ const AttendanceSheet = () => {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Attendance sheet</Text>
-                    {!loading && <Text style={styles.pageDesc}>Feedback</Text>}
+                    {!loading && <Text style={styles.pageDesc}>{teamName}</Text>}
 
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -100,33 +115,33 @@ const AttendanceSheet = () => {
                 <Text style={styles.ghostText}>Attend</Text>
             </View>
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-            >
-                <ScrollView>
-                    <View style={styles.contentContainer}>
-                        <Text style={styles.label}>Who attended?</Text>
-                        <Text style={styles.hint}>Selected athletes are the ones that were present.</Text>
+            {!loading && !submitted && <ScrollView>
+                <View style={styles.contentContainer}>
+                    <Text style={styles.label}>Who attended?</Text>
+                    <Text style={styles.hint}>Selected athletes are the ones that were present.</Text>
 
-                        {athletes.map(athlete => (
-                            <TouchableOpacity
-                                key={athlete._id}
-                                onPress={() => setPresentAthletes(prev => ({
-                                    ...prev,
-                                    [athlete._id]: !prev[athlete._id]
-                                }))}
-                                style={styles.checkboxContainer}
-                                activeOpacity={1}
-                            >
-                                <View style={styles.checkbox}>
-                                    {presentAthletes[athlete._id] && (
-                                        <View style={styles.checked}>
-                                            <Image source={require('../assets/check.png')} style={styles.checkImage} />
-                                        </View>
-                                    )}
-                                </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {athletes.map(athlete => (
+                        <TouchableOpacity
+                            key={athlete._id}
+                            onPress={() => setPresentAthletes(prev => ({
+                                ...prev,
+                                [athlete._id]: !prev[athlete._id]
+                            }))}
+                            style={styles.checkboxContainer}
+                            activeOpacity={1}
+                        >
+                            <View style={styles.checkbox}>
+                                {presentAthletes[athlete._id] && (
+                                    <View style={styles.checked}>
+                                        <Image source={require('../assets/check.png')} style={styles.checkImage} />
+                                    </View>
+                                )}
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={[
+                                    styles.profileImageContainer,
+                                    (athlete.image == null || athlete.image == "") && { backgroundColor: '#FF4000' }
+                                ]}>
                                     {(athlete.image == null || athlete.image == "") && athlete.gender == "Male" && <Image
                                         source={require('../assets/avatar.png')}
                                         style={styles.profileImageAvatar}
@@ -142,24 +157,63 @@ const AttendanceSheet = () => {
                                         style={styles.profileImageAvatar}
                                         resizeMode="contain"
                                     />}
-                                    <Text style={styles.name}>{athlete.name}</Text>
                                 </View>
-                            </TouchableOpacity>
-                        ))}
+                                <Text style={styles.name}>{athlete.name}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
 
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                </View>
+            </ScrollView>
+            }
 
-            <View style={styles.fixedBottomSection}>
+            {!submitted && !loading && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
                     <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>Submit Attendance sheet</Text>
+                        <Text style={styles.loginText}>
+                            {saving ? 'Submitting' : 'Submit Attendance sheet'}
+                        </Text>
+                        {saving && (
+                            <ActivityIndicator
+                                size="small"
+                                color="#FFFFFF"
+                                style={styles.loginLoader}
+                            />
+                        )}
                     </View>
                     <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                 </TouchableOpacity>
-            </View>
+            </View>}
+
+            {submitted && !loading && !saving && <View>
+                <View style={styles.childConfirmation}>
+                    <View style={{
+                        backgroundColor: '#009933',
+                        borderRadius: 50,
+                        width: 50,
+                        height: 50,
+                        marginBottom: 20,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}>
+                        <Image
+                            source={require('../assets/check.png')}
+                            style={{ width: 30, height: 30 }}
+                            resizeMode="contain"
+                            tintColor={'#ffffff'}
+                        />
+                    </View>
+
+                    <Text style={styles.confirmationTitle}>
+                        Attendance sheet submitted successfully!
+                    </Text>
+
+                    <Text style={[styles.hint, { marginTop: 10, marginBottom: 50 }]}>
+                        You will be redirected in {timer}
+                    </Text>
+                </View>
+            </View>}
         </View >
 
 
@@ -232,7 +286,7 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         backgroundColor: '#F4F4F4',
         padding: 5,
-        borderRadius:10
+        borderRadius: 10
     },
     checkbox: {
         width: 16,
@@ -242,7 +296,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius:3,
+        borderRadius: 3,
         overflow: 'hidden',
     },
     checked: {
@@ -305,6 +359,7 @@ const styles = StyleSheet.create({
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
+        flexDirection: 'row'
     },
     loginText: {
         fontSize: 20,
@@ -320,15 +375,34 @@ const styles = StyleSheet.create({
         width: 13,
         marginLeft: -1
     },
-    profileImageAvatar: {
+    profileImageContainer: {
+        borderRadius: 20,
+        overflow: 'hidden',
         width: 40,
+        height: 40,
+        marginRight: 10,
+    },
+    profileImageAvatar: {
+        width: undefined,
+        height: '100%',
         aspectRatio: 1,
         resizeMode: 'contain',
-        marginRight: 10,
     },
     name: {
         fontSize: 16,
         fontFamily: 'Manrope',
         color: '#000000',
-    }
+    },
+    loginLoader: {
+        marginLeft: 10
+    },
+    childConfirmation: {
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        alignItems: 'center',
+    },
+    confirmationTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+    },
 });
