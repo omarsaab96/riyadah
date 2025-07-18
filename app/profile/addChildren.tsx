@@ -628,21 +628,7 @@ const styles = StyleSheet.create({
     },
     saveLoaderContainer: {
         marginLeft: 10
-    },
-    rangeContainer: {
-
-    },
-    rangeSliderContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-        flexWrap: 'wrap',
-    },
-    rangeSlider: {
-        flex: 1,
-        height: 40
-    },
+    },   
     uploadImage: {
         backgroundColor: '#000000',
         padding: 2,

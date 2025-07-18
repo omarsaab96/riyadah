@@ -651,7 +651,7 @@ export default function EditProfile() {
                                             value={user?.skills?.attack || 0}
                                             onValueChange={(value) => updateField('skills.attack', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#d3d3d3"
+                                            maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
                                         <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
@@ -672,7 +672,7 @@ export default function EditProfile() {
                                             value={user?.skills?.defense || 0}
                                             onValueChange={(value) => updateField('skills.defense', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#d3d3d3"
+                                            maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
                                         <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
@@ -693,7 +693,7 @@ export default function EditProfile() {
                                             value={user?.skills?.skill || 0}
                                             onValueChange={(value) => updateField('skills.skill', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#d3d3d3"
+                                            maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
                                         <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
@@ -714,7 +714,7 @@ export default function EditProfile() {
                                             value={user?.skills?.speed || 0}
                                             onValueChange={(value) => updateField('skills.speed', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#d3d3d3"
+                                            maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
                                         <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
@@ -735,7 +735,7 @@ export default function EditProfile() {
                                             value={user?.skills?.stamina || 0}
                                             onValueChange={(value) => updateField('skills.stamina', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#d3d3d3"
+                                            maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
                                         <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>

@@ -189,7 +189,7 @@ export default function Profile() {
             }
         }
 
-        if (user.role=="Coach") {
+        if (user.role == "Coach") {
             const token = await SecureStore.getItemAsync('userToken');
 
             try {
@@ -722,8 +722,6 @@ export default function Profile() {
     };
 
 
-
-
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -736,7 +734,7 @@ export default function Profile() {
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
                     {!loading && <Text style={styles.pageDesc}>
-                        {user?.type} {user.role ? `/ ${user.role}`:''}
+                        {user?.type} {user.role ? `/ ${user.role}` : ''}
                     </Text>}
 
                     {loading &&
@@ -886,6 +884,19 @@ export default function Profile() {
                     ))}
                 </View>
             )}
+
+            <TouchableOpacity onPress={() => { router.push("/feedbackForm") }}>
+                <Text>Form</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => router.push({
+                    pathname: '/attendanceSheet',
+                    params: { teamId : '686e736b35ef2e1ae46fb24b' },
+                })}
+            >
+                <Text>Attendance</Text>
+            </TouchableOpacity>
 
             {/* profileTab */}
             {!loading && user && activeTab == "Profile" && <Animated.ScrollView

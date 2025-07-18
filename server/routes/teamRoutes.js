@@ -113,7 +113,7 @@ router.get('/:id', async (req, res) => {
     const team = await Team.findById(req.params.id)
       .populate('club', 'name image sport')
       .populate('coaches', '_id name image')
-      .populate('members', '_id name image');
+      .populate('members', '_id name image gender');
 
     if (!team) {
       return res.status(404).json({ success: false, message: 'Team not found' });
