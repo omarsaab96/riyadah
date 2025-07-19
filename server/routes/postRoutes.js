@@ -17,4 +17,34 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Create a new post
+router.post('/', async (req, res) => {
+    try {
+        const {
+            type,
+            created_by,
+            content = '',
+            media = { images: [], videos: [] },
+        } = req.body;
+
+        if (!type || !created_by) {
+            return res.status(400).json({ success: false, message: 'Missing required fields: type or created_by' });
+        }
+
+        const newPost = new Post({
+            type,
+            created_by,
+            content,
+            media,
+        });
+
+        await newPost.save();
+
+        res.status(201).json({ success: true, post: newPost });
+    } catch (err) {
+        console.error('Error creating post:', err);
+        res.status(500).json({ success: false, message: 'Server error while creating post' });
+    }
+});
+
 module.exports = router;
