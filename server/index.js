@@ -9,7 +9,7 @@ const schedulesRoutes = require('./routes/scheduleRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
-
+const postRoutes =require('./routes/postRoutes')
 
 const app = express();
 connectDB();
@@ -24,6 +24,8 @@ app.use('/api/schedules', schedulesRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/financials', paymentRoutes);
+app.use('/api/posts', postRoutes);
+
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/removeBG', imageRoutes);
 

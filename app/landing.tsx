@@ -15,7 +15,6 @@ import {
     SafeAreaView,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -58,71 +57,54 @@ export default function Landing() {
     const [newPostText, setNewPostText] = useState('');
     const router = useRouter();
 
-    // Generate dummy data
-    const generateDummyPosts = (count: number): Post[] => {
-        const types: ('text' | 'image' | 'video')[] = ['text', 'image', 'video'];
-        const dummyUsers = [
-            { id: '1', name: 'John Doe', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
-            { id: '2', name: 'Jane Smith', avatar: 'https://randomuser.me/api/portraits/women/1.jpg' },
-            { id: '3', name: 'Mike Johnson', avatar: 'https://randomuser.me/api/portraits/men/2.jpg' },
-            { id: '4', name: 'Sarah Williams', avatar: 'https://randomuser.me/api/portraits/women/2.jpg' },
-        ];
-
-        return Array.from({ length: count }, (_, i) => {
-            const type = types[Math.floor(Math.random() * types.length)];
-            const user = dummyUsers[Math.floor(Math.random() * dummyUsers.length)];
-
-            let content = '';
-            if (type === 'text') {
-                content = 'This is a sample text post. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.';
-            } else if (type === 'image') {
-                content = `https://picsum.photos/600/400?random=${i}`;
-            } else {
-                content = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-            }
-
-            return {
-                id: `post-${page}-${i}`,
-                date: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString(),
-                type,
-                created_by: user,
-                likes: Math.floor(Math.random() * 500),
-                comments: Math.floor(Math.random() * 50),
-                shares: Math.floor(Math.random() * 20),
-                title: `Post ${i + 1}`,
-                content,
-                isLiked: false,
-            };
-        });
-    };
-
     // Load posts
-    const loadPosts = useCallback(() => {
+    const loadPosts = useCallback(async () => {
         if (!hasMore) return;
-
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            const newPosts = generateDummyPosts(5);
-            setPosts(prev => [...prev, ...newPosts]);
-            setPage(prev => prev + 1);
-            setLoading(false);
 
-            // For demo purposes, stop after 3 pages
-            if (page >= 3) setHasMore(false);
-        }, 1000);
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=${page}&limit=5`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const data: Post[] = await res.json();
+                setPosts(prev => [...prev, ...data]);
+                setPage(prev => prev + 1);
+                if (data.length < 5) setHasMore(false);
+            } else {
+                console.error('Error loading posts');
+            }
+        } catch (err) {
+            console.error('Fetch error', err);
+        }
     }, [page, hasMore]);
 
     // Handle refresh
-    const onRefresh = useCallback(() => {
+    const onRefresh = useCallback(async () => {
         setRefreshing(true);
         setPage(1);
         setHasMore(true);
-        setTimeout(() => {
-            setPosts(generateDummyPosts(5));
-            setRefreshing(false);
-            setPage(2);
-        }, 1000);
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=1&limit=5`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const data: Post[] = await res.json();
+                setPosts(data);
+                setPage(2);
+            } else {
+                console.error('Refresh error');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+
+        setRefreshing(false);
     }, []);
 
     // Handle like animation
@@ -197,7 +179,7 @@ export default function Landing() {
         return (
             <View style={styles.postContainer}>
                 <View style={styles.postHeader}>
-                    <Image source={{ uri: item.created_by.avatar }} style={styles.avatar} resizeMode="contain"/>
+                    <Image source={{ uri: item.created_by.avatar }} style={styles.avatar} resizeMode="contain" />
                     <View style={styles.postHeaderInfo}>
                         <Text style={styles.postUserName}>{item.created_by.name}</Text>
                         <Text style={styles.postDate}>{formatDate(item.date)}</Text>
@@ -207,7 +189,7 @@ export default function Landing() {
                     </TouchableOpacity>
                 </View>
 
-                
+
 
                 <View style={styles.post}>
                     <View style={styles.postContent}>
@@ -243,7 +225,7 @@ export default function Landing() {
                                 {item.comments}
                             </Text>
                         </View>
-                        <View style={[styles.postActionBtn,styles.postActionBtnLast]}>
+                        <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
                             <FontAwesome name="share-square-o" size={24} color="#888888" />
                             <Text style={styles.postActionText}>
                                 {item.shares}
@@ -305,7 +287,6 @@ export default function Landing() {
                 style="light"
             />
 
-
             <View style={{ paddingBottom: 100 }}>
                 <FlatList
                     data={posts}
@@ -340,7 +321,7 @@ export default function Landing() {
 
                             </View>
 
-                            <View style={styles.createPostContainer}>
+                            {/* <View style={styles.createPostContainer}>
                                 <View style={styles.createPostHeader}>
                                     <Image
                                         source={
@@ -364,7 +345,7 @@ export default function Landing() {
                                         <Text style={styles.createPostButtonText}>Post</Text>
                                     </TouchableOpacity>
                                 </View>
-                            </View>
+                            </View> */}
                         </>
                     }
                     onEndReached={loadPosts}
@@ -378,7 +359,7 @@ export default function Landing() {
                         />
                     }
                     ListFooterComponent={
-                        true ? (
+                        loading ? (
                             <View style={styles.loadingFooter}>
                                 <ActivityIndicator size="large" color="#FF4000" />
                             </View>
@@ -596,14 +577,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
         marginBottom: 10,
-        color: '#050505',        
-        fontFamily:'Manrope'
+        color: '#050505',
+        fontFamily: 'Manrope'
     },
     postText: {
         fontSize: 15,
         lineHeight: 22,
         color: '#050505',
-        fontFamily:'Manrope'
+        fontFamily: 'Manrope'
     },
     postImage: {
         width: '100%',

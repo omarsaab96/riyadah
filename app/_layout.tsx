@@ -14,7 +14,7 @@ export default function RootLayout() {
     const checkToken = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        router.replace('/profile');
+        router.replace('/landing');
       }
     };
 
