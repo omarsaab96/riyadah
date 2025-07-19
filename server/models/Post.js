@@ -8,10 +8,10 @@ const PostSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
-    likes: {
+    likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-    },
+    }],
     comments: { type: Number, default: 0 },
     shares: { type: Number, default: 0 },
     content: String,
@@ -20,7 +20,15 @@ const PostSchema = new mongoose.Schema({
         videos: [{ type: String }],
     },
     date: { type: Date, default: Date.now },
-    isLiked: { type: Boolean, default: false }
+    isLiked: { type: Boolean, default: false },
+    linked: {
+        type: Boolean,
+        default: true,
+    },
+    lastLinked: {
+        type: Date,
+        default: null,
+    },
 });
 
 module.exports = mongoose.model('Post', PostSchema);

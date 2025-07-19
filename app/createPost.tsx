@@ -75,27 +75,39 @@ const CreatePostScreen = () => {
         setPosting(true);
         try {
             // Upload media files first
-            const uploadedMediaUrls = await Promise.all(
+            const uploadedMedia = await Promise.all(
                 media.map(async (item) => {
                     if (item.type?.includes('video') || item.uri?.endsWith('.mp4')) {
-                        // Upload video to api.video
-                        return await uploadVideoToApiVideo(item.uri);
+                        const url = await uploadVideoToApiVideo(item.uri);
+                        return { type: 'video', url };
                     } else {
-                        // Upload image to bbimg
-                        return await uploadImageToBbimg(item.uri);
+                        const url = await uploadImageToBbimg(item.uri);
+                        return { type: 'image', url };
                     }
                 })
             );
 
-            // Filter out any failed uploads
-            const successfulUploads = uploadedMediaUrls.filter(url => url !== null);
+            // Separate by type
+            const images = uploadedMedia
+                .filter((item) => item.type === 'image' && item.url)
+                .map((item) => item.url);
 
-            // Prepare the post data
+            const videos = uploadedMedia
+                .filter((item) => item.type === 'video' && item.url)
+                .map((item) => item.url);
+
+            const type = videos.length
+                ? (images.length ? 'multipleMedia' : 'video')
+                : (images.length ? 'image' : 'text');
+
             const postData = {
-                content,
-                media: successfulUploads,
-                userId
+                type,
+                content:content.trim(),
+                media: { images, videos },
+                created_by: userId,
             };
+
+            console.log('posting: ', postData);
 
             // Send the post to your backend
             const token = await SecureStore.getItemAsync('userToken');
