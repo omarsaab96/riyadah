@@ -78,6 +78,8 @@ export default function Landing() {
             }
         } catch (err) {
             console.error('Fetch error', err);
+        } finally {
+            setLoading(false)
         }
     }, [page, hasMore]);
 
@@ -179,7 +181,7 @@ export default function Landing() {
         return (
             <View style={styles.postContainer}>
                 <View style={styles.postHeader}>
-                    <Image source={{ uri: item.created_by.avatar }} style={styles.avatar} resizeMode="contain" />
+                    <Image source={{ uri: item.created_by.image }} style={styles.avatar} resizeMode="contain" />
                     <View style={styles.postHeaderInfo}>
                         <Text style={styles.postUserName}>{item.created_by.name}</Text>
                         <Text style={styles.postDate}>{formatDate(item.date)}</Text>
@@ -291,7 +293,7 @@ export default function Landing() {
                 <FlatList
                     data={posts}
                     renderItem={renderPost}
-                    keyExtractor={item => item.id}
+                    keyExtractor={item => item._id}
                     ListHeaderComponent={
                         <>
                             <View style={styles.header}>

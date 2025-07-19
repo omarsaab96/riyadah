@@ -107,7 +107,7 @@ const CreatePostScreen = () => {
                 created_by: userId,
             };
 
-            console.log('posting: ', postData);
+            // console.log('posting: ', postData);
 
             // Send the post to your backend
             const token = await SecureStore.getItemAsync('userToken');
@@ -156,7 +156,7 @@ const CreatePostScreen = () => {
 
             if (uploadResponse.ok) {
                 const result = await uploadResponse.json();
-                console.log('Image uploaded successfully:', result);
+                // console.log('Image uploaded successfully:', result);
                 return result.data.url; // this is the direct image URL
             } else {
                 console.error('Failed to upload image:', await uploadResponse.text());
