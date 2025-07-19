@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     try {
         const posts = await Post.find()
-            .populate('created_by', 'name avatar')
+            .populate('created_by', 'name image')
             .sort({ date: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
