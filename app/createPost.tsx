@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Buffer } from 'buffer';
 import { Video } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import * as SecureStore from 'expo-secure-store';
@@ -77,13 +78,7 @@ const CreatePostScreen = () => {
             // Upload media files first
             const uploadedMedia = await Promise.all(
                 media.map(async (item) => {
-                    if (item.type?.includes('video') || item.uri?.endsWith('.mp4')) {
-                        const url = await uploadVideoToApiVideo(item.uri);
-                        return { type: 'video', url };
-                    } else {
-                        const url = await uploadImageToBbimg(item.uri);
-                        return { type: 'image', url };
-                    }
+                    return await uploadToImageKit(item.uri);
                 })
             );
 
@@ -102,7 +97,7 @@ const CreatePostScreen = () => {
 
             const postData = {
                 type,
-                content:content.trim(),
+                content: content.trim(),
                 media: { images, videos },
                 created_by: userId,
             };
@@ -137,110 +132,49 @@ const CreatePostScreen = () => {
         }
     };
 
-    const uploadImageToBbimg = async (uri: string) => {
+    const uploadToImageKit = async (uri: string) => {
         try {
-            const response = await fetch(uri);
-            const blob = await response.blob();
+            const fileName = uri.split('/').pop() || 'upload';
+            const fileExtension = fileName.split('.').pop()?.toLowerCase();
+            const mimeType = fileExtension?.match(/mp4|mov|avi|webm|mkv/)
+                ? `video/${fileExtension}`
+                : `image/${fileExtension}`;
 
-            const base64 = await blobToBase64(blob);
+            const formData = new FormData();
+            formData.append('file', {
+                uri,
+                name: fileName,
+                type: mimeType,
+            } as any);
+            formData.append('fileName', fileName);
+            formData.append('folder', '/uploads');
 
-            const IMGBB_API_KEY = '19502061a9826ed492f9746cbb1fedec';
+            const privateAPIKey = 'private_pdmJIJI6e538/CVmr4CyBdHW2wc=';
+            const encodedAuth = Buffer.from(privateAPIKey + ':').toString('base64');
 
-            const uploadResponse = await fetch(`https://api.imgbb.com/1/upload`, {
+            const uploadResponse = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Basic ${encodedAuth}`,
                 },
-                body: `key=${IMGBB_API_KEY}&image=${encodeURIComponent(base64)}`
+                body: formData,
             });
 
             if (uploadResponse.ok) {
                 const result = await uploadResponse.json();
-                // console.log('Image uploaded successfully:', result);
-                return result.data.url; // this is the direct image URL
+                return {
+                    type: mimeType.startsWith('video') ? 'video' : 'image',
+                    url: result.url
+                };
             } else {
-                console.error('Failed to upload image:', await uploadResponse.text());
+                console.error('Failed to upload file:', await uploadResponse.text());
                 return null;
             }
         } catch (error) {
-            console.error('Error uploading image:', error);
+            console.error('Error uploading to ImageKit:', error);
             return null;
         }
-    };
-
-    const blobToBase64 = (blob: Blob): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onerror = reject;
-            reader.onload = () => {
-                const base64data = reader.result?.toString().split(',')[1];
-                resolve(base64data || '');
-            };
-            reader.readAsDataURL(blob);
-        });
-    };
-
-    // Helper function to upload video to api.video
-    const uploadVideoToApiVideo = async (uri: string) => {
-        try {
-            // First create a video container
-            const createResponse = await fetch('https://ws.api.video/videos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer YOUR_API_VIDEO_TOKEN'
-                },
-                body: JSON.stringify({
-                    title: `User Video - ${new Date().toISOString()}`,
-                    description: 'Uploaded from Riyadah app'
-                })
-            });
-
-            if (!createResponse.ok) {
-                console.error('Failed to create video container:', await createResponse.text());
-                return null;
-            }
-
-            const videoContainer = await createResponse.json();
-            const uploadUrl = videoContainer.assets?.upload;
-            const videoId = videoContainer.videoId;
-
-            if (!uploadUrl) {
-                console.error('No upload URL in response');
-                return null;
-            }
-
-            // Get the file as blob
-            const response = await fetch(uri);
-            const blob = await response.blob();
-
-            // Upload the video file
-            const uploadResponse = await fetch(uploadUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                },
-                body: createFormData(blob, 'file')
-            });
-
-            if (uploadResponse.ok) {
-                // Return the playback URL or video ID as needed
-                return `https://embed.api.video/vod/${videoId}`;
-            } else {
-                console.error('Failed to upload video:', await uploadResponse.text());
-                return null;
-            }
-        } catch (error) {
-            console.error('Error uploading video:', error);
-            return null;
-        }
-    };
-
-    // Helper function to create FormData
-    const createFormData = (file: Blob, fieldName: string) => {
-        const formData = new FormData();
-        formData.append(fieldName, file);
-        return formData;
     };
 
     return (

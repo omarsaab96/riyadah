@@ -1,4 +1,6 @@
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import MasonryList from '@react-native-seoul/masonry-list';
+import { Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
@@ -10,85 +12,81 @@ import {
     Dimensions,
     FlatList,
     Image,
+    Modal,
     Platform,
     RefreshControl,
     SafeAreaView,
     StyleSheet,
     Text,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 
 
 const { width } = Dimensions.get('window');
 
-// Types
-type Post = {
-    id: string;
-    date: string;
-    type: 'text' | 'image' | 'video';
-    created_by: {
-        id: string;
-        name: string;
-        avatar: string;
-    };
-    likes: number;
-    comments: number;
-    shares: number;
-    title: string;
-    content: string;
-    isLiked: boolean;
-};
-
-type User = {
-    id: string;
-    name: string;
-    avatar: string;
-};
-
 export default function Landing() {
     const [userId, setUserId] = useState<string | null>(null);
-    const [user, setUser] = useState<User | null>(null);
-    const [posts, setPosts] = useState<Post[]>([]);
+    const [user, setUser] = useState(null);
+    const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [newPostText, setNewPostText] = useState('');
     const router = useRouter();
+    const pageLimit = 5;
+
+    useEffect(() => {
+        fetchUser();
+        if (posts.length === 0) {
+            loadPosts();
+        }
+    }, []);
 
     // Load posts
     const loadPosts = useCallback(async () => {
-        if (!hasMore) return;
+        // Exit early if no more posts or already loading
+        if (!hasMore || loading) {
+            console.log('Stopping loadPosts - hasMore:', hasMore, 'loading:', loading);
+            return;
+        }
+
         setLoading(true);
+        // console.log(`Loading page ${page} with limit ${pageLimit}`);
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=${page}&limit=5`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=${page}&limit=${pageLimit}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
             if (res.ok) {
-                const data: Post[] = await res.json();
-                setPosts(prev => [...prev, ...data]);
+                const data = await res.json();
+                // console.log(`API Response - Page ${page}:`, data.length);
+
+                setPosts(prev => {
+                    // Merge new posts ensuring no duplicates
+                    const merged = [...prev, ...data];
+                    // console.log(`Total posts after merge: ${merged.length}`);
+                    return merged;
+                });
+
+                // More accurate hasMore calculation
+                setHasMore(data.length >= pageLimit);
                 setPage(prev => prev + 1);
-                if (data.length < 5) setHasMore(false);
-            } else {
-                console.error('Error loading posts');
             }
         } catch (err) {
             console.error('Fetch error', err);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }, [page, hasMore]);
+    }, [page, hasMore, loading, pageLimit]);
 
     // Handle refresh
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        setPage(1);
-        setHasMore(true);
-
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/posts?page=1&limit=5`, {
@@ -96,18 +94,18 @@ export default function Landing() {
             });
 
             if (res.ok) {
-                const data: Post[] = await res.json();
-                setPosts(data);
-                setPage(2);
-            } else {
-                console.error('Refresh error');
+                const data = await res.json();
+                setPosts(data);  // Completely replace posts
+                setPage(2);      // Reset to page 2
+                setHasMore(data.length === 5);
             }
         } catch (err) {
             console.error(err);
+        } finally {
+            setRefreshing(false);
         }
-
-        setRefreshing(false);
     }, []);
+
 
     // Handle like animation
     const handleLike = (postId: string) => {
@@ -121,27 +119,6 @@ export default function Landing() {
             }
             return post;
         }));
-    };
-
-    // Handle post creation
-    const handlePost = () => {
-        if (!newPostText.trim() || !user) return;
-
-        const newPost: Post = {
-            id: `post-new-${Date.now()}`,
-            date: new Date().toISOString(),
-            type: 'text',
-            created_by: user,
-            likes: 0,
-            comments: 0,
-            shares: 0,
-            title: 'New Post',
-            content: newPostText,
-            isLiked: false,
-        };
-
-        setPosts(prev => [newPost, ...prev]);
-        setNewPostText('');
     };
 
     // Format date
@@ -158,7 +135,7 @@ export default function Landing() {
     };
 
     // Render post item
-    const renderPost = ({ item }: { item: Post }) => {
+    const renderPost = ({ item }: { item: any }) => {
         const likeAnimation = new Animated.Value(item.isLiked ? 1 : 0);
 
         const animateLike = () => {
@@ -191,47 +168,263 @@ export default function Landing() {
                     </TouchableOpacity>
                 </View>
 
-
-
                 <View style={styles.post}>
                     <View style={styles.postContent}>
                         {item.title && <Text style={styles.postTitle}>{item.title}</Text>}
-
-                        {item.type === 'text' && (
+                        {item.content?.trim() !== '' && (
                             <Text style={styles.postText}>{item.content}</Text>
                         )}
 
-                        {item.type === 'image' && (
-                            <Image source={{ uri: item.content }} style={styles.postImage} resizeMode="cover" />
-                        )}
+                        {/* Render images */}
+                        {item.type === 'image' && item.media.images?.length > 0 && (() => {
+                            const images = item.media.images;
+                            const isMoreThanFour = images.length >= 4;
+                            const previewImages = isMoreThanFour ? images.slice(0, 4) : images;
 
-                        {item.type === 'video' && (
-                            <View style={styles.videoContainer}>
-                                <View style={styles.videoPlaceholder}>
-                                    <MaterialIcons name="play-circle-outline" size={50} color="white" />
-                                </View>
-                            </View>
-                        )}
+                            return (
+                                images.length === 1 ? (
+                                    <Image
+                                        source={{ uri: images[0] }}
+                                        style={[styles.postImage, { marginTop: 10 }]}
+                                        resizeMode="cover"
+                                        onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+                                    />
+                                ) : (
+                                    <MasonryList
+                                        data={previewImages}
+                                        keyExtractor={(uri, index) => uri + index}
+                                        numColumns={2}
+                                        containerStyle={{ marginTop: 10 }}
+                                        style={{ margin: -5 }}
+                                        renderItem={({ item: image }) => {
+                                            const currentIndex = previewImages.findIndex(img => img === image);
+                                            const isLastPreview = isMoreThanFour && currentIndex === 3;
+
+                                            return (
+                                                <View
+                                                    style={{
+                                                        borderRadius: 8,
+                                                        overflow: 'hidden',
+                                                        margin: 5,
+                                                        backgroundColor: 'black',
+                                                        position: 'relative',
+                                                    }}
+                                                >
+                                                    <Image
+                                                        source={{ uri: image }}
+                                                        resizeMode="cover"
+                                                        style={{ width: '100%', aspectRatio: 1 }}
+                                                    />
+
+                                                    {isLastPreview && (
+                                                        <View
+                                                            style={{
+                                                                position: 'absolute',
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                zIndex: 3,
+                                                            }}
+                                                        >
+                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                + {images.length - 3}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            );
+                                        }}
+                                    />
+                                )
+                            );
+                        })()}
+
+                        {/* Render videos */}
+                        {item.type === 'video' && item.media.videos?.length > 0 && (() => {
+                            const videos = item.media.videos;
+                            const isMoreThanFour = videos.length >= 4;
+                            const previewVideos = isMoreThanFour ? videos.slice(0, 4) : videos;
+
+                            return (
+                                videos.length === 1 ? (
+                                    <View
+                                        style={{
+                                            borderRadius: 8,
+                                            backgroundColor: 'black',
+                                            overflow: 'hidden',
+                                            marginTop: 10,
+                                            aspectRatio: 1
+                                        }}>
+                                        {/* <Video
+                                            source={{ uri: videos[0] }}
+                                            style={{
+                                                width: '100%',
+                                                aspectRatio: 1,
+                                                backgroundColor: 'black',
+                                            }}
+                                            resizeMode="cover"
+                                            isLooping
+                                        /> */}
+
+                                        <VideoPlayer
+                                            uri={videos[0]}
+                                            style={{ width: '100%', height: '100%' }}
+                                        />
+                                    </View>
+                                ) : (
+                                    <MasonryList
+                                        data={previewVideos}
+                                        keyExtractor={(uri, index) => uri + index}
+                                        numColumns={2}
+                                        containerStyle={{ marginTop: 10 }}
+                                        style={{ marginVertical: -5, marginHorizontal: -0, }}
+                                        renderItem={({ item: video }) => {
+                                            const currentIndex = previewVideos.findIndex(v => v === video);
+                                            const isLastPreview = isMoreThanFour && currentIndex === 3;
+
+                                            return (
+                                                <View
+                                                    style={{
+                                                        borderRadius: 8,
+                                                        backgroundColor: 'black',
+                                                        overflow: 'hidden',
+                                                        marginVertical: 5,
+                                                        marginHorizontal: 0,
+                                                        position: 'relative',
+                                                        aspectRatio: 1,
+                                                        borderWidth: 1
+                                                    }}>
+                                                    {/* <Video
+                                                        source={{ uri: video }}
+                                                        style={{
+                                                            width: '100%',
+                                                            aspectRatio: 1,
+                                                            backgroundColor: 'black',
+                                                        }}
+                                                        resizeMode="cover"
+                                                        isLooping
+                                                    /> */}
+
+                                                    <VideoPlayer
+                                                        uri={videos[0]}
+                                                        style={{ width: '100%', height: '100%' }}
+                                                        showFullscreenToggle={true}
+                                                    />
+
+                                                    {isLastPreview && (
+                                                        <View
+                                                            style={{
+                                                                position: 'absolute',
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                zIndex: 3,
+                                                            }}
+                                                        >
+                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                + {videos.length - 3}
+                                                            </Text>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            );
+                                        }}
+                                    />
+                                )
+                            );
+                        })()}
+
+
+                        {/* Render multiple media */}
+                        {item.type === 'multipleMedia' && (() => {
+                            const images = item.media.images || [];
+                            const videos = item.media.videos || [];
+
+                            const allMedia = [
+                                ...images.map(uri => ({ uri, type: 'image' })),
+                                ...videos.map(uri => ({ uri, type: 'video' }))
+                            ];
+
+                            const isMoreThanFour = allMedia.length > 4;
+                            const previewMedia = isMoreThanFour ? allMedia.slice(0, 4) : allMedia;
+
+                            return (
+                                <MasonryList
+                                    data={previewMedia}
+                                    keyExtractor={(item, index) => item.uri + index}
+                                    numColumns={2}
+                                    containerStyle={{ marginTop: 10 }}
+                                    style={{ margin: -5 }}
+                                    renderItem={({ item }) => {
+                                        const currentIndex = previewMedia.findIndex(m => m.uri === item.uri && m.type === item.type);
+                                        const isLastPreview = isMoreThanFour && currentIndex === 3;
+
+                                        return (
+                                            <View
+                                                style={{
+                                                    borderRadius: 8,
+                                                    backgroundColor: 'black',
+                                                    overflow: 'hidden',
+                                                    margin: 5,
+                                                    position: 'relative',
+                                                }}
+                                            >
+                                                {item.type === 'image' ? (
+                                                    <Image
+                                                        source={{ uri: item.uri }}
+                                                        style={{ width: '100%', aspectRatio: 1 }}
+                                                        resizeMode="cover"
+                                                    />
+                                                ) : (
+                                                    <Video
+                                                        source={{ uri: item.uri }}
+                                                        style={{ width: '100%', aspectRatio: 1, backgroundColor: 'black' }}
+                                                        resizeMode="cover"
+                                                        isLooping
+                                                    />
+                                                )}
+
+                                                {isLastPreview && (
+                                                    <View
+                                                        style={{
+                                                            position: 'absolute',
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center',
+                                                            zIndex: 3,
+                                                        }}
+                                                    >
+                                                        <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                            + {allMedia.length - 3}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        );
+                                    }}
+                                />
+                            );
+                        })()}
                     </View>
 
                     <View style={styles.postStats}>
-                        <View style={styles.postActionBtn}>
+                        <TouchableOpacity onPress={animateLike} style={styles.postActionBtn}>
                             <FontAwesome name="heart-o" size={24} color="#888888" />
-                            <Text style={styles.postActionText}>
-                                {item.likes}
-                            </Text>
-                        </View>
+                            <Text style={styles.postActionText}>{item.likes.length}</Text>
+                        </TouchableOpacity>
                         <View style={styles.postActionBtn}>
                             <FontAwesome name="comment-o" size={24} color="#888888" />
-                            <Text style={styles.postActionText}>
-                                {item.comments}
-                            </Text>
+                            <Text style={styles.postActionText}>{item.comments}</Text>
                         </View>
                         <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
                             <FontAwesome name="share-square-o" size={24} color="#888888" />
-                            <Text style={styles.postActionText}>
-                                {item.shares}
-                            </Text>
+                            <Text style={styles.postActionText}>{item.shares}</Text>
                         </View>
                     </View>
                 </View>
@@ -264,11 +457,6 @@ export default function Landing() {
         }
     };
 
-    useEffect(() => {
-        fetchUser();
-        loadPosts();
-    }, []);
-
     if (loading && posts.length === 0) {
         return (
             <View style={styles.loadingContainer}>
@@ -276,6 +464,202 @@ export default function Landing() {
             </View>
         );
     }
+
+    const VideoPlayer = ({ uri, style, showFullscreenToggle = false }: {
+        uri: string;
+        style: any;
+        showFullscreenToggle?: boolean;
+    }) => {
+        const videoRef = React.useRef<Video>(null);
+        const fullscreenVideoRef = React.useRef<Video>(null);
+        const [status, setStatus] = React.useState<any>({});
+        const [fullscreenStatus, setFullscreenStatus] = React.useState<any>({});
+        const [isPlaying, setIsPlaying] = React.useState(false);
+        const [duration, setDuration] = React.useState(0);
+        const [currentPosition, setCurrentPosition] = React.useState(0);
+        const [isFullscreen, setIsFullscreen] = React.useState(false);
+        const [showControls, setShowControls] = React.useState(false);
+
+        // Format time from milliseconds to MM:SS
+        const formatTime = (millis: number) => {
+            if (!millis) return "0:00";
+            const totalSeconds = Math.floor(millis / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        };
+
+        // Get the time to display (remaining when playing, total when paused)
+        const getDisplayTime = () => {
+            if (isPlaying) {
+                return formatTime(duration - currentPosition);
+            }
+            return formatTime(duration);
+        };
+
+        // Update current position and duration when playback status updates
+        const handlePlaybackStatusUpdate = (status: any) => {
+            setStatus(status);
+            if (status.positionMillis !== undefined) {
+                setCurrentPosition(status.positionMillis);
+            }
+            if (status.durationMillis !== undefined) {
+                setDuration(status.durationMillis);
+            }
+        };
+
+        const handleFullscreenPlaybackStatusUpdate = (status: any) => {
+            setFullscreenStatus(status);
+            if (status.positionMillis !== undefined) {
+                setCurrentPosition(status.positionMillis);
+            }
+            if (status.durationMillis !== undefined) {
+                setDuration(status.durationMillis);
+            }
+        };
+
+        const togglePlayPause = () => {
+            if (isFullscreen) {
+                isPlaying ? fullscreenVideoRef.current?.pauseAsync() : fullscreenVideoRef.current?.playAsync();
+            } else {
+                isPlaying ? videoRef.current?.pauseAsync() : videoRef.current?.playAsync();
+            }
+            setIsPlaying(!isPlaying);
+            setShowControls(true);
+        };
+
+        const toggleFullscreen = () => {
+            setIsFullscreen(!isFullscreen);
+            setShowControls(true);
+
+            // Sync playback state when entering/exiting fullscreen
+            if (isFullscreen) {
+                // Exiting fullscreen - sync with main player
+                videoRef.current?.setPositionAsync(currentPosition);
+                if (isPlaying) {
+                    videoRef.current?.playAsync();
+                }
+            } else {
+                // Entering fullscreen - sync with fullscreen player
+                fullscreenVideoRef.current?.setPositionAsync(currentPosition);
+                if (isPlaying) {
+                    fullscreenVideoRef.current?.playAsync();
+                }
+            }
+        };
+
+        return (
+            <>
+                {/* Regular Video Player */}
+                <TouchableWithoutFeedback onPress={() => setShowControls(!showControls)}>
+                    <View style={style}>
+                        <Video
+                            ref={videoRef}
+                            source={{ uri }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode="cover"
+                            isLooping
+                            shouldPlay={isPlaying && !isFullscreen}
+                            useNativeControls={false}
+                            onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+                        />
+
+                        {/* Overlay controls */}
+                        <View style={[styles.overlay, !showControls && !isPlaying && styles.centerOverlay]}>
+                            {/* Play/Pause button */}
+                            {(!isPlaying || showControls) && (
+                                <TouchableOpacity
+                                    onPress={togglePlayPause}
+                                    style={styles.playButton}
+                                >
+                                    <Ionicons
+                                        name={isPlaying ? "pause" : "play"}
+                                        size={20}
+                                        color="white"
+                                    />
+                                </TouchableOpacity>
+                            )}
+
+                            {showFullscreenToggle && (
+                                <TouchableOpacity onPress={toggleFullscreen}
+                                    style={{ position: 'absolute', right: 0, top: 0, width:'100%', height:'70%' }}
+                                >
+                                    {/* <Entypo name="resize-full-screen" size={18} color="white" /> */}
+                                </TouchableOpacity>
+                            )}
+
+                            {/* Video duration - now shows remaining time when playing */}
+                            {(showControls || !isPlaying) && (
+                                <View style={styles.bottomBar}>
+                                    <Text style={styles.durationText}>
+                                        {getDisplayTime()}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+
+                {/* Fullscreen Modal */}
+                <Modal
+                    visible={isFullscreen}
+                    transparent={false}
+                    animationType="slide"
+                    supportedOrientations={['portrait', 'landscape']}
+                    onRequestClose={toggleFullscreen}
+                >
+                    <View style={styles.fullscreenContainer}>
+                        <Video
+                            ref={fullscreenVideoRef}
+                            source={{ uri }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode="contain"
+                            isLooping
+                            shouldPlay={isPlaying}
+                            useNativeControls={false}
+                            onPlaybackStatusUpdate={handleFullscreenPlaybackStatusUpdate}
+                        />
+
+                        {/* Fullscreen controls overlay */}
+                        <TouchableWithoutFeedback onPress={() => setShowControls(!showControls)}>
+                            <View style={[styles.fullscreenOverlay, !showControls && !isPlaying && styles.centerOverlay]}>
+                                {/* Play/Pause button */}
+                                {(!isPlaying || showControls) && (
+                                    <TouchableOpacity
+                                        onPress={togglePlayPause}
+                                        style={styles.playButton}
+                                    >
+                                        <Ionicons
+                                            name={isPlaying ? "pause" : "play"}
+                                            size={36}
+                                            color="white"
+                                        />
+                                    </TouchableOpacity>
+                                )}
+
+                                {/* Bottom bar with duration and close button */}
+                                {(showControls || !isPlaying) && (
+                                    <View style={styles.fullscreenBottomBar}>
+                                        <Text style={styles.fullscreenDurationText}>
+                                            {getDisplayTime()}
+                                        </Text>
+
+                                        <TouchableOpacity onPress={toggleFullscreen}>
+                                            <Ionicons
+                                                name="contract"
+                                                size={36}
+                                                color="white"
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </Modal>
+            </>
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -293,7 +677,9 @@ export default function Landing() {
                 <FlatList
                     data={posts}
                     renderItem={renderPost}
-                    keyExtractor={item => item._id}
+                    keyExtractor={item => {
+                        return `${item._id}-${item.createdAt || item.date}`;
+                    }}
                     ListHeaderComponent={
                         <>
                             <View style={styles.header}>
@@ -350,8 +736,13 @@ export default function Landing() {
                             </View> */}
                         </>
                     }
-                    onEndReached={loadPosts}
-                    onEndReachedThreshold={2.5}
+                    onEndReached={() => {
+                        // Only trigger if we have more posts and aren't already loading
+                        if (hasMore && !loading) {
+                            loadPosts();
+                        }
+                    }}
+                    onEndReachedThreshold={0.5} // Balanced threshold
                     refreshControl={
                         <RefreshControl
                             refreshing={refreshing}
@@ -361,11 +752,9 @@ export default function Landing() {
                         />
                     }
                     ListFooterComponent={
-                        loading ? (
-                            <View style={styles.loadingFooter}>
-                                <ActivityIndicator size="large" color="#FF4000" />
-                            </View>
-                        ) : null
+                        <View style={styles.loadingFooter}>
+                            {loading && <ActivityIndicator size="large" color="#FF4000" />}
+                        </View>
                     }
                 />
 
@@ -592,7 +981,6 @@ const styles = StyleSheet.create({
         width: '100%',
         height: width * 0.8,
         borderRadius: 8,
-        marginBottom: 15,
     },
     videoContainer: {
         width: '100%',
@@ -613,4 +1001,86 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 5,
     },
+    videoOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.2)',
+    },
+    playButton: {
+        width: 35,
+        height: 35,
+        justifyContent: 'center',
+        alignItems: 'center',
+        // borderWidth: 1,
+        // borderColor: 'blue',
+        position: 'absolute',
+        bottom: 0,
+        left: 0
+    },
+    durationText: {
+        position: 'absolute',
+        bottom: 5,
+        right: 5,
+        color: 'white',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        padding: 4,
+        borderRadius: 4,
+        fontSize: 12,
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    centerOverlay: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bottomBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 10,
+    },
+    fullscreenContainer: {
+        flex: 1,
+        backgroundColor: 'black',
+        justifyContent: 'center',
+    },
+    fullscreenOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    fullscreenBottomBar: {
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    fullscreenDurationText: {
+        color: 'white',
+        fontSize: 18,
+    },
+
 });
