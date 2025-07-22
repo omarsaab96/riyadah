@@ -12,7 +12,11 @@ const PostSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     }],
-    comments: { type: Number, default: 0 },
+    comments: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        content: { type: String, required: true },
+        date: { type: Date, default: Date.now }
+    }],
     shares: { type: Number, default: 0 },
     content: String,
     media: {

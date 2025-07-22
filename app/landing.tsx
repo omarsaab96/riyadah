@@ -17,11 +17,19 @@ import {
     SafeAreaView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-
+import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, {
+    runOnJS,
+    useAnimatedGestureHandler,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -34,9 +42,17 @@ export default function Landing() {
     const [refreshing, setRefreshing] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [newPostText, setNewPostText] = useState('');
+    // const [newPostText, setNewPostText] = useState('');
     const router = useRouter();
     const pageLimit = 5;
+
+    const [commentModalVisible, setCommentModalVisible] = useState(false);
+    const [currentPostId, setCurrentPostId] = useState<string | null>(null);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [loadingComments, setLoadingComments] = useState(false);
+    const translateY = useSharedValue(0);
+    const modalOpacity = useSharedValue(0);
 
     useEffect(() => {
         fetchUser();
@@ -142,6 +158,106 @@ export default function Landing() {
         }
     };
 
+    const handleComment = async (postId: string) => {
+        setCurrentPostId(postId);
+        setCommentModalVisible(true);
+        setLoadingComments(true);
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`https://riyadah.onrender.com/api/posts/comments/${postId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setComments(data);
+            }
+        } catch (err) {
+            console.error('Error loading comments:', err);
+        } finally {
+            setLoadingComments(false);
+        }
+    };
+
+    const handleSubmitComment = async () => {
+        if (!newComment.trim() || !currentPostId) return;
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`https://riyadah.onrender.com/api/posts/comment/${currentPostId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content: newComment })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setComments(prev => [data, ...prev]);
+                setNewComment('');
+
+                // Update the post's comment count
+                setPosts(prev => prev.map(post => {
+                    if (post._id === currentPostId) {
+                        return {
+                            ...post,
+                            comments: (post.comments || 0) + 1
+                        };
+                    }
+                    return post;
+                }));
+            }
+        } catch (err) {
+            console.error('Error submitting comment:', err);
+        }
+    };
+
+    const gestureHandler = useAnimatedGestureHandler({
+        onStart: (_, ctx: { startY: number }) => {
+            ctx.startY = translateY.value;
+        },
+        onActive: (event, ctx) => {
+            if (event.translationY > 0) {
+                translateY.value = ctx.startY + event.translationY;
+            }
+        },
+        onEnd: (event) => {
+            if (event.translationY > 100) {
+                translateY.value = withSpring(500, { damping: 20 });
+                modalOpacity.value = withSpring(0, {}, () => {
+                    runOnJS(setCommentModalVisible)(false);
+                });
+            } else {
+                translateY.value = withSpring(0, { damping: 20 });
+            }
+        },
+    });
+
+    const modalStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: translateY.value }],
+            opacity: modalOpacity.value,
+        };
+    });
+
+    const backdropStyle = useAnimatedStyle(() => {
+        return {
+            opacity: modalOpacity.value,
+        };
+    });
+
+    useEffect(() => {
+        if (commentModalVisible) {
+            translateY.value = 500;
+            modalOpacity.value = 0;
+            translateY.value = withSpring(0, { damping: 20 });
+            modalOpacity.value = withSpring(1, { damping: 20 });
+        }
+    }, [commentModalVisible]);
+
     // Format date
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -157,11 +273,7 @@ export default function Landing() {
 
     // Render post item
     const renderPost = ({ item }: { item: any }) => {
-        console.log(
-            "item.likes",
-            item.likes,
-            item.likes?.length
-        );
+
         const isLiked = userId && item.likes?.some((like: any) => like._id === userId);
 
         return (
@@ -444,10 +556,12 @@ export default function Landing() {
                                 {item.likes?.length}
                             </Text>
                         </TouchableOpacity>
-                        <View style={styles.postActionBtn}>
-                            <FontAwesome name="comment-o" size={24} color="#888888" />
-                            <Text style={styles.postActionText}>{item.comments}</Text>
-                        </View>
+                        <TouchableOpacity onPress={() => handleComment(item._id)} style={styles.postActionBtn}>
+                            <View style={styles.postActionBtn}>
+                                <FontAwesome name="comment-o" size={24} color="#888888" />
+                                <Text style={styles.postActionText}>{item.comments}</Text>
+                            </View>
+                        </TouchableOpacity>
                         <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
                             <FontAwesome name="share-square-o" size={24} color="#888888" />
                             <Text style={styles.postActionText}>{item.shares}</Text>
@@ -808,6 +922,105 @@ export default function Landing() {
                     <Image source={require('../assets/profile.png')} style={styles.icon} />
                 </TouchableOpacity>
             </View>
+
+            <Modal
+                visible={commentModalVisible}
+                transparent
+                animationType="none"
+                onRequestClose={() => setCommentModalVisible(false)}
+            >
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                    <TouchableWithoutFeedback onPress={() => {
+                        translateY.value = withSpring(500, { damping: 20 });
+                        modalOpacity.value = withSpring(0, {}, () => {
+                            runOnJS(setCommentModalVisible)(false);
+                        });
+                    }}>
+                        <Animated.View style={[styles.backdrop, backdropStyle]} />
+                    </TouchableWithoutFeedback>
+
+                    <Animated.View style={[styles.commentModal, modalStyle]}>
+                        <PanGestureHandler onGestureEvent={gestureHandler}>
+                            <Animated.View style={styles.commentModalHandleContainer}>
+                                <View style={styles.commentModalHandle} />
+                            </Animated.View>
+                        </PanGestureHandler>
+
+                        <View style={styles.commentModalHeader}>
+                            <Text style={styles.commentModalTitle}>Comments</Text>
+                            <TouchableOpacity
+                                style={styles.commentModalClose}
+                                onPress={() => {
+                                    translateY.value = withSpring(500, { damping: 20 });
+                                    modalOpacity.value = withSpring(0, {}, () => {
+                                        runOnJS(setCommentModalVisible)(false);
+                                    });
+                                }}
+                            >
+                                <Ionicons name="close" size={24} color="#888" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {loadingComments ? (
+                            <View style={styles.commentLoading}>
+                                <ActivityIndicator size="large" color="#FF4000" />
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={comments}
+                                keyExtractor={(item) => item._id}
+                                renderItem={({ item }) => (
+                                    <View style={styles.commentItem}>
+                                        <Image
+                                            source={{ uri: item.created_by.image }}
+                                            style={styles.commentAvatar}
+                                            resizeMode="cover"
+                                        />
+                                        <View style={styles.commentContent}>
+                                            <Text style={styles.commentAuthor}>{item.created_by.name}</Text>
+                                            <Text style={styles.commentText}>{item.content}</Text>
+                                            <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                        </View>
+                                    </View>
+                                )}
+                                contentContainerStyle={styles.commentList}
+                                ListEmptyComponent={
+                                    <View style={styles.noComments}>
+                                        <Text style={styles.noCommentsText}>No comments yet</Text>
+                                    </View>
+                                }
+                            />
+                        )}
+
+                        <View style={styles.commentInputContainer}>
+                            <Image
+                                source={{ uri: user?.image }}
+                                style={styles.commentInputAvatar}
+                                resizeMode="cover"
+                            />
+                            <TextInput
+                                style={styles.commentInput}
+                                placeholder="Write a comment..."
+                                value={newComment}
+                                onChangeText={setNewComment}
+                                placeholderTextColor="#888"
+                            />
+                            <TouchableOpacity
+                                style={styles.commentSubmit}
+                                onPress={handleSubmitComment}
+                                disabled={!newComment.trim()}
+                            >
+                                <Ionicons
+                                    name="send"
+                                    size={20}
+                                    color={newComment.trim() ? "#FF4000" : "#888"}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+                </GestureHandlerRootView>
+
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -1113,6 +1326,129 @@ const styles = StyleSheet.create({
     fullscreenDurationText: {
         color: 'white',
         fontSize: 18,
+    },
+    backdrop: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    commentModal: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: 20,
+        maxHeight: '80%',
+    },
+    commentModalHandleContainer: {
+        alignItems: 'center',
+        paddingVertical: 10,
+    },
+    commentModalHandle: {
+        width: 40,
+        height: 5,
+        borderRadius: 5,
+        backgroundColor: '#ccc',
+    },
+    commentModalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingBottom: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    commentModalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    commentModalClose: {
+        padding: 5,
+    },
+    commentLoading: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 20,
+    },
+    commentList: {
+        paddingHorizontal: 15,
+        paddingBottom: 10,
+    },
+    commentItem: {
+        flexDirection: 'row',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f5f5f5',
+    },
+    commentAvatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 10,
+    },
+    commentContent: {
+        flex: 1,
+    },
+    commentAuthor: {
+        fontWeight: 'bold',
+        fontSize: 14,
+        color: '#333',
+        marginBottom: 3,
+    },
+    commentText: {
+        fontSize: 14,
+        color: '#333',
+        marginBottom: 3,
+    },
+    commentDate: {
+        fontSize: 12,
+        color: '#888',
+    },
+    noComments: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 40,
+    },
+    noCommentsText: {
+        fontSize: 16,
+        color: '#888',
+    },
+    commentInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#eee',
+    },
+    commentInputAvatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        marginRight: 10,
+    },
+    commentInput: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+        borderRadius: 18,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        fontSize: 14,
+        color: '#333',
+    },
+    commentSubmit: {
+        marginLeft: 10,
+        padding: 8,
     },
 
 });

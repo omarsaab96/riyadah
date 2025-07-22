@@ -101,4 +101,21 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/comments/:postId', async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const post = await Post.findById(postId).populate('comments.user', '_id name image');
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        res.status(200).json({ comments: post.comments });
+    } catch (err) {
+        console.error('Error fetching comments:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;
