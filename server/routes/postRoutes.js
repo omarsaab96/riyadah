@@ -25,6 +25,8 @@ router.get('/', async (req, res) => {
     try {
         const posts = await Post.find()
             .populate('created_by', '_id name image')
+            .populate('likes', '_id name image')
+            .populate('comments.user', '_id name image')
             .sort({ date: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
