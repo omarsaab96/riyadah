@@ -6,6 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
 import { jwtDecode } from "jwt-decode";
 import React, { useCallback, useEffect, useState } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import {
     ActivityIndicator,
     Dimensions,
@@ -53,6 +54,9 @@ export default function Landing() {
     const [submittingComment, setSubmittingComment] = useState(false);
     const translateY = useSharedValue(0);
     const modalOpacity = useSharedValue(0);
+    const [modalType, setModalType] = useState('')
+    const [selectedPost, setSelectedPost] = useState('')
+    const [deleteConfirmation, setDeleteConfirmation] = useState('')
 
     useEffect(() => {
         fetchUser();
@@ -161,6 +165,7 @@ export default function Landing() {
         setCurrentPostId(postId);
         setCommentModalVisible(true);
         setLoadingComments(true);
+        setModalType('comments')
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
@@ -178,6 +183,12 @@ export default function Landing() {
         } finally {
             setLoadingComments(false);
         }
+    };
+
+    const handleMoreOptions = async (postId: string) => {
+        setCommentModalVisible(true);
+        setModalType('moreOptions')
+        setSelectedPost(postId);
     };
 
     const handleSubmitComment = async () => {
@@ -219,7 +230,7 @@ export default function Landing() {
         }
     };
 
-    const handleShare = async (postId:string) => {
+    const handleShare = async (postId: string) => {
         try {
             const result = await Share.share({
                 message: `Check out this post: https://yourdomain.com/posts/${postId}`, // customize this
@@ -240,7 +251,7 @@ export default function Landing() {
     };
 
     const gestureHandler = useAnimatedGestureHandler({
-        onStart: (_, ctx: { startY: number }) => {
+        onStart: (_, ctx) => {
             ctx.startY = translateY.value;
         },
         onActive: (event, ctx) => {
@@ -250,10 +261,14 @@ export default function Landing() {
         },
         onEnd: (event) => {
             if (event.translationY > 100) {
-                translateY.value = withSpring(500, { damping: 20 });
-                modalOpacity.value = withSpring(0, {}, () => {
-                    runOnJS(setCommentModalVisible)(false);
+                translateY.value = withSpring(500, { damping: 20 }, (finished) => {
+                    if (finished) {
+                        runOnJS(setCommentModalVisible)(false);
+                        runOnJS(setModalType)('');
+                        runOnJS(setSelectedPost)('');
+                    }
                 });
+                modalOpacity.value = withSpring(0);
             } else {
                 translateY.value = withSpring(0, { damping: 20 });
             }
@@ -275,10 +290,11 @@ export default function Landing() {
 
     useEffect(() => {
         if (commentModalVisible) {
+            translateY.value = 0;
+            modalOpacity.value = 1;
+        } else {
             translateY.value = 500;
             modalOpacity.value = 0;
-            translateY.value = withSpring(0, { damping: 20 });
-            modalOpacity.value = withSpring(1, { damping: 20 });
         }
     }, [commentModalVisible]);
 
@@ -314,7 +330,7 @@ export default function Landing() {
                         <Text style={styles.postUserName}>{item.created_by.name}</Text>
                         <Text style={styles.postDate}>{formatDate(item.date)}</Text>
                     </View>
-                    <TouchableOpacity style={styles.postOptions}>
+                    <TouchableOpacity onPress={() => handleMoreOptions(item._id)} style={[styles.postOptions, {}]}>
                         <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                     </TouchableOpacity>
                 </View>
@@ -592,7 +608,7 @@ export default function Landing() {
                                 <Text style={styles.postActionText}>{item.comments?.length}</Text>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleShare(item._id)} style={[styles.postActionBtn,{marginBottom:14}]}>
+                        <TouchableOpacity onPress={() => handleShare(item._id)} style={[styles.postActionBtn, { marginBottom: 14 }]}>
                             <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
                                 <FontAwesome name="share-square-o" size={24} color="#888888" />
                                 {/* <Text style={styles.postActionText}></Text> */}
@@ -834,6 +850,47 @@ export default function Landing() {
         );
     };
 
+    const handleDeletePost = (id: string) => {
+        setDeleteConfirmation(id);
+    }
+
+    const handleConfirmDeletePost = async (id: string) => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            const res = await fetch(`/api/posts/unlink/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(`Error: ${data.message}`);
+                return;
+            }
+
+            alert('Post unlinked successfully!');
+            console.log('Unlinked post:', data.post);
+
+            // Optionally update UI here (e.g., hide post, update state)
+        } catch (err) {
+            console.error('Failed to unlink post:', err);
+            alert('Something went wrong. Please try again.');
+        }
+    }
+
+    const handleCancelDeletePost = (id: string) => {
+        setDeleteConfirmation('');
+    }
+
+    const handleGoToProfile = () => {
+
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             {Platform.OS === 'ios' ? (
@@ -955,119 +1012,184 @@ export default function Landing() {
                 </TouchableOpacity>
             </View>
 
-            <Modal
-                visible={commentModalVisible}
-                transparent
-                animationType="none"
-                onRequestClose={() => setCommentModalVisible(false)}
+            <ErrorBoundary
+                fallback={<Text>Something went wrong with the modal</Text>}
+                onError={(error) => console.error('Modal Error:', error)}
             >
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                    <TouchableWithoutFeedback onPress={() => {
-                        translateY.value = withSpring(500, { damping: 20 });
-                        modalOpacity.value = withSpring(0, {}, () => {
-                            runOnJS(setCommentModalVisible)(false);
-                        });
-                    }}>
-                        <Animated.View style={[styles.backdrop, backdropStyle]} />
-                    </TouchableWithoutFeedback>
+                <Modal
+                    visible={commentModalVisible}
+                    transparent
+                    animationType="none"
+                    onRequestClose={() => { setCommentModalVisible(false); setModalType(''); setSelectedPost(''); }}
+                >
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                        <TouchableWithoutFeedback onPress={() => {
+                            translateY.value = withSpring(500, { damping: 20 });
+                            modalOpacity.value = withSpring(0, {}, () => {
+                                runOnJS(setCommentModalVisible)(false);
+                            });
+                            setModalType('')
+                            setSelectedPost('');
+                        }}>
+                            <Animated.View style={[styles.backdrop, backdropStyle]} />
+                        </TouchableWithoutFeedback>
 
-                    <Animated.View style={[styles.commentModal, modalStyle]}>
-                        <PanGestureHandler onGestureEvent={gestureHandler}>
-                            <Animated.View style={styles.commentModalHandleContainer}>
-                                <View style={styles.commentModalHandle} />
-                            </Animated.View>
-                        </PanGestureHandler>
 
-                        <View style={styles.commentModalHeader}>
-                            <Text style={styles.commentModalTitle}>Comments</Text>
-                            <TouchableOpacity
-                                style={styles.commentModalClose}
-                                onPress={() => {
-                                    translateY.value = withSpring(500, { damping: 20 });
-                                    modalOpacity.value = withSpring(0, {}, () => {
-                                        runOnJS(setCommentModalVisible)(false);
-                                    });
-                                }}
+                        <Animated.View style={[styles.commentModal, modalStyle]}>
+                            <PanGestureHandler
+                                onGestureEvent={gestureHandler}
+                                activeOffsetY={10} // Helps distinguish between scroll and pan
                             >
-                                <Ionicons name="close" size={24} color="#888" />
-                            </TouchableOpacity>
-                        </View>
+                                <Animated.View style={styles.commentModalHandleContainer}>
+                                    <View style={styles.commentModalHandle} />
+                                </Animated.View>
+                            </PanGestureHandler>
 
-                        {loadingComments ? (
-                            <View style={styles.commentLoading}>
-                                <ActivityIndicator size="large" color="#FF4000" />
-                            </View>
-                        ) : (
-                            <FlatList
-                                data={comments}
-                                keyExtractor={(item) => item._id}
-                                renderItem={({ item }) => (
-                                    <View style={styles.commentItem}>
-                                        <Image
-                                            source={{ uri: item.user.image }}
-                                            style={styles.commentAvatar}
-                                            resizeMode="cover"
-                                        />
-                                        <View style={styles.commentContent}>
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <View>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <Text style={styles.commentAuthor}>{item.user.name}</Text>
-                                                        <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
-                                                    </View>
-                                                    <Text style={styles.commentText}>{item.content}</Text>
-                                                </View>
-                                                {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            {modalType == "comments" && <View>
+                                <View style={styles.commentModalHeader}>
+                                    <Text style={styles.commentModalTitle}>Comments</Text>
+                                    <TouchableOpacity
+                                        style={styles.commentModalClose}
+                                        onPress={() => {
+                                            translateY.value = withSpring(500, { damping: 20 });
+                                            modalOpacity.value = withSpring(0, {}, () => {
+                                                runOnJS(setCommentModalVisible)(false);
+                                            });
+                                            setModalType('')
+                                            setSelectedPost('');
+                                        }}
+                                    >
+                                        <Ionicons name="close" size={24} color="#888" />
+                                    </TouchableOpacity>
+                                </View>
+
+                                {loadingComments ? (
+                                    <View style={styles.commentLoading}>
+                                        <ActivityIndicator size="large" color="#FF4000" />
+                                    </View>
+                                ) : (
+                                    <FlatList
+                                        data={comments}
+                                        keyExtractor={(item) => item._id}
+                                        renderItem={({ item }) => (
+                                            <View style={styles.commentItem}>
+                                                <Image
+                                                    source={{ uri: item.user.image }}
+                                                    style={styles.commentAvatar}
+                                                    resizeMode="cover"
+                                                />
+                                                <View style={styles.commentContent}>
+                                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <View>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                <Text style={styles.commentAuthor}>{item.user.name}</Text>
+                                                                <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                                            </View>
+                                                            <Text style={styles.commentText}>{item.content}</Text>
+                                                        </View>
+                                                        {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                     <Text>reply</Text>
                                                     <Text>like</Text>
                                                 </View> */}
+                                                    </View>
+
+                                                </View>
                                             </View>
-
-                                        </View>
-                                    </View>
-                                )}
-                                contentContainerStyle={styles.commentList}
-                                ListEmptyComponent={
-                                    <View style={styles.noComments}>
-                                        <Text style={styles.noCommentsText}>No comments yet</Text>
-                                    </View>
-                                }
-                            />
-                        )}
-
-                        <View style={styles.commentInputContainer}>
-                            <Image
-                                source={{ uri: user?.image }}
-                                style={styles.commentInputAvatar}
-                                resizeMode="cover"
-                            />
-                            <TextInput
-                                style={styles.commentInput}
-                                placeholder="Write a comment..."
-                                value={newComment}
-                                onChangeText={setNewComment}
-                                placeholderTextColor="#888"
-                            />
-                            <TouchableOpacity
-                                style={styles.commentSubmit}
-                                onPress={handleSubmitComment}
-                                disabled={!newComment.trim() || submittingComment}
-                            >
-                                {!submittingComment ? (
-                                    <Ionicons
-                                        name="send"
-                                        size={20}
-                                        color={newComment.trim() ? "#FF4000" : "#888"}
+                                        )}
+                                        contentContainerStyle={styles.commentList}
+                                        ListEmptyComponent={
+                                            <View style={styles.noComments}>
+                                                <Text style={styles.noCommentsText}>No comments yet</Text>
+                                            </View>
+                                        }
                                     />
-                                ) : (
-                                    <ActivityIndicator size={'small'} color='#FF4000' />
                                 )}
-                            </TouchableOpacity>
-                        </View>
-                    </Animated.View>
-                </GestureHandlerRootView>
 
-            </Modal>
+                                <View style={styles.commentInputContainer}>
+                                    <Image
+                                        source={{ uri: user?.image }}
+                                        style={styles.commentInputAvatar}
+                                        resizeMode="cover"
+                                    />
+                                    <TextInput
+                                        style={styles.commentInput}
+                                        placeholder="Write a comment..."
+                                        value={newComment}
+                                        onChangeText={setNewComment}
+                                        placeholderTextColor="#888"
+                                    />
+                                    <TouchableOpacity
+                                        style={styles.commentSubmit}
+                                        onPress={handleSubmitComment}
+                                        disabled={!newComment.trim() || submittingComment}
+                                    >
+                                        {!submittingComment ? (
+                                            <Ionicons
+                                                name="send"
+                                                size={20}
+                                                color={newComment.trim() ? "#FF4000" : "#888"}
+                                            />
+                                        ) : (
+                                            <ActivityIndicator size={'small'} color='#FF4000' />
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </View>}
+
+                            {modalType === 'moreOptions' && (() => {
+                                const post = posts.find(p => p._id === selectedPost);
+
+                                return (
+                                    <View style={{ padding: 20 }}>
+                                        <TouchableOpacity onPress={() => { handleGoToProfile(post.created_by._id) }} style={styles.profileButton}>
+                                            <Text style={styles.profileButtonText}>Check {post.created_by._id == userId ? 'your' : post.created_by.name + '\'s'} profile</Text>
+                                        </TouchableOpacity>
+
+                                        {post && post.created_by._id == userId && (
+                                            <View>
+                                                {deleteConfirmation == '' && <TouchableOpacity onPress={() => { handleDeletePost(post._id) }} style={[styles.profileButton, { marginTop: 10 }]}>
+                                                    <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete post</Text>
+                                                </TouchableOpacity>}
+                                                {deleteConfirmation == post._id &&
+                                                    <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
+                                                        <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
+                                                        <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
+                                                            <TouchableOpacity onPress={() => handleConfirmDeletePost(post._id)}
+                                                                style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
+                                                            </TouchableOpacity>
+
+                                                            <TouchableOpacity onPress={() => handleCancelDeletePost(post._id)}
+                                                                style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>}
+                                            </View>
+                                        )}
+
+                                        <TouchableOpacity onPress={() => {
+                                            translateY.value = withSpring(500, { damping: 20 });
+                                            modalOpacity.value = withSpring(0, {}, () => {
+                                                runOnJS(setCommentModalVisible)(false);
+                                            });
+                                            setModalType('')
+                                            setSelectedPost('');
+                                        }
+                                        } style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
+                                            <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                );
+                            })()}
+                        </Animated.View>
+
+
+
+                    </GestureHandlerRootView>
+
+                </Modal>
+            </ErrorBoundary>
         </SafeAreaView >
     );
 }
@@ -1100,6 +1222,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         columnGap: 15,
         alignItems: 'center'
+    },
+    profileButton: {
+        borderRadius: 5,
+        padding: 10,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+    },
+    profileButtonText: {
+        fontSize: 18,
+        color: '#150000',
+        fontFamily: 'Bebas',
     },
     dmBtnImg: {
         width: 20,
