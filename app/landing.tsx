@@ -108,10 +108,12 @@ export default function Landing() {
 
     // Handle like animation
     const handleLike = async (postId: string) => {
+        console.log("liking post ID:", postId);
         setLiking(postId)
+
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/posts/${postId}/like`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/posts/like/${postId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -120,19 +122,21 @@ export default function Landing() {
             });
 
             if (res.ok) {
+                console.log("Like response:", res);
                 setPosts(prev => prev.map(post => {
                     if (post._id === postId) {
                         return {
                             ...post,
-                            likes: res.likes, // Assuming response contains updated likes
+                            likes: res.likes,
                         };
                     }
                     return post;
                 }));
+            }else{
+                console.log('Fail')
             }
         } catch (err) {
             console.error('Like error:', err);
-            // Optionally show error feedback to user
         } finally{
             setLiking('');
         }
@@ -415,7 +419,7 @@ export default function Landing() {
                     </View>
 
                     <View style={styles.postStats}>
-                        <TouchableOpacity onPress={handleLike} style={styles.postActionBtn}>
+                        <TouchableOpacity onPress={()=>handleLike(item._id)} style={styles.postActionBtn}>
                             <View>
                                 {liking == item._id ? (
                                     <ActivityIndicator

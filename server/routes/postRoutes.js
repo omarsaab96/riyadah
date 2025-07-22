@@ -2,6 +2,21 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
+const jwt = require("jsonwebtoken");
+
+// Middleware to verify token
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) return res.status(401).json({ error: 'Token missing' });
+
+    jwt.verify(token, '123456', (err, decoded) => {
+        if (err) return res.status(403).json({ error: 'Invalid token' });
+        req.user = decoded; // decoded contains userId
+        next();
+    });
+};
 
 // Get paginated posts
 router.get('/', async (req, res) => {
