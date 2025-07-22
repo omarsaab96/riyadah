@@ -873,7 +873,10 @@ export default function Landing() {
                 return;
             }
 
-            alert('Post unlinked successfully!');
+            setDeleteConfirmation('');
+            setModalType('');
+            setCommentModalVisible(false);
+            setPosts(prevPosts => prevPosts.filter(post => post._id !== postid));
             console.log('Unlinked post:', data.post);
 
             // Optionally update UI here (e.g., hide post, update state)
