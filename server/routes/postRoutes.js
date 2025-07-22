@@ -13,6 +13,7 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, '123456', (err, decoded) => {
         if (err) return res.status(403).json({ error: 'Invalid token' });
+        console.log('Decoded Token:', decoded); // Add this line
         req.user = decoded; // decoded contains userId
         next();
     });
