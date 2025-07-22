@@ -154,16 +154,16 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
 });
 
 // Soft delete a post
-router.put('/unlink/:id', authenticateToken, async (req, res) => {
+router.put('/delete/:id', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.id;
         const userId = req.user.id;
 
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate('created_by', '_id name image');
         if (!post) return res.status(404).json({ message: 'Post not found' });
 
         // Only allow the creator to unlink
-        if (post.created_by.toString() !== userId) {
+        if (post.created_by._id !== userId) {
             return res.status(403).json({ message: 'You are not authorized to unlink this post' });
         }
 

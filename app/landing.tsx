@@ -854,11 +854,11 @@ export default function Landing() {
         setDeleteConfirmation(id);
     }
 
-    const handleConfirmDeletePost = async (id: string) => {
+    const handleConfirmDeletePost = async (postid: string) => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
 
-            const res = await fetch(`/api/posts/unlink/${id}`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/posts/delete/${postid}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
