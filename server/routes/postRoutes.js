@@ -65,7 +65,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 router.post('/like/:postId', authenticateToken, async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const postId = req.params.postId;
 
 
