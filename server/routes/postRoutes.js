@@ -111,7 +111,9 @@ router.get('/comments/:postId', async (req, res) => {
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        res.status(200).json({ comments: post.comments });
+        const sortedComments = [...post.comments].reverse();
+
+        res.status(200).json({ comments: sortedComments });
     } catch (err) {
         console.error('Error fetching comments:', err);
         res.status(500).json({ message: 'Server error' });
@@ -140,8 +142,9 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
         await post.save();
 
         const populatedPost = await Post.findById(postId).populate('comments.user', '_id name image');
+        const sortedComments = [...populatedPost.comments].reverse();
 
-        res.status(201).json({ comments: populatedPost.comments });
+        res.status(201).json({ comments: sortedComments });
     } catch (error) {
         console.error('Error adding comment:', error);
         res.status(500).json({ message: 'Server error' });

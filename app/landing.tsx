@@ -51,6 +51,7 @@ export default function Landing() {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [loadingComments, setLoadingComments] = useState(false);
+    const [submittingComment, setSubmittingComment] = useState(false);
     const translateY = useSharedValue(0);
     const modalOpacity = useSharedValue(0);
 
@@ -124,7 +125,6 @@ export default function Landing() {
 
     // Handle like animation
     const handleLike = async (postId: string) => {
-        console.log("liking post ID:", postId);
         setLiking(postId)
 
         try {
@@ -171,7 +171,8 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json();
-                setComments(data);
+                console.log(data)
+                setComments(data.comments || []); // Ensure comments is an array
             }
         } catch (err) {
             console.error('Error loading comments:', err);
@@ -182,10 +183,11 @@ export default function Landing() {
 
     const handleSubmitComment = async () => {
         if (!newComment.trim() || !currentPostId) return;
+        setSubmittingComment(true)
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/posts/comment/${currentPostId}`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/posts/comments/${currentPostId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -196,7 +198,8 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json();
-                setComments(prev => [data, ...prev]);
+                console.log(data)
+                setComments(data.comments || []); // Ensure comments is an array
                 setNewComment('');
 
                 // Update the post's comment count
@@ -204,7 +207,7 @@ export default function Landing() {
                     if (post._id === currentPostId) {
                         return {
                             ...post,
-                            comments: (post.comments || 0) + 1
+                            comments: comments
                         };
                     }
                     return post;
@@ -212,6 +215,8 @@ export default function Landing() {
             }
         } catch (err) {
             console.error('Error submitting comment:', err);
+        }finally{
+            setSubmittingComment(false)
         }
     };
 
@@ -262,9 +267,15 @@ export default function Landing() {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         const now = new Date();
-        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+        const diffInMs = now.getTime() - date.getTime();
+        const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+        const diffInHours = Math.floor(diffInMinutes / 60);
 
-        if (diffInHours < 24) {
+        if (diffInMinutes < 1) {
+            return 'now';
+        } else if (diffInMinutes < 60) {
+            return `${diffInMinutes}m ago`;
+        } else if (diffInHours < 24) {
             return `${diffInHours}h ago`;
         } else {
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -559,7 +570,7 @@ export default function Landing() {
                         <TouchableOpacity onPress={() => handleComment(item._id)} style={styles.postActionBtn}>
                             <View style={styles.postActionBtn}>
                                 <FontAwesome name="comment-o" size={24} color="#888888" />
-                                <Text style={styles.postActionText}>{item.comments}</Text>
+                                <Text style={styles.postActionText}>{item.comments?.length}</Text>
                             </View>
                         </TouchableOpacity>
                         <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
@@ -972,14 +983,25 @@ export default function Landing() {
                                 renderItem={({ item }) => (
                                     <View style={styles.commentItem}>
                                         <Image
-                                            source={{ uri: item.created_by.image }}
+                                            source={{ uri: item.user.image }}
                                             style={styles.commentAvatar}
                                             resizeMode="cover"
                                         />
                                         <View style={styles.commentContent}>
-                                            <Text style={styles.commentAuthor}>{item.created_by.name}</Text>
-                                            <Text style={styles.commentText}>{item.content}</Text>
-                                            <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <View>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Text style={styles.commentAuthor}>{item.user.name}</Text>
+                                                        <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                                    </View>
+                                                    <Text style={styles.commentText}>{item.content}</Text>
+                                                </View>
+                                                {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <Text>reply</Text>
+                                                    <Text>like</Text>
+                                                </View> */}
+                                            </View>
+
                                         </View>
                                     </View>
                                 )}
@@ -1008,20 +1030,24 @@ export default function Landing() {
                             <TouchableOpacity
                                 style={styles.commentSubmit}
                                 onPress={handleSubmitComment}
-                                disabled={!newComment.trim()}
+                                disabled={!newComment.trim() || submittingComment}
                             >
-                                <Ionicons
+                                {!submittingComment ? (
+                                    <Ionicons
                                     name="send"
                                     size={20}
                                     color={newComment.trim() ? "#FF4000" : "#888"}
                                 />
+                                ):(
+                                    <ActivityIndicator size={'small'} color='#FF4000' />
+                                )}
                             </TouchableOpacity>
                         </View>
                     </Animated.View>
                 </GestureHandlerRootView>
 
             </Modal>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
@@ -1403,6 +1429,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
         marginBottom: 3,
+        marginRight: 15
     },
     commentText: {
         fontSize: 14,
