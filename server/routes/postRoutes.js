@@ -157,17 +157,17 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
 router.put('/delete/:id', authenticateToken, async (req, res) => {
     try {
         const postId = req.params.id;
-        const userId = req.user.id;
+        const userId = req.user.userId;
 
-        const post = await Post.findById(postId).populate('created_by', '_id name image');
+        const post = await Post.findById(postId);
         if (!post) return res.status(404).json({ message: 'Post not found' });
 
         console.log('userId:', userId);
 
-        console.log('Post Creatorid:', post.created_by_id.toString());
+        console.log('Post Creatorid:', post.created_by_id);
 
         // Only allow the creator to unlink
-        if (post.created_by._id.toString() !== userId) {
+        if (post.created_by.toString() !== userId) {
             return res.status(403).json({ message: 'You are not authorized to unlink this post' });
         }
 
