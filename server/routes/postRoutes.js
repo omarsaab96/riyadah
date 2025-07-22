@@ -48,4 +48,33 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.post('/like/:postId', authenticateToken, async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const post = await Post.findById(req.params.postId);
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        const hasLiked = post.likes.includes(userId);
+
+        if (hasLiked) {
+            // Unlike
+            post.likes = post.likes.filter(id => id.toString() !== userId);
+        } else {
+            // Like
+            post.likes.push(userId);
+        }
+
+        await post.save();
+
+        res.status(200).json({ likes: post.likes });
+    } catch (err) {
+        console.error('Error liking post:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;

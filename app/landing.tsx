@@ -8,7 +8,6 @@ import { jwtDecode } from "jwt-decode";
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
-    Animated,
     Dimensions,
     FlatList,
     Image,
@@ -29,6 +28,7 @@ const { width } = Dimensions.get('window');
 export default function Landing() {
     const [userId, setUserId] = useState<string | null>(null);
     const [user, setUser] = useState(null);
+    const [liking, setLiking] = useState('');
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -106,19 +106,36 @@ export default function Landing() {
         }
     }, []);
 
-
     // Handle like animation
-    const handleLike = (postId: string) => {
-        setPosts(prev => prev.map(post => {
-            if (post.id === postId) {
-                return {
-                    ...post,
-                    likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-                    isLiked: !post.isLiked
-                };
+    const handleLike = async (postId: string) => {
+        setLiking(postId)
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`https://riyadah.onrender.com/api/posts/${postId}/like`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (res.ok) {
+                setPosts(prev => prev.map(post => {
+                    if (post._id === postId) {
+                        return {
+                            ...post,
+                            likes: res.likes, // Assuming response contains updated likes
+                        };
+                    }
+                    return post;
+                }));
             }
-            return post;
-        }));
+        } catch (err) {
+            console.error('Like error:', err);
+            // Optionally show error feedback to user
+        } finally{
+            setLiking('');
+        }
     };
 
     // Format date
@@ -136,24 +153,8 @@ export default function Landing() {
 
     // Render post item
     const renderPost = ({ item }: { item: any }) => {
-        const likeAnimation = new Animated.Value(item.isLiked ? 1 : 0);
 
-        const animateLike = () => {
-            handleLike(item.id);
-
-            Animated.sequence([
-                Animated.spring(likeAnimation, {
-                    toValue: 1.2,
-                    friction: 2,
-                    useNativeDriver: true,
-                }),
-                Animated.spring(likeAnimation, {
-                    toValue: 1,
-                    friction: 2,
-                    useNativeDriver: true,
-                }),
-            ]).start();
-        };
+        const isLiked = userId && item.likes.includes(userId);
 
         return (
             <View style={styles.postContainer}>
@@ -414,9 +415,26 @@ export default function Landing() {
                     </View>
 
                     <View style={styles.postStats}>
-                        <TouchableOpacity onPress={animateLike} style={styles.postActionBtn}>
-                            <FontAwesome name="heart-o" size={24} color="#888888" />
-                            <Text style={styles.postActionText}>{item.likes.length}</Text>
+                        <TouchableOpacity onPress={handleLike} style={styles.postActionBtn}>
+                            <View>
+                                {liking == item._id ? (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#FF4000"
+                                        style={{ marginBottom: 5 }}
+                                    />
+                                ) : (
+                                    <FontAwesome
+                                        name={isLiked ? "heart" : "heart-o"}
+                                        size={24}
+                                        color={isLiked ? "#FF4000" : "#888888"}
+                                    />
+                                )}
+
+                            </View>
+                            <Text style={styles.postActionText}>
+                                {item.likes.length}
+                            </Text>
                         </TouchableOpacity>
                         <View style={styles.postActionBtn}>
                             <FontAwesome name="comment-o" size={24} color="#888888" />
@@ -582,7 +600,7 @@ export default function Landing() {
 
                             {showFullscreenToggle && (
                                 <TouchableOpacity onPress={toggleFullscreen}
-                                    style={{ position: 'absolute', right: 0, top: 0, width:'100%', height:'70%' }}
+                                    style={{ position: 'absolute', right: 0, top: 0, width: '100%', height: '70%' }}
                                 >
                                     {/* <Entypo name="resize-full-screen" size={18} color="white" /> */}
                                 </TouchableOpacity>
@@ -603,7 +621,7 @@ export default function Landing() {
                 {/* Fullscreen Modal */}
                 <Modal
                     visible={isFullscreen}
-                    transparent={false}
+                    transparent={true}
                     animationType="slide"
                     supportedOrientations={['portrait', 'landscape']}
                     onRequestClose={toggleFullscreen}
@@ -616,30 +634,31 @@ export default function Landing() {
                             resizeMode="contain"
                             isLooping
                             shouldPlay={isPlaying}
-                            useNativeControls={false}
+                            useNativeControls={true}
                             onPlaybackStatusUpdate={handleFullscreenPlaybackStatusUpdate}
                         />
 
                         {/* Fullscreen controls overlay */}
                         <TouchableWithoutFeedback onPress={() => setShowControls(!showControls)}>
                             <View style={[styles.fullscreenOverlay, !showControls && !isPlaying && styles.centerOverlay]}>
-                                {/* Play/Pause button */}
-                                {(!isPlaying || showControls) && (
-                                    <TouchableOpacity
-                                        onPress={togglePlayPause}
-                                        style={styles.playButton}
-                                    >
-                                        <Ionicons
-                                            name={isPlaying ? "pause" : "play"}
-                                            size={36}
-                                            color="white"
-                                        />
-                                    </TouchableOpacity>
-                                )}
 
                                 {/* Bottom bar with duration and close button */}
                                 {(showControls || !isPlaying) && (
                                     <View style={styles.fullscreenBottomBar}>
+                                        {/* Play/Pause button */}
+                                        {(!isPlaying || showControls) && (
+                                            <TouchableOpacity
+                                                onPress={togglePlayPause}
+                                                style={[styles.playButton, styles.fixedPlayButton]}
+                                            >
+                                                <Ionicons
+                                                    name={isPlaying ? "pause" : "play"}
+                                                    size={36}
+                                                    color="white"
+                                                />
+                                            </TouchableOpacity>
+                                        )}
+
                                         <Text style={styles.fullscreenDurationText}>
                                             {getDisplayTime()}
                                         </Text>
@@ -1022,6 +1041,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0
     },
+    fixedPlayButton: {
+        position: 'relative',
+    },
     durationText: {
         position: 'absolute',
         bottom: 5,
@@ -1057,7 +1079,7 @@ const styles = StyleSheet.create({
     },
     fullscreenContainer: {
         flex: 1,
-        backgroundColor: 'black',
+        backgroundColor: 'rgba(255,255,255,0.8)',
         justifyContent: 'center',
     },
     fullscreenOverlay: {
@@ -1067,7 +1089,6 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
         justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.3)',
     },
     fullscreenBottomBar: {
         position: 'absolute',
@@ -1077,6 +1098,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        borderRadius: 15,
+        padding: 10
     },
     fullscreenDurationText: {
         color: 'white',

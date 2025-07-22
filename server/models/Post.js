@@ -20,7 +20,6 @@ const PostSchema = new mongoose.Schema({
         videos: [{ type: String }],
     },
     date: { type: Date, default: Date.now },
-    isLiked: { type: Boolean, default: false },
     linked: {
         type: Boolean,
         default: true,
