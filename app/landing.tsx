@@ -64,7 +64,7 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json();
-                // console.log(`API Response - Page ${page}:`, data.length);
+                // console.log(`API Response`,data);
 
                 setPosts(prev => {
                     // Merge new posts ensuring no duplicates
@@ -122,22 +122,22 @@ export default function Landing() {
             });
 
             if (res.ok) {
-                console.log("Like response:", res);
+                const data = await res.json(); // ✅ parse the response
                 setPosts(prev => prev.map(post => {
                     if (post._id === postId) {
                         return {
                             ...post,
-                            likes: res.likes,
+                            likes: data.likes, // ✅ use parsed data
                         };
                     }
                     return post;
                 }));
-            }else{
+            } else {
                 console.log('Fail')
             }
         } catch (err) {
             console.error('Like error:', err);
-        } finally{
+        } finally {
             setLiking('');
         }
     };
@@ -157,8 +157,12 @@ export default function Landing() {
 
     // Render post item
     const renderPost = ({ item }: { item: any }) => {
-
-        const isLiked = userId && item.likes.includes(userId);
+        console.log(
+            "item.likes",
+            item.likes,
+            item.likes?.length
+        );
+        const isLiked = userId && item.likes?.some((like: any) => like._id === userId);
 
         return (
             <View style={styles.postContainer}>
@@ -419,7 +423,7 @@ export default function Landing() {
                     </View>
 
                     <View style={styles.postStats}>
-                        <TouchableOpacity onPress={()=>handleLike(item._id)} style={styles.postActionBtn}>
+                        <TouchableOpacity onPress={() => handleLike(item._id)} style={styles.postActionBtn}>
                             <View>
                                 {liking == item._id ? (
                                     <ActivityIndicator
@@ -437,7 +441,7 @@ export default function Landing() {
 
                             </View>
                             <Text style={styles.postActionText}>
-                                {item.likes.length}
+                                {item.likes?.length}
                             </Text>
                         </TouchableOpacity>
                         <View style={styles.postActionBtn}>

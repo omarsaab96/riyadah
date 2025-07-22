@@ -92,6 +92,8 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
 
         await post.save();
 
+        await post.populate('likes', '_id name image');
+
         res.status(200).json({ likes: post.likes });
     } catch (err) {
         console.error('Error liking post:', err);
