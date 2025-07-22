@@ -14,8 +14,7 @@ import {
     Modal,
     Platform,
     RefreshControl,
-    SafeAreaView,
-    StyleSheet,
+    SafeAreaView, Share, StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
@@ -171,7 +170,7 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json();
-                console.log(data)
+                // console.log(data)
                 setComments(data.comments || []); // Ensure comments is an array
             }
         } catch (err) {
@@ -198,7 +197,7 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json();
-                console.log(data)
+                // console.log(data)
                 setComments(data.comments || []); // Ensure comments is an array
                 setNewComment('');
 
@@ -215,8 +214,28 @@ export default function Landing() {
             }
         } catch (err) {
             console.error('Error submitting comment:', err);
-        }finally{
+        } finally {
             setSubmittingComment(false)
+        }
+    };
+
+    const handleShare = async (postId:string) => {
+        try {
+            const result = await Share.share({
+                message: `Check out this post: https://yourdomain.com/posts/${postId}`, // customize this
+            });
+
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type:', result.activityType);
+                } else {
+                    console.log('Post shared');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.error('Error sharing post:', error.message);
         }
     };
 
@@ -573,10 +592,12 @@ export default function Landing() {
                                 <Text style={styles.postActionText}>{item.comments?.length}</Text>
                             </View>
                         </TouchableOpacity>
-                        <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
-                            <FontAwesome name="share-square-o" size={24} color="#888888" />
-                            <Text style={styles.postActionText}>{item.shares}</Text>
-                        </View>
+                        <TouchableOpacity onPress={() => handleShare(item._id)} style={[styles.postActionBtn,{marginBottom:14}]}>
+                            <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
+                                <FontAwesome name="share-square-o" size={24} color="#888888" />
+                                {/* <Text style={styles.postActionText}></Text> */}
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -1034,11 +1055,11 @@ export default function Landing() {
                             >
                                 {!submittingComment ? (
                                     <Ionicons
-                                    name="send"
-                                    size={20}
-                                    color={newComment.trim() ? "#FF4000" : "#888"}
-                                />
-                                ):(
+                                        name="send"
+                                        size={20}
+                                        color={newComment.trim() ? "#FF4000" : "#888"}
+                                    />
+                                ) : (
                                     <ActivityIndicator size={'small'} color='#FF4000' />
                                 )}
                             </TouchableOpacity>

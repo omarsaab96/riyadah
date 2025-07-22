@@ -23,7 +23,7 @@ const authenticateToken = (req, res, next) => {
 router.get('/', async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     try {
-        const posts = await Post.find()
+        const posts = await Post.find({ linked: true })
             .populate('created_by', '_id name image')
             .populate('likes', '_id name image')
             .populate('comments.user', '_id name image')
@@ -66,6 +66,7 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
+// like/unlike
 router.post('/like/:postId', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const postId = req.params.postId;
@@ -101,6 +102,7 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
     }
 });
 
+// get comments
 router.get('/comments/:postId', async (req, res) => {
     const { postId } = req.params;
 
@@ -120,7 +122,7 @@ router.get('/comments/:postId', async (req, res) => {
     }
 });
 
-// POST /api/posts/comments/:postId
+// add comments
 router.post('/comments/:postId', authenticateToken, async (req, res) => {
     const { postId } = req.params;
     const { content } = req.body;
@@ -147,6 +149,31 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
         res.status(201).json({ comments: sortedComments });
     } catch (error) {
         console.error('Error adding comment:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Soft delete a post
+router.put('/unlink/:id', authenticateToken, async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const userId = req.user.id;
+
+        const post = await Post.findById(postId);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        // Only allow the creator to unlink
+        if (post.created_by.toString() !== userId) {
+            return res.status(403).json({ message: 'You are not authorized to unlink this post' });
+        }
+
+        post.linked = false;
+        post.lastLinked = new Date();
+        await post.save();
+
+        res.json({ message: 'Post unlinked successfully', post });
+    } catch (err) {
+        console.error('Unlink error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });
