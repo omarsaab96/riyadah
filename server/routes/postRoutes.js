@@ -118,4 +118,34 @@ router.get('/comments/:postId', async (req, res) => {
     }
 });
 
+// POST /api/posts/comments/:postId
+router.post('/comments/:postId', authenticateToken, async (req, res) => {
+    const { postId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+        return res.status(400).json({ message: 'Comment content is required' });
+    }
+
+    try {
+        const post = await Post.findById(postId);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+
+        const comment = {
+            user: req.user.userId,
+            content
+        };
+
+        post.comments.push(comment);
+        await post.save();
+
+        const populatedPost = await Post.findById(postId).populate('comments.user', '_id name image');
+
+        res.status(201).json({ comments: populatedPost.comments });
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;
