@@ -4,16 +4,16 @@ const Post = require('../models/Post'); // or any other model you're searching
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader?.split(' ')[1];
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
 
-    if (!token) return res.status(401).json({ error: 'Token missing' });
+  if (!token) return res.status(401).json({ error: 'Token missing' });
 
-    jwt.verify(token, '123456', (err, decoded) => {
-        if (err) return res.status(403).json({ error: 'Invalid token' });
-        req.user = decoded; // decoded contains userId
-        next();
-    });
+  jwt.verify(token, '123456', (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+    req.user = decoded; // decoded contains userId
+    next();
+  });
 };
 
 // GET /api/search?keyword=someText
@@ -25,6 +25,7 @@ router.get('/', authenticateToken, async (req, res) => {
     sport,
     gender,
     eventType,
+    role,
     limit = 20,
   } = req.query;
 
@@ -43,10 +44,9 @@ router.get('/', authenticateToken, async (req, res) => {
             $or: [
               { name: { $regex: regex } },
               { email: { $regex: regex } },
-              { bio: { $regex: regex } },
               { phone: { $regex: regex } },
-              { 'contactInfo.facebook': { $regex: regex } },
-              { 'contactInfo.instagram': { $regex: regex } },
+              // { 'contactInfo.facebook': { $regex: regex } },
+              // { 'contactInfo.instagram': { $regex: regex } },
             ],
           },
         ],
@@ -55,10 +55,11 @@ router.get('/', authenticateToken, async (req, res) => {
       if (userType) userFilter.$and.push({ type: userType });
       if (sport) userFilter.$and.push({ sport: { $in: [sport] } });
       if (gender) userFilter.$and.push({ gender });
+      if (role) userFilter.$and.push({ role });
 
       tasks.push(
         User.find(userFilter)
-          .select('name email bio sport gender type image contactInfo')
+          .select('_id name email sport gender type image')
           .limit(parsedLimit)
           .then((data) => (results.users = data))
       );
