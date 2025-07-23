@@ -23,16 +23,7 @@ const authenticateToken = (req, res, next) => {
 
 // GET /api/search?keyword=someText
 router.get('/', authenticateToken, async (req, res) => {
-  const {
-    keyword = '',
-    type,
-    userType,
-    sport,
-    gender,
-    eventType,
-    role,
-    limit = 20,
-  } = req.query;
+  const {keyword = '',category,userType,sport,gender,eventType,role,limit = 20,} = req.query;
 
   const regex = new RegExp(keyword, 'i');
   const parsedLimit = Math.min(parseInt(limit), 50);
@@ -42,7 +33,7 @@ router.get('/', authenticateToken, async (req, res) => {
     const tasks = [];
 
     // Users
-    if (!type || type === 'users') {
+    if (category==='All' || category === 'Users') {
       const userFilter = {
         $and: [
           {
@@ -57,9 +48,9 @@ router.get('/', authenticateToken, async (req, res) => {
         ],
       };
 
-      if (userType) userFilter.$and.push({ type: userType });
-      if (sport) userFilter.$and.push({ sport: { $in: [sport] } });
-      if (gender) userFilter.$and.push({ gender });
+      if (userType!=='All') userFilter.$and.push({ type: userType });
+      if (sport!=='All') userFilter.$and.push({ sport: { $in: [sport] } });
+      if (gender!=='All') userFilter.$and.push({ gender });
       if (role) userFilter.$and.push({ role });
 
       tasks.push(
@@ -70,8 +61,13 @@ router.get('/', authenticateToken, async (req, res) => {
       );
     }
 
-    // Events (Schedules)
-    if (!type || type === 'events') {
+    // Teams
+    if (category==='All' || category === 'Teams') {
+      
+    }
+
+    // Events
+    if (category==='All' || category === 'Events') {
       const scheduleFilter = {
         $or: [
           { title: { $regex: regex } },
@@ -94,7 +90,7 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 
     // Posts
-    if (!type || type === 'posts') {
+    if (category==='All' || category === 'Posts') {
       const postFilter = {
         $or: [
           { content: { $regex: regex } },

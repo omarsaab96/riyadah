@@ -10,6 +10,7 @@ import {
     Image,
     Platform,
     SafeAreaView,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
@@ -26,13 +27,29 @@ export default function SearchScreen() {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showFilters, setShowFilters] = useState(false);
     const [keyword, setKeyword] = useState('');
-    const [tab, setTab] = useState('All');
     const router = useRouter();
+
+    const tabs = ['All', 'Athletes', 'Clubs', 'Federations', 'Coaches'];
+    const roles = ['All', 'Athlete', 'Coach', 'Club', 'Association']
+    const categories = ['All', 'Users', 'Teams', 'Events', 'Posts']
+    const sport = ['All', 'Football', 'Basketball', 'Tennis', 'Swimming']
+    const genders = ['All', 'Male','Female']
+
+    const [activeTab, setActiveTab] = useState('All');
+    const [selectedRole, setSelectedRole] = useState('All');
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedSport, setSelectedSport] = useState('All');
+    const [selectedGender, setSelectedGender] = useState('All');
 
     useEffect(() => {
         fetchUser();
     }, []);
+
+    const handleSearch = () => {
+        console.log(keyword, selectedCategory, selectedRole, selectedSport)
+    }
 
     const search = async (text: string) => {
         setSearching(true);
@@ -44,8 +61,21 @@ export default function SearchScreen() {
             return;
         }
 
+        let params = `keyword=${text}`;
+
+        params += `&in=${selectedCategory}`;
+        params += `&sport=${selectedRole}`;
+        params += `&gender=${selectedGender}`;
+
+        if (selectedRole == 'Coach') {
+            params += "&userType=Athlete&role=Coach";
+        } else {
+            params += `&userType=${selectedRole}`;
+        }
+
+
         try {
-            const response = await fetch(`https://riyadah.onrender.com/api/search?keyword=${text}`, {
+            const response = await fetch(`https://riyadah.onrender.com/api/search?${params}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -58,6 +88,7 @@ export default function SearchScreen() {
                     athlete: [],
                     club: [],
                     association: [],
+                    coaches: [],
                     other: [],
                 };
 
@@ -74,6 +105,12 @@ export default function SearchScreen() {
                             break;
                         default:
                             groupedUsers.other.push(user);
+                    }
+                });
+
+                (data.users || []).forEach(user => {
+                    if (user.role == "Coach") {
+                        groupedUsers.coaches.push(user);
                     }
                 });
 
@@ -163,7 +200,7 @@ export default function SearchScreen() {
                     value={keyword}
                     onChangeText={handleSearchInput}
                     placeholderTextColor={'#888888'}
-                    placeholder="Search for athletes, clubs, or events...(Min. 3 characters)"
+                    placeholder="Search (Min. 3 characters)"
                 />
 
                 {searching &&
@@ -175,67 +212,233 @@ export default function SearchScreen() {
                 }
             </View>
 
-            {(tab === 'All' || tab === 'Athletes') && searchResults.users?.athlete?.length > 0 && (
-                <View style={styles.searchResultsContainer}>
-                    <Text style={styles.sectionTitle}>Athletes</Text>
-                    {searchResults.users.athlete.map(user => (
-                        <TouchableOpacity key={user._id} style={styles.searchResultsItem}>
-                            <View style={[
-                                styles.avatarContainer,
-                                (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
-                            ]}>
-                                {(user.image == null || user.image == "") && user.gender == "Male" && <Image
-                                    source={require('../assets/avatar.png')}
-                                    style={styles.avatar}
-                                    resizeMode="contain"
-                                />}
-                                {(user.image == null || user.image == "") && user.gender == "Female" && <Image
-                                    source={require('../assets/avatarF.png')}
-                                    style={styles.avatar}
-                                    resizeMode="contain"
-                                />}
-                                {user.image != null && <Image
-                                    source={{ uri: user.image }}
-                                    style={styles.avatar}
-                                    resizeMode="contain"
-                                />}
-                            </View>
-                            <View style={{alignItems:'center',justifyContent:'center'}}>
-                                <Text style={styles.name}>{user.name}</Text>
-                                {user.role && <Text style={styles.role}>{user.role}</Text>}
-                            </View>
+            <View style={styles.filters}>
+                <Text style={styles.filterTitle} onPress={() => { setShowFilters(prev => !prev) }}>Filters</Text>
+                {showFilters && <View style={{ marginTop: 20 }} >
+                    <View style={styles.filter}>
+                        <Text style={styles.filterLabel}>Search in</Text>
+                        <View style={styles.tabs}>
+                            {categories.map(c => (
+                                <TouchableOpacity
+                                    key={c}
+                                    onPress={() => setSelectedCategory(c)}
+                                    style={[
+                                        styles.filterButton,
+                                        c == "All" && { paddingHorizontal: 12 },
+                                        selectedCategory === c && styles.activeFilterButton
+                                    ]}
+                                >
+                                    <Text style={[styles.filterText, selectedCategory === c && styles.activeFilterText]}>
+                                        {c}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
 
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            )}
+                    <View style={styles.filter}>
+                        <Text style={styles.filterLabel}>Search for</Text>
+                        <View style={styles.tabs}>
+                            {roles.map(r => (
+                                <TouchableOpacity
+                                    key={r}
+                                    onPress={() => setSelectedRole(r)}
+                                    style={[
+                                        styles.filterButton,
+                                        r == "All" && { paddingHorizontal: 12 },
+                                        selectedRole === r && styles.activeFilterButton
+                                    ]}
+                                >
+                                    <Text style={[styles.filterText, selectedRole === r && styles.activeFilterText]}>
+                                        {r}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
 
-            {(tab === 'All' || tab === 'Clubs') && searchResults.users?.club?.length > 0 && (
-                <View style={styles.searchResultsContainer}>
-                    <Text style={styles.sectionTitle}>Clubs</Text>
-                    {searchResults.users.club.map(user => (
-                        <TouchableOpacity key={user._id} style={styles.searchResultsItem}>
-                            <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
-                            <Text>{user.name}</Text>
-                            <Text>{user.role}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            )}
+                    <View style={styles.filter}>
+                        <Text style={styles.filterLabel}>Gender</Text>
+                        <View style={styles.tabs}>
+                            {genders.map(g => (
+                                <TouchableOpacity
+                                    key={g}
+                                    onPress={() => setSelectedGender(g)}
+                                    style={[
+                                        styles.filterButton,
+                                        g == "All" && { paddingHorizontal: 12 },
+                                        selectedGender === g && styles.activeFilterButton
+                                    ]}
+                                >
+                                    <Text style={[styles.filterText, selectedGender === g && styles.activeFilterText]}>
+                                        {g}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
 
-            {(tab === 'All' || tab === 'Federations') && searchResults.users?.association?.length > 0 && (
-                <View style={styles.searchResultsContainer}>
-                    <Text style={styles.sectionTitle}>Federations</Text>
-                    {searchResults.users.association.map(user => (
-                        <TouchableOpacity key={user._id} style={styles.searchResultsItem}>
-                            <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
-                            <Text>{user.name}</Text>
-                            <Text>{user.role}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            )}
+                    <View style={styles.filter}>
+                        <Text style={styles.filterLabel}>Sport</Text>
+                        <View style={styles.tabs}>
+                            {sport.map(s => (
+                                <TouchableOpacity
+                                    key={s}
+                                    onPress={() => setSelectedSport(s)}
+                                    style={[
+                                        styles.filterButton,
+                                        s == "All" && { paddingHorizontal: 12 },
+                                        selectedSport === s && styles.activeFilterButton
+                                    ]}
+                                >
+                                    <Text style={[styles.filterText, selectedSport === s && styles.activeFilterText]}>
+                                        {s}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
 
+                    <TouchableOpacity onPress={handleSearch} style={styles.filterBtn}>
+                        <Text style={styles.filterBtnText}>Filter</Text>
+                    </TouchableOpacity>
+                </View>}
+            </View>
+
+            <ScrollView>
+                {(activeTab === 'All' || activeTab === 'Athletes') && searchResults.users?.athlete?.length > 0 && (
+                    <View style={styles.searchResultsContainer}>
+                        <Text style={styles.sectionTitle}>
+                            {searchResults.users.athlete.length} {searchResults.users.athlete.length == 1 ? 'Athlete' : 'Athletes'}
+                        </Text>
+                        {searchResults.users.athlete.map(user => (
+                            <TouchableOpacity
+                                key={user._id}
+                                style={styles.searchResultsItem}
+                                onPress={() => router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: user._id },
+                                })}
+                            >
+                                <View style={[
+                                    styles.avatarContainer,
+                                    (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
+                                ]}>
+                                    {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                        source={require('../assets/avatar.png')}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                    {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                        source={require('../assets/avatarF.png')}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                    {user.image != null && <Image
+                                        source={{ uri: user.image }}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                </View>
+                                <View style={{ justifyContent: 'center' }}>
+                                    <Text style={styles.name}>{user.name}</Text>
+                                    {user.sport && <Text style={styles.role}>{user.sport}</Text>}
+                                </View>
+
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
+
+                {(activeTab === 'All' || activeTab === 'Clubs') && searchResults.users?.club?.length > 0 && (
+                    <View style={styles.searchResultsContainer}>
+                        <Text style={styles.sectionTitle}>
+                            {searchResults.users.club.length} {searchResults.users.club.length == 1 ? 'Club' : 'Clubs'}
+                        </Text>
+                        {searchResults.users.club.map(user => (
+                            <TouchableOpacity
+                                key={user._id}
+                                style={styles.searchResultsItem}
+                                onPress={() => router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: user._id },
+                                })}
+                            >
+                                <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                                <Text>{user.name}</Text>
+                                <Text>{user.role}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
+
+                {(activeTab === 'All' || activeTab === 'Federations') && searchResults.users?.association?.length > 0 && (
+                    <View style={styles.searchResultsContainer}>
+                        <Text style={styles.sectionTitle}>
+                            {searchResults.users.association.length} {searchResults.users.association.length == 1 ? 'Federation' : 'Federations'}
+                        </Text>
+                        {searchResults.users.association.map(user => (
+                            <TouchableOpacity
+                                key={user._id}
+                                style={styles.searchResultsItem}
+                                onPress={() => router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: user._id },
+                                })}
+                            >
+                                <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                                <Text>{user.name}</Text>
+                                <Text>{user.role}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
+
+                {(activeTab === 'All' || activeTab === 'Coaches') && searchResults.users?.coaches?.length > 0 && (
+                    <View style={styles.searchResultsContainer}>
+                        <Text style={styles.sectionTitle}>
+                            {searchResults.users.coaches.length} {searchResults.users.coaches.length == 1 ? 'Coach' : 'Coaches'}
+                        </Text>
+                        {searchResults.users.coaches.map(user => (
+                            <TouchableOpacity
+                                key={user._id}
+                                style={styles.searchResultsItem}
+                                onPress={() => router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: user._id },
+                                })}
+                            >
+                                <View style={[
+                                    styles.avatarContainer,
+                                    (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
+                                ]}>
+                                    {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                        source={require('../assets/avatar.png')}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                    {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                        source={require('../assets/avatarF.png')}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                    {user.image != null && <Image
+                                        source={{ uri: user.image }}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                </View>
+                                <View style={{ justifyContent: 'center' }}>
+                                    <Text style={styles.name}>{user.name}</Text>
+                                    {user.sport && <Text style={styles.role}>{user.sport}</Text>}
+                                </View>
+
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                )}
+
+            </ScrollView>
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../assets/settings.png')} style={styles.icon} />
@@ -315,7 +518,7 @@ const styles = StyleSheet.create({
     },
     input: {
         fontSize: 14,
-        padding: 15,
+        paddingHorizontal: 15,
         backgroundColor: '#F4F4F4',
         color: 'black',
         borderRadius: 10,
@@ -358,12 +561,12 @@ const styles = StyleSheet.create({
         maxWidth: 50,
         aspectRatio: 1
     },
-    name:{
+    name: {
         fontFamily: 'Bebas',
         fontSize: 16,
         color: '#111111',
     },
-    role:{
+    role: {
         fontFamily: 'Manrope',
         fontSize: 14,
         color: '#888888',
@@ -373,5 +576,62 @@ const styles = StyleSheet.create({
         color: '#111111',
         fontSize: 18,
         marginBottom: 10,
-    }
+    },
+    filters: {
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        marginBottom: 20,
+        backgroundColor: '#f4f4f4',
+    },
+    filterTitle: {
+        fontFamily: 'Bebas',
+        color: '#111111',
+        fontSize: 16
+    },
+    filterBtn: {
+        backgroundColor: '#dddddd',
+        padding: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    filterBtnText: {
+        color: '#111111',
+        fontWeight: '600',
+        fontSize: 16,
+        fontFamily: 'Bebas'
+    },
+    tabs: {
+        flexDirection: 'row',
+        gap: 5
+    },
+    filter: {
+        marginBottom: 15
+    },
+    picker: {
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
+    },
+    filterLabel: {
+        fontSize: 14,
+        color: '#111111',
+        marginBottom: 5,
+        fontFamily: 'Manrope',
+    },
+    filterButton: {
+        padding: 6,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#111111',
+    },
+    activeFilterButton: {
+        backgroundColor: '#111111',
+    },
+    filterText: {
+        fontSize: 14,
+        color: '#555',
+        fontFamily: 'Manrope'
+    },
+    activeFilterText: {
+        color: '#fff',
+    },
 });
