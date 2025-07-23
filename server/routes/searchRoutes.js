@@ -64,7 +64,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
       tasks.push(
         User.find(userFilter)
-          .select('_id name email sport gender type image')
+          .select('_id name email sport gender type image role')
           .limit(parsedLimit)
           .then((data) => (results.users = data))
       );

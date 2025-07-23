@@ -45,13 +45,43 @@ export default function SearchScreen() {
         }
 
         try {
-            const response = await fetch(`https://riyadah.onrender.com/api/search?keyword=${keyword}`, {
+            const response = await fetch(`https://riyadah.onrender.com/api/search?keyword=${text}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
             if (response.ok) {
                 const data = await response.json();
                 console.log("Search results: ", data);
+
+                // Separate users by type
+                const groupedUsers = {
+                    athlete: [],
+                    club: [],
+                    association: [],
+                    other: [],
+                };
+
+                (data.users || []).forEach(user => {
+                    switch (user.type) {
+                        case 'Athlete':
+                            groupedUsers.athlete.push(user);
+                            break;
+                        case 'Club':
+                            groupedUsers.club.push(user);
+                            break;
+                        case 'Association':
+                            groupedUsers.association.push(user);
+                            break;
+                        default:
+                            groupedUsers.other.push(user);
+                    }
+                });
+
+                setSearchResults({
+                    users: groupedUsers,
+                    events: data.events || [],
+                    posts: data.posts || []
+                });
             } else {
                 console.error('Search API error');
             }
@@ -60,7 +90,7 @@ export default function SearchScreen() {
         } finally {
             setSearching(false);
         }
-    }
+    };
 
     const handleSearchInput = (text: string) => {
         setKeyword(text);
@@ -145,23 +175,66 @@ export default function SearchScreen() {
                 }
             </View>
 
-            {(tab == 'All' || tab == 'Athletes') && <View style={styles.searchResultsContainer}>
-                <View style={styles.searchResultsSection}>
+            {(tab === 'All' || tab === 'Athletes') && searchResults.users?.athlete?.length > 0 && (
+                <View style={styles.searchResultsContainer}>
                     <Text style={styles.sectionTitle}>Athletes</Text>
-                </View>
-            </View>}
+                    {searchResults.users.athlete.map(user => (
+                        <TouchableOpacity key={user._id} style={styles.searchResultsItem}>
+                            <View style={[
+                                styles.avatarContainer,
+                                (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
+                            ]}>
+                                {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                    source={require('../assets/avatar.png')}
+                                    style={styles.avatar}
+                                    resizeMode="contain"
+                                />}
+                                {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                    source={require('../assets/avatarF.png')}
+                                    style={styles.avatar}
+                                    resizeMode="contain"
+                                />}
+                                {user.image != null && <Image
+                                    source={{ uri: user.image }}
+                                    style={styles.avatar}
+                                    resizeMode="contain"
+                                />}
+                            </View>
+                            <View style={{alignItems:'center',justifyContent:'center'}}>
+                                <Text style={styles.name}>{user.name}</Text>
+                                {user.role && <Text style={styles.role}>{user.role}</Text>}
+                            </View>
 
-            {(tab == 'All' || tab == 'Clubs') && <View style={styles.searchResultsContainer}>
-                <View style={styles.searchResultsSection}>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
+
+            {(tab === 'All' || tab === 'Clubs') && searchResults.users?.club?.length > 0 && (
+                <View style={styles.searchResultsContainer}>
                     <Text style={styles.sectionTitle}>Clubs</Text>
+                    {searchResults.users.club.map(user => (
+                        <TouchableOpacity key={user._id} style={styles.searchResultsItem}>
+                            <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                            <Text>{user.name}</Text>
+                            <Text>{user.role}</Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
-            </View>}
+            )}
 
-            {(tab == 'All' || tab == 'Federations') && <View style={styles.searchResultsContainer}>
-                <View style={styles.searchResultsSection}>
+            {(tab === 'All' || tab === 'Federations') && searchResults.users?.association?.length > 0 && (
+                <View style={styles.searchResultsContainer}>
                     <Text style={styles.sectionTitle}>Federations</Text>
+                    {searchResults.users.association.map(user => (
+                        <TouchableOpacity key={user._id} style={styles.searchResultsItem}>
+                            <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
+                            <Text>{user.name}</Text>
+                            <Text>{user.role}</Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
-            </View>}
+            )}
 
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
@@ -260,6 +333,40 @@ const styles = StyleSheet.create({
     },
     searchResultsSection: {
         borderWidth: 1
+    },
+    searchResultsItem: {
+        flexDirection: 'row',
+        alignContent: 'center',
+        marginBottom: 10,
+        backgroundColor: '#F4F4F4',
+        padding: 5,
+        borderRadius: 10
+    },
+    avatarContainer: {
+        width: 50,
+        height: 50,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 25,
+        marginRight: 15,
+        overflow: 'hidden',
+    },
+    avatar: {
+        width: undefined,
+        height: '100%',
+        maxWidth: 50,
+        aspectRatio: 1
+    },
+    name:{
+        fontFamily: 'Bebas',
+        fontSize: 16,
+        color: '#111111',
+    },
+    role:{
+        fontFamily: 'Manrope',
+        fontSize: 14,
+        color: '#888888',
     },
     sectionTitle: {
         fontFamily: 'Bebas',
