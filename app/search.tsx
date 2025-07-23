@@ -34,7 +34,7 @@ export default function SearchScreen() {
     const tabs = ['All', 'Athletes', 'Clubs', 'Federations', 'Coaches'];
     const roles = ['All', 'Athlete', 'Coach', 'Club', 'Association']
     const categories = ['All', 'Users', 'Teams', 'Events', 'Posts']
-    const sport = ['All', 'Football', 'Basketball', 'Tennis', 'Swimming']
+    const sport = ['All', 'Football', 'Basketball', 'Tennis', 'Racing']
     const genders = ['All', 'Male','Female']
 
     const [activeTab, setActiveTab] = useState('All');
@@ -48,7 +48,7 @@ export default function SearchScreen() {
     }, []);
 
     const handleSearch = () => {
-        console.log(keyword, selectedCategory, selectedRole, selectedSport)
+        search(keyword)
     }
 
     const search = async (text: string) => {
@@ -63,8 +63,8 @@ export default function SearchScreen() {
 
         let params = `keyword=${text}`;
 
-        params += `&in=${selectedCategory}`;
-        params += `&sport=${selectedRole}`;
+        params += `&category=${selectedCategory}`;
+        params += `&sport=${selectedSport}`;
         params += `&gender=${selectedGender}`;
 
         if (selectedRole == 'Coach') {
@@ -73,6 +73,7 @@ export default function SearchScreen() {
             params += `&userType=${selectedRole}`;
         }
 
+        console.log(params)
 
         try {
             const response = await fetch(`https://riyadah.onrender.com/api/search?${params}`, {
@@ -257,7 +258,7 @@ export default function SearchScreen() {
                         </View>
                     </View>
 
-                    <View style={styles.filter}>
+                    {(selectedCategory=="All" || selectedCategory=="Users") && <View style={styles.filter}>
                         <Text style={styles.filterLabel}>Gender</Text>
                         <View style={styles.tabs}>
                             {genders.map(g => (
@@ -276,7 +277,7 @@ export default function SearchScreen() {
                                 </TouchableOpacity>
                             ))}
                         </View>
-                    </View>
+                    </View>}
 
                     <View style={styles.filter}>
                         <Text style={styles.filterLabel}>Sport</Text>
