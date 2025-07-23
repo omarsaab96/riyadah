@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const Post = require('../models/Post'); // or any other model you're searching
+const jwt = require("jsonwebtoken");
+
+const Post = require('../models/Post');
+const User = require('../models/User');
+const Team = require('../models/Team');
+const Schedule = require('../models/Schedule');
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {

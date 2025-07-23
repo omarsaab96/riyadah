@@ -133,7 +133,7 @@ export default function SearchScreen() {
                     value={keyword}
                     onChangeText={handleSearchInput}
                     placeholderTextColor={'#888888'}
-                    placeholder="Search for athletes, clubs, or events..."
+                    placeholder="Search for athletes, clubs, or events...(Min. 3 characters)"
                 />
 
                 {searching &&
