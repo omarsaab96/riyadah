@@ -2837,8 +2837,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         position: 'absolute',
         bottom: 5,
-        left: '50%',
-        transform: [{ translateX: '-50%' }],
+        left: 50,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -3486,9 +3485,8 @@ const styles = StyleSheet.create({
     },
     searchLoader: {
         position: 'absolute',
-        top: '50%',
+        top: 10,
         right: 10,
-        transform: [{ translateY: '-50%' }]
     },
     searchLoadingText: {
         fontFamily: 'Manrope',

@@ -527,9 +527,8 @@ const styles = StyleSheet.create({
     },
     searchLoader: {
         position: 'absolute',
-        top: '50%',
+        top: 10,
         right: 30,
-        transform: [{ translateY: '-50%' }]
     },
     searchResultsContainer: {
         paddingHorizontal: 20,

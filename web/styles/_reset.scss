@@ -1,0 +1,186 @@
+* {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    font-family: "Manrope", sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #111111;
+}
+
+
+textarea:focus-visible {
+    outline: none
+}
+
+button {
+    -webkit-font-smoothing: inherit;
+    -moz-osx-font-smoothing: inherit;
+    -webkit-appearance: none
+}
+
+a {
+    color: inherit;
+    -webkit-text-decoration: none;
+    text-decoration: none;
+    outline: none;
+}
+
+input {
+    font: inherit;
+    background-color: inherit;
+    border: none;
+    outline: none
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: 0 0;
+    border-style: none;
+    width: auto;
+    line-height: normal;
+    overflow: visible
+}
+
+textarea,
+select {
+    font: inherit;
+    background-color: inherit
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block
+}
+
+[data-reaction-click] {
+    cursor: pointer
+}
+
+[data-visible=false] {
+    display: none !important
+}
+
+.before-hidden:before,
+.after-hidden:after {
+    display: none
+}
+
+.before-visible:before,
+.after-visible:after {
+    content: ""
+}
+
+::placeholder {
+    color: inherit;
+    opacity: .54
+}
+
+body * {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+[name=honey-pot-field] {
+    display: none !important
+}
+
+.text {
+    white-space: pre-wrap;
+    overflow-wrap: break-word
+}
+
+.pointer-events-none {
+    pointer-events: none
+}
+
+ul {
+    list-style: none;
+}
+
+
+.flex {
+    display: flex;
+
+    &.justify-between {
+        justify-content: space-between;
+    }
+
+    &.justify-center {
+        justify-content: center;
+    }
+
+    &.justify-end {
+        justify-content: flex-end;
+    }
+
+    &.align-center {
+        align-items: center;
+    }
+
+    &.align-top {
+        align-items: flex-start;
+    }
+
+    &.flex-column {
+        flex-direction: column;
+    }
+
+    &.align-start{
+        align-items: flex-start;
+    }
+    
+    &.align-end{
+        align-items: flex-end;
+    }
+
+    &.gap-10 {
+        gap: 10px;
+    }
+
+    &.gap-20 {
+        gap: 20px;
+    }
+}
+
+.transition {
+    transition: all 0.3s ease-in-out;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.mb-40 {
+    margin-bottom: 40px;
+}
+
+.container {
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+@media all and (max-width:1400px) {
+    .container {
+        max-width: 1100px;
+    }
+}
+
+@media all and (max-width:1200px) {
+    .container {
+        max-width: 992px;
+    }
+}
+
+@media all and (max-width:1024px) {
+    .container {
+        max-width: 100%;
+        padding:0 20px;
+    }
+}

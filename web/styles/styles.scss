@@ -1,0 +1,447 @@
+@import '_reset';
+
+$primCol: #FF4000;
+$blackCol: #111111;
+
+h2 {
+    font-family: 'Bebas neue', sans-serif;
+    font-size: 60px;
+    font-weight: normal;
+    line-height: 60px;
+    margin-bottom: 30px;
+}
+
+h3 {
+    font-family: 'Bebas neue', sans-serif;
+    font-size: 48px;
+    font-weight: normal;
+    line-height: 50px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h4 {
+    font-family: 'Bebas neue', sans-serif;
+    font-weight: normal;
+    font-size: 28px;
+    line-height: 34px;
+}
+
+.main {
+    overflow-x: hidden;
+}
+
+.half {
+    gap: 40px;
+
+    .left,
+    .right {
+        flex: 0 0 calc(50% - 20px);
+        width: calc(50% - 20px);
+    }
+}
+
+.third {
+    gap: 40px;
+
+    .card {
+        flex: 0 0 calc(33.333333% - 27px);
+        width: calc(33.333333% - 27px);
+    }
+}
+
+.btn {
+    border-radius: 5px;
+    padding: 12px 15px 8px;
+    background-color: $primCol;
+    text-transform: uppercase;
+    font-size: 22px;
+    font-family: 'Bebas Neue', sans-serif;
+    transition: all 0.3s ease-in-out;
+    border: 1px solid $primCol;
+    display: inline-block;
+    line-height: 22px;
+
+    &:hover {
+        border-color: $blackCol;
+        background-color: $blackCol;
+        color: $primCol;
+    }
+
+    &.inv {
+        border: 1px solid $blackCol;
+        background-color: $blackCol;
+        color: $primCol;
+
+        &:hover {
+            background-color: $primCol;
+            color: $blackCol;
+        }
+    }
+
+    &.sec {
+        background-color: transparent;
+        color: $primCol;
+
+        &:hover {
+            border-color: $primCol;
+            background-color: $primCol;
+            color: $blackCol;
+        }
+
+        &.inv {
+            color: $blackCol;
+
+            &:hover {
+                background-color: white;
+                color: $primCol;
+                border: 1px solid white;
+            }
+        }
+    }
+}
+
+.link {
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+        color: $primCol;
+    }
+}
+
+.logo {
+    a {
+        display: block;
+        width: 180px;
+
+        img {
+            width: 100%;
+        }
+    }
+}
+
+.header {
+    padding: 20px 0;
+    border-radius: 0;
+    flex-shrink: 0;
+    margin: 0;
+
+    .flex {
+        z-index: 1;
+        position: relative;
+    }
+
+    .btn {
+        padding: 9px 10px 5px;
+
+        font-size: 18px;
+
+        line-height: 16px;
+    }
+}
+
+.nav {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 50%;
+        right: -10px;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 20px;
+        background-color: $blackCol;
+    }
+
+    li {
+        a {
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+
+            &:hover {
+                color: $primCol;
+                background-color: $blackCol;
+            }
+        }
+    }
+}
+
+.imageContainer {
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 400px;
+
+    img {
+        width: 100%;
+
+    }
+}
+
+.hero {
+    background-color: $primCol;
+    position: relative;
+    margin-bottom: 30px;
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 300px;
+        height: 300px;
+        background-image: url(../images/pattern.png);
+        background-position: left top;
+        background-repeat: no-repeat;
+        background-size: contain;
+    }
+
+    img {
+        width: 100%;
+    }
+
+    svg {
+        width: 100%;
+    }
+
+    h2 {
+        position: relative;
+        z-index: 1;
+    }
+
+    .section {
+        .container {
+            position: relative;
+
+            .image {
+                display: block;
+                position: absolute;
+                bottom: -150px;
+                right: 0;
+                width: 500px;
+                height: 500px;
+
+                img {
+                    display: block;
+                    height: 100%;
+                    width: auto;
+                    object-fit: cover;
+                }
+            }
+        }
+    }
+}
+
+.listing {
+
+    h4 {
+        margin-bottom: 20px;
+    }
+
+    .container>.flex {
+        margin-bottom: 40px;
+
+        .left.flex.align-end {
+            ul {
+                text-align: right;
+
+                li {
+                    text-align: right;
+                    display: inline-block;
+                }
+            }
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+ul.list {
+    list-style: none;
+
+    li {
+        position: relative;
+        padding-left: 25px;
+        margin-bottom: 10px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        &::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 3px;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            background-image: url(../images/bullet.png);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+    }
+}
+
+.whyRiyadah {
+    .card {
+        box-shadow: 0 4px 6px #0000001a, 0 10px 15px #0000001a;
+        padding: 20px;
+        border-radius: 10px;
+
+        .i {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+
+            svg {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+            }
+        }
+    }
+}
+
+.testimonials {
+    .card {
+        box-shadow: 0 4px 6px #0000001a, 0 10px 15px #0000001a;
+        padding: 20px;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            width: 200px;
+            height: 160px;
+            background-image: url(../images/quotes.svg);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+            opacity: 0.1;
+        }
+    }
+
+    .avatar {
+        border-radius: 50%;
+        width: 64px;
+        height: 64px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px #0000001a, 0 1px 3px #0000001a;
+        margin: 0 auto;
+        margin-bottom: 10px;
+        background-color: $primCol;
+
+        img {
+            object-fit: contain;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .title {
+        text-align: center;
+        color: $blackCol;
+        font-size: 18px;
+        line-height: 20px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .type {
+        text-align: center;
+        color: $primCol;
+        font-size: 16px;
+        margin-bottom: 10px;
+        line-height: 20px;
+    }
+
+    p {
+        text-align: center;
+        font-style: italic;
+    }
+}
+
+.banner {
+    margin-top: 50px;
+    margin-bottom:100px;
+    background-image: linear-gradient(90deg, $primCol 0%);
+
+    
+    h3 {
+        text-align: left;
+        margin-bottom: 0;
+    }
+
+    .download {
+        padding:50px 0;
+        width: 50%;
+        flex: 0 0 50%;
+        position: relative;
+
+        &::after{
+            content:'';
+            display:block;
+            position: absolute;
+            top:50%;
+            transform:translateY(-50%);
+            right:0;
+            width:35%;
+            height:calc(100% + 100px);
+            background-image: url(../images/screenshot.png);
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: right bottom;
+        }
+
+        .stores {
+
+            a {
+                display: inline-block;
+                border-radius: 5px;
+                background-color: $blackCol;
+                padding: 6px;
+
+                img {
+                    display: block;
+                    width: 30px;
+                    height: 30px;
+                    object-fit: contain;
+                }
+            }
+        }
+    }
+
+
+}
+
+.section {
+    padding: 50px 0;
+}
+
+.footer {
+    padding: 10px 0;
+
+    .logo a {
+        width: 120px;
+    }
+
+    .link {
+        // opacity: 0.6;
+        font-size: 14px;
+
+    }
+}
