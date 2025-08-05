@@ -1,11 +1,14 @@
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFooter, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import MasonryList from '@react-native-seoul/masonry-list';
 import { Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
 import { jwtDecode } from "jwt-decode";
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -27,7 +30,6 @@ import {
     useSharedValue,
     withSpring
 } from 'react-native-reanimated';
-
 
 const { width } = Dimensions.get('window');
 
@@ -53,8 +55,106 @@ export default function Landing() {
     const translateY = useSharedValue(0);
     const modalOpacity = useSharedValue(0);
     const [modalType, setModalType] = useState('')
-    const [selectedPost, setSelectedPost] = useState('')
+    const [selectedPost, setSelectedPost] = useState(null)
     const [deleteConfirmation, setDeleteConfirmation] = useState('')
+
+    // ref
+    const bottomSheetRef = useRef<BottomSheet>(null);
+    const moreOptionsRef = useRef<BottomSheet>(null);
+
+    // variables
+    const snapPoints = useMemo(() => ["50%", "85%"], []);
+
+    const handlePresentModalPress = useCallback(() => {
+        bottomSheetRef.current?.snapToIndex(0);
+    }, []);
+    const handleOpenMoreOptions = useCallback(() => {
+        moreOptionsRef.current?.expand();
+    }, [selectedPost]);
+    const handleCloseModalPress = useCallback(() => {
+        bottomSheetRef.current?.close();
+        moreOptionsRef.current?.close();
+    }, []);
+
+    // renders
+    const renderBackdrop = useCallback(
+        (props) => (
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={-1}
+                appearsOnIndex={0}
+            />
+        ),
+        []
+    );
+    const renderFooter = useCallback(
+        props => {
+            return (
+                <BottomSheetFooter {...props} bottomInset={50}>
+                    <View style={styles.commentInputContainer}>
+                        <View style={styles.profileImage}>
+                            {(user?.image == null || user?.image == "") && (user?.type == "Club" || user?.type == "Association") && <Image
+                                source={require('../assets/clublogo.png')}
+                                style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
+                                resizeMode="contain"
+                            />}
+                            {(user?.image == null || user?.image == "") && user?.gender == "Male" && <Image
+                                source={require('../assets/avatar.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {(user?.image == null || user?.image == "") && user?.gender == "Female" && <Image
+                                source={require('../assets/avatarF.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {user?.image != null && <Image
+                                source={{ uri: user?.image }}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                        </View>
+                        {/* <Image
+                        source={{ uri: user?.image }}
+                        style={styles.commentInputAvatar}
+                        resizeMode="cover"
+                    /> */}
+                        {/* <TextInput
+                                style={styles.commentInput}
+                                placeholder="Write a comment..."
+                                value={newComment}
+                                onChangeText={setNewComment}
+                                placeholderTextColor="#888"
+                            /> */}
+                        <BottomSheetTextInput
+                            style={styles.commentInput}
+                            value={newComment}
+                            onChangeText={setNewComment}
+                            placeholder="Write a comment..."
+                            placeholderTextColor="#888"
+                        />
+
+                        <TouchableOpacity
+                            style={styles.commentSubmit}
+                            onPress={handleSubmitComment}
+                            disabled={!newComment.trim() || submittingComment}
+                        >
+                            {!submittingComment ? (
+                                <Ionicons
+                                    name="send"
+                                    size={20}
+                                    color={newComment.trim() ? "#FF4000" : "#888"}
+                                />
+                            ) : (
+                                <ActivityIndicator size={'small'} color='#FF4000' />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </BottomSheetFooter>
+            )
+        },
+        [user]
+    );
 
     useEffect(() => {
         fetchUser();
@@ -162,9 +262,8 @@ export default function Landing() {
 
     const handleComment = async (postId: string) => {
         setCurrentPostId(postId);
-        setCommentModalVisible(true);
         setLoadingComments(true);
-        setModalType('comments');
+        handlePresentModalPress()
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
@@ -184,16 +283,9 @@ export default function Landing() {
         }
     };
 
-    const handleMoreOptions = async (postId: string) => {
-        setCommentModalVisible(true);
-        setModalType('moreOptions')
-        setSelectedPost(postId);
-    };
-
-    const openOptions = (postId: string) => {
-        setCurrentPostId(postId);
-        setModalType('options');
-        optionsSheetRef.current?.expand();
+    const handleMoreOptions = async (post:any) => {
+        setSelectedPost(post);
+        handleOpenMoreOptions();
     };
 
     const handleSubmitComment = async () => {
@@ -355,7 +447,8 @@ export default function Landing() {
                         <Text style={styles.postUserName}>{item.created_by.name}</Text>
                         <Text style={styles.postDate}>{formatDate(item.date)}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => handleMoreOptions(item._id)} style={[styles.postOptions, {}]}>
+
+                    <TouchableOpacity onPress={() => handleMoreOptions(item)} style={[styles.postOptions, {}]}>
                         <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                     </TouchableOpacity>
                 </View>
@@ -878,6 +971,7 @@ export default function Landing() {
     };
 
     const handleDeletePost = (id: string) => {
+        console.log('clicked delete')
         setDeleteConfirmation(id);
     }
 
@@ -922,61 +1016,58 @@ export default function Landing() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <GestureHandlerRootView style={styles.container}>
+            <SafeAreaView>
+                {Platform.OS === 'ios' ? (
+                    <View style={{ height: 44, backgroundColor: 'white' }} />
+                ) : (
+                    <View style={{ height: 25, backgroundColor: '#FF4000' }} />
+                )}
 
+                <StatusBar style="light" translucent={false} backgroundColor="#FF3000"/>
 
-            {Platform.OS === 'ios' ? (
-                <View style={{ height: 44, backgroundColor: 'white' }} />
-            ) : (
-                <View style={{ height: 25, backgroundColor: '#FF4000' }} />
-            )}
-
-            <StatusBar
-                style="light"
-            />
-
-            <View style={{ paddingBottom: 100 }}>
-                <FlatList
-                    data={posts}
-                    renderItem={renderPost}
-                    keyExtractor={item => {
-                        return `${item._id}-${item.createdAt || item.date}`;
-                    }}
-                    ListHeaderComponent={
-                        <>
-                            <View style={styles.header}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} >
-                                    <Image
-                                        source={require('../assets/logo_white.png')}
-                                        style={styles.logo}
-                                        resizeMode="contain"
-                                    />
-                                    <View style={styles.headerActions}>
-                                        <TouchableOpacity onPress={() => { router.push("/createPost") }}>
-                                            <Image
-                                                style={styles.postBtnImg}
-                                                source={require('../assets/addPost.png')}
-                                                resizeMode="contain"
-                                            />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => { router.push("/messages") }}>
-                                            <Image
-                                                style={styles.dmBtnImg}
-                                                source={require('../assets/dm.png')}
-                                                resizeMode="contain"
-                                            />
-                                        </TouchableOpacity>
+                <View style={{ paddingBottom: 100 }}>
+                    <FlatList
+                        data={posts}
+                        renderItem={renderPost}
+                        keyExtractor={item => {
+                            return `${item._id}-${item.createdAt || item.date}`;
+                        }}
+                        ListHeaderComponent={
+                            <>
+                                <View style={styles.header}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} >
+                                        <Image
+                                            source={require('../assets/logo_white.png')}
+                                            style={styles.logo}
+                                            resizeMode="contain"
+                                        />
+                                        <View style={styles.headerActions}>
+                                            <TouchableOpacity onPress={() => { router.push("/createPost") }}>
+                                                <Image
+                                                    style={styles.postBtnImg}
+                                                    source={require('../assets/addPost.png')}
+                                                    resizeMode="contain"
+                                                />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => { router.push("/messages") }}>
+                                                <Image
+                                                    style={styles.dmBtnImg}
+                                                    source={require('../assets/dm.png')}
+                                                    resizeMode="contain"
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
                                     </View>
+
                                 </View>
 
-                            </View>
-
-                            {/* <View style={styles.createPostContainer}>
+                                {/* <View style={styles.createPostContainer}>
                                 <View style={styles.createPostHeader}>
                                     <Image
                                         source={
                                             user?.image
-                                                ? { uri: user.image }
+                                                ? { uri: user?.image }
                                                 : require('../assets/avatar.png')
                                         }
                                         style={styles.userAvatar}
@@ -996,58 +1087,199 @@ export default function Landing() {
                                     </TouchableOpacity>
                                 </View>
                             </View> */}
-                        </>
-                    }
-                    onEndReached={() => {
-                        // Only trigger if we have more posts and aren't already loading
-                        if (hasMore && !loading) {
-                            loadPosts();
+                            </>
                         }
-                    }}
-                    onEndReachedThreshold={0.5} // Balanced threshold
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={refreshing}
-                            onRefresh={onRefresh}
-                            colors={['#FF4000']}
-                            tintColor="#FF4000"
-                        />
-                    }
-                    ListFooterComponent={
-                        <View style={styles.loadingFooter}>
-                            {loading && <ActivityIndicator size="large" color="#FF4000" />}
+                        onEndReached={() => {
+                            // Only trigger if we have more posts and aren't already loading
+                            if (hasMore && !loading) {
+                                loadPosts();
+                            }
+                        }}
+                        onEndReachedThreshold={0.5} // Balanced threshold
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                colors={['#FF4000']}
+                                tintColor="#FF4000"
+                            />
+                        }
+                        ListFooterComponent={
+                            <View style={styles.loadingFooter}>
+                                {loading && <ActivityIndicator size="large" color="#FF4000" />}
+                            </View>
+                        }
+                    />
+
+                </View>
+
+                <View style={styles.navBar}>
+                    <TouchableOpacity onPress={() => router.replace('/settings')}>
+                        <Image source={require('../assets/settings.png')} style={styles.icon} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/search')}>
+                        <Image source={require('../assets/search.png')} style={styles.icon} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/landing')}>
+                        <Image source={require('../assets/home.png')} style={[styles.activeIcon]} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/notifications')}>
+                        <Image source={require('../assets/notifications.png')} style={styles.icon} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => router.replace('/profile')}>
+                        <Image source={require('../assets/profile.png')} style={styles.icon} />
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView >
+
+            {user != null && <BottomSheet
+                ref={bottomSheetRef}
+                index={-1}
+                snapPoints={snapPoints}
+                enableDynamicSizing={false}
+                enablePanDownToClose={true}
+                handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
+                backdropComponent={renderBackdrop}
+                footerComponent={renderFooter}
+            >
+                <BottomSheetView style={{
+                    flex: 1,
+                }}>
+                    <View>
+                        <View style={styles.commentModalHeader}>
+                            <Text style={styles.commentModalTitle}>Comments</Text>
+                            <TouchableOpacity
+                                style={styles.commentModalClose}
+                                onPress={handleCloseModalPress}
+                            >
+                                <Ionicons name="close" size={24} color="#888" />
+                            </TouchableOpacity>
                         </View>
-                    }
-                />
 
-            </View>
+                        {loadingComments ? (
+                            <View style={styles.commentLoading}>
+                                <ActivityIndicator size="large" color="#FF4000" />
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={comments}
+                                keyExtractor={(item) => item._id}
+                                renderItem={({ item }) => (
+                                    <View style={styles.commentItem}>
+                                        <View style={styles.profileImage}>
+                                            {(item.user?.image == null || item.user?.image == "") && item.user?.type == "Club" && (
+                                                <Image
+                                                    source={require('../assets/clublogo.png')}
+                                                    style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
+                                                    resizeMode="contain"
+                                                />
+                                            )}
+                                            {(item.user?.image == null || item.user?.image == "") && item.user?.gender == "Male" && (
+                                                <Image
+                                                    source={require('../assets/avatar.png')}
+                                                    style={styles.profileImageAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                            )}
+                                            {(item.user?.image == null || item.user?.image == "") && item.user?.gender == "Female" && (
+                                                <Image
+                                                    source={require('../assets/avatarF.png')}
+                                                    style={styles.profileImageAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                            )}
+                                            {item.user?.image != null && (
+                                                <Image
+                                                    source={{ uri: item.user?.image }}
+                                                    style={styles.profileImageAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                            )}
+                                        </View>
+                                        <View style={styles.commentContent}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <View>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Text style={styles.commentAuthor}>{item.user.name}</Text>
+                                                        <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                                    </View>
+                                                    <Text style={styles.commentText}>{item.content}</Text>
+                                                </View>
+                                                {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <Text>reply</Text>
+                                                    <Text>like</Text>
+                                                </View> */}
+                                            </View>
 
-            <View style={styles.navBar}>
-                <TouchableOpacity onPress={() => router.replace('/settings')}>
-                    <Image source={require('../assets/settings.png')} style={styles.icon} />
-                </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
+                                contentContainerStyle={styles.commentList}
+                                ListEmptyComponent={
+                                    <View style={styles.noComments}>
+                                        <Text style={styles.noCommentsText}>No comments yet</Text>
+                                    </View>
+                                }
+                            />
+                        )}
+                    </View>
+                </BottomSheetView>
+            </BottomSheet>
+            }
 
-                <TouchableOpacity onPress={() => router.replace('/search')}>
-                    <Image source={require('../assets/search.png')} style={styles.icon} />
-                </TouchableOpacity>
+            {selectedPost != null && <BottomSheet
+                ref={moreOptionsRef}
+                enablePanDownToClose={true}
+                handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
+                backdropComponent={renderBackdrop}
+            >
+                <BottomSheetView style={{
+                    flex: 1,paddingBottom:50
+                }}>
+                    <View style={{ padding: 20 }}>
+                        <TouchableOpacity onPress={() => { handleGoToProfile(selectedPost.created_by._id) }} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Check {selectedPost.created_by._id == userId ? 'your' : selectedPost.created_by.name + '\'s'} profile</Text>
+                        </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/landing')}>
-                    <Image source={require('../assets/home.png')} style={[styles.activeIcon]} />
-                </TouchableOpacity>
+                        {selectedPost && selectedPost.created_by._id == userId && (
+                            <View>
+                                {deleteConfirmation == '' && <TouchableOpacity onPress={() => { handleDeletePost(selectedPost._id) }} style={[styles.profileButton, { marginTop: 10 }]}>
+                                    <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete post</Text>
+                                </TouchableOpacity>}
+                                {deleteConfirmation == selectedPost._id &&
+                                    <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
+                                        <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
+                                        <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
+                                            <TouchableOpacity onPress={() => handleConfirmDeletePost(selectedPost._id)}
+                                                style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
+                                            </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                    <Image source={require('../assets/notifications.png')} style={styles.icon} />
-                </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => handleCancelDeletePost(selectedPost._id)}
+                                                style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>}
+                            </View>
+                        )}
 
-                <TouchableOpacity onPress={() => router.replace('/profile')}>
-                    <Image source={require('../assets/profile.png')} style={styles.icon} />
-                </TouchableOpacity>
-            </View>
-
-
-
-        </SafeAreaView >
-
+                        <TouchableOpacity onPress={() => {
+                            handleCloseModalPress();
+                            setSelectedPost(null);
+                        }
+                        } style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
+                            <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </BottomSheetView>
+            </BottomSheet>
+            }
+        </GestureHandlerRootView>
     );
 }
 
@@ -1488,8 +1720,8 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     profileImage: {
-        width: 40,
-        height: 40,
+        width: 36,
+        height: 36,
         borderRadius: 20,
         marginRight: 10,
         backgroundColor: '#FF4000',

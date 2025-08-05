@@ -6,7 +6,9 @@ import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from "react";
 import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RegistrationProvider } from '../context/registration';
+
 
 export default function RootLayout() {
   const router = useRouter();
@@ -19,9 +21,6 @@ export default function RootLayout() {
     };
 
     checkToken();
-    // Hide Android system navigation bar and enable immersive mode
-    // NavigationBar.setVisibilityAsync("hidden");
-    // NavigationBar.setBehaviorAsync("sticky-immersive");
   }, []);
 
   const colorScheme = useColorScheme();
@@ -37,15 +36,17 @@ export default function RootLayout() {
   }
 
   return (
-    <RegistrationProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ title: "Home" }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </RegistrationProvider>
+    <SafeAreaProvider>
+      <RegistrationProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" options={{ title: "Home" }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="dark" translucent={false} backgroundColor="#FF3000" />
+        </ThemeProvider>
+      </RegistrationProvider>
+    </SafeAreaProvider>
 
   );
 }

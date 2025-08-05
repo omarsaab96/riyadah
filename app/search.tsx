@@ -35,7 +35,7 @@ export default function SearchScreen() {
     const roles = ['All', 'Athlete', 'Coach', 'Club', 'Association']
     const categories = ['All', 'Users', 'Teams', 'Events', 'Posts']
     const sport = ['All', 'Football', 'Basketball', 'Tennis', 'Racing']
-    const genders = ['All', 'Male','Female']
+    const genders = ['All', 'Male', 'Female']
 
     const [activeTab, setActiveTab] = useState('All');
     const [selectedRole, setSelectedRole] = useState('All');
@@ -185,7 +185,7 @@ export default function SearchScreen() {
                 <View style={{ height: 25, backgroundColor: '#FF4000' }} />
             )}
 
-            <StatusBar style="light" />
+            <StatusBar style="light" translucent={false} backgroundColor="#FF3000" />
 
             <View style={styles.logoContainer}>
                 <Image
@@ -258,7 +258,7 @@ export default function SearchScreen() {
                         </View>
                     </View>
 
-                    {(selectedCategory=="All" || selectedCategory=="Users") && <View style={styles.filter}>
+                    {(selectedCategory == "All" || selectedCategory == "Users") && <View style={styles.filter}>
                         <Text style={styles.filterLabel}>Gender</Text>
                         <View style={styles.tabs}>
                             {genders.map(g => (
