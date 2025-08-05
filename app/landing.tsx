@@ -176,7 +176,7 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json();
-                // console.log(data)
+                console.log(data)
                 setComments(data.comments || []); // Ensure comments is an array
             }
         } catch (err) {
@@ -655,12 +655,12 @@ export default function Landing() {
             });
 
 
-            if (response.ok ) {
+            if (response.ok) {
                 const user = await response.json();
                 setUser(user)
             } else {
                 console.log(user)
-                console.error('API error:token')
+                console.error('Token API error:', response)
             }
             setLoading(false)
         } else {
@@ -1099,11 +1099,36 @@ export default function Landing() {
                                         keyExtractor={(item) => item._id}
                                         renderItem={({ item }) => (
                                             <View style={styles.commentItem}>
-                                                <Image
-                                                    source={{ uri: item.user.image }}
-                                                    style={styles.commentAvatar}
-                                                    resizeMode="cover"
-                                                />
+                                                <View style={styles.profileImage}>
+                                                    {(item.user.image == null || item.user.image == "") && item.user.type == "Club" && (
+                                                        <Image
+                                                            source={require('../assets/clublogo.png')}
+                                                            style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
+                                                            resizeMode="contain"
+                                                        />
+                                                    )}
+                                                    {(item.user.image == null || item.user.image == "") && item.user.gender == "Male" && (
+                                                        <Image
+                                                            source={require('../assets/avatar.png')}
+                                                            style={styles.profileImageAvatar}
+                                                            resizeMode="contain"
+                                                        />
+                                                    )}
+                                                    {(item.user.image == null || item.user.image == "") && item.user.gender == "Female" && (
+                                                        <Image
+                                                            source={require('../assets/avatarF.png')}
+                                                            style={styles.profileImageAvatar}
+                                                            resizeMode="contain"
+                                                        />
+                                                    )}
+                                                    {item.user.image != null && (
+                                                        <Image
+                                                            source={{ uri: item.user.image }}
+                                                            style={styles.profileImageAvatar}
+                                                            resizeMode="contain"
+                                                        />
+                                                    )}
+                                                </View>
                                                 <View style={styles.commentContent}>
                                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <View>
@@ -1661,6 +1686,8 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
         marginRight: 10,
+        backgroundColor: '#FF4000',
+        overflow: 'hidden',
     },
     profileImageAvatar: {
         height: '100%',

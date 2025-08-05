@@ -109,7 +109,7 @@ router.get('/comments/:postId', async (req, res) => {
     const { postId } = req.params;
 
     try {
-        const post = await Post.findById(postId).populate('comments.user', '_id name image');
+        const post = await Post.findById(postId).populate('comments.user', '_id name image gender');
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
