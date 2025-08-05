@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     try {
         const posts = await Post.find({ linked: true })
-            .populate('created_by', '_id name image')
+            .populate('created_by', '_id name image gender')
             .populate('likes', '_id name image')
             .populate('comments.user', '_id name image')
             .sort({ date: -1 })
