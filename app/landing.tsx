@@ -60,6 +60,7 @@ export default function Landing() {
 
     useEffect(() => {
         fetchUser();
+
         if (posts.length === 0) {
             loadPosts();
         }
@@ -325,20 +326,25 @@ export default function Landing() {
         return (
             <View style={styles.postContainer}>
                 <View style={styles.postHeader}>
-                    {item.created_by.image ? (
-                        <Image source={{ uri: item.created_by.image }} style={styles.avatar} resizeMode="contain" />
+                    {(item.created_by.image == null || item.created_by.image == "") ? (
+                        <View style={styles.profileImage}>
+                            {item.created_by.gender == "Male" && <Image
+                                source={require('../assets/avatar.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                            {item.created_by.gender == "Female" && <Image
+                                source={require('../assets/avatarF.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
+                        </View>
                     ) : (
-                        (item.created_by.image == null || item.created_by.image == "") && item.created_by.gender == "Male" && <Image
-                                                            source={require('../../assets/avatar.png')}
-                                                            style={styles.profileImageAvatar}
-                                                            resizeMode="contain"
-                                                        />
-                        //                                 {(item.created_by.image == null || item.created_by.image == "") && item.created_by.gender == "Female" && <Image
-                        //                                     source={require('../../assets/avatarF.png')}
-                        //                                     style={styles.profileImageAvatar}
-                        //                                     resizeMode="contain"
-                        //                                 />}
-                        // <Image source={{ uri: item.created_by.image }} style={styles.avatar} resizeMode="contain" />
+                        <Image
+                            source={{ uri: item.created_by.image }}
+                            style={styles.avatar}
+                            resizeMode="contain"
+                        />
                     )}
 
                     <View style={styles.postHeaderInfo}>
@@ -648,11 +654,13 @@ export default function Landing() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            if (response.ok) {
+
+            if (response.ok ) {
                 const user = await response.json();
                 setUser(user)
             } else {
-                console.error('API error')
+                console.log(user)
+                console.error('API error:token')
             }
             setLoading(false)
         } else {
@@ -1647,6 +1655,18 @@ const styles = StyleSheet.create({
     commentSubmit: {
         marginLeft: 10,
         padding: 8,
+    },
+    profileImage: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        marginRight: 10,
+    },
+    profileImageAvatar: {
+        height: '100%',
+        width: undefined,
+        aspectRatio: 1,
+        resizeMode: 'contain',
     },
 
 });
