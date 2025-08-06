@@ -1,6 +1,8 @@
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { registerForPushNotificationsAsync } from '@/hooks/usePushToken';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
+import * as Notifications from 'expo-notifications';
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
@@ -18,20 +20,41 @@ const linking = {
   },
 };
 
-
-
 export default function RootLayout() {
   const router = useRouter();
   useEffect(() => {
     const checkToken = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
+        registerForPushNotificationsAsync().then(pushToken => {
+          if (pushToken) {
+            console.log(pushToken)
+          }
+        });
         router.replace('/landing');
       }
     };
 
+
+
     checkToken();
   }, []);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log("Notification received:", notification);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
 
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -49,10 +72,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <RegistrationProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DefaultTheme : DefaultTheme}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ title: "Home" }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" options={{ title: "Home" }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
           <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
         </ThemeProvider>
       </RegistrationProvider>
