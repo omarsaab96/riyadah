@@ -129,7 +129,7 @@ export default function EditProfile() {
                     onPress={async () => {
                         const token = await SecureStore.getItemAsync('userToken');
 
-                        if (!token || !user?.pushToken) {
+                        if (!token) {
                             console.warn('Missing user push token');
                             return;
                         }
@@ -148,7 +148,7 @@ export default function EditProfile() {
 
                             const resData = await response.json();
                             console.log('Notification response:', resData);
-                            alert("Test notification sent!");
+                            console.log("Test notification sent!");
                         } catch (err) {
                             console.error('Failed to send notification:', err);
                         }

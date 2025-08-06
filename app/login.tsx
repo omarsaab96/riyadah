@@ -29,7 +29,7 @@ export default function Login() {
     const checkAuth = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        router.replace('/profile'); 
+        router.replace('/landing'); 
       }
     };
 
@@ -65,7 +65,7 @@ export default function Login() {
       await SecureStore.setItemAsync('userToken', token);
 
       // Navigate to profile screen
-      router.replace('/profile');
+      router.replace('/landing');
     } catch (error: any) {
       setError("Login failed. Please try again")
       setLoading(false)

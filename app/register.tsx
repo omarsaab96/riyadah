@@ -37,7 +37,7 @@ export default function Register() {
     const checkAuth = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        router.replace('/profile');
+        router.replace('/landing');
       }
     };
 

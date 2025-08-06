@@ -1,12 +1,10 @@
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { registerForPushNotificationsAsync } from '@/hooks/usePushToken';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
-import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -28,12 +26,7 @@ export default function RootLayout() {
     const checkToken = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        const decodedToken = jwtDecode(token);
-        registerForPushNotificationsAsync(decodedToken.userId, token).then(pushToken => {
-          if (pushToken) {
-            console.log(pushToken)
-          }
-        });
+        
         router.replace('/landing');
       }
     };

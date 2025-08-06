@@ -1,3 +1,4 @@
+import { registerForPushNotificationsAsync } from '@/hooks/usePushToken';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetFooter, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -668,6 +669,12 @@ export default function Landing() {
             const decodedToken = jwtDecode(token);
             console.log("DECODED: ", decodedToken)
             setUserId(decodedToken.userId);
+
+            registerForPushNotificationsAsync(decodedToken.userId, token).then(pushToken => {
+            if (pushToken) {
+                // console.log(pushToken)
+            }
+            });
 
             const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }

@@ -120,7 +120,7 @@ export default function WizardStep5() {
             await SecureStore.setItemAsync('userToken', String(token));
 
             resetFormData()
-            router.replace('/profile');
+            router.replace('/landing');
         } catch (err) {
             console.error('User creation failed:', err);
             setRegisterError('Something went wrong. Please try again.');
