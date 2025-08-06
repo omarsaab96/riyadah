@@ -37,9 +37,6 @@ export default function RootLayout() {
         router.replace('/landing');
       }
     };
-
-
-
     checkToken();
   }, []);
 
