@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema({
     default: null
   },
   weight: Number,
-  expoPushToken: String
+  expoPushToken: { type: String, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

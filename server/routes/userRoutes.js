@@ -398,4 +398,28 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
+// ✅ Store Expo push token
+router.post('/push-token', authenticateToken, async (req, res) => {
+    const { userId, expoPushToken } = req.body;
+
+    if (req.user.userId !== userId) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { expoPushToken },
+            { new: true }
+        );
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        res.json({ success: true, token: user.expoPushToken });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 module.exports = router;

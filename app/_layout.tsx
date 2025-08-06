@@ -6,10 +6,12 @@ import * as Notifications from 'expo-notifications';
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
+import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RegistrationProvider } from '../context/registration';
+
 
 const linking = {
   prefixes: ['riyadah://', 'https://riyadah.app'],
@@ -26,7 +28,8 @@ export default function RootLayout() {
     const checkToken = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        registerForPushNotificationsAsync().then(pushToken => {
+        const decodedToken = jwtDecode(token);
+        registerForPushNotificationsAsync(decodedToken.userId,token).then(pushToken => {
           if (pushToken) {
             console.log(pushToken)
           }

@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-export async function registerForPushNotificationsAsync() {
+export async function registerForPushNotificationsAsync(userId, authToken) {
   let token;
 
   // Check if the device is real (not web or simulator)
@@ -26,6 +26,14 @@ export async function registerForPushNotificationsAsync() {
     console.log('Expo Push Token:', token);
 
     // ✅ Send this token to your backend server here
+    await fetch(`https://<YOUR_BACKEND_URL>/users/push-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ userId, expoPushToken: token }),
+    });
   } else {
     console.warn('Must use physical device for Push Notifications');
   }
