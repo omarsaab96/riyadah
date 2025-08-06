@@ -54,7 +54,7 @@ export default function Profile() {
                     <Text style={styles.pageDesc}>Account settings</Text>
                 </View>
 
-                <Text style={styles.ghostText}>Settings</Text>
+                <Text style={styles.ghostText}>Settin</Text>
             </View>
             
 

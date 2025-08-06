@@ -185,7 +185,7 @@ export default function SearchScreen() {
                 <View style={{ height: 25, backgroundColor: '#FF4000' }} />
             )}
 
-            <StatusBar style="light" translucent={false} backgroundColor="#FF3000" />
+            <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
 
             <View style={styles.logoContainer}>
                 <Image

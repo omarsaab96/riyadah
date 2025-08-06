@@ -1,5 +1,5 @@
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetFooter, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFooter, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import MasonryList from '@react-native-seoul/masonry-list';
@@ -17,7 +17,8 @@ import {
     Modal,
     Platform,
     RefreshControl,
-    SafeAreaView, Share, StyleSheet,
+    SafeAreaView,
+    Share, StyleSheet,
     Text,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -63,7 +64,7 @@ export default function Landing() {
     const moreOptionsRef = useRef<BottomSheet>(null);
 
     // variables
-    const snapPoints = useMemo(() => ["50%", "85%"], []);
+    const snapPoints = useMemo(() => ["50%","85%"], []);
 
     const handlePresentModalPress = useCallback(() => {
         bottomSheetRef.current?.snapToIndex(0);
@@ -90,7 +91,7 @@ export default function Landing() {
     const renderFooter = useCallback(
         props => {
             return (
-                <BottomSheetFooter {...props} bottomInset={50}>
+                <BottomSheetFooter {...props}>
                     <View style={styles.commentInputContainer}>
                         <View style={styles.profileImage}>
                             {(user?.image == null || user?.image == "") && (user?.type == "Club" || user?.type == "Association") && <Image
@@ -283,7 +284,7 @@ export default function Landing() {
         }
     };
 
-    const handleMoreOptions = async (post:any) => {
+    const handleMoreOptions = async (post: any) => {
         setSelectedPost(post);
         handleOpenMoreOptions();
     };
@@ -1024,7 +1025,7 @@ export default function Landing() {
                     <View style={{ height: 25, backgroundColor: '#FF4000' }} />
                 )}
 
-                <StatusBar style="light" translucent={false} backgroundColor="#FF3000"/>
+                <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
 
                 <View style={{ paddingBottom: 100 }}>
                     <FlatList
@@ -1136,21 +1137,19 @@ export default function Landing() {
                 </View>
             </SafeAreaView >
 
-            {user != null && <BottomSheet
-                ref={bottomSheetRef}
-                index={-1}
-                snapPoints={snapPoints}
-                enableDynamicSizing={false}
-                enablePanDownToClose={true}
-                handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
-                backdropComponent={renderBackdrop}
-                footerComponent={renderFooter}
-            >
-                <BottomSheetView style={{
-                    flex: 1,
-                }}>
-                    <View>
-                        <View style={styles.commentModalHeader}>
+            {user != null &&
+                <BottomSheet
+                    ref={bottomSheetRef}
+                    index={-1}
+                    snapPoints={snapPoints}
+                    enableDynamicSizing={false}
+                    enablePanDownToClose={true}
+                    handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
+                    backdropComponent={renderBackdrop}
+                    footerComponent={renderFooter}
+                >
+                    <BottomSheetView style={{ backgroundColor:'white', zIndex:1 }}>
+                        <View style={[styles.commentModalHeader,{}]}>
                             <Text style={styles.commentModalTitle}>Comments</Text>
                             <TouchableOpacity
                                 style={styles.commentModalClose}
@@ -1159,45 +1158,38 @@ export default function Landing() {
                                 <Ionicons name="close" size={24} color="#888" />
                             </TouchableOpacity>
                         </View>
+                    </BottomSheetView>
 
-                        {loadingComments ? (
-                            <View style={styles.commentLoading}>
-                                <ActivityIndicator size="large" color="#FF4000" />
-                            </View>
-                        ) : (
-                            <FlatList
-                                data={comments}
-                                keyExtractor={(item) => item._id}
-                                renderItem={({ item }) => (
-                                    <View style={styles.commentItem}>
+                    {loadingComments ? (
+                        <View style={styles.commentLoading}>
+                            <ActivityIndicator size="large" color="#FF4000" />
+                        </View>
+                    ) : (
+                        <BottomSheetScrollView
+                            keyboardShouldPersistTaps="handled"
+                            contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom:140}}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {comments.length === 0 ? (
+                                <View style={styles.noComments}>
+                                    <Text style={styles.noCommentsText}>No comments yet</Text>
+                                </View>
+                            ) : (
+                                comments.map((item) => (
+                                    <View key={item._id} style={styles.commentItem}>
                                         <View style={styles.profileImage}>
-                                            {(item.user?.image == null || item.user?.image == "") && item.user?.type == "Club" && (
-                                                <Image
-                                                    source={require('../assets/clublogo.png')}
-                                                    style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
-                                                    resizeMode="contain"
-                                                />
+                                            {/* Default avatars */}
+                                            {(item.user?.image == null || item.user?.image === '') && item.user?.type === 'Club' && (
+                                                <Image source={require('../assets/clublogo.png')} style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]} resizeMode="contain" />
                                             )}
-                                            {(item.user?.image == null || item.user?.image == "") && item.user?.gender == "Male" && (
-                                                <Image
-                                                    source={require('../assets/avatar.png')}
-                                                    style={styles.profileImageAvatar}
-                                                    resizeMode="contain"
-                                                />
+                                            {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Male' && (
+                                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
                                             )}
-                                            {(item.user?.image == null || item.user?.image == "") && item.user?.gender == "Female" && (
-                                                <Image
-                                                    source={require('../assets/avatarF.png')}
-                                                    style={styles.profileImageAvatar}
-                                                    resizeMode="contain"
-                                                />
+                                            {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Female' && (
+                                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
                                             )}
-                                            {item.user?.image != null && (
-                                                <Image
-                                                    source={{ uri: item.user?.image }}
-                                                    style={styles.profileImageAvatar}
-                                                    resizeMode="contain"
-                                                />
+                                            {item.user?.image && (
+                                                <Image source={{ uri: item.user.image }} style={styles.profileImageAvatar} resizeMode="contain" />
                                             )}
                                         </View>
                                         <View style={styles.commentContent}>
@@ -1209,26 +1201,14 @@ export default function Landing() {
                                                     </View>
                                                     <Text style={styles.commentText}>{item.content}</Text>
                                                 </View>
-                                                {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                    <Text>reply</Text>
-                                                    <Text>like</Text>
-                                                </View> */}
                                             </View>
-
                                         </View>
                                     </View>
-                                )}
-                                contentContainerStyle={styles.commentList}
-                                ListEmptyComponent={
-                                    <View style={styles.noComments}>
-                                        <Text style={styles.noCommentsText}>No comments yet</Text>
-                                    </View>
-                                }
-                            />
-                        )}
-                    </View>
-                </BottomSheetView>
-            </BottomSheet>
+                                ))
+                            )}
+                        </BottomSheetScrollView>
+                    )}
+                </BottomSheet>
             }
 
             {selectedPost != null && <BottomSheet
@@ -1238,7 +1218,7 @@ export default function Landing() {
                 backdropComponent={renderBackdrop}
             >
                 <BottomSheetView style={{
-                    flex: 1,paddingBottom:50
+                    flex: 1, paddingBottom: 50
                 }}>
                     <View style={{ padding: 20 }}>
                         <TouchableOpacity onPress={() => { handleGoToProfile(selectedPost.created_by._id) }} style={styles.profileButton}>
@@ -1332,7 +1312,7 @@ const styles = StyleSheet.create({
     },
     navBar: {
         position: 'absolute',
-        bottom: 50,
+        bottom: 70,
         left: 10,
         width: width - 20,
         height: 60,
@@ -1628,7 +1608,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
+        paddingHorizontal: 15,
         paddingBottom: 15,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
@@ -1648,8 +1628,7 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
     },
     commentList: {
-        paddingHorizontal: 15,
-        paddingBottom: 10,
+        flex: 1,
     },
     commentItem: {
         flexDirection: 'row',
@@ -1697,8 +1676,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 15,
         paddingTop: 10,
+        paddingBottom:50,
         borderTopWidth: 1,
         borderTopColor: '#eee',
+        backgroundColor:'white'
     },
     commentInputAvatar: {
         width: 36,

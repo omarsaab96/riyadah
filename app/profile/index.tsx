@@ -772,23 +772,34 @@ export default function Profile() {
                                 />}
                             </TouchableOpacity>
 
-                            {(user.image == null || user.image == "") &&
-                                <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
-                                    <Entypo name="plus" size={20} color="#FF4000" />
-                                    <Text style={styles.uploadImageText}>
-                                        {(user.type == "Club" || user.type == "Association") ? 'Upload logo' : 'Upload avatar'}
-                                    </Text>
-                                </TouchableOpacity>
-                            }
+                            <View style={{
+                                position:'absolute',
+                                bottom:5,
+                                left:0,
+                                right:0,
+                                flexDirection:'row',
+                                justifyContent:'center',
+                                alignItems:'center'
 
-                            {user.image != null && user.image != "" &&
-                                <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
-                                    <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                    <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
-                                        {(user.type == "Club" || user.type == "Association") ? 'Change logo' : 'Change avatar'}
-                                    </Text>
-                                </TouchableOpacity>
-                            }
+                            }}>
+                                {(user.image == null || user.image == "") &&
+                                    <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                                        <Entypo name="plus" size={20} color="#FF4000" />
+                                        <Text style={styles.uploadImageText}>
+                                            {(user.type == "Club" || user.type == "Association") ? 'Upload logo' : 'Upload avatar'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                }
+
+                                {user.image != null && user.image != "" &&
+                                    <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
+                                        <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                        <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
+                                            {(user.type == "Club" || user.type == "Association") ? 'Change logo' : 'Change avatar'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                }
+                            </View>
                         </View>
                     ) : (
                         <View style={styles.profileImage}>
@@ -2830,14 +2841,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
     },
     uploadImage: {
-        backgroundColor: '#000000',
+        backgroundColor: '#111111',
         padding: 2,
         paddingRight: 5,
         borderRadius: 10,
         textAlign: 'center',
-        position: 'absolute',
-        bottom: 5,
-        left: 50,
+        // position: 'absolute',
+        // bottom: 5,
+        // left: 50,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',

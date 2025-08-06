@@ -1,5 +1,5 @@
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -38,12 +38,12 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <RegistrationProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={colorScheme === 'dark' ? DefaultTheme : DefaultTheme}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" options={{ title: "Home" }} />
             <Stack.Screen name="+not-found" />
           </Stack>
-          <StatusBar style="dark" translucent={false} backgroundColor="#FF3000" />
+          <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
         </ThemeProvider>
       </RegistrationProvider>
     </SafeAreaProvider>
