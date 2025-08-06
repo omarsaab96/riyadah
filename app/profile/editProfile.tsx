@@ -188,6 +188,11 @@ export default function EditProfile() {
 
                         {user && !loading && <View style={styles.profileImage}>
                             <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
+                                {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
+                                    source={require('../../assets/clublogo.png')}
+                                    style={styles.profileImageAvatar}
+                                    resizeMode="contain"
+                                />}
                                 {(user.image == null || user.image == "") && user.gender == "Male" && <Image
                                     source={require('../../assets/avatar.png')}
                                     style={styles.profileImageAvatar}
@@ -205,6 +210,17 @@ export default function EditProfile() {
                                 />}
                             </TouchableOpacity>
 
+                            <View style={{
+                                                            position:'absolute',
+                                                            bottom:5,
+                                                            left:0,
+                                                            right:0,
+                                                            flexDirection:'row',
+                                                            justifyContent:'center',
+                                                            alignItems:'center'
+                            
+                                                        }}>
+
                             {(user.image == null || user.image == "") &&
                                 <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
                                     <Entypo name="plus" size={20} color="#FF4000" />
@@ -218,6 +234,7 @@ export default function EditProfile() {
                                     <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
                                 </TouchableOpacity>
                             }
+                            </View>
                         </View>}
 
 
@@ -452,7 +469,7 @@ export default function EditProfile() {
                                 </Text>
                                 <TextInput
                                     style={styles.textarea}
-                                    placeholder={(user.type == "Club"||user.type == "Association") ? `About the ${user.type}` : 'About you'}
+                                    placeholder={(user.type == "Club" || user.type == "Association") ? `About the ${user.type}` : 'About you'}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.bio || ""}
                                     onChangeText={(text) => updateField('bio', text)}
