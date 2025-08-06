@@ -9,6 +9,16 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RegistrationProvider } from '../context/registration';
 
+const linking = {
+  prefixes: ['riyadah://', 'https://riyadah.app'],
+  config: {
+    screens: {
+      Post: 'posts/:postId',
+    },
+  },
+};
+
+
 
 export default function RootLayout() {
   const router = useRouter();
@@ -39,14 +49,14 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <RegistrationProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DefaultTheme : DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" options={{ title: "Home" }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" options={{ title: "Home" }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
           <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
         </ThemeProvider>
       </RegistrationProvider>
-    </SafeAreaProvider>
+    </SafeAreaProvider >
 
   );
 }

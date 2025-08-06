@@ -75,7 +75,8 @@ export default function TeamDetails() {
                 if (response.ok) {
                     const userData = await response.json();
                     setTeam(userData.data);
-                    setTeamName(userData.data.name)
+                    setTeamName(userData.data.name) 
+
 
                 } else {
                     console.error('teamAPI error');
@@ -430,15 +431,21 @@ export default function TeamDetails() {
                             <View style={{ marginVertical: 20 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                     <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
-                                    {user && user._id == team.club && <TouchableOpacity style={styles.editToggle}
-                                        onPress={() => router.push({
-                                            pathname: '/teams/members',
-                                            params: { id: team._id },
-                                        })}
-                                    >
-                                        <Entypo name="edit" size={16} color="#FF4000" />
-                                        <Text style={styles.editToggleText}>Manage</Text>
-                                    </TouchableOpacity>}
+                                    {user && (
+                                        (user._id === team.club ||
+                                            (user.role === "Coach" && Array.isArray(team.coaches) && team.coaches.some(coach => coach._id === user._id))
+                                        )) && (
+                                            <TouchableOpacity
+                                                style={styles.editToggle}
+                                                onPress={() => router.push({
+                                                    pathname: '/teams/members',
+                                                    params: { id: team._id },
+                                                })}
+                                            >
+                                                <Entypo name="edit" size={16} color="#FF4000" />
+                                                <Text style={styles.editToggleText}>Manage</Text>
+                                            </TouchableOpacity>
+                                        )}
                                 </View>
 
                                 {team.members && team.members.length > 0 ? (
@@ -830,9 +837,8 @@ const styles = StyleSheet.create({
     },
     searchLoader: {
         position: 'absolute',
-        top: '50%',
+        top: 10,
         right: 10,
-        transform: [{ translateY: '-50%' }]
     },
     searchLoadingText: {
         fontFamily: 'Manrope',
@@ -938,16 +944,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    uploadImage: {
-        backgroundColor: '#000000',
+   uploadImage: {
+        backgroundColor: '#111111',
         padding: 2,
         paddingRight: 5,
         borderRadius: 10,
         textAlign: 'center',
-        position: 'absolute',
-        bottom: 5,
-        left: '50%',
-        transform: [{ translateX: '-50%' }],
+        // position: 'absolute',
+        // bottom: 5,
+        // left: 50,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',

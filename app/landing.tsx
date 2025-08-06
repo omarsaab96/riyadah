@@ -24,13 +24,6 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-import {
-    runOnJS,
-    useAnimatedGestureHandler,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring
-} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -47,15 +40,11 @@ export default function Landing() {
     const router = useRouter();
     const pageLimit = 5;
 
-    const [commentModalVisible, setCommentModalVisible] = useState(false);
     const [currentPostId, setCurrentPostId] = useState<string | null>(null);
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [loadingComments, setLoadingComments] = useState(false);
     const [submittingComment, setSubmittingComment] = useState(false);
-    const translateY = useSharedValue(0);
-    const modalOpacity = useSharedValue(0);
-    const [modalType, setModalType] = useState('')
     const [selectedPost, setSelectedPost] = useState(null)
     const [deleteConfirmation, setDeleteConfirmation] = useState('')
 
@@ -64,7 +53,7 @@ export default function Landing() {
     const moreOptionsRef = useRef<BottomSheet>(null);
 
     // variables
-    const snapPoints = useMemo(() => ["50%","85%"], []);
+    const snapPoints = useMemo(() => ["50%", "85%"], []);
 
     const handlePresentModalPress = useCallback(() => {
         bottomSheetRef.current?.snapToIndex(0);
@@ -327,74 +316,6 @@ export default function Landing() {
             setSubmittingComment(false)
         }
     };
-
-    const handleShare = async (postId: string) => {
-        try {
-            const result = await Share.share({
-                message: `Check out this post: https://yourdomain.com/posts/${postId}`, // customize this
-            });
-
-            if (result.action === Share.sharedAction) {
-                if (result.activityType) {
-                    console.log('Shared with activity type:', result.activityType);
-                } else {
-                    console.log('Post shared');
-                }
-            } else if (result.action === Share.dismissedAction) {
-                console.log('Share dismissed');
-            }
-        } catch (error) {
-            console.error('Error sharing post:', error.message);
-        }
-    };
-
-    const gestureHandler = useAnimatedGestureHandler({
-        onStart: (_, ctx) => {
-            ctx.startY = translateY.value;
-        },
-        onActive: (event, ctx) => {
-            if (event.translationY > 0) {
-                translateY.value = ctx.startY + event.translationY;
-            }
-        },
-        onEnd: (event) => {
-            if (event.translationY > 100) {
-                translateY.value = withSpring(500, { damping: 20 }, (finished) => {
-                    if (finished) {
-                        runOnJS(setCommentModalVisible)(false);
-                        runOnJS(setModalType)('');
-                        runOnJS(setSelectedPost)('');
-                    }
-                });
-                modalOpacity.value = withSpring(0);
-            } else {
-                translateY.value = withSpring(0, { damping: 20 });
-            }
-        },
-    });
-
-    const modalStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateY: translateY.value }],
-            opacity: modalOpacity.value,
-        };
-    });
-
-    const backdropStyle = useAnimatedStyle(() => {
-        return {
-            opacity: modalOpacity.value,
-        };
-    });
-
-    useEffect(() => {
-        if (commentModalVisible) {
-            translateY.value = 0;
-            modalOpacity.value = 1;
-        } else {
-            translateY.value = 500;
-            modalOpacity.value = 0;
-        }
-    }, [commentModalVisible]);
 
     // Format date
     const formatDate = (dateString: string) => {
@@ -996,8 +917,6 @@ export default function Landing() {
             }
 
             setDeleteConfirmation('');
-            setModalType('');
-            setCommentModalVisible(false);
             setPosts(prevPosts => prevPosts.filter(post => post._id !== postid));
             console.log('Unlinked post:', data.post);
 
@@ -1012,9 +931,26 @@ export default function Landing() {
         setDeleteConfirmation('');
     }
 
-    const handleGoToProfile = () => {
+    const handleShare = async (postId: string) => {
+        const url = `https://riyadah.app/posts/${postId}`;
+        try {
+            const result = await Share.share({
+                message: `Check out this post on Riyadah: ${url}`,
+            });
 
-    }
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type:', result.activityType);
+                } else {
+                    console.log('Post shared');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.error('Error sharing post:', error.message);
+        }
+    };
 
     return (
         <GestureHandlerRootView style={styles.container}>
@@ -1148,8 +1084,8 @@ export default function Landing() {
                     backdropComponent={renderBackdrop}
                     footerComponent={renderFooter}
                 >
-                    <BottomSheetView style={{ backgroundColor:'white', zIndex:1 }}>
-                        <View style={[styles.commentModalHeader,{}]}>
+                    <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
+                        <View style={[styles.commentModalHeader, {}]}>
                             <Text style={styles.commentModalTitle}>Comments</Text>
                             <TouchableOpacity
                                 style={styles.commentModalClose}
@@ -1160,17 +1096,18 @@ export default function Landing() {
                         </View>
                     </BottomSheetView>
 
-                    {loadingComments ? (
-                        <View style={styles.commentLoading}>
-                            <ActivityIndicator size="large" color="#FF4000" />
-                        </View>
-                    ) : (
-                        <BottomSheetScrollView
-                            keyboardShouldPersistTaps="handled"
-                            contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom:140}}
-                            showsVerticalScrollIndicator={false}
-                        >
-                            {comments.length === 0 ? (
+
+                    <BottomSheetScrollView
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom: 140 }}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {loadingComments ? (
+                            <View style={styles.commentLoading}>
+                                <ActivityIndicator size="large" color="#FF4000" />
+                            </View>
+                        ) : (
+                            comments.length === 0 ? (
                                 <View style={styles.noComments}>
                                     <Text style={styles.noCommentsText}>No comments yet</Text>
                                 </View>
@@ -1205,9 +1142,11 @@ export default function Landing() {
                                         </View>
                                     </View>
                                 ))
-                            )}
-                        </BottomSheetScrollView>
-                    )}
+                            )
+
+                        )}
+                    </BottomSheetScrollView>
+
                 </BottomSheet>
             }
 
@@ -1221,9 +1160,30 @@ export default function Landing() {
                     flex: 1, paddingBottom: 50
                 }}>
                     <View style={{ padding: 20 }}>
-                        <TouchableOpacity onPress={() => { handleGoToProfile(selectedPost.created_by._id) }} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Check {selectedPost.created_by._id == userId ? 'your' : selectedPost.created_by.name + '\'s'} profile</Text>
-                        </TouchableOpacity>
+                        {selectedPost.created_by._id == userId ? (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    handleCloseModalPress();
+                                    router.push('/profile')
+                                }
+                                }
+                                style={styles.profileButton}>
+                                <Text style={styles.profileButtonText}>Go to your profile</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    handleCloseModalPress();
+                                    router.push({
+                                        pathname: '/profile/public',
+                                        params: { id: selectedPost.created_by._id },
+                                    })
+                                }}
+                                style={styles.profileButton}>
+                                <Text style={styles.profileButtonText}>Go to {selectedPost.created_by.name} 's profile</Text>
+                            </TouchableOpacity>
+                        )
+                        }
 
                         {selectedPost && selectedPost.created_by._id == userId && (
                             <View>
@@ -1676,10 +1636,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 15,
         paddingTop: 10,
-        paddingBottom:50,
+        paddingBottom: 50,
         borderTopWidth: 1,
         borderTopColor: '#eee',
-        backgroundColor:'white'
+        backgroundColor: 'white'
     },
     commentInputAvatar: {
         width: 36,

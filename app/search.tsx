@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     },
     searchLoader: {
         position: 'absolute',
-        top: 10,
+        top: 15,
         right: 30,
     },
     searchResultsContainer: {

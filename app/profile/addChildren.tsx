@@ -630,15 +630,14 @@ const styles = StyleSheet.create({
         marginLeft: 10
     },   
     uploadImage: {
-        backgroundColor: '#000000',
+        backgroundColor: '#111111',
         padding: 2,
         paddingRight: 5,
         borderRadius: 10,
         textAlign: 'center',
-        position: 'absolute',
-        bottom: 5,
-        left: '50%',
-        transform: [{ translateX: '-50%' }],
+        // position: 'absolute',
+        // bottom: 5,
+        // left: 50,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -719,9 +718,8 @@ const styles = StyleSheet.create({
     },
     searchLoader: {
         position: 'absolute',
-        top: '50%',
+        top: 15,
         right: 10,
-        transform: [{ translateY: '-50%' }]
     },
     createChildAccountBtn: {
         backgroundColor: 'transparent'

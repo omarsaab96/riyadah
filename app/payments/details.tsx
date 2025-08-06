@@ -470,25 +470,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 18
     },
-    uploadImage: {
-        backgroundColor: '#000000',
-        padding: 2,
-        paddingRight: 5,
-        borderRadius: 10,
-        textAlign: 'center',
-        position: 'absolute',
-        bottom: 5,
-        left: '50%',
-        transform: [{ translateX: '-50%' }],
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    uploadImageText: {
-        color: '#FF4000',
-        fontFamily: 'Bebas',
-        fontSize: 16,
-    },
     sectionTitle: {
         fontFamily: 'Bebas',
         fontSize: 24,
