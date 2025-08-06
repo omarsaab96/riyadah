@@ -26,7 +26,7 @@ export async function registerForPushNotificationsAsync(userId, authToken) {
     console.log('Expo Push Token:', token);
 
     // ✅ Send this token to your backend server here
-    await fetch(`https://<YOUR_BACKEND_URL>/users/push-token`, {
+    await fetch(`https://riyadah.onrender.com/api/users/push-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
