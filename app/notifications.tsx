@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 import {
     ActivityIndicator,
+    Button,
     Dimensions,
     Image,
     ScrollView,
@@ -121,6 +122,39 @@ export default function EditProfile() {
                             </View>
                         </View>
                     )}
+
+
+                <Button
+                    title="Send Test Notification"
+                    onPress={async () => {
+                        const token = await SecureStore.getItemAsync('userToken');
+
+                        if (!token || !user?.pushToken) {
+                            console.warn('Missing user push token');
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`https://riyadah.onrender.com/api/notifications/send`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: `Bearer ${token}`
+                                },
+                                body: JSON.stringify({
+                                    userId: user._id
+                                })
+                            });
+
+                            const resData = await response.json();
+                            console.log('Notification response:', resData);
+                            alert("Test notification sent!");
+                        } catch (err) {
+                            console.error('Failed to send notification:', err);
+                        }
+                    }}
+                    color="#FF4000"
+                />
 
             </ScrollView>
             }
@@ -268,7 +302,7 @@ const styles = StyleSheet.create({
         tintColor: '#FF4000',
     },
     emptyNotifications: {
-        fontFamily:'Manrope',
-        fontSize:16
+        fontFamily: 'Manrope',
+        fontSize: 16
     }
 });

@@ -29,7 +29,7 @@ export default function RootLayout() {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
         const decodedToken = jwtDecode(token);
-        registerForPushNotificationsAsync(decodedToken.userId,token).then(pushToken => {
+        registerForPushNotificationsAsync(decodedToken.userId, token).then(pushToken => {
           if (pushToken) {
             console.log(pushToken)
           }
@@ -53,9 +53,10 @@ export default function RootLayout() {
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
     }),
   });
 
