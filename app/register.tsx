@@ -2,7 +2,9 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import CountryPicker from 'react-native-country-picker-modal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useRegistration } from '../context/registration';
+
 
 import {
   ActivityIndicator,
@@ -16,6 +18,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const { width } = Dimensions.get('window');
 
@@ -23,7 +26,6 @@ export default function Register() {
   const { formData, updateFormData } = useRegistration();
   const router = useRouter();
   const [countryCode, setCountryCode] = useState('LB');
-  const [callingCode, setCallingCode] = useState('961');
 
   const [name, setName] = useState<string | null>(formData.name || null);
   const [email, setEmail] = useState<string | null>(formData.email || null);
@@ -96,7 +98,8 @@ export default function Register() {
   };
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
+
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -124,117 +127,115 @@ export default function Register() {
           </Text>
 
         </View>
-
-        <View style={styles.form}>
-          {error != '' && <View style={styles.error}>
-            <View style={styles.errorIcon}></View>
-            <Text style={styles.errorText}>{error}</Text>
-          </View>}
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            placeholderTextColor="#A8A8A8"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#A8A8A8"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <View style={styles.phoneContainer}>
-            <View style={styles.phonePicker}>
-              <CountryPicker
-                countryCode={countryCode}
-                withFilter
-                withFlag
-                withCallingCode
-                withAlphaFilter
-                withCallingCodeButton
-                withEmoji={false}
-                theme={{
-                  itemHeight: 44,
-                  fontSize: 14
-                }}
-                onSelect={(country) => {
-                  setCountryCode(country.cca2);
-                  setCallingCode(country.callingCode[0]);
-                }}
+        <ScrollView>
+          <View style={styles.form}>
+            {error != '' && <View style={styles.error}>
+              <View style={styles.errorIcon}></View>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>}
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              placeholderTextColor="#A8A8A8"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#A8A8A8"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <View style={styles.phoneContainer}>
+              <View style={styles.phonePicker}>
+                <CountryPicker
+                  countryCode={countryCode}
+                  withFilter
+                  withFlag
+                  withCallingCode
+                  withAlphaFilter
+                  withCallingCodeButton
+                  withEmoji={false}
+                  onSelect={(country) => {
+                    setCountryCode(country.cca2);
+                    setCallingCode(country.callingCode[0]);
+                  }}
+                  containerButtonStyle={{marginTop:-2}}
+                />
+              </View>
+              <TextInput
+                style={[styles.input, styles.phoneInput]}
+                placeholder="Phone number"
+                keyboardType="phone-pad"
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
               />
             </View>
             <TextInput
-              style={[styles.input, styles.phoneInput]}
-              placeholder="Phone number"
-              keyboardType="phone-pad"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
+              style={[styles.input, styles.passwordInput]}
+              placeholder="Password"
+              placeholderTextColor="#A8A8A8"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
             />
-          </View>
-          <TextInput
-            style={[styles.input, styles.passwordInput]}
-            placeholder="Password"
-            placeholderTextColor="#A8A8A8"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
 
-          <View style={styles.hintContainer}>
-            <Text style={styles.hint}>Password must be at least 6 character long and include 1 capital letter and 1 symbol</Text>
-          </View>
-
-          <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
-            <View style={styles.checkbox}>
-              {agreed && <View style={styles.checked} >
-                <Image source={require('../assets/check.png')} style={styles.checkImage} />
-              </View>}
+            <View style={styles.hintContainer}>
+              <Text style={styles.hint}>Password must be at least 6 character long and include 1 capital letter and 1 symbol</Text>
             </View>
 
-            <Text style={styles.label}>
-              I agree to the{' '}
-              <Text style={styles.link} onPress={() => router.push('/termsConditions')}>
-                Terms & Conditions
+            <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+              <View style={styles.checkbox}>
+                {agreed && <View style={styles.checked} >
+                  <Image source={require('../assets/check.png')} style={styles.checkImage} />
+                </View>}
+              </View>
+
+              <Text style={styles.label}>
+                I agree to the{' '}
+                <Text style={styles.link} onPress={() => router.push('/termsConditions')}>
+                  Terms & Conditions
+                </Text>
               </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.fullButtonRow} onPress={handleRegister}>
+              <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
+              <View style={styles.loginButton}>
+                <Text style={styles.loginText}>
+                  {loading ? 'CREATING' : 'CREATE'} ACCOUNT
+                </Text>
+                {loading && (
+                  <ActivityIndicator
+                    size="small"
+                    color="#FFFFFF"
+                    style={styles.loginLoader}
+                  />
+                )}
+              </View>
+              <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.switchLinkContainer}>
+            <Text>Already have an account?</Text>
+            <TouchableOpacity onPress={() => router.replace('/login')}>
+              <Text style={styles.switchLink}>LOGIN HERE</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.disclaimer}>
+            <Text style={styles.hint}>
+                By creating and using an account on Riyadah, you are agreeing to the Riyadah's terms and conditions and privacy policy terms and clauses.
             </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.fullButtonRow} onPress={handleRegister}>
-            <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
-            <View style={styles.loginButton}>
-              <Text style={styles.loginText}>
-                {loading ? 'CREATING' : 'CREATE'} ACCOUNT
-              </Text>
-              {loading && (
-                <ActivityIndicator
-                  size="small"
-                  color="#FFFFFF"
-                  style={styles.loginLoader}
-                />
-              )}
-            </View>
-            <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.switchLinkContainer}>
-          <Text>Already have an account?</Text>
-          <TouchableOpacity onPress={() => router.replace('/login')}>
-            <Text style={styles.switchLink}>LOGIN HERE</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.disclaimer}>
-          <Text style={styles.hint}>
-            By agreeing to the above terms, you are consenting that your personal information will be collected, stored, and processed on behalf of RIYADAH
-          </Text>
-        </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
@@ -287,6 +288,7 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 14,
+    lineHeight:14,
     padding: 15,
     backgroundColor: '#F4F4F4',
     marginBottom: 16,
@@ -300,15 +302,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: '#F4F4F4',
     borderRadius: 10,
-    paddingLeft: 15,
+    paddingHorizontal:15,
+    paddingVertical:12,
+    gap:5
   },
   phonePicker: {
-    paddingTop: 10
+    justifyContent:'center'
   },
   phoneInput: {
     marginBottom: 0,
-    flexGrow: 1,
     backgroundColor: 'transparent',
+    flex:1,
+    padding:0,
   },
   passwordInput: {
     letterSpacing: 1,

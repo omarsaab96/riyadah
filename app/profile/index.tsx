@@ -2857,16 +2857,19 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: "Bebas",
-        fontSize: 20
+        fontSize: 20,
+        color:'black'
     },
     subtitle: {
         fontFamily: "Manrope",
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color:'black'
     },
     paragraph: {
         fontFamily: "Manrope",
-        fontSize: 16
+        fontSize: 16,        
+        color:'black'
     },
     ghostText: {
         color: '#ffffff',

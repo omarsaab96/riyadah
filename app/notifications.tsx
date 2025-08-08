@@ -233,7 +233,8 @@ const styles = StyleSheet.create({
         fontFamily: "Manrope",
         fontSize: 14,
         flex: 1,
-        paddingRight: 20
+        paddingRight: 20,
+        color:'black'
     },
     notificationUnread: {
         width: 10,
@@ -303,6 +304,7 @@ const styles = StyleSheet.create({
     },
     emptyNotifications: {
         fontFamily: 'Manrope',
-        fontSize: 16
+        fontSize: 16,
+        color:'black'
     }
 });

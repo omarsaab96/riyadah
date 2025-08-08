@@ -210,6 +210,7 @@ const CreatePostScreen = () => {
                             style={styles.textInput}
                             multiline
                             placeholder="What's on your mind?"
+                            placeholderTextColor="#A8A8A8"
                             value={content}
                             onChangeText={setContent}
                         />
@@ -372,5 +373,6 @@ const styles = StyleSheet.create({
         padding: 12,
         borderRadius: 10,
         textAlignVertical: 'top',
+        color:'black'
     },
 });

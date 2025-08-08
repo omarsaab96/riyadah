@@ -311,14 +311,6 @@ const styles = StyleSheet.create({
         height: 16,
         resizeMode: 'contain',
     },
-    rangeContainer: {
-
-    },
-    subtitle: {
-        fontFamily: "Manrope",
-        fontSize: 16,
-        fontWeight: 'bold'
-    },
     rangeSliderContainer: {
         flexDirection: 'row',
         alignItems: 'center',

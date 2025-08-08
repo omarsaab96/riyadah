@@ -29,7 +29,7 @@ export default function Login() {
     const checkAuth = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        router.replace('/landing'); 
+        router.replace('/landing');
       }
     };
 
@@ -256,14 +256,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10
+    marginTop: 10,
+    color: 'black'
   },
   switchLink: {
     marginLeft: 5,
     fontFamily: 'Bebas',
     fontSize: 16,
     paddingTop: 3,
-    lineHeight: 16
+    lineHeight: 16,
+    color: 'black'
   },
   error: {
     marginBottom: 15,

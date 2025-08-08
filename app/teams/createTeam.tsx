@@ -546,7 +546,8 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: "Bebas",
         fontSize: 20,
-        marginBottom: 10
+        marginBottom: 10,
+        color:'black'
     },
     input: {
         fontSize: 14,
@@ -568,6 +569,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
+        color:'black'
     },
     submitButton: {
         backgroundColor: '#FF4000',
@@ -623,7 +625,8 @@ const styles = StyleSheet.create({
     },
     uploadHint: {
         fontFamily: 'Manrope',
-        marginBottom: 10
+        marginBottom: 10,
+        color:'#111111'
     },
     emptyImage: {
         height: 100,

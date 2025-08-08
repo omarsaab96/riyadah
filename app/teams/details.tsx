@@ -764,7 +764,8 @@ const styles = StyleSheet.create({
     },
     uploadHint: {
         fontFamily: 'Manrope',
-        marginBottom: 10
+        marginBottom: 10,
+        color:'#111111'
     },
     emptyImage: {
         height: 100,
@@ -798,21 +799,19 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: "Bebas",
-        fontSize: 20
+        fontSize: 20,
+        color:'black'
     },
     subtitle: {
         fontFamily: "Manrope",
         fontSize: 16,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color:'black'
     },
     paragraph: {
         fontFamily: "Manrope",
-        fontSize: 16
-    },
-    profileLink: {
-        color: '#FF4000',
-        fontSize: 14,
-        fontFamily: 'Manrope'
+        fontSize: 16,
+        color:'black'
     },
     locationLink: {
         backgroundColor: '#cccccc',

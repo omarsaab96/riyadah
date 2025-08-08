@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingBottom: 80
+        paddingBottom: 100,
     },
     accountOption: {
         borderWidth: 1,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 50,
+        bottom: 45,
         left: 0,
         width: width,
         paddingLeft: 20,

@@ -1290,7 +1290,8 @@ const styles = StyleSheet.create({
     },
     uploadHint: {
         fontFamily: 'Manrope',
-        marginBottom: 10
+        marginBottom: 10,
+        color:'#111111'
     },
     emptyImage: {
         height: 120,

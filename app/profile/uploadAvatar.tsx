@@ -83,6 +83,7 @@ export default function UploadAvatar() {
 
             if (sizeInMB > 2) {
                 setError("Image too large. Max 2MB");
+                setUploading(false);
                 return;
             }
 
@@ -364,7 +365,8 @@ const styles = StyleSheet.create({
     },
     uploadHint: {
         fontFamily: 'Manrope',
-        marginBottom: 10
+        marginBottom: 10,
+        color:'#111111'
     },
     emptyImage: {
         height: 200,

@@ -1,17 +1,20 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    ActivityIndicator,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
-const sportTypes = [
-    { label: 'Football', icon: require('../../assets/football.png') },
-    { label: 'Basketball', icon: require('../../assets/basketball.png') },
-    { label: 'Gymnastics', icon: require('../../assets/gymnastics.png') },
-    { label: 'Racing', icon: require('../../assets/racing.png') },
-    { label: 'Golf', icon: require('../../assets/golf.png') },
-];
 
 export default function WizardStep3() {
     const router = useRouter();
@@ -20,21 +23,27 @@ export default function WizardStep3() {
     const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : []);
     const [error, setError] = useState<string | null>(null);
     const [independent, setIndependent] = useState<boolean>(formData.organization.independent ? true : false);
-
     const [orgName, setOrgName] = useState<string | null>(formData.organization.name || null);
     const [orgLocation, setOrgLocation] = useState<string | null>(formData.organization.location || null);
     const [orgRole, setOrgRole] = useState<string | null>(formData.organization.role || null);
     const [orgSince, setOrgSince] = useState<string | null>(formData.organization.since || null);
-
+    const [searching, setSearching] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState<any>(null);
+    const [sportTypes, setSportTypes] = useState([
+        { label: 'Football', icon: require('../../assets/football.png'), visible: true },
+        { label: 'Basketball', icon: require('../../assets/basketball.png'), visible: true },
+        { label: 'Gymnastics', icon: require('../../assets/gymnastics.png'), visible: true },
+        { label: 'Racing', icon: require('../../assets/racing.png'), visible: true },
+        { label: 'Golf', icon: require('../../assets/golf.png'), visible: true }
+    ]);
 
     useEffect(() => {
         const checkAuth = async () => {
             const token = await SecureStore.getItemAsync('userToken');
             if (token) {
-                router.replace('/profile'); // Redirect if token exists
+                router.replace('/profile');
             }
         };
-
         checkAuth();
     }, []);
 
@@ -52,7 +61,7 @@ export default function WizardStep3() {
                             since: null,
                             independent: true
                         }
-                    })
+                    });
                 } else {
                     updateFormData({
                         organization: {
@@ -62,11 +71,9 @@ export default function WizardStep3() {
                             since: orgSince,
                             independent: false
                         }
-                    })
+                    });
                 }
-
                 router.push('/wizard/step5');
-
             } else if (formData.type === "Club") {
                 router.push('/wizard/step5');
             } else {
@@ -75,17 +82,17 @@ export default function WizardStep3() {
         } else {
             setError('Kindly select a sport type');
         }
-    }
+    };
 
     const toggleSportSelection = (label: string) => {
         if (formData.type === "Club" || formData.type === "Scout" || formData.type === "Sponsor") {
             setSelected(prev =>
                 prev.includes(label)
-                    ? prev.filter(item => item !== label) // Remove if already selected
-                    : [...prev, label]                    // Add if not selected
+                    ? prev.filter(item => item !== label)
+                    : [...prev, label]
             );
         } else {
-            setSelected([label]); // Single selection for non-Club users
+            setSelected([label]);
         }
     };
 
@@ -93,7 +100,6 @@ export default function WizardStep3() {
         setIndependent(prev => !prev);
     };
 
-    // Create a handler for nested state updates
     const handleNestedChange = (parentField: string, fieldName: string, value: string) => {
         updateFormData(prev => ({
             ...prev,
@@ -104,6 +110,32 @@ export default function WizardStep3() {
         }));
     };
 
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+
+        if (text.trim().length < 3) {
+            setSportTypes(prev =>
+                prev.map(sport => ({ ...sport, visible: true }))
+            );
+            return;
+        }
+
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        const timeout = setTimeout(() => {
+            const lowerKeyword = text.trim().toLowerCase();
+
+            setSportTypes(prev =>
+                prev.map(sport => ({
+                    ...sport,
+                    visible: sport.label.toLowerCase().includes(lowerKeyword)
+                }))
+            );
+        }, 500);
+
+        setDebounceTimeout(timeout);
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.pageHeader}>
@@ -112,121 +144,132 @@ export default function WizardStep3() {
                     style={styles.logo}
                     resizeMode="contain"
                 />
-
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>
                         {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'Sport type' : 'Organization'}
                     </Text>
                     <Text style={styles.pageDesc}>
-                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'What do you do?' : 'What organization do yo work for?'}
+                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'What do you do?' : 'What organization do you work for?'}
                     </Text>
                 </View>
-
                 <Text style={styles.ghostText}>
                     {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'Sport' : 'Organi'}
                 </Text>
-
             </View>
-            <ScrollView>
-                {(formData.type == "Scout" || formData.type == "Sponsor") &&
-                    <View >
-                        <View style={styles.form}>
-                            {error != null && <View style={styles.error}>
+
+            {(formData.type === "Scout" || formData.type === "Sponsor") && (
+                <View>
+                    <View style={styles.form}>
+                        {error && (
+                            <View style={styles.error}>
                                 <View style={styles.errorIcon}></View>
                                 <Text style={styles.errorText}>{error}</Text>
-                            </View>}
-                            <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
-                                <View style={styles.checkbox}>
-                                    {independent && <View style={styles.checked} >
+                            </View>
+                        )}
+                        <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+                            <View style={styles.checkbox}>
+                                {independent && (
+                                    <View style={styles.checked}>
                                         <Image source={require('../../assets/check.png')} style={styles.checkImage} />
-                                    </View>}
-                                </View>
+                                    </View>
+                                )}
+                            </View>
+                            <Text style={styles.label}>
+                                I don't have an organization. I am independent
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-                                <Text style={styles.label}>
-                                    I don't have an organization. I am independent
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {!independent && <View style={styles.form}>
+                    {!independent && (
+                        <View style={styles.form}>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
-                                    Organization name
-                                </Text>
+                                <Text style={styles.title}>Organization name</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Organization name"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.name}
-                                    onChangeText={(text) => setOrgName(text)}
+                                    onChangeText={setOrgName}
                                 />
                             </View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
-                                    Organization Location
-                                </Text>
+                                <Text style={styles.title}>Organization Location</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Organization Location"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.location}
-                                    onChangeText={(text) => setOrgLocation(text)}
+                                    onChangeText={setOrgLocation}
                                 />
                             </View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
-                                    Your role in the organization
-                                </Text>
+                                <Text style={styles.title}>Your role in the organization</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Your rolerol"
+                                    placeholder="Your role"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.role}
-                                    onChangeText={(text) => setOrgRole(text)}
+                                    onChangeText={setOrgRole}
                                 />
                             </View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
-                                    In What year did you start working with this organization?
-                                </Text>
+                                <Text style={styles.title}>In what year did you start working here?</Text>
                                 <TextInput
                                     style={styles.input}
                                     placeholder="YYYY"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization.since}
-                                    onChangeText={(text) => setOrgSince(text)}
+                                    onChangeText={setOrgSince}
                                 />
                             </View>
-
                         </View>
+                    )}
+
+                    <View style={styles.form}>
+                        <Text style={styles.title}>What sports are you interested in?</Text>
+                    </View>
+                </View>
+            )}
+
+            <View style={styles.form}>
+                {error && (
+                    <View style={styles.error}>
+                        <View style={styles.errorIcon}></View>
+                        <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                )}
+                <View style={styles.searchContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={keyword}
+                        onChangeText={handleSearchInput}
+                        placeholderTextColor="#888888"
+                        placeholder="Search (Min. 3 characters)"
+                    />
+                    {searching && (
+                        <ActivityIndicator
+                            size="small"
+                            color="#FF4000"
+                            style={styles.searchLoader}
+                        />
+                    )}
+                </View>
+            </View>
+
+            <ScrollView>
+                <View style={styles.wizardContainer}>
+                    {(() => {
+                        const visibleSports = sportTypes.filter(sport => sport.visible);
+
+                        if (visibleSports.length === 0) {
+                            return (
+                                <Text style={styles.noResultsText}>
+                                    No sports found for '<Text style={{ fontWeight: 'bold' }}>{keyword}</Text>'
+                                </Text>
+                            );
                         }
 
-                        <View style={styles.form}>
-                            <Text style={styles.title}>
-                                What sports are you interested in?
-                            </Text>
-                        </View>
-
-                    </View>
-                }
-
-                <View style={{ paddingBottom: 40 }}>
-                    <View style={styles.form}>
-                        {error != null && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
-                            <Text style={styles.errorText}>{error}</Text>
-                        </View>}
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Search"
-                            placeholderTextColor="#A8A8A8"
-                            value={keyword}
-                            onChangeText={setKeyword}
-                        />
-                    </View>
-
-                    <View style={styles.wizardContainer}>
-                        {sportTypes.map(({ label, icon }) => {
+                        return visibleSports.map(({ label, icon }) => {
                             const isSelected = selected.includes(label);
                             return (
                                 <TouchableOpacity
@@ -238,17 +281,18 @@ export default function WizardStep3() {
                                     onPress={() => toggleSportSelection(label)}
                                 >
                                     <Image source={icon} style={styles.icon} resizeMode="contain" />
-                                    <Text style={[
-                                        styles.accountText,
-                                        isSelected && styles.accountTextSelected
-                                    ]}>
+                                    <Text
+                                        style={[
+                                            styles.accountText,
+                                            isSelected && styles.accountTextSelected
+                                        ]}
+                                    >
                                         {label}
                                     </Text>
                                 </TouchableOpacity>
                             );
-                        })}
-
-                    </View>
+                        });
+                    })()}
                 </View>
             </ScrollView>
 
@@ -339,7 +383,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingBottom: 80
+        paddingBottom: 100
     },
     accountOption: {
         borderWidth: 1,
@@ -377,7 +421,7 @@ const styles = StyleSheet.create({
     },
     fixedBottomSection: {
         position: 'absolute',
-        bottom: 50,
+        bottom: 45,
         left: 0,
         width: width,
         paddingLeft: 20,
@@ -453,5 +497,13 @@ const styles = StyleSheet.create({
         fontFamily: "Bebas",
         fontSize: 20,
         marginBottom: 10
+    },
+    searchContainer: {
+        position: 'relative'
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: 15,
+        right: 10,
     },
 });
