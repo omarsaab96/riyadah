@@ -350,7 +350,7 @@ router.put('/:teamId/members', authenticateToken, async (req, res) => {
     const usersToNotify = await User.find({ _id: { $in: newUniqueMembers } });
     for (const user of usersToNotify) {
       try {
-        await sendNotificationToUser(
+        await sendNotification(
           user,
           'Added to Team',
           `You have been added to the team "${team.name}"`,
