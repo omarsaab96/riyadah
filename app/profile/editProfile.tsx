@@ -54,6 +54,7 @@ export default function EditProfile() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
+                    setChildren(user.children)
                     if (user.contactInfo?.location) {
                         setLocation({
                             latitude: parseFloat(user.contactInfo.location.latitude),
@@ -63,8 +64,6 @@ export default function EditProfile() {
                 } else {
                     console.error('API error')
                 }
-
-
             }
         };
 
@@ -72,41 +71,8 @@ export default function EditProfile() {
     }, []);
 
     useEffect(() => {
-        getChildren();
+        // getChildren();
     }, [user])
-
-    const getChildren = async () => {
-        const token = await SecureStore.getItemAsync('userToken');
-        if (!token || !user.children || user.children.length === 0) {
-            setLoading(false)
-            return;
-        }
-
-        try {
-            const childData = [];
-
-            for (const childId of user.children) {
-                const res = await fetch(`https://riyadah.onrender.com/api/users/${childId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    childData.push(data);
-                } else {
-                    console.warn(`Failed to fetch child with ID: ${childId}`);
-                }
-            }
-
-            setChildren(childData);
-            setLoading(false)
-        } catch (err) {
-            console.error('Error fetching children:', err);
-        }
-    };
 
     const updateField = (field, value) => {
         const path = field.split('.');
@@ -211,29 +177,29 @@ export default function EditProfile() {
                             </TouchableOpacity>
 
                             <View style={{
-                                                            position:'absolute',
-                                                            bottom:5,
-                                                            left:0,
-                                                            right:0,
-                                                            flexDirection:'row',
-                                                            justifyContent:'center',
-                                                            alignItems:'center'
-                            
-                                                        }}>
+                                position: 'absolute',
+                                bottom: 5,
+                                left: 0,
+                                right: 0,
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center'
 
-                            {(user.image == null || user.image == "") &&
-                                <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
-                                    <Entypo name="plus" size={20} color="#FF4000" />
-                                    <Text style={styles.uploadImageText}>Upload avatar</Text>
-                                </TouchableOpacity>
-                            }
+                            }}>
 
-                            {user.image != null && user.image != "" &&
-                                <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
-                                    <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                    <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
-                                </TouchableOpacity>
-                            }
+                                {(user.image == null || user.image == "") &&
+                                    <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
+                                        <Entypo name="plus" size={20} color="#FF4000" />
+                                        <Text style={styles.uploadImageText}>Upload avatar</Text>
+                                    </TouchableOpacity>
+                                }
+
+                                {user.image != null && user.image != "" &&
+                                    <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
+                                        <FontAwesome name="refresh" size={16} color="#FF4000" />
+                                        <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
+                                    </TouchableOpacity>
+                                }
                             </View>
                         </View>}
 
@@ -255,7 +221,7 @@ export default function EditProfile() {
                                 {children?.length > 0 ? (<View style={styles.childrenList}>
                                     {children.map((child, index) => (
                                         <View key={index} style={styles.childItem}>
-                                            <Text>{child.name}</Text>
+                                            <Text>{child}</Text>
                                         </View>
                                     ))}
                                 </View>) : (
