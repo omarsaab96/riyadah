@@ -384,7 +384,8 @@ router.get('/:userId', async (req, res) => {
       .select('-password')
       .populate('isStaff')
       .populate('memberOf')
-      .populate('clubs');
+      .populate('clubs')
+      .populate('children');
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 

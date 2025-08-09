@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useRef, useState } from 'react';
-import CountryPicker from 'react-native-country-picker-modal';
 import { useRegistration } from '../../context/registration';
 
 import {
@@ -69,19 +68,21 @@ export default function ParentCreateAthlete() {
     const [selectedGender, setSelectedGender] = useState<string | null>(formData.gender || null);
     const [childRegistered, setChildRegistered] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [saving, setSaving] = useState(false);
+
 
     const dayRef = useRef(null);
     const monthRef = useRef(null);
     const yearRef = useRef(null);
 
-    const checkAvailability = async (email: string, phone: string) => {
+    const checkAvailability = async (email: string, phone?: string) => {
         try {
             const response = await fetch('https://riyadah.onrender.com/api/users/check', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, phone })
+                body: JSON.stringify({ email })
             });
 
             const data = await response.json();
@@ -137,19 +138,19 @@ export default function ParentCreateAthlete() {
     };
 
     const handleCopy = () => {
-        const loginInfo = `You can use these email to login to your Riyadah account\nEmail: ${formData.email}`;
-        Clipboard.setStringAsync(loginInfo);
-        setCopied(true);
-
-        setTimeout(() => {
-            setCopied(false)
-        }, 2000)
-    }
+            const loginInfo = `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`;
+            Clipboard.setStringAsync(loginInfo);
+            setCopied(true);
+    
+            setTimeout(() => {
+                setCopied(false)
+            }, 2000)
+        }
 
     const handleShare = async () => {
         try {
             const result = await Share.share({
-                message: `Hello, ${formData.name}! You can use this email to login to your Riyadah account ${formData.email}`,
+                message: `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`,
             });
 
             if (result.action === Share.sharedAction) {
@@ -167,60 +168,60 @@ export default function ParentCreateAthlete() {
     };
 
     const handleRegister = async () => {
-        setLoading(true)
+        setSaving(true)
 
-        if (!agreed) {
-            setError('Kindly agree to terms')
-            return;
-        }
+        // if (!agreed) {
+        //     setError('Kindly agree to terms')
+        //     return;
+        // }
 
-        if (!selectedGender) {
-            setError('Kindly select a gender')
-            return;
-        }
+        // if (!selectedGender) {
+        //     setError('Kindly select a gender')
+        //     return;
+        // }
 
-        if (!independent && !selectedClub) {
-            setError('Kindly select a club')
-        }
+        // if (!independent && !selectedClub) {
+        //     setError('Kindly select a club')
+        // }
 
-        if (!selectedSport) {
-            setError('Kindly select a sport type')
-        }
+        // if (!selectedSport) {
+        //     setError('Kindly select a sport type')
+        // }
 
-        if (!day && !month && !year) {
-            setError('Kindly fill date of birth')
-        }
+        // if (!day && !month && !year) {
+        //     setError('Kindly fill date of birth')
+        // }
 
-        if (name != null && email != null && phoneNumber != null) {
-            const checkResult = await checkAvailability(email, phoneNumber);
+        if (name != null && email != null) {
+            const checkResult = await checkAvailability(email);
 
             if (!checkResult.success) {
                 setError(checkResult.msg);
-                setLoading(false);
+                setSaving(false);
                 return;
             }
 
         } else {
-            setLoading(false)
-            setError('Please fill name, email and phone number');
+            setSaving(false)
+            setError('Please fill name and email');
         }
 
         updateFormData({
             name: name,
             email: email,
-            phone: phoneNumber,
-            gender: selectedGender,
-            country: countryCode,
-            agreed: agreed,
+            // phone: phoneNumber,
+            // gender: selectedGender,
+            // country: countryCode,
+            // agreed: agreed,
             parentEmail: user.email,
             type: "Athlete",
-            sport: selectedSport,
-            dob: {
-                day: day,
-                month: month,
-                year: year
-            },
-            club: independent ? 'Independent' : selectedClub,
+            // sport: selectedSport,
+            // dob: {
+            //     day: day,
+            //     month: month,
+            //     year: year
+            // },
+            // club: independent ? 'Independent' : selectedClub,
             verified: null,
             personalAccount: false,
             isStaff: []
@@ -248,12 +249,16 @@ export default function ParentCreateAthlete() {
             console.error('Child creation failed:', err);
             setError('Something went wrong. Please try again later.');
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
 
 
 
         setChildRegistered(true)
+    };
+
+    const handleCancel = () => {
+        router.back();
     };
 
     return (
@@ -298,7 +303,7 @@ export default function ParentCreateAthlete() {
                             autoCapitalize="words"
                         />
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { marginBottom: 5 }]}
                             placeholder="Child email"
                             placeholderTextColor="#A8A8A8"
                             value={email}
@@ -306,7 +311,9 @@ export default function ParentCreateAthlete() {
                             keyboardType="email-address"
                             autoCapitalize="none"
                         />
-                        <View style={styles.phoneContainer}>
+                        <Text style={styles.uploadHint}>This will be used to login</Text>
+
+                        {/* <View style={styles.phoneContainer}>
                             <View style={styles.phonePicker}>
                                 <CountryPicker
                                     countryCode={countryCode}
@@ -450,9 +457,9 @@ export default function ParentCreateAthlete() {
                                     </Text>
                                 </TouchableOpacity>
                             ))}
-                        </View>}
+                        </View>} */}
 
-                        <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+                        {/* <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
                             <View style={styles.checkbox}>
                                 {agreed && <View style={styles.checked} >
                                     <Image source={require('../../assets/check.png')} style={styles.checkImage} />
@@ -465,7 +472,7 @@ export default function ParentCreateAthlete() {
                                     Terms & Conditions
                                 </Text>
                             </Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
 
 
                         {error != '' && <View style={styles.error}>
@@ -473,7 +480,7 @@ export default function ParentCreateAthlete() {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/profile/addChildren')}>
+                        {/* <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/profile/addChildren')}>
                             <Image source={require('../../assets/buttonBeforeLight.png')} style={styles.sideRect} />
                             <View style={styles.createAccountButton}>
                                 <Text style={styles.createAccountText}>cancel</Text>
@@ -493,14 +500,30 @@ export default function ParentCreateAthlete() {
                                 )}
                             </View>
                             <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
+
+                        <View style={[styles.profileActions, styles.inlineActions]}>
+                            <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                <Text style={styles.profileButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleRegister} style={[styles.profileButton, styles.savebtn]}>
+                                <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
+                                {saving && (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#111111"
+                                        style={styles.saveLoaderContainer}
+                                    />
+                                )}
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
-                    <View style={styles.disclaimer}>
+                    {/* <View style={styles.disclaimer}>
                         <Text style={styles.hint}>
                             By agreeing to the above terms, you are consenting that your personal information will be collected, stored, and processed on behalf of RIYADAH
                         </Text>
-                    </View>
+                    </View> */}
                 </ScrollView>
                 }
 
@@ -513,10 +536,10 @@ export default function ParentCreateAthlete() {
                         <Text style={styles.confirmationSubTitle}>
                             Email: {formData.email}
                         </Text>
-
+                        {/* 
                         <Text style={styles.confirmationSubTitle}>
                             Password: {formData.password}
-                        </Text>
+                        </Text> */}
 
                         <View style={[styles.profileActions, styles.inlineActions]}>
                             <TouchableOpacity onPress={handleCopy} style={styles.profileButton}>
@@ -533,8 +556,10 @@ export default function ParentCreateAthlete() {
                                 )}
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
-                                <Feather name="share-2" size={16} color="black" />
-                                <Text style={styles.profileButtonText}>Share</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                    <Feather name="share-2" size={16} color="black" />
+                                    <Text style={styles.profileButtonText}>Share</Text>
+                                </View>
                             </TouchableOpacity>
                         </View>
 
@@ -849,10 +874,14 @@ const styles = StyleSheet.create({
         fontSize: 16
     },
     profileActions: {
-        paddingTop: 10
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.2)',
+        paddingTop: 10,
+        marginTop: 20
     },
     inlineActions: {
         flexDirection: 'row',
+        justifyContent: 'flex-end',
         columnGap: 15
     },
     profileButtonText: {
@@ -879,5 +908,13 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#150000',
         fontFamily: 'Bebas',
+    },
+    uploadHint: {
+        fontFamily: 'Manrope',
+        marginBottom: 10,
+        color: '#111111'
+    },
+    saveLoaderContainer: {
+        marginLeft: 10
     },
 });

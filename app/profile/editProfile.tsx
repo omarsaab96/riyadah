@@ -152,7 +152,7 @@ export default function EditProfile() {
     }
 
     const handleAddChildren = () => {
-        router.replace('/profile/addChildren');
+        router.push('/profile/addChildren');
     }
 
     return (
@@ -813,7 +813,7 @@ export default function EditProfile() {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
-        height: '100%'
+        height: '100%',
     },
     contentContainer: {
         padding: 20,

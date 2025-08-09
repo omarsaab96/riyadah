@@ -49,18 +49,17 @@ export default function AddChildren() {
                     const user = await response.json();
                     setUser(user)
                     setChildren(user.children)
+
                 } else {
                     console.error('API error')
                 }
+
+                setLoading(false)
             }
         };
 
         fetchUser();
     }, []);
-
-    useEffect(() => {
-        console.log(user)
-    }, [user])
 
     const updateField = (field, value) => {
         const path = field.split('.');
@@ -113,7 +112,7 @@ export default function AddChildren() {
 
     const handleSearchInput = (text: string) => {
         setKeyword(text);
-        if(text.trim().length<3){
+        if (text.trim().length < 3) {
             setSearchResults([]);
             return;
         }
@@ -167,6 +166,8 @@ export default function AddChildren() {
                 setError(`${child.name} is already added as a child`);
             }
 
+            setChildren(updatedChildren)
+
             return { ...prev, children: updatedChildren };
         });
     };
@@ -176,10 +177,9 @@ export default function AddChildren() {
     }
 
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
             >
                 <View style={styles.container}>
                     <View style={styles.pageHeader}>
@@ -208,13 +208,13 @@ export default function AddChildren() {
                     </View>
 
                     {user && !loading && <ScrollView>
-
                         <View style={styles.contentContainer}>
                             {error != '' && <View style={styles.error}>
                                 <View style={styles.errorIcon}></View>
                                 <Text style={styles.errorText}>{error}</Text>
                             </View>}
-                            {user.type == "Parent" && <View style={styles.entity}>
+
+                            {user?.type == "Parent" && <View style={styles.entity}>
                                 <View style={styles.noChildrenView}>
                                     <Text style={[styles.title, { marginBottom: 0 }]}>
                                         Children ({children?.length || 0})
@@ -261,28 +261,42 @@ export default function AddChildren() {
                                 {keyword.trim().length >= 3 && !searching && (
                                     <View style={{ marginTop: 10 }}>
                                         {searchResults.length > 0 && !searching &&
-                                            searchResults.map((athlete, i) => (
-                                                <View key={i} >
-                                                    <TouchableOpacity
-                                                        style={styles.searchResultItem}
-                                                        onPress={() => { handleAddChildToParent(athlete) }}>
-                                                        <View style={styles.searchResultItemImageContainer}>
-                                                            <Image
-                                                                style={styles.searchResultItemImage}
-                                                                source={{ uri: athlete.image }}
-                                                            />
-                                                        </View>
-                                                        <View style={styles.searchResultItemInfo}>
-                                                            <View>
-                                                                <Text style={styles.searchResultItemName}>{athlete.name}</Text>
-                                                                <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                            searchResults.map((athlete, i) => {
+                                                const alreadyAdded = children?.some((c) => c._id === athlete._id);
+
+                                                return (
+                                                    <View key={i} >
+                                                        <TouchableOpacity
+                                                            style={styles.searchResultItem}
+                                                            onPress={() => { handleAddChildToParent(athlete) }}
+                                                            disabled={alreadyAdded}>
+                                                            <View style={styles.searchResultItemImageContainer}>
+                                                                <Image
+                                                                    style={styles.searchResultItemImage}
+                                                                    source={{ uri: athlete.image }}
+                                                                />
                                                             </View>
-                                                            <Text style={styles.searchResultItemLink}>+ Add As Child</Text>
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            ))
-                                        }
+                                                            <View style={styles.searchResultItemInfo}>
+                                                                <View>
+                                                                    <Text style={styles.searchResultItemName}>{athlete.name}</Text>
+                                                                    <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                                                </View>
+                                                                <Text
+                                                                    style={
+                                                                        [
+                                                                            styles.searchResultItemLink,
+                                                                            alreadyAdded && { color: 'gray', fontStyle: 'italic' }
+                                                                        ]
+                                                                    }
+                                                                >
+                                                                    {alreadyAdded ? 'Already a child' : '+ Add As Child'}
+                                                                </Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                )
+                                            }
+                                            )}
 
                                         {searchResults.length == 0 && !searching && user.type == "Parent" &&
                                             <View>
@@ -323,13 +337,13 @@ export default function AddChildren() {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    </ScrollView>
-                    }
+                    </ScrollView>}
+
 
 
                 </View >
             </KeyboardAvoidingView>
-            
+
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../../assets/settings.png')} style={styles.icon} />
@@ -358,7 +372,7 @@ export default function AddChildren() {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
-        height: '100%'
+        height: '100%',
     },
     contentContainer: {
         padding: 20,
@@ -593,7 +607,7 @@ const styles = StyleSheet.create({
     },
     saveLoaderContainer: {
         marginLeft: 10
-    },   
+    },
     uploadImage: {
         backgroundColor: '#111111',
         padding: 2,
@@ -651,11 +665,12 @@ const styles = StyleSheet.create({
     searchResultItem: {
         marginBottom: 10,
         flexDirection: 'row',
-        columnGap: 20
+        columnGap: 10,
+        alignItems: 'center'
     },
     searchResultItemImageContainer: {
-        width: 80,
-        height: 80,
+        width: 40,
+        height: 40,
         borderRadius: 10,
         backgroundColor: '#f4f4f4'
     },
@@ -667,7 +682,11 @@ const styles = StyleSheet.create({
     searchResultItemInfo: {
         fontFamily: 'Manrope',
         fontSize: 16,
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flex: 1
     },
     searchResultItemLink: {
         color: '#FF4000'
