@@ -274,10 +274,8 @@ router.post('/',
                 });
             }
 
-            const notificationTitle = `New ${eventType} event: ${title}`;
-            const notificationBody = description
-                ? description.length > 100 ? description.substring(0, 97) + '...' : description
-                : 'You have a new event scheduled.';
+            const notificationTitle = `New ${eventType}: ${title}`;
+            const notificationBody = `You have a new event scheduled for ${startDateTime}.`;
 
             // Send notifications one by one (can be optimized with batching)
             for (const user of usersToNotify) {
