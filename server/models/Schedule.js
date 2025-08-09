@@ -31,10 +31,10 @@ const scheduleSchema = new Schema({
     locationType: String,
     venue: String,
     onlineLink: String,
-    team: [{
+    team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team',
-    }],
+    },
     coaches: [String],
 
     // For matches
