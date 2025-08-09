@@ -157,9 +157,6 @@ router.get('/', authenticate, async (req, res) => {
             status: { $ne: 'cancelled' }
         };
 
-        console.log('Incoming request with query:', req.query);
-        console.log('User making request:', req.user);
-
         if (team) filters.team = team;
         if (eventType) filters.eventType = eventType;
         if (startDate && endDate) {
@@ -277,15 +274,20 @@ router.post('/',
             const notificationTitle = `New ${eventType}: ${title}`;
             const notificationBody = `You have a new event scheduled for ${startDateTime}.`;
 
+            console.log("usersToNotify= ", usersToNotify)
+
             // Send notifications one by one (can be optimized with batching)
             for (const user of usersToNotify) {
-                await sendNotification(
-                    user,
-                    notificationTitle,
-                    notificationBody,
-                    {eventId: newEvent._id.toString() });
+                try {
+                    await sendNotification(
+                        user,
+                        notificationTitle,
+                        notificationBody,
+                        { eventId: newEvent._id.toString() });
+                } catch (err) {
+                    console.error(`Failed to send notification to user ${user._id}:`, err.message);
+                }
             }
-            // if createdby type is club = > team members and coaches should be notified
 
             res.status(201).json({ success: true, data: populatedEvent });
         } catch (err) {

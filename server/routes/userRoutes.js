@@ -42,7 +42,7 @@ router.post('/login', async (req, res) => {
 // Create user
 router.post('/', async (req, res) => {
   try {
-    console.log('Incoming body:', req.body);
+    // console.log('Incoming body:', req.body);
     const newUser = await User.create(req.body);
 
     const token = jwt.sign({ userId: newUser._id }, "123456");
@@ -165,7 +165,7 @@ router.get('/byClub/:clubId', async (req, res) => {
     const teams = await Team.find({ club: clubId }).select('_id');
     const teamIds = teams.map(team => team._id);
 
-    console.log('Found teams for club:', teamIds); // 👈 Log teams
+    // console.log('Found teams for club:', teamIds); // 👈 Log teams
 
 
     // Base condition for users linked to this club
@@ -197,7 +197,7 @@ router.get('/byClub/:clubId', async (req, res) => {
       };
     }
 
-    console.log('Final MongoDB query:', JSON.stringify(finalQuery, null, 2)); // 👈 Log full query
+    // console.log('Final MongoDB query:', JSON.stringify(finalQuery, null, 2)); // 👈 Log full query
 
     const users = await User.find(finalQuery)
       .select('_id name email image memberOf clubs isStaff')
@@ -350,7 +350,6 @@ router.put('/association/:userId/remove-clubs', authenticateToken, async (req, r
   }
 });
 
-
 //Edit user
 router.put('/:userId', authenticateToken, async (req, res) => {
   const { userId } = req.params;
@@ -389,7 +388,7 @@ router.get('/:userId', async (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    console.log(user)
+    // console.log(user)
 
     res.json(user);
   } catch (err) {
