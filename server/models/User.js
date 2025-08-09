@@ -9,11 +9,7 @@ const userSchema = new mongoose.Schema({
   },
   agreed: Boolean,
   bio: String,
-  children: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: []
-  }],
+  children: [String],
   clubs: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
