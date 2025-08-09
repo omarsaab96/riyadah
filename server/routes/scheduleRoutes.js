@@ -251,6 +251,8 @@ router.post('/',
                 .populate('team', 'name sport ageGroup')
                 .populate('createdBy', 'name image type');
 
+            console.log(populatedEvent.createdBy.type)
+
             // Notification logic
             const creatorType = populatedEvent.createdBy.type;
             const teamData = populatedEvent.team;
