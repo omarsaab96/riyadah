@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import Feather from '@expo/vector-icons/Feather';
 import { Picker, Picker as RNPicker } from '@react-native-picker/picker';
-import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -13,6 +14,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    Share,
     StyleSheet,
     Text,
     TextInput,
@@ -45,8 +47,11 @@ const CreateStaffScreen = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showBasicInfo, setShowBasicInfo] = useState(false);
     const [showSearchSection, setShowSearchSection] = useState(true);
+    const [showSearchRetrySection, setShowSearchRetrySection] = useState(true);
     const [showProfessionalInfo, setShowProfessionalInfo] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
     const [searchindex, setSearchindex] = useState(0);
+    const [copied, setCopied] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -55,7 +60,7 @@ const CreateStaffScreen = () => {
         qualifications: [],
         certifications: [],
         employmentType: 'Full-time',
-        salary: '0 EUR',
+        salary: '0 USD',
         teams: [],
         isActive: true,
     });
@@ -118,46 +123,6 @@ const CreateStaffScreen = () => {
 
     useEffect(() => {
     }, [user]);
-
-    const handleImagePick = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if (!permissionResult.granted) {
-            alert("Permission to access media library is required!");
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            base64: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            setUploading(true);
-            const base64 = result.assets[0].base64;
-            const base64Length = base64.length;
-            const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
-
-            if (sizeInMB > 2) {
-                setError("Image too large. Max 2MB");
-                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                setUploading(false)
-                return;
-            } else {
-                setError(null)
-            }
-
-            setImage(base64);
-            setFormData(prev => ({
-                ...prev,
-                image: "data:image/png;base64," + base64,
-            }));
-            setUploading(false);
-        }
-    };
 
     const handleChange = (name, value) => {
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -248,12 +213,7 @@ const CreateStaffScreen = () => {
                 body: JSON.stringify(dataToSubmit)
             });
 
-
-            console.log('Final FormData:', formData);
-
             const data = await response.json();
-
-            console.log("response ", data)
 
             if (!response.ok) {
                 // Handle validation errors from server
@@ -263,9 +223,11 @@ const CreateStaffScreen = () => {
                 throw new Error(errorMsg);
             }
 
-            Alert.alert('Success', 'Staff member created successfully!', [
-                { text: 'OK', onPress: () => router.back() }
-            ]);
+            setShowBasicInfo(false)
+            setShowProfessionalInfo(false)
+            setShowSearchSection(false)
+            setShowSearchRetrySection(false)
+            setShowConfirmation(true)
         } catch (error) {
             // console.error('Error creating staff:', error);
             setError(error.message);
@@ -402,6 +364,35 @@ const CreateStaffScreen = () => {
         }
     };
 
+    const handleCopy = () => {
+        const loginInfo = `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`;
+        Clipboard.setStringAsync(loginInfo);
+        setCopied(true);
+
+        setTimeout(() => {
+            setCopied(false)
+        }, 2000)
+    }
+
+    const handleShare = async () => {
+        try {
+            const result = await Share.share({
+                message: `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`,
+            });
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type:', result.activityType);
+                } else {
+                    console.log('Credentials shared');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.error('Error sharing post:', error.message);
+        }
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -493,7 +484,7 @@ const CreateStaffScreen = () => {
                                     </Text>
 
                                     <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
-                                        Don't worry you can still create a new staff by clicking on the button below
+                                        Don't worry you can still create a new staff by clicking on the button below.
                                     </Text>
 
                                     <TouchableOpacity
@@ -517,7 +508,7 @@ const CreateStaffScreen = () => {
                                     </Text>
 
                                     <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
-                                        Don't worry you can still create a new staff by clicking on the button below
+                                        Don't worry you can still create a new staff by clicking on the button below.
                                     </Text>
 
                                     <TouchableOpacity
@@ -559,7 +550,7 @@ const CreateStaffScreen = () => {
                             </View>
                         )}
 
-                        {selectedUser == null && !showSearchSection && (
+                        {selectedUser == null && !showSearchSection && showSearchRetrySection && (
 
                             <TouchableOpacity
                                 style={[styles.clearSelectionButton, { marginLeft: 0 }]}
@@ -579,7 +570,7 @@ const CreateStaffScreen = () => {
                         {showBasicInfo && <View>
                             <Text style={styles.sectionTitle}>Basic Information</Text>
 
-                            <View style={styles.formGroup}>
+                            {/* <View style={styles.formGroup}>
                                 <Text style={styles.label}>Image</Text>
 
                                 {!uploading && (
@@ -602,13 +593,13 @@ const CreateStaffScreen = () => {
                                         )}
                                     </TouchableOpacity>
                                 )}
-                            </View>
+                            </View> */}
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Full Name *</Text>
+                                <Text style={styles.label}>Name *</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Enter full name"
+                                    placeholder="Enter staff name"
                                     value={formData.name}
                                     onChangeText={(text) => handleChange('name', text)}
                                 />
@@ -617,13 +608,14 @@ const CreateStaffScreen = () => {
                             <View style={styles.formGroup}>
                                 <Text style={styles.label}>Email *</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, { marginBottom: 5 }]}
                                     placeholder="Enter email address"
                                     keyboardType="email-address"
                                     autoCapitalize="none"
                                     value={formData.email}
                                     onChangeText={(text) => handleChange('email', text)}
                                 />
+                                <Text style={styles.uploadHint}>This will be used to login</Text>
                             </View>
 
                         </View>}
@@ -961,6 +953,61 @@ const CreateStaffScreen = () => {
                             </View>
                         </View>}
 
+                        {showConfirmation &&
+                            <View>
+                                <Text style={styles.confirmationTitle}>
+                                    Staff account created successfully
+                                </Text>
+
+                                <Text style={styles.confirmationSubTitle}>
+                                    Email: {formData.email}
+                                </Text>
+
+                                <View style={[styles.profileActions, styles.inlineActions]}>
+                                    <TouchableOpacity onPress={handleCopy} style={styles.profileButton}>
+                                        {copied ? (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <Feather name="check" size={16} color="black" />
+                                                <Text style={styles.profileButtonText}>Copied</Text>
+                                            </View>
+                                        ) : (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <Feather name="copy" size={16} color="black" />
+                                                <Text style={styles.profileButtonText}>Copy</Text>
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                            <Feather name="share-2" size={16} color="black" />
+                                            <Text style={styles.profileButtonText}>Share</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }]}>
+                                    {`You can screenshot these credentials or copy/paste them to your staff in order to login to their account.\nYou will not be able to see these info again.`}
+                                </Text>
+
+                                <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/staff/createStaff')}>
+                                    <Image source={require('../../assets/buttonBeforeLight.png')} style={styles.sideRect} />
+                                    <View style={styles.createAccountButton}>
+                                        <Text style={styles.createAccountText}>Add another staff</Text>
+                                    </View>
+                                    <Image source={require('../../assets/buttonAfterLight.png')} style={styles.sideRectAfter} />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/profile')}>
+                                    <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
+                                    <View style={styles.loginButton}>
+                                        <Text style={styles.loginText}>Go back to staff list</Text>
+                                    </View>
+                                    <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+                                </TouchableOpacity>
+
+                            </View>
+                        }
+
                     </View>
                 </ScrollView>
             </View >
@@ -1291,7 +1338,7 @@ const styles = StyleSheet.create({
     uploadHint: {
         fontFamily: 'Manrope',
         marginBottom: 10,
-        color:'#111111'
+        color: '#111111'
     },
     emptyImage: {
         height: 120,
@@ -1370,6 +1417,64 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginRight: 10,
         backgroundColor: "#FF4000"
+    },
+    confirmationTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        marginBottom: 5,
+        color: 'black'
+    },
+    confirmationSubTitle: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        color: 'black'
+    },
+    hint: {
+        color: '#525252',
+        fontSize: 12,
+        fontFamily: 'Manrope'
+    },
+    fullButtonRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 4,
+    },
+    loginButton: {
+        flex: 1,
+        backgroundColor: '#000000',
+        height: 48,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row'
+    },
+    loginLoader: {
+        marginLeft: 10
+    },
+    loginText: {
+        fontSize: 20,
+        color: 'white',
+        fontFamily: 'Bebas',
+    },
+    sideRect: {
+        height: 48,
+        width: 13,
+    },
+    sideRectAfter: {
+        height: 48,
+        width: 13,
+        marginLeft: -1
+    },
+    createAccountButton: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        height: 48,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    createAccountText: {
+        fontSize: 20,
+        color: '#150000',
+        fontFamily: 'Bebas',
     },
 });
 

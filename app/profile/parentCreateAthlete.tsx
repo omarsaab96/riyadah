@@ -1,3 +1,4 @@
+import Feather from '@expo/vector-icons/Feather';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -13,6 +14,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    Share,
     StyleSheet,
     Text,
     TextInput,
@@ -135,14 +137,34 @@ export default function ParentCreateAthlete() {
     };
 
     const handleCopy = () => {
-        const loginInfo = `Email: ${formData.email}\nPassword: ${formData.password}`;
+        const loginInfo = `You can use these email to login to your Riyadah account\nEmail: ${formData.email}`;
         Clipboard.setStringAsync(loginInfo);
         setCopied(true);
+
+        setTimeout(() => {
+            setCopied(false)
+        }, 2000)
     }
 
-    // const handleShare = () => {
+    const handleShare = async () => {
+        try {
+            const result = await Share.share({
+                message: `Hello, ${formData.name}! You can use this email to login to your Riyadah account ${formData.email}`,
+            });
 
-    // }
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type:', result.activityType);
+                } else {
+                    console.log('Credentials shared');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.error('Error sharing post:', error.message);
+        }
+    };
 
     const handleRegister = async () => {
         setLoading(true)
@@ -169,7 +191,7 @@ export default function ParentCreateAthlete() {
             setError('Kindly fill date of birth')
         }
 
-        if (name != null && email != null && phoneNumber != null && password != null) {
+        if (name != null && email != null && phoneNumber != null) {
             const checkResult = await checkAvailability(email, phoneNumber);
 
             if (!checkResult.success) {
@@ -180,7 +202,7 @@ export default function ParentCreateAthlete() {
 
         } else {
             setLoading(false)
-            setError('Please fill name, email, phone number and password');
+            setError('Please fill name, email and phone number');
         }
 
         updateFormData({
@@ -188,7 +210,6 @@ export default function ParentCreateAthlete() {
             email: email,
             phone: phoneNumber,
             gender: selectedGender,
-            password: password,
             country: countryCode,
             agreed: agreed,
             parentEmail: user.email,
@@ -200,9 +221,9 @@ export default function ParentCreateAthlete() {
                 year: year
             },
             club: independent ? 'Independent' : selectedClub,
-            verified:null,
-            personalAccount:false,
-            isStaff:[]
+            verified: null,
+            personalAccount: false,
+            isStaff: []
         });
 
         try {
@@ -312,18 +333,6 @@ export default function ParentCreateAthlete() {
                                 value={phoneNumber}
                                 onChangeText={setPhoneNumber}
                             />
-                        </View>
-                        <TextInput
-                            style={[styles.input, styles.passwordInput]}
-                            placeholder="Child password"
-                            placeholderTextColor="#A8A8A8"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                        />
-
-                        <View style={styles.hintContainer}>
-                            <Text style={styles.hint}>Password must be at least 6 character long and include 1 capital letter and 1 symbol</Text>
                         </View>
 
                         <View style={styles.dobRow}>
@@ -511,13 +520,22 @@ export default function ParentCreateAthlete() {
 
                         <View style={[styles.profileActions, styles.inlineActions]}>
                             <TouchableOpacity onPress={handleCopy} style={styles.profileButton}>
-                                {!copied && <Text style={styles.profileButtonText}>Copy</Text>}
-                                {copied && <Text style={styles.profileButtonText}>Copied</Text>}
-
+                                {copied ? (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                        <Feather name="check" size={16} color="black" />
+                                        <Text style={styles.profileButtonText}>Copied</Text>
+                                    </View>
+                                ) : (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                        <Feather name="copy" size={16} color="black" />
+                                        <Text style={styles.profileButtonText}>Copy</Text>
+                                    </View>
+                                )}
                             </TouchableOpacity>
-                            {/* <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
+                            <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
+                                <Feather name="share-2" size={16} color="black" />
                                 <Text style={styles.profileButtonText}>Share</Text>
-                            </TouchableOpacity> */}
+                            </TouchableOpacity>
                         </View>
 
                         <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }]}>

@@ -48,6 +48,7 @@ export default function AddChildren() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
+                    setChildren(user.children)
                 } else {
                     console.error('API error')
                 }
@@ -58,44 +59,8 @@ export default function AddChildren() {
     }, []);
 
     useEffect(() => {
-        getChildren();
+        console.log(user)
     }, [user])
-
-    const getChildren = async () => {
-        const token = await SecureStore.getItemAsync('userToken');
-        if (!token || !user || !user.children || user.children.length === 0) {
-            setLoading(false)
-            return;
-        }
-
-        try {
-            const childData = [];
-
-            for (const childId of user.children) {
-                console.log('geting child: ', childId)
-                const res = await fetch(`https://riyadah.onrender.com/api/users/${childId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                console.log('child: ', res)
-
-                if (res.ok) {
-                    const data = await res.json();
-                    childData.push(data);
-                } else {
-                    console.warn(`Failed to fetch child with ID: ${childId}`);
-                }
-            }
-
-            setChildren(childData);
-            setLoading(false)
-        } catch (err) {
-            console.error('Error fetching children:', err);
-        }
-    };
 
     const updateField = (field, value) => {
         const path = field.split('.');
