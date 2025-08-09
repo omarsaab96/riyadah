@@ -257,13 +257,13 @@ router.post('/',
 
             let usersToNotify = [];
 
-            if (creatorType === 'coach') {
+            if (creatorType === 'Coach') {
                 // Notify team members and the club
                 usersToNotify = await User.find({
                     _id: { $in: [...teamData.members, teamData.club] },
                     expoPushToken: { $exists: true, $ne: null }
                 });
-            } else if (creatorType === 'club') {
+            } else if (creatorType === 'Club') {
                 // Notify team members and coaches
                 usersToNotify = await User.find({
                     _id: { $in: [...teamData.members, ...teamData.coaches] },
