@@ -251,7 +251,7 @@ router.post('/',
                 .populate('team', 'name sport ageGroup members coaches club')
                 .populate('createdBy', 'name type');
 
-                console.log(populatedEvent.team.members)
+                console.log(populatedEvent.team.coaches)
 
             // Notification logic
             const creatorType = populatedEvent.createdBy.type;
