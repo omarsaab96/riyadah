@@ -72,10 +72,10 @@ const scheduleSchema = new Schema({
     isPrivate: Boolean,
 
     // System
-    createdBy: [{
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-    }],
+    },
     club: String,
     createdAt: {
         type: Date,
