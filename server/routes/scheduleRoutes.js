@@ -274,7 +274,7 @@ router.post('/',
             }
 
             const notificationTitle = `New ${eventType}: ${title}`;
-            const notificationBody = `You have a new event scheduled for ${startDateTime}.`;
+            const notificationBody = `You have a new event scheduled for ${formatDateTime(startDateTime)}.`;
 
             console.log("usersToNotify= ", usersToNotify)
 
@@ -422,5 +422,21 @@ router.get('/team/:teamId',
         }
     }
 );
+
+
+function formatDateTime(dateInput) {
+  const date = new Date(dateInput);
+
+  const pad = (num) => num.toString().padStart(2, '0');
+
+  const day = pad(date.getDate());
+  const month = pad(date.getMonth() + 1); // Months are zero-based
+  const year = date.getFullYear();
+
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+
+  return `${day}/${month}/${year} at ${hours}:${minutes}`;
+}
 
 module.exports = router;

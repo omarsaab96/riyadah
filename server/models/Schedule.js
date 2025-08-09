@@ -31,7 +31,10 @@ const scheduleSchema = new Schema({
     locationType: String,
     venue: String,
     onlineLink: String,
-    team: Schema.Types.ObjectId,
+    team: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+    }],
     coaches: [String],
 
     // For matches
@@ -69,7 +72,10 @@ const scheduleSchema = new Schema({
     isPrivate: Boolean,
 
     // System
-    createdBy: String,
+    createdBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
     club: String,
     createdAt: {
         type: Date,
