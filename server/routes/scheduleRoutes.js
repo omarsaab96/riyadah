@@ -265,6 +265,7 @@ router.post('/',
                 });
             } else if (creatorType == 'Club') {
                 // Notify team members and coaches
+                console.log('2')
                 usersToNotify = await User.find({
                     _id: { $in: [...teamData.members, ...teamData.coaches] },
                     expoPushToken: { $exists: true, $ne: null }
