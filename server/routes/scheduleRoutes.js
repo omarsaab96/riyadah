@@ -249,9 +249,9 @@ router.post('/',
             await newEvent.save();
             const populatedEvent = await Schedule.findById(newEvent._id)
                 .populate('team', 'name sport ageGroup')
-                .populate('createdBy', 'name image type');
+                .populate('createdBy', 'name type');
 
-            console.log(populatedEvent.createdBy.type)
+            console.log(populatedEvent)
 
             // Notification logic
             const creatorType = populatedEvent.createdBy.type;
