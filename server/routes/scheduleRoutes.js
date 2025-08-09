@@ -249,7 +249,9 @@ router.post('/',
             await newEvent.save();
             const populatedEvent = await Schedule.findById(newEvent._id)
                 .populate('team', 'name sport ageGroup members coaches club')
-                .populate('createdBy', 'name image type');
+                .populate('createdBy', 'name type');
+
+                console.log(populted.team.members)
 
             // Notification logic
             const creatorType = populatedEvent.createdBy.type;
@@ -265,7 +267,6 @@ router.post('/',
                 });
             } else if (creatorType == 'Club') {
                 // Notify team members and coaches
-                console.log('2')
                 usersToNotify = await User.find({
                     _id: { $in: [...teamData.members, ...teamData.coaches] },
                     expoPushToken: { $exists: true, $ne: null }
