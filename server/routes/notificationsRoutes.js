@@ -51,35 +51,35 @@ router.get('/:userId', authenticateToken, async (req, res) => {
 });
 
 // Send push notification to a user
-router.post('/send', authenticateToken, async (req, res) => {
-    const { userId, title, body, data } = req.body;
+// router.post('/send', authenticateToken, async (req, res) => {
+//     const { userId, title, body, data } = req.body;
 
-    try {
-        const user = await User.findById(userId);
+//     try {
+//         const user = await User.findById(userId);
 
-        if (!user || !user.expoPushToken) {
-            return res.status(404).json({ error: 'User or push token not found' });
-        }
+//         if (!user || !user.expoPushToken) {
+//             return res.status(404).json({ error: 'User or push token not found' });
+//         }
 
-        if (!Expo.isExpoPushToken(user.expoPushToken)) {
-            return res.status(400).json({ error: 'Invalid Expo push token' });
-        }
+//         if (!Expo.isExpoPushToken(user.expoPushToken)) {
+//             return res.status(400).json({ error: 'Invalid Expo push token' });
+//         }
 
-        const messages = [{
-            to: user.expoPushToken,
-            sound: 'default',
-            title: title || 'New Notification',
-            body: body || 'This is an empty notification',
-            data: data || {}, // e.g., { postId: "123" }
-        }];
+//         const messages = [{
+//             to: user.expoPushToken,
+//             sound: 'default',
+//             title: title || 'New Notification',
+//             body: body || 'This is an empty notification',
+//             data: data || {}, // e.g., { postId: "123" }
+//         }];
 
-        const ticketChunk = await expo.sendPushNotificationsAsync(messages);
-        res.json({ success: true, tickets: ticketChunk });
+//         const ticketChunk = await expo.sendPushNotificationsAsync(messages);
+//         res.json({ success: true, tickets: ticketChunk });
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to send notification' });
-    }
-});
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ error: 'Failed to send notification' });
+//     }
+// });
 
 module.exports = router;

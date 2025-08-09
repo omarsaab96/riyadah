@@ -112,11 +112,13 @@ export default function WizardStep3() {
 
     const handleSearchInput = (text: string) => {
         setKeyword(text);
+        setSearching(true);
 
         if (text.trim().length < 3) {
             setSportTypes(prev =>
                 prev.map(sport => ({ ...sport, visible: true }))
             );
+            setSearching(false);
             return;
         }
 
@@ -131,6 +133,8 @@ export default function WizardStep3() {
                     visible: sport.label.toLowerCase().includes(lowerKeyword)
                 }))
             );
+            
+            setSearching(false);
         }, 500);
 
         setDebounceTimeout(timeout);
@@ -244,7 +248,7 @@ export default function WizardStep3() {
                         value={keyword}
                         onChangeText={handleSearchInput}
                         placeholderTextColor="#888888"
-                        placeholder="Search (Min. 3 characters)"
+                        placeholder="Search sports (Min. 3 characters)"
                     />
                     {searching && (
                         <ActivityIndicator
@@ -263,7 +267,7 @@ export default function WizardStep3() {
 
                         if (visibleSports.length === 0) {
                             return (
-                                <Text style={styles.noResultsText}>
+                                <Text style={styles.paragraph}>
                                     No sports found for '<Text style={{ fontWeight: 'bold' }}>{keyword}</Text>'
                                 </Text>
                             );
@@ -505,5 +509,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 15,
         right: 10,
+    },
+     paragraph: {
+        fontSize: 14,
+        fontFamily: 'Manrope',
+        color:'black'
     },
 });

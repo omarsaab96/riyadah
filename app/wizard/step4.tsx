@@ -22,6 +22,8 @@ export default function WizardStep4() {
     const [independent, setIndependent] = useState<boolean>(formData.clubs === [] ? true : false);
     const [selected, setSelected] = useState<any[]>(formData.clubs === [] ? [] : (formData.clubs || []));
     const [error, setError] = useState<string | null>(null);
+    const [searching, setSearching] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState<any>(null);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -45,7 +47,8 @@ export default function WizardStep4() {
                     const formatted = json.data.map(club => ({
                         id: club._id,
                         label: club.name,
-                        icon: club.image ? { uri: club.image } : require('../../assets/clublogo.png')
+                        icon: club.image ? { uri: club.image } : require('../../assets/clublogo.png'),
+                        visible: true
                     }));
                     setFeaturedClubs(formatted);
                     console.log(formatted)
@@ -98,6 +101,36 @@ export default function WizardStep4() {
         }
     };
 
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+        setSearching(true);
+
+        if (text.trim().length < 3) {
+            setFeaturedClubs(prev =>
+                prev.map(club => ({ ...club, visible: true }))
+            );
+            setSearching(false);
+            return;
+        }
+
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        const timeout = setTimeout(() => {
+            const lowerKeyword = text.trim().toLowerCase();
+
+            setFeaturedClubs(prev =>
+                prev.map(club => ({
+                    ...club,
+                    visible: club.label.toLowerCase().includes(lowerKeyword)
+                }))
+            );
+
+            setSearching(false);
+        }, 500);
+
+        setDebounceTimeout(timeout);
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.pageHeader}>
@@ -147,41 +180,63 @@ export default function WizardStep4() {
                             </Text>
                         </TouchableOpacity>}
 
-                        {!independent && <TextInput
-                            style={styles.input}
-                            placeholder="Search"
-                            placeholderTextColor="#A8A8A8"
-                            value={keyword}
-                            onChangeText={setKeyword}
-                        />}
+                        {!independent &&
+                            <View style={styles.searchContainer}>
+                                <TextInput
+                                    style={styles.input}
+                                    value={keyword}
+                                    onChangeText={handleSearchInput}
+                                    placeholderTextColor="#888888"
+                                    placeholder="Search clubs (Min. 3 characters)"
+                                />
+                                {searching && (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#FF4000"
+                                        style={styles.searchLoader}
+                                    />
+                                )}
+                            </View>
+                        }
                     </View>
 
                     {!independent && <ScrollView >
                         <View style={styles.wizardContainer}>
-                            {featuredClubs.length > 0 ? (
-                                featuredClubs.map(({ id, label, icon }) => {
-                                    const isSelected = selected.includes(id);
+                            {(() => {
+                                const visibleClubs = featuredClubs.filter(club => club.visible);
 
+                                if (visibleClubs.length === 0) {
+                                    return (
+                                        <Text style={styles.paragraph}>
+                                            No clubs found for '<Text style={{ fontWeight: 'bold' }}>{keyword}</Text>'
+                                        </Text>
+                                    );
+                                }
+
+                                return visibleClubs.map(({ label, icon }) => {
+                                    const isSelected = selected.includes(label);
                                     return (
                                         <TouchableOpacity
-                                            key={id}
+                                            key={label}
                                             style={[
                                                 styles.accountOption,
-                                                isSelected && styles.accountOptionSelected,
+                                                isSelected && styles.accountOptionSelected
                                             ]}
-                                            onPress={() => toggleClubSelection(id)}
+                                            onPress={() => toggleClubSelection(label)}
                                         >
                                             <Image source={icon} style={styles.icon} resizeMode="contain" />
-                                            <Text style={[styles.accountText, isSelected && styles.accountTextSelected]}>
+                                            <Text
+                                                style={[
+                                                    styles.accountText,
+                                                    isSelected && styles.accountTextSelected
+                                                ]}
+                                            >
                                                 {label}
                                             </Text>
                                         </TouchableOpacity>
                                     );
-                                })
-                            ) : (
-                                <Text style={styles.paragraph}>No clubs</Text>
-                            )}
-
+                                });
+                            })()}
                         </View>
                     </ScrollView>
                     }
@@ -249,9 +304,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginVertical: 4,
     },
-    paragraph:{
-        fontSize:14,
-        fontFamily:'Manrope',
+    paragraph: {
+        fontSize: 14,
+        fontFamily: 'Manrope',
+        color:'black'
     },
     loginButton: {
         flex: 1,
@@ -389,5 +445,13 @@ const styles = StyleSheet.create({
     loadingContainer: {
         paddingHorizontal: 20,
         alignItems: 'flex-start'
+    },
+    searchContainer: {
+        position: 'relative'
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: 15,
+        right: 10,
     },
 });

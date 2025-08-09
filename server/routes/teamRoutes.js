@@ -3,6 +3,8 @@ const router = express.Router();
 const Team = require('../models/Team');
 const User = require('../models/User');
 const jwt = require("jsonwebtoken");
+const { sendNotification } = require('../utils/notificationService');
+
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
@@ -343,6 +345,21 @@ router.put('/:teamId/members', authenticateToken, async (req, res) => {
       { _id: { $in: newUniqueMembers }, memberOf: { $ne: teamId } },
       { $push: { memberOf: teamId } }
     );
+
+    //send notifications for added members
+    const usersToNotify = await User.find({ _id: { $in: newUniqueMembers } });
+    for (const user of usersToNotify) {
+      try {
+        await sendNotificationToUser(
+          user,
+          'Added to Team',
+          `You have been added to the team "${team.name}"`,
+          { teamId }
+        );
+      } catch (err) {
+        console.error(`Failed to send notification to user ${user._id}:`, err.message);
+      }
+    }
 
     const populatedTeam = await Team.findById(teamId)
       .populate('club', 'name image sport')
