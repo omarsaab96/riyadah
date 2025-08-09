@@ -5,6 +5,8 @@ const Team = require('../models/Team');
 const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { sendNotification } = require('../utils/notificationService');
+
 
 // Middleware: JWT Authentication
 const authenticate = async (req, res, next) => {
@@ -250,7 +252,42 @@ router.post('/',
             await newEvent.save();
             const populatedEvent = await Schedule.findById(newEvent._id)
                 .populate('team', 'name sport ageGroup')
-                .populate('createdBy', 'name image');
+                .populate('createdBy', 'name image type');
+
+            // Notification logic
+            const creatorType = populatedEvent.createdBy.type;
+            const teamData = populatedEvent.team;
+
+            let usersToNotify = [];
+
+            if (creatorType === 'coach') {
+                // Notify team members and the club
+                usersToNotify = await User.find({
+                    _id: { $in: [...teamData.members, teamData.club] },
+                    expoPushToken: { $exists: true, $ne: null }
+                });
+            } else if (creatorType === 'club') {
+                // Notify team members and coaches
+                usersToNotify = await User.find({
+                    _id: { $in: [...teamData.members, ...teamData.coaches] },
+                    expoPushToken: { $exists: true, $ne: null }
+                });
+            }
+
+            const notificationTitle = `New ${eventType} event: ${title}`;
+            const notificationBody = description
+                ? description.length > 100 ? description.substring(0, 97) + '...' : description
+                : 'You have a new event scheduled.';
+
+            // Send notifications one by one (can be optimized with batching)
+            for (const user of usersToNotify) {
+                await sendNotification(
+                    user,
+                    notificationTitle,
+                    notificationBody,
+                    {eventId: newEvent._id.toString() });
+            }
+            // if createdby type is club = > team members and coaches should be notified
 
             res.status(201).json({ success: true, data: populatedEvent });
         } catch (err) {
