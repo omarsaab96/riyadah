@@ -259,7 +259,7 @@ export default function Landing() {
                     return post;
                 }));
             } else {
-                console.log('Fail')
+                console.log('Failed to like')
             }
         } catch (err) {
             console.error('Like error:', err);

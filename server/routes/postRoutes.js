@@ -178,6 +178,28 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
         const populatedPost = await Post.findById(postId).populate('comments.user', '_id name image');
         const sortedComments = [...populatedPost.comments].reverse();
 
+        const userThatCommented = await User.findById(req.user.userId).select('name');
+
+        const userToNotify = await User.findOne({
+            _id: post.created_by.toString(),
+            expoPushToken: { $exists: true, $ne: null }
+        });
+
+        const notificationTitle = `${userThatCommented.name} commented on your post`;
+        const notificationBody = `${content.substring(0,100)}`;
+
+        // Send notification
+        try {
+            await sendNotification(
+                userToNotify,
+                notificationTitle,
+                notificationBody,
+                { postId: post._id.toString() });
+        } catch (err) {
+            console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+        }
+
+
         res.status(201).json({ comments: sortedComments });
     } catch (error) {
         console.error('Error adding comment:', error);
