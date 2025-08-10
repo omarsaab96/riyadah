@@ -104,7 +104,7 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
             const userThatLiked = await User.findById(userId).select('name');
 
             const userToNotify = await User.find({
-                _id: { $is: post.created_by },
+                _id: post.created_by
                 expoPushToken: { $exists: true, $ne: null }
             });
 
