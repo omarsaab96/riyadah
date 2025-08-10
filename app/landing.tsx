@@ -235,6 +235,8 @@ export default function Landing() {
     const handleLike = async (postId: string) => {
         setLiking(postId)
 
+        //soft like/unlike
+
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/posts/like/${postId}`, {
@@ -639,19 +641,19 @@ export default function Landing() {
                     <View style={styles.postStats}>
                         <TouchableOpacity onPress={() => handleLike(item._id)} style={styles.postActionBtn}>
                             <View>
-                                {liking == item._id ? (
+                                {/* {liking == item._id ? (
                                     <ActivityIndicator
                                         size="small"
                                         color="#FF4000"
                                         style={{ marginBottom: 5 }}
                                     />
-                                ) : (
-                                    <FontAwesome
-                                        name={isLiked ? "heart" : "heart-o"}
-                                        size={24}
-                                        color={isLiked ? "#FF4000" : "#888888"}
-                                    />
-                                )}
+                                ) : ( */}
+                                <FontAwesome
+                                    name={isLiked ? "heart" : "heart-o"}
+                                    size={24}
+                                    color={isLiked ? "#FF4000" : "#888888"}
+                                />
+                                {/* )} */}
 
                             </View>
                             <Text style={styles.postActionText}>
@@ -995,7 +997,7 @@ export default function Landing() {
     };
 
     const handlePost = async () => {
-        if(media.length==0 && content.trim().length==0){
+        if (media.length == 0 && content.trim().length == 0) {
             console.log('empty')
             return;
         }
@@ -1133,7 +1135,7 @@ export default function Landing() {
                                         />
                                         <View style={styles.headerActions}>
                                             {createLoading ? (
-                                                <ActivityIndicator size={'small'} color={'#000'}/>
+                                                <ActivityIndicator size={'small'} color={'#000'} />
                                             ) : (
                                                 <TouchableOpacity onPress={handleOpenNewPostModal}>
                                                     <Image
@@ -1403,9 +1405,9 @@ export default function Landing() {
                                     <TouchableOpacity onPress={handleCloseModalPress} style={[styles.postButton, styles.postSec]}>
                                         <Text style={styles.postSecBtnText}>Cancel</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity onPress={handlePost} style={[styles.postButton,{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:10}]} disabled={posting}>
+                                    <TouchableOpacity onPress={handlePost} style={[styles.postButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }]} disabled={posting}>
                                         {posting && <ActivityIndicator size={'small'} color={'#fff'} />}
-                                        <Text style={styles.postBtnText}>Post{posting? 'ing':''}</Text>
+                                        <Text style={styles.postBtnText}>Post{posting ? 'ing' : ''}</Text>
                                     </TouchableOpacity>
                                 </View>
 
