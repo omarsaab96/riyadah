@@ -118,12 +118,12 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
             // Send notification
             try {
                 await sendNotification(
-                    userToNotify._id,
+                    userToNotify._id.toString(),
                     notificationTitle,
                     notificationBody,
                     { postId: post._id.toString() });
             } catch (err) {
-                console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+                console.error(`Failed to send notification to user ${userToNotify._id.toString()}:`, err.message);
             }
         }
 
