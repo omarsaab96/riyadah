@@ -175,7 +175,7 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
         post.comments.push(comment);
         await post.save();
 
-        const populatedPost = await Post.findById(postId).populate('comments.user', '_id name image');
+        const populatedPost = await Post.findById(postId).populate('comments.user', '_id name image gender');
         const sortedComments = [...populatedPost.comments].reverse();
 
         const userThatCommented = await User.findById(req.user.userId).select('name');

@@ -139,7 +139,6 @@ export default function Landing() {
                             placeholder="Write a comment..."
                             placeholderTextColor="#888"
                         />
-
                         <TouchableOpacity
                             style={styles.commentSubmit}
                             onPress={handleSubmitComment}
@@ -159,7 +158,7 @@ export default function Landing() {
                 </BottomSheetFooter>
             )
         },
-        [user]
+        [user, newComment, submittingComment] // Add all used state variables
     );
 
     useEffect(() => {
@@ -1242,6 +1241,8 @@ export default function Landing() {
                         handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
                         backdropComponent={renderBackdrop}
                         footerComponent={renderFooter}
+                        keyboardBehavior="interactive" // Better keyboard handling
+                        keyboardBlurBehavior="restore" // Better keyboard handling
                     >
                         <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
                             <View style={[styles.commentModalHeader, {}]}>
@@ -1301,7 +1302,6 @@ export default function Landing() {
                                         </View>
                                     ))
                                 )
-
                             )}
                         </BottomSheetScrollView>
                     </BottomSheet>
