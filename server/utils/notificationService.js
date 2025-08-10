@@ -14,7 +14,9 @@ async function sendNotification(user, title, body, data = {}) {
     data,
   }];
 
-  return await expo.sendPushNotificationsAsync(messages);
+  const tickets = await expo.sendPushNotificationsAsync(messages);
+  console.log('Push notification tickets:', tickets);
+  return tickets;
 }
 
 module.exports = { sendNotification };
