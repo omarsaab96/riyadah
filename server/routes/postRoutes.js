@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 const jwt = require("jsonwebtoken");
+const User = require('../models/User');
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
@@ -96,6 +97,29 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
         await post.save();
 
         await post.populate('likes', '_id name image');
+
+        if (!hasLiked) {
+            const userThatLiked = await User.findById(userId).select('name');
+
+            const userToNotify = await User.find({
+                _id: { $is: post.created_by },
+                expoPushToken: { $exists: true, $ne: null }
+            });
+
+            const notificationTitle = `${userThatLiked.name} liked your post`;
+            const notificationBody = ``;
+
+            // Send notification
+            try {
+                await sendNotification(
+                    userToNotify,
+                    notificationTitle,
+                    notificationBody,
+                    { postId: post._id.toString() });
+            } catch (err) {
+                console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+            }
+        }
 
         res.status(200).json({ likes: post.likes });
     } catch (err) {

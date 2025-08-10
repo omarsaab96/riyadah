@@ -16,6 +16,7 @@ import {
     Easing,
     Image,
     Linking,
+    Share,
     StyleSheet,
     Text,
     TextInput,
@@ -393,7 +394,24 @@ export default function Profile() {
     };
 
     const handleShareProfile = async () => {
-        console.log('Share clicked');
+        const url = `https://riyadah.app/profile/public/${userId}`;
+                try {
+                    const result = await Share.share({
+                        message: `Check out ${user.name}'s profile on Riyadah!\n${url}`,
+                    });
+        
+                    if (result.action === Share.sharedAction) {
+                        if (result.activityType) {
+                            console.log('Shared with activity type:', result.activityType);
+                        } else {
+                            console.log('Post shared');
+                        }
+                    } else if (result.action === Share.dismissedAction) {
+                        console.log('Share dismissed');
+                    }
+                } catch (error) {
+                    console.error('Error sharing post:', error.message);
+                }
     };
 
     const getProfileProgress = () => {

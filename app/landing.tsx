@@ -4,7 +4,9 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetFooter, BottomSheetScrollV
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import MasonryList from '@react-native-seoul/masonry-list';
+import { Buffer } from 'buffer';
 import { Video } from 'expo-av';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
@@ -21,6 +23,7 @@ import {
     SafeAreaView,
     Share, StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
     View
@@ -39,7 +42,7 @@ export default function Landing() {
     const [hasMore, setHasMore] = useState(true);
     // const [newPostText, setNewPostText] = useState('');
     const router = useRouter();
-    const pageLimit = 5;
+    const pageLimit = 10;
 
     const [currentPostId, setCurrentPostId] = useState<string | null>(null);
     const [comments, setComments] = useState([]);
@@ -48,10 +51,16 @@ export default function Landing() {
     const [submittingComment, setSubmittingComment] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null)
     const [deleteConfirmation, setDeleteConfirmation] = useState('')
+    const [content, setContent] = useState('');
+    const [media, setMedia] = useState([]);
+    const [createLoading, setCreateLoading] = useState(false);
+    const [posting, setPosting] = useState(false);
 
     // ref
     const bottomSheetRef = useRef<BottomSheet>(null);
     const moreOptionsRef = useRef<BottomSheet>(null);
+    const newPostRef = useRef<BottomSheet>(null);
+
 
     // variables
     const snapPoints = useMemo(() => ["50%", "85%"], []);
@@ -62,9 +71,15 @@ export default function Landing() {
     const handleOpenMoreOptions = useCallback(() => {
         moreOptionsRef.current?.expand();
     }, [selectedPost]);
+    const handleOpenNewPostModal = useCallback(() => {
+        setCreateLoading(true)
+        newPostRef.current?.snapToIndex(0);
+        setCreateLoading(false)
+    }, []);
     const handleCloseModalPress = useCallback(() => {
         bottomSheetRef.current?.close();
         moreOptionsRef.current?.close();
+        newPostRef.current?.close();
     }, []);
 
     // renders
@@ -671,9 +686,9 @@ export default function Landing() {
             setUserId(decodedToken.userId);
 
             registerForPushNotificationsAsync(decodedToken.userId, token).then(pushToken => {
-            if (pushToken) {
-                // console.log(pushToken)
-            }
+                if (pushToken) {
+                    // console.log(pushToken)
+                }
             });
 
             const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
@@ -926,6 +941,7 @@ export default function Landing() {
             setDeleteConfirmation('');
             setPosts(prevPosts => prevPosts.filter(post => post._id !== postid));
             console.log('Unlinked post:', data.post);
+            handleCloseModalPress()
 
             // Optionally update UI here (e.g., hide post, update state)
         } catch (err) {
@@ -959,6 +975,135 @@ export default function Landing() {
         }
     };
 
+    const pickMedia = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert('Permission to access media library is required!');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsMultipleSelection: true,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const selected = result.assets || [result];
+            setMedia([...media, ...selected]);
+        }
+    };
+
+    const handlePost = async () => {
+        if(media.length==0 && content.trim().length==0){
+            console.log('empty')
+            return;
+        }
+        setPosting(true);
+        try {
+            // Upload media files first
+            const uploadedMedia = await Promise.all(
+                media.map(async (item) => {
+                    return await uploadToImageKit(item.uri);
+                })
+            );
+
+            // Separate by type
+            const images = uploadedMedia
+                .filter((item) => item.type === 'image' && item.url)
+                .map((item) => item.url);
+
+            const videos = uploadedMedia
+                .filter((item) => item.type === 'video' && item.url)
+                .map((item) => item.url);
+
+            const type = videos.length
+                ? (images.length ? 'multipleMedia' : 'video')
+                : (images.length ? 'image' : 'text');
+
+            const postData = {
+                type,
+                content: content.trim(),
+                media: { images, videos },
+                created_by: userId,
+            };
+
+            // console.log('posting: ', postData);
+
+            // Send the post to your backend
+            const token = await SecureStore.getItemAsync('userToken');
+            const response = await fetch('https://riyadah.onrender.com/api/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(postData)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Post created successfully:', result);
+                // Reset form after successful post
+                setContent('');
+                setMedia([]);
+                // You might want to navigate away or show a success message
+            } else {
+                console.error('Failed to create post:', await response.text());
+            }
+        } catch (error) {
+            console.error('Error creating post:', error);
+        } finally {
+            handleCloseModalPress();
+            setPosting(false);
+        }
+    };
+
+    const uploadToImageKit = async (uri: string) => {
+        try {
+            const fileName = uri.split('/').pop() || 'upload';
+            const fileExtension = fileName.split('.').pop()?.toLowerCase();
+            const mimeType = fileExtension?.match(/mp4|mov|avi|webm|mkv/)
+                ? `video/${fileExtension}`
+                : `image/${fileExtension}`;
+
+            const formData = new FormData();
+            formData.append('file', {
+                uri,
+                name: fileName,
+                type: mimeType,
+            } as any);
+            formData.append('fileName', fileName);
+            formData.append('folder', '/uploads');
+
+            const privateAPIKey = 'private_pdmJIJI6e538/CVmr4CyBdHW2wc=';
+            const encodedAuth = Buffer.from(privateAPIKey + ':').toString('base64');
+
+            const uploadResponse = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Basic ${encodedAuth}`,
+                },
+                body: formData,
+            });
+
+            if (uploadResponse.ok) {
+                const result = await uploadResponse.json();
+                return {
+                    type: mimeType.startsWith('video') ? 'video' : 'image',
+                    url: result.url
+                };
+            } else {
+                console.error('Failed to upload file:', await uploadResponse.text());
+                return null;
+            }
+        } catch (error) {
+            console.error('Error uploading to ImageKit:', error);
+            return null;
+        }
+    };
+
     return (
         <GestureHandlerRootView style={styles.container}>
             <SafeAreaView>
@@ -987,13 +1132,17 @@ export default function Landing() {
                                             resizeMode="contain"
                                         />
                                         <View style={styles.headerActions}>
-                                            <TouchableOpacity onPress={() => { router.push("/createPost") }}>
-                                                <Image
-                                                    style={styles.postBtnImg}
-                                                    source={require('../assets/addPost.png')}
-                                                    resizeMode="contain"
-                                                />
-                                            </TouchableOpacity>
+                                            {createLoading ? (
+                                                <ActivityIndicator size={'small'} color={'#000'}/>
+                                            ) : (
+                                                <TouchableOpacity onPress={handleOpenNewPostModal}>
+                                                    <Image
+                                                        style={styles.postBtnImg}
+                                                        source={require('../assets/addPost.png')}
+                                                        resizeMode="contain"
+                                                    />
+                                                </TouchableOpacity>
+                                            )}
                                             <TouchableOpacity onPress={() => { router.push("/messages") }}>
                                                 <Image
                                                     style={styles.dmBtnImg}
@@ -1081,80 +1230,189 @@ export default function Landing() {
             </SafeAreaView >
 
             {user != null &&
-                <BottomSheet
-                    ref={bottomSheetRef}
-                    index={-1}
-                    snapPoints={snapPoints}
-                    enableDynamicSizing={false}
-                    enablePanDownToClose={true}
-                    handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
-                    backdropComponent={renderBackdrop}
-                    footerComponent={renderFooter}
-                >
-                    <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
-                        <View style={[styles.commentModalHeader, {}]}>
-                            <Text style={styles.commentModalTitle}>Comments</Text>
-                            <TouchableOpacity
-                                style={styles.commentModalClose}
-                                onPress={handleCloseModalPress}
-                            >
-                                <Ionicons name="close" size={24} color="#888" />
-                            </TouchableOpacity>
-                        </View>
-                    </BottomSheetView>
-
-
-                    <BottomSheetScrollView
-                        keyboardShouldPersistTaps="handled"
-                        contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom: 140 }}
-                        showsVerticalScrollIndicator={false}
+                <>
+                    <BottomSheet
+                        ref={bottomSheetRef}
+                        index={-1}
+                        snapPoints={snapPoints}
+                        enableDynamicSizing={false}
+                        enablePanDownToClose={true}
+                        handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
+                        backdropComponent={renderBackdrop}
+                        footerComponent={renderFooter}
                     >
-                        {loadingComments ? (
-                            <View style={styles.commentLoading}>
-                                <ActivityIndicator size="large" color="#FF4000" />
+                        <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
+                            <View style={[styles.commentModalHeader, {}]}>
+                                <Text style={styles.commentModalTitle}>Comments</Text>
+                                <TouchableOpacity
+                                    style={styles.commentModalClose}
+                                    onPress={handleCloseModalPress}
+                                >
+                                    <Ionicons name="close" size={24} color="#888" />
+                                </TouchableOpacity>
                             </View>
-                        ) : (
-                            comments.length === 0 ? (
-                                <View style={styles.noComments}>
-                                    <Text style={styles.noCommentsText}>No comments yet</Text>
+                        </BottomSheetView>
+
+                        <BottomSheetScrollView
+                            keyboardShouldPersistTaps="handled"
+                            contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom: 140 }}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {loadingComments ? (
+                                <View style={styles.commentLoading}>
+                                    <ActivityIndicator size="large" color="#FF4000" />
                                 </View>
                             ) : (
-                                comments.map((item) => (
-                                    <View key={item._id} style={styles.commentItem}>
-                                        <View style={styles.profileImage}>
-                                            {/* Default avatars */}
-                                            {(item.user?.image == null || item.user?.image === '') && item.user?.type === 'Club' && (
-                                                <Image source={require('../assets/clublogo.png')} style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]} resizeMode="contain" />
-                                            )}
-                                            {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Male' && (
-                                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                                            )}
-                                            {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Female' && (
-                                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                                            )}
-                                            {item.user?.image && (
-                                                <Image source={{ uri: item.user.image }} style={styles.profileImageAvatar} resizeMode="contain" />
-                                            )}
-                                        </View>
-                                        <View style={styles.commentContent}>
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <View>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <Text style={styles.commentAuthor}>{item.user.name}</Text>
-                                                        <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                comments.length === 0 ? (
+                                    <View style={styles.noComments}>
+                                        <Text style={styles.noCommentsText}>No comments yet</Text>
+                                    </View>
+                                ) : (
+                                    comments.map((item) => (
+                                        <View key={item._id} style={styles.commentItem}>
+                                            <View style={styles.profileImage}>
+                                                {/* Default avatars */}
+                                                {(item.user?.image == null || item.user?.image === '') && item.user?.type === 'Club' && (
+                                                    <Image source={require('../assets/clublogo.png')} style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]} resizeMode="contain" />
+                                                )}
+                                                {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Male' && (
+                                                    <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                                )}
+                                                {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Female' && (
+                                                    <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                                )}
+                                                {item.user?.image && (
+                                                    <Image source={{ uri: item.user.image }} style={styles.profileImageAvatar} resizeMode="contain" />
+                                                )}
+                                            </View>
+                                            <View style={styles.commentContent}>
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <View>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                            <Text style={styles.commentAuthor}>{item.user.name}</Text>
+                                                            <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                                        </View>
+                                                        <Text style={styles.commentText}>{item.content}</Text>
                                                     </View>
-                                                    <Text style={styles.commentText}>{item.content}</Text>
                                                 </View>
                                             </View>
                                         </View>
+                                    ))
+                                )
+
+                            )}
+                        </BottomSheetScrollView>
+                    </BottomSheet>
+
+                    <BottomSheet
+                        ref={newPostRef}
+                        index={-1}
+                        snapPoints={snapPoints}
+                        enableDynamicSizing={false}
+                        enablePanDownToClose={true}
+                        handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
+                        backdropComponent={renderBackdrop}
+                    >
+                        <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
+                            <View style={[styles.commentModalHeader, { borderBottomWidth: 0 }]}>
+                                <Text style={styles.commentModalTitle}>New Post</Text>
+                                <TouchableOpacity
+                                    style={styles.commentModalClose}
+                                    onPress={handleCloseModalPress}
+                                >
+                                    <Ionicons name="close" size={24} color="#888" />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ paddingHorizontal: 10 }}>
+                                <View style={styles.newPostContainer}>
+                                    <View style={{ flexDirection: 'row' }}>
+
+                                        <View style={[
+                                            styles.avatarContainer,
+                                            (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
+                                        ]}>
+                                            {(user.image == null || user.image == "") && user.gender == "Male" && <Image
+                                                source={require('../assets/avatar.png')}
+                                                style={styles.postAvatar}
+                                                resizeMode="contain"
+                                            />}
+                                            {(user.image == null || user.image == "") && user.gender == "Female" && <Image
+                                                source={require('../assets/avatarF.png')}
+                                                style={styles.postAvatar}
+                                                resizeMode="contain"
+                                            />}
+                                            {user.image != null && <Image
+                                                source={{ uri: user.image }}
+                                                style={styles.postAvatar}
+                                                resizeMode="contain"
+                                            />}
+                                        </View>
+
+
+                                        <TextInput
+                                            style={styles.textInput}
+                                            multiline
+                                            placeholder="What's on your mind?"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={content}
+                                            onChangeText={setContent}
+                                        />
                                     </View>
-                                ))
-                            )
 
-                        )}
-                    </BottomSheetScrollView>
+                                    <View style={styles.mediaContainer}>
+                                        {media.map((item, index) => (
+                                            <View key={index} style={styles.mediaWrapper}>
+                                                {item.type?.includes('video') || item.uri?.endsWith('.mp4') ? (
+                                                    <Video
+                                                        source={{ uri: item.uri }}
+                                                        rate={1.0}
+                                                        volume={1.0}
+                                                        isMuted={true}
+                                                        resizeMode="cover"
+                                                        shouldPlay={false}
+                                                        style={styles.media}
+                                                    />
+                                                ) : (
+                                                    <Image
+                                                        source={{ uri: item.uri }}
+                                                        style={styles.media}
+                                                    />
+                                                )}
 
-                </BottomSheet>
+                                                <TouchableOpacity
+                                                    style={styles.removeButton}
+                                                    onPress={() =>
+                                                        setMedia((prev) => prev.filter((_, i) => i !== index))
+                                                    }
+                                                >
+                                                    <Ionicons name="close-circle" size={22} color="red" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        ))}
+                                    </View>
+
+                                    <View style={styles.actions}>
+                                        <TouchableOpacity onPress={pickMedia} style={styles.actionBtn}>
+                                            <Ionicons name="images" size={22} color="#000000" />
+                                            <Text style={styles.actionText}>Photo/Video</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                    <TouchableOpacity onPress={handleCloseModalPress} style={[styles.postButton, styles.postSec]}>
+                                        <Text style={styles.postSecBtnText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={handlePost} style={[styles.postButton,{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:10}]} disabled={posting}>
+                                        {posting && <ActivityIndicator size={'small'} color={'#fff'} />}
+                                        <Text style={styles.postBtnText}>Post{posting? 'ing':''}</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                            </View>
+                        </BottomSheetView>
+                    </BottomSheet>
+                </>
             }
 
             {selectedPost != null && <BottomSheet
@@ -1256,7 +1514,7 @@ const styles = StyleSheet.create({
     },
     headerActions: {
         flexDirection: 'row',
-        columnGap: 15,
+        columnGap: 20,
         alignItems: 'center'
     },
     profileButton: {
@@ -1270,12 +1528,12 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
     },
     dmBtnImg: {
-        width: 20,
-        height: 20
+        width: 25,
+        height: 25
     },
     postBtnImg: {
-        width: 20,
-        height: 20
+        width: 25,
+        height: 25
     },
     navBar: {
         position: 'absolute',
@@ -1403,6 +1661,12 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginRight: 10,
     },
+    postAvatar: {
+        width: undefined,
+        height: '100%',
+        maxWidth: 44,
+        aspectRatio: 1
+    },
     postHeaderInfo: {
         flex: 1,
     },
@@ -1426,12 +1690,6 @@ const styles = StyleSheet.create({
         color: '#050505',
         fontFamily: 'Manrope'
     },
-    postText: {
-        fontSize: 15,
-        lineHeight: 22,
-        color: '#050505',
-        fontFamily: 'Manrope'
-    },
     postImage: {
         width: '100%',
         height: width * 0.8,
@@ -1451,10 +1709,6 @@ const styles = StyleSheet.create({
     },
     commentShareStat: {
         flexDirection: 'row',
-    },
-    actionText: {
-        fontSize: 14,
-        marginLeft: 5,
     },
     videoOverlay: {
         position: 'absolute',
@@ -1681,5 +1935,97 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         resizeMode: 'contain',
     },
-
+    newPostContainer: {
+        backgroundColor: '#f4f4f4',
+        borderRadius: 10,
+        padding: 5,
+        marginBottom: 20
+    },
+    avatarContainer: {
+        width: 50,
+        height: 50,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 25,
+    },
+    textInput: {
+        fontSize: 16,
+        minHeight: 100,
+        padding: 12,
+        borderRadius: 10,
+        textAlignVertical: 'top',
+        color: 'black'
+    },
+    mediaContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 10,
+    },
+    media: {
+        width: 100,
+        height: 100,
+        borderRadius: 10,
+        marginRight: 8,
+    },
+    mediaWrapper: {
+        position: 'relative',
+        marginRight: 8,
+        marginBottom: 8,
+    },
+    removeButton: {
+        position: 'absolute',
+        top: -6,
+        right: -6,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        zIndex: 1,
+    },
+    actions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    actionBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 5,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+    },
+    actionText: {
+        fontSize: 14,
+        marginLeft: 5,
+        color: '#150000',
+        fontFamily: 'Bebas',
+    },
+    postButton: {
+        backgroundColor: '#000000',
+        paddingVertical: 14,
+        borderRadius: 8,
+        alignItems: 'center',
+        flex: 1
+    },
+    postSec: {
+        backgroundColor: '#f4f4f4',
+    },
+    postBtnText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 18,
+        fontFamily: 'Bebas'
+    },
+    postSecBtnText: {
+        color: '#000',
+        fontWeight: '600',
+        fontSize: 18,
+        fontFamily: 'Bebas'
+    },
+    postText: {
+        fontSize: 16,
+        lineHeight: 22,
+        color: '#050505',
+        fontFamily: 'Manrope'
+    },
 });

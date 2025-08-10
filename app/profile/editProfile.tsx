@@ -61,6 +61,7 @@ export default function EditProfile() {
                             longitude: parseFloat(user.contactInfo.location.longitude),
                         });
                     }
+                    setLoading(false)
                 } else {
                     console.error('API error')
                 }
@@ -221,7 +222,7 @@ export default function EditProfile() {
                                 {children?.length > 0 ? (<View style={styles.childrenList}>
                                     {children.map((child, index) => (
                                         <View key={index} style={styles.childItem}>
-                                            <Text>{child}</Text>
+                                            <Text>{child.name}</Text>
                                         </View>
                                     ))}
                                 </View>) : (
