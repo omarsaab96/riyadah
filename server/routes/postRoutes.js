@@ -100,7 +100,7 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
 
         await post.populate('likes', '_id name image');
 
-        console.log("post= ",post)
+        console.log("post= ",post.created_by)
 
         if (!hasLiked) {
             const userThatLiked = await User.findById(userId).select('name');
