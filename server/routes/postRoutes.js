@@ -100,13 +100,13 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
 
         await post.populate('likes', '_id name image');
 
-        console.log("post= ",post.created_by)
+        console.log("post= ",post.created_by.toString())
 
         if (!hasLiked) {
             const userThatLiked = await User.findById(userId).select('name');
 
             const userToNotify = await User.find({
-                _id: post.created_by,
+                _id: post.created_by.toString(),
                 expoPushToken: { $exists: true, $ne: null }
             });
 
