@@ -4,6 +4,8 @@ const router = express.Router();
 const Post = require('../models/Post');
 const jwt = require("jsonwebtoken");
 const User = require('../models/User');
+const { sendNotification } = require('../utils/notificationService');
+
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
