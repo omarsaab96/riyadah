@@ -32,6 +32,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.omarsaab96.riyadah",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
