@@ -13,9 +13,9 @@ async function sendNotification(user, title, body, data = {}) {
   const messages = [{
     to: user.expoPushToken,
     sound: 'default',
-    title,
-    body,
-    data,
+    title: title || 'Riyadah',
+    body: body || 'Notification',
+    data: data || {},
   }];
 
   const tickets = await expo.sendPushNotificationsAsync(messages);
