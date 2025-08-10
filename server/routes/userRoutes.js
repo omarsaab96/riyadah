@@ -258,7 +258,7 @@ router.get('/search', async (req, res) => {
 router.get('/clubs', async (req, res) => {
   const { sport } = req.query;
   const filter = { type: 'Club' };
-  
+
   if (sport) {
     filter.sport = sport;
   }
@@ -379,7 +379,7 @@ router.put('/:userId', authenticateToken, async (req, res) => {
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
-  console.log('userId = ',userId)
+  console.log('userId = ', userId)
 
   try {
     const user = await User.findById(userId)
@@ -402,26 +402,32 @@ router.get('/:userId', async (req, res) => {
 
 // ✅ Store Expo push token
 router.post('/push-token', authenticateToken, async (req, res) => {
-    const { userId, expoPushToken } = req.body;
+  const { userId, expoPushToken } = req.body;
 
-    if (req.user.userId !== userId) {
-        return res.status(403).json({ error: 'Unauthorized' });
-    }
+  console.log('Registering Push Notification Token for ', userId, expoPushToken)
 
-    try {
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { expoPushToken },
-            { new: true }
-        );
+  if (req.user.userId !== userId) {
+    console.log('Unauthorized')
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
 
-        if (!user) return res.status(404).json({ error: 'User not found' });
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { expoPushToken },
+      { new: true }
+    );
 
-        res.json({ success: true, token: user.expoPushToken });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Server error' });
-    }
+    console.log('Found user= ',user)
+
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ success: true, token: user.expoPushToken });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 module.exports = router;

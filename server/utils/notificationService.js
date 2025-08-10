@@ -2,8 +2,12 @@ const { Expo } = require('expo-server-sdk');
 const expo = new Expo();
 
 async function sendNotification(user, title, body, data = {}) {
-  if (!user.expoPushToken || !Expo.isExpoPushToken(user.expoPushToken)) {
-    throw new Error('Invalid or missing Expo push token');
+  if (!user.expoPushToken) {
+    throw new Error('Missing Expo push token');
+  }
+
+  if (!Expo.isExpoPushToken(user.expoPushToken)) {
+    throw new Error('Invalid Expo push token');
   }
 
   const messages = [{

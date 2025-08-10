@@ -25,15 +25,25 @@ export async function registerForPushNotificationsAsync(userId, authToken) {
     token = (await Notifications.getExpoPushTokenAsync()).data;
     console.log('Expo Push Token:', token);
 
-    // ✅ Send this token to your backend server here
-    await fetch(`https://riyadah.onrender.com/api/users/push-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`,
-      },
-      body: JSON.stringify({ userId, expoPushToken: token }),
-    });
+    try {
+      const response = await fetch(`https://riyadah.onrender.com/api/users/push-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ userId, expoPushToken: token }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to register push token:', response.status, errorText);
+      } else {
+        console.log('Push token registered successfully');
+      }
+    } catch (error) {
+      console.error('Error while registering push token:', error);
+    }
   } else {
     console.warn('Must use physical device for Push Notifications');
   }

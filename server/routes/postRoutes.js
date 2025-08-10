@@ -107,10 +107,10 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
             const userToNotify = await User.findOne({
                 _id: post.created_by.toString(),
                 expoPushToken: { $exists: true, $ne: null }
-            }).select('_id name');
+            });
 
 
-            console.log("userToNotify= ", userToNotify)
+            // console.log("userToNotify= ", userToNotify)
 
             const notificationTitle = `${userThatLiked.name} liked your post`;
             const notificationBody = ``;

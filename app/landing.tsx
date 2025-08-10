@@ -686,11 +686,8 @@ export default function Landing() {
             console.log("DECODED: ", decodedToken)
             setUserId(decodedToken.userId);
 
-            registerForPushNotificationsAsync(decodedToken.userId, token).then(pushToken => {
-                if (pushToken) {
-                    // console.log(pushToken)
-                }
-            });
+            const pushToken = await registerForPushNotificationsAsync(decodedToken.userId, token);
+            console.log('Push token from registration function:', pushToken);
 
             const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
