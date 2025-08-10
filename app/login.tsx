@@ -144,7 +144,7 @@ export default function Login() {
       </View>
 
       <View style={styles.switchLinkContainer}>
-        <Text>Need a new account?</Text>
+        <Text style={{color:'black'}}>Need a new account?</Text>
         <TouchableOpacity onPress={() => router.replace('/register')}>
           <Text style={styles.switchLink}>REGISTER HERE</Text>
         </TouchableOpacity>

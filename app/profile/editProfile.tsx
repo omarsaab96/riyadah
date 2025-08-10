@@ -863,7 +863,8 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: "Bebas",
         fontSize: 20,
-        marginBottom: 10
+        marginBottom: 10,
+        color:'black'
     },
     subtitle: {
         fontFamily: "Manrope",
@@ -871,6 +872,7 @@ const styles = StyleSheet.create({
         // fontWeight: 'bold',
         width: '100%',
         textTransform: 'capitalize',
+        color:'black'
     },
     contactSubTitle: {
         marginBottom: 5,
@@ -878,7 +880,8 @@ const styles = StyleSheet.create({
     },
     paragraph: {
         fontFamily: "Manrope",
-        fontSize: 16
+        fontSize: 16,
+        color:'black'
     },
     ghostText: {
         color: '#ffffff',

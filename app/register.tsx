@@ -222,7 +222,7 @@ export default function Register() {
           </View>
 
           <View style={styles.switchLinkContainer}>
-            <Text>Already have an account?</Text>
+            <Text style={{color:'black'}}>Already have an account?</Text>
             <TouchableOpacity onPress={() => router.replace('/login')}>
               <Text style={styles.switchLink}>LOGIN HERE</Text>
             </TouchableOpacity>

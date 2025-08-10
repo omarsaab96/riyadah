@@ -204,7 +204,7 @@ export default function AddChildren() {
                             }
                         </View>
 
-                        <Text style={styles.ghostText}>Children</Text>
+                        <Text style={styles.ghostText}>Childr</Text>
                     </View>
 
                     {user && !loading && <ScrollView>
@@ -455,18 +455,21 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: "Bebas",
         fontSize: 20,
-        marginBottom: 10
+        marginBottom: 10,
+        color:'black'
     },
     subtitle: {
         fontFamily: "Manrope",
         fontSize: 16,
         // fontWeight: 'bold',
         width: '100%',
-        textTransform: 'capitalize',
+        textTransform: 'capitalize',,
+        color:'black'
     },
     paragraph: {
         fontFamily: "Manrope",
-        fontSize: 16
+        fontSize: 16,
+        color:'black'
     },
     ghostText: {
         color: '#ffffff',

@@ -286,7 +286,7 @@ export default function ParentCreateAthlete() {
                     </View>
 
                     <Text style={styles.ghostText}>
-                        Child acc
+                        Childr
                     </Text>
 
                 </View>
@@ -867,11 +867,13 @@ const styles = StyleSheet.create({
     confirmationTitle: {
         fontFamily: 'Bebas',
         fontSize: 20,
-        marginBottom: 5
+        marginBottom: 5,
+        color:'black'
     },
     confirmationSubTitle: {
         fontFamily: 'Manrope',
-        fontSize: 16
+        fontSize: 16,
+        color:'black'
     },
     profileActions: {
         borderTopWidth: 1,
