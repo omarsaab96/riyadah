@@ -683,7 +683,7 @@ export default function Landing() {
         console.log(token)
         if (token) {
             const decodedToken = jwtDecode(token);
-            console.log("DECODED: ", decodedToken)
+            console.log("DECODED token: ", decodedToken)
             setUserId(decodedToken.userId);
 
             const pushToken = await registerForPushNotificationsAsync(decodedToken.userId, token);

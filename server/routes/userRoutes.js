@@ -418,7 +418,7 @@ router.post('/push-token', authenticateToken, async (req, res) => {
       { new: true }
     );
 
-    console.log('Found user= ',user)
+    console.log('Found user= ',user._id)
 
 
     if (!user) return res.status(404).json({ error: 'User not found' });
