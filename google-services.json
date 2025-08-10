@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "748364797022",
+    "project_id": "riyadah-17700",
+    "storage_bucket": "riyadah-17700.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:748364797022:android:747d9b22bcc4647bb050cf",
+        "android_client_info": {
+          "package_name": "com.omarsaab96.riyadah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPg48iIQi_fx5a6uyw7r1tzFR-cyIa-ms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
