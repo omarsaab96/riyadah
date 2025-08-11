@@ -31,6 +31,66 @@ import {
 
 const { width } = Dimensions.get('window');
 
+const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }) => {
+    const [newComment, setNewComment] = useState('');
+
+    const handlePress = () => {
+        onSubmitComment(newComment);
+        setNewComment('');
+    };
+
+    return (
+        <BottomSheetFooter {...footerProps}>
+            <View style={styles.commentInputContainer}>
+                <View style={styles.profileImage}>
+                    {(user?.image == null || user?.image == "") && (user?.type == "Club" || user?.type == "Association") && <Image
+                        source={require('../assets/clublogo.png')}
+                        style={styles.profileImageAvatar}
+                        resizeMode="contain"
+                    />}
+                    {(user?.image == null || user?.image == "") && user?.gender == "Male" && <Image
+                        source={require('../assets/avatar.png')}
+                        style={styles.profileImageAvatar}
+                        resizeMode="contain"
+                    />}
+                    {(user?.image == null || user?.image == "") && user?.gender == "Female" && <Image
+                        source={require('../assets/avatarF.png')}
+                        style={styles.profileImageAvatar}
+                        resizeMode="contain"
+                    />}
+                    {user?.image != null && <Image
+                        source={{ uri: user?.image }}
+                        style={styles.profileImageAvatar}
+                        resizeMode="contain"
+                    />}
+                </View>
+                <BottomSheetTextInput
+                    style={styles.commentInput}
+                    value={newComment}
+                    onChangeText={setNewComment}
+                    placeholder="Write a comment..."
+                    placeholderTextColor="#888"
+                />
+                <TouchableOpacity
+                    style={styles.commentSubmit}
+                    onPress={handlePress}
+                    disabled={!newComment.trim() || submittingComment}
+                >
+                    {!submittingComment ? (
+                        <Ionicons
+                            name="send"
+                            size={20}
+                            color={newComment.trim() ? "#FF4000" : "#888"}
+                        />
+                    ) : (
+                        <ActivityIndicator size={'small'} color="#FF4000" />
+                    )}
+                </TouchableOpacity>
+            </View>
+        </BottomSheetFooter>
+    );
+};
+
 export default function Landing() {
     const [userId, setUserId] = useState<string | null>(null);
     const [user, setUser] = useState(null);
@@ -46,7 +106,6 @@ export default function Landing() {
 
     const [currentPostId, setCurrentPostId] = useState<string | null>(null);
     const [comments, setComments] = useState([]);
-    const [newComment, setNewComment] = useState('');
     const [loadingComments, setLoadingComments] = useState(false);
     const [submittingComment, setSubmittingComment] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null)
@@ -93,73 +152,6 @@ export default function Landing() {
             />
         ),
         []
-    );
-    const renderFooter = useCallback(
-        props => {
-            return (
-                <BottomSheetFooter {...props}>
-                    <View style={styles.commentInputContainer}>
-                        <View style={styles.profileImage}>
-                            {(user?.image == null || user?.image == "") && (user?.type == "Club" || user?.type == "Association") && <Image
-                                source={require('../assets/clublogo.png')}
-                                style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
-                                resizeMode="contain"
-                            />}
-                            {(user?.image == null || user?.image == "") && user?.gender == "Male" && <Image
-                                source={require('../assets/avatar.png')}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                            {(user?.image == null || user?.image == "") && user?.gender == "Female" && <Image
-                                source={require('../assets/avatarF.png')}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                            {user?.image != null && <Image
-                                source={{ uri: user?.image }}
-                                style={styles.profileImageAvatar}
-                                resizeMode="contain"
-                            />}
-                        </View>
-                        {/* <Image
-                        source={{ uri: user?.image }}
-                        style={styles.commentInputAvatar}
-                        resizeMode="cover"
-                    /> */}
-                        {/* <TextInput
-                                style={styles.commentInput}
-                                placeholder="Write a comment..."
-                                value={newComment}
-                                onChangeText={setNewComment}
-                                placeholderTextColor="#888"
-                            /> */}
-                        <BottomSheetTextInput
-                            style={styles.commentInput}
-                            value={newComment}
-                            onChangeText={setNewComment}
-                            placeholder="Write a comment..."
-                            placeholderTextColor="#888"
-                        />
-                        <TouchableOpacity
-                            style={styles.commentSubmit}
-                            onPress={handleSubmitComment}
-                            disabled={!newComment.trim() || submittingComment}
-                        >
-                            {!submittingComment ? (
-                                <Ionicons
-                                    name="send"
-                                    size={20}
-                                    color={newComment.trim() ? "#FF4000" : "#888"}
-                                />
-                            ) : (
-                                <ActivityIndicator size={'small'} color='#FF4000' />
-                            )}
-                        </TouchableOpacity>
-                    </View>
-                </BottomSheetFooter>
-            )
-        },
-        [user, newComment, submittingComment] // Add all used state variables
     );
 
     useEffect(() => {
@@ -233,9 +225,47 @@ export default function Landing() {
 
     // Handle like animation
     const handleLike = async (postId: string) => {
-        setLiking(postId)
+        setCreatedNewPosts(prevPosts =>
+            prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadyLiked = post.likes?.some(like => like._id === userId);
+                    if (alreadyLiked) {
+                        // Unlike: remove userId
+                        return {
+                            ...post,
+                            likes: post.likes.filter(like => like._id !== userId),
+                        };
+                    } else {
+                        // Like: add userId
+                        return {
+                            ...post,
+                            likes: [...(post.likes || []), { _id: userId }],
+                        };
+                    }
+                }
+                return post;
+            })
+        );
 
-        //soft like/unlike
+        setPosts(prevPosts =>
+            prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadyLiked = post.likes?.some(like => like._id === userId);
+                    if (alreadyLiked) {
+                        return {
+                            ...post,
+                            likes: post.likes.filter(like => like._id !== userId),
+                        };
+                    } else {
+                        return {
+                            ...post,
+                            likes: [...(post.likes || []), { _id: userId }],
+                        };
+                    }
+                }
+                return post;
+            })
+        );
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
@@ -249,6 +279,19 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json(); // ✅ parse the response
+
+                if (createdNewPosts.some(post => post._id === postId)) {
+                    setCreatedNewPosts(prev => prev.map(post => {
+                        if (post._id === postId) {
+                            return {
+                                ...post,
+                                likes: data.likes, // ✅ use parsed data
+                            };
+                        }
+                        return post;
+                    }));
+                }
+
                 setPosts(prev => prev.map(post => {
                     if (post._id === postId) {
                         return {
@@ -263,8 +306,6 @@ export default function Landing() {
             }
         } catch (err) {
             console.error('Like error:', err);
-        } finally {
-            setLiking('');
         }
     };
 
@@ -296,8 +337,8 @@ export default function Landing() {
         handleOpenMoreOptions();
     };
 
-    const handleSubmitComment = async () => {
-        if (!newComment.trim() || !currentPostId) return;
+    const handleSubmitComment = async (commentText: string) => {
+        if (!commentText.trim() || !currentPostId) return;
         setSubmittingComment(true)
 
         try {
@@ -308,21 +349,31 @@ export default function Landing() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ content: newComment })
+                body: JSON.stringify({ content: commentText })
             });
 
             if (res.ok) {
                 const data = await res.json();
                 // console.log(data)
                 setComments(data.comments || []); // Ensure comments is an array
-                setNewComment('');
 
+                if (createdNewPosts.some(post => post._id === currentPostId)) {
+                    setCreatedNewPosts(prev => prev.map(post => {
+                        if (post._id === currentPostId) {
+                            return {
+                                ...post,
+                                comments: data.comments, // ✅ use parsed data
+                            };
+                        }
+                        return post;
+                    }));
+                }
                 // Update the post's comment count
                 setPosts(prev => prev.map(post => {
                     if (post._id === currentPostId) {
                         return {
                             ...post,
-                            comments: comments
+                            comments: data.comments
                         };
                     }
                     return post;
@@ -939,6 +990,11 @@ export default function Landing() {
             console.log('Unlinked post:', data.post);
             handleCloseModalPress()
 
+            if (createdNewPosts.some(post => post._id === postid)) {
+                const filteredPosts = createdNewPosts.filter(post => post._id !== postid);
+                setCreatedNewPosts(filteredPosts);
+            }
+
             // Optionally update UI here (e.g., hide post, update state)
         } catch (err) {
             console.error('Failed to unlink post:', err);
@@ -1044,14 +1100,14 @@ export default function Landing() {
                 setContent('');
                 setMedia([]);
                 setCreatedNewPosts([result.post, ...createdNewPosts]);
+                handleCloseModalPress();
+                setPosting(false);
             } else {
                 console.error('Failed to create post:', await response.text());
+
             }
         } catch (error) {
             console.error('Error creating post:', error);
-        } finally {
-            handleCloseModalPress();
-            setPosting(false);
         }
     };
 
@@ -1532,9 +1588,16 @@ export default function Landing() {
                         enablePanDownToClose={true}
                         handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
                         backdropComponent={renderBackdrop}
-                        footerComponent={renderFooter}
-                        keyboardBehavior="interactive" // Better keyboard handling
-                        keyboardBlurBehavior="restore" // Better keyboard handling
+                        footerComponent={(footerProps) => (
+                            <CommentFooter
+                                footerProps={footerProps} // pass footer props separately
+                                user={user}
+                                submittingComment={submittingComment}
+                                onSubmitComment={handleSubmitComment}
+                            />
+                        )}
+                        keyboardBehavior="interactive"
+                        keyboardBlurBehavior="restore"
                     >
                         <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
                             <View style={[styles.commentModalHeader, {}]}>

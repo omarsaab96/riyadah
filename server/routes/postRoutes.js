@@ -82,9 +82,6 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const postId = req.params.postId;
 
-
-    console.log('User ID:', userId);
-
     try {
         const post = await Post.findById(postId);
 
@@ -107,7 +104,7 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
         await post.populate('likes', '_id name image');
 
 
-        if (!hasLiked) {
+        if (!hasLiked && post.created_by.toString() !== userId) {
             const userThatLiked = await User.findById(userId).select('name');
 
             const userToNotify = await User.findOne({
@@ -145,7 +142,7 @@ router.get('/comments/:postId', async (req, res) => {
     const { postId } = req.params;
 
     try {
-        const post = await Post.findById(postId).populate('comments.user', '_id name image gender');
+        const post = await Post.findById(postId).populate('comments.user', '_id name image gender type');
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
@@ -186,23 +183,28 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
 
         const userThatCommented = await User.findById(req.user.userId).select('name');
 
-        const userToNotify = await User.findOne({
-            _id: post.created_by.toString(),
-            expoPushToken: { $exists: true, $ne: null }
-        });
+        // Only notify if commenter is NOT the post creator
+        if (post.created_by.toString() !== req.user.userId) {
+            const userToNotify = await User.findOne({
+                _id: post.created_by.toString(),
+                expoPushToken: { $exists: true, $ne: null }
+            });
 
-        const notificationTitle = `${userThatCommented.name} commented on your post`;
-        const notificationBody = `${content.substring(0, 100)}`;
+            if (userToNotify) {
+                const notificationTitle = `${userThatCommented.name} commented on your post`;
+                const notificationBody = `${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`;
 
-        // Send notification
-        try {
-            await sendNotification(
-                userToNotify,
-                notificationTitle,
-                notificationBody,
-                { postId: post._id.toString() });
-        } catch (err) {
-            console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+                try {
+                    await sendNotification(
+                        userToNotify,
+                        notificationTitle,
+                        notificationBody,
+                        { postId: post._id.toString() }
+                    );
+                } catch (err) {
+                    console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+                }
+            }
         }
 
 
