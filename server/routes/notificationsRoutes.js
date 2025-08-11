@@ -24,9 +24,8 @@ const authenticateToken = (req, res, next) => {
 router.get('/:userId', authenticateToken, async (req, res) => {
     const { userId } = req.params;
 
-    // Optional: Make sure the token's userId matches the request param
     if (req.user.userId !== userId) {
-        return res.status(403).json({ error: 'Unauthorized access to user data' });
+        return res.status(403).json({ error: 'Unauthorized access' });
     }
 
     try {
@@ -42,5 +41,29 @@ router.get('/:userId', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
+
+// Mark notification as read
+router.patch('/mark-read/:notificationId', authenticateToken, async (req, res) => {
+    const { notificationId } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const notification = await Notification.findOneAndUpdate(
+            { _id: notificationId, userId },
+            { read: true },
+            { new: true }
+        );
+
+        if (!notification) {
+            return res.status(404).json({ error: 'Notification not found or access denied' });
+        }
+
+        res.json({ success: true, notification });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to update notification' });
+    }
+});
+
 
 module.exports = router;

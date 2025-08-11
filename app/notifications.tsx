@@ -53,8 +53,6 @@ export default function EditProfile() {
         const fetchNotifications = async () => {
             const token = await SecureStore.getItemAsync('userToken');
             if (token) {
-                const decodedToken = jwtDecode(token);
-
                 const response = await fetch(`https://riyadah.onrender.com/api/notifications/${user._id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -72,6 +70,38 @@ export default function EditProfile() {
         fetchNotifications();
     }, [user]);
 
+    const handleMarkAsRead = async (notificationID) => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
+
+            const response = await fetch(`https://riyadah.onrender.com/api/notifications/mark-read/${notificationID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                // Update local state: mark this notification as read
+                setNotifications(prev =>
+                    prev.map(notif =>
+                        notif._id === notificationID ? { ...notif, read: true } : notif
+                    )
+                );
+            } else {
+                console.error('Failed to mark notification as read');
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    };
+
+
     return (
         <View style={styles.container}>
             <View style={styles.pageHeader}>
@@ -83,7 +113,9 @@ export default function EditProfile() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Notifications</Text>
-                    {!loading && <Text style={styles.pageDesc}>You have 3 unread notifications</Text>}
+                    <Text style={styles.pageDesc}>
+                        You have {notifications.filter(n => !n.read).length} unread notifications
+                    </Text>
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                             <ActivityIndicator
@@ -108,22 +140,24 @@ export default function EditProfile() {
                         </View>
                     ) : (
                         <View style={styles.contentContainer}>
-                            <View style={styles.notification}>
-                                <Text style={styles.notificationText}>
-                                    X added you as a friend
-                                </Text>
-                                <View style={styles.notificationUnread}></View>
-                            </View>
-                            <View style={styles.notification}>
-                                <Text style={styles.notificationText}>
-                                    X added you as a friend
-                                </Text>
-                            </View>
+                            {notifications.map((notif, index) => (
+                                <View key={index} style={styles.notification}>
+                                    {!notif.read && <View style={styles.notificationUnread} />}
+                                    <Text style={styles.notificationText}>
+                                        {notif.message}
+                                    </Text>
+                                    <View>
+                                        <TouchableOpacity onPress={() => handleMarkAsRead(notif._id)}>
+                                            <Text>Mark as read</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))}
                         </View>
                     )}
 
 
-                
+
 
             </ScrollView>
             }
@@ -203,14 +237,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         flex: 1,
         paddingRight: 20,
-        color:'black'
+        color: 'black'
     },
     notificationUnread: {
         width: 10,
         height: 10,
         borderRadius: 10,
         backgroundColor: '#FF4000',
-        marginTop: 6
+        marginTop: 6,
+        marginRight: 5
     },
     ghostText: {
         color: '#ffffff',
@@ -274,6 +309,6 @@ const styles = StyleSheet.create({
     emptyNotifications: {
         fontFamily: 'Manrope',
         fontSize: 16,
-        color:'black'
+        color: 'black'
     }
 });

@@ -153,7 +153,7 @@ export default function Profile() {
                     const user = await response.json();
                     setUser(user)
 
-                    if (user.role == "Coach") {
+                    if (user.role && user.role == "Coach") {
                         const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${user._id}`);
 
                         if (coachteams.ok) {
@@ -226,7 +226,7 @@ export default function Profile() {
             }
         }
 
-        if (user.role == "Coach") {
+        if (user.role && user.role == "Coach") {
             const token = await SecureStore.getItemAsync('userToken');
 
             try {
@@ -927,7 +927,7 @@ export default function Profile() {
             )}
 
             {/* Tabs for Coach */}
-            {!loading && user?.role === "Coach" && (
+            {!loading && user.role && user?.role == "Coach" && (
 
                 <View style={styles.tabs}>
                     {tabsCoach.map((label, index) => (
@@ -1245,7 +1245,7 @@ export default function Profile() {
                         </View>}
 
                         {/* COACH OF TEAMS */}
-                        {user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.role && user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Coach of
                             </Text>
@@ -2231,7 +2231,7 @@ export default function Profile() {
                                                     <Text style={styles.staffName}>{member.userRef?.name}</Text>
                                                     <Text style={styles.staffRole}>{member.role || 'Staff Member'}</Text>
                                                 </View>
-                                                {member.role == "Coach" && <View style={styles.staffStats}>
+                                                {member.role && member.role == "Coach" && <View style={styles.staffStats}>
                                                     <Text style={styles.staffStatValue}>
                                                         {member.teams?.length || 0}
                                                     </Text>
@@ -2278,7 +2278,7 @@ export default function Profile() {
                                                         <Text style={styles.contactButtonText}>Email</Text>
                                                     </TouchableOpacity>
                                                 )}
-                                                {member.role == "Coach" && (
+                                                {member.role && member.role == "Coach" && (
                                                     <TouchableOpacity
                                                         style={[styles.contactButton,{display:'none'}]}
                                                         onPress={() => console.log(member._id)}
