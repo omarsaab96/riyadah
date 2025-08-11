@@ -78,4 +78,6 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+riyadah-*.json
+
 # @end expo-cli
