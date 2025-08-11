@@ -373,6 +373,11 @@ export default function Landing() {
                                 style={styles.profileImageAvatar}
                                 resizeMode="contain"
                             />}
+                            {item.created_by.type == "Club" && <Image
+                                source={require('../assets/clublogo.png')}
+                                style={styles.profileImageAvatar}
+                                resizeMode="contain"
+                            />}
                         </View>
                     ) : (
                         <Image
@@ -1330,6 +1335,11 @@ export default function Landing() {
                                             styles.avatarContainer,
                                             (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
                                         ]}>
+                                            {(user.image == null || user.image == "") && user.type == "Club" && <Image
+                                                source={require('../assets/clublogo.png')}
+                                                style={styles.postAvatar}
+                                                resizeMode="contain"
+                                            />}
                                             {(user.image == null || user.image == "") && user.gender == "Male" && <Image
                                                 source={require('../assets/avatar.png')}
                                                 style={styles.postAvatar}

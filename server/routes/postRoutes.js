@@ -113,7 +113,7 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
             // console.log("userToNotify= ", userToNotify)
 
             const notificationTitle = `${userThatLiked.name} liked your post`;
-            const notificationBody = ``;
+            const notificationBody = `+ ${post.likes.length-1} more`;
 
             // Send notification
             try {

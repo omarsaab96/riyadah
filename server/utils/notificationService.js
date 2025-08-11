@@ -17,8 +17,8 @@ async function sendNotification(user, title, body, data = {}) {
   const messages = [{
     to: user.expoPushToken,
     sound: 'default',
-    title: title || 'Riyadah',
-    body: body || 'Notification',
+    title: title || 'A lot is happening right now!',
+    body: body || 'Jump back in to see what’s going on.',
     data: data || {},
   }];
 
