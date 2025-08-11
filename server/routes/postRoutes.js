@@ -61,12 +61,14 @@ router.post('/', authenticateToken, async (req, res) => {
         });
 
         await newPost.save();
-        await newPost.populate('created_by', '_id name image gender type')
-            .populate('likes', '_id name image')
-            .populate('comments.user', '_id name image')
 
+        await newPost.populate([
+            { path: 'created_by', select: '_id name image gender type' },
+            { path: 'likes', select: '_id name image' },
+            { path: 'comments.user', select: '_id name image' }
+        ]);
 
-        console.log("New Post created: ", newPost)
+        console.log("New Post created: ", newPost);
 
         res.status(201).json({ success: true, post: newPost });
     } catch (err) {
