@@ -1154,9 +1154,324 @@ export default function Landing() {
                                 </View>
 
                                 {createdNewPosts.length > 0 &&
-                                    <View>
-                                        <Text>Your post is added</Text>
-                                    </View>
+                                    createdNewPosts.map((newPost, index) => {
+                                        const isLiked = userId && newPost.likes?.some((like: any) => like._id === userId);
+
+                                        return (
+                                            <View key={index} style={styles.postContainer}>
+                                                <View style={styles.postHeader}>
+                                                    {(newPost.created_by.image == null || newPost.created_by.image == "") ? (
+                                                        <View style={styles.profileImage}>
+                                                            {newPost.created_by.gender == "Male" && <Image
+                                                                source={require('../assets/avatar.png')}
+                                                                style={styles.profileImageAvatar}
+                                                                resizeMode="contain"
+                                                            />}
+                                                            {newPost.created_by.gender == "Female" && <Image
+                                                                source={require('../assets/avatarF.png')}
+                                                                style={styles.profileImageAvatar}
+                                                                resizeMode="contain"
+                                                            />}
+                                                            {newPost.created_by.type == "Club" && <Image
+                                                                source={require('../assets/clublogo.png')}
+                                                                style={styles.profileImageAvatar}
+                                                                resizeMode="contain"
+                                                            />}
+                                                        </View>
+                                                    ) : (
+                                                        <Image
+                                                            source={{ uri: newPost.created_by.image }}
+                                                            style={styles.avatar}
+                                                            resizeMode="contain"
+                                                        />
+                                                    )}
+
+                                                    <View style={styles.postHeaderInfo}>
+                                                        <Text style={styles.postUserName}>{newPost.created_by.name}</Text>
+                                                        <Text style={styles.postDate}>{formatDate(newPost.date)}</Text>
+                                                    </View>
+
+                                                    <TouchableOpacity onPress={() => handleMoreOptions(newPost)} style={[styles.postOptions, {}]}>
+                                                        <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
+                                                    </TouchableOpacity>
+                                                </View>
+
+                                                <View style={styles.post}>
+                                                    <View style={styles.postContent}>
+                                                        {newPost.title && <Text style={styles.postTitle}>{newPost.title}</Text>}
+                                                        {newPost.content?.trim() !== '' && (
+                                                            <Text style={styles.postText}>{newPost.content}</Text>
+                                                        )}
+
+                                                        {/* Render images */}
+                                                        {newPost.type === 'image' && newPost.media.images?.length > 0 && (() => {
+                                                            const images = newPost.media.images;
+                                                            const isMoreThanFour = images.length >= 4;
+                                                            const previewImages = isMoreThanFour ? images.slice(0, 4) : images;
+
+                                                            return (
+                                                                images.length === 1 ? (
+                                                                    <Image
+                                                                        source={{ uri: images[0] }}
+                                                                        style={[styles.postImage, { marginTop: 10 }]}
+                                                                        resizeMode="cover"
+                                                                        onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+                                                                    />
+                                                                ) : (
+                                                                    <MasonryList
+                                                                        data={previewImages}
+                                                                        keyExtractor={(uri, index) => uri + index}
+                                                                        numColumns={2}
+                                                                        containerStyle={{ marginTop: 10 }}
+                                                                        style={{ margin: -5 }}
+                                                                        renderItem={({ item: image }) => {
+                                                                            const currentIndex = previewImages.findIndex(img => img === image);
+                                                                            const isLastPreview = isMoreThanFour && currentIndex === 3;
+
+                                                                            return (
+                                                                                <View
+                                                                                    style={{
+                                                                                        borderRadius: 8,
+                                                                                        overflow: 'hidden',
+                                                                                        margin: 5,
+                                                                                        backgroundColor: 'black',
+                                                                                        position: 'relative',
+                                                                                    }}
+                                                                                >
+                                                                                    <Image
+                                                                                        source={{ uri: image }}
+                                                                                        resizeMode="cover"
+                                                                                        style={{ width: '100%', aspectRatio: 1 }}
+                                                                                    />
+
+                                                                                    {isLastPreview && (
+                                                                                        <View
+                                                                                            style={{
+                                                                                                position: 'absolute',
+                                                                                                width: '100%',
+                                                                                                height: '100%',
+                                                                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                                                                                justifyContent: 'center',
+                                                                                                alignItems: 'center',
+                                                                                                zIndex: 3,
+                                                                                            }}
+                                                                                        >
+                                                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                                                + {images.length - 3}
+                                                                                            </Text>
+                                                                                        </View>
+                                                                                    )}
+                                                                                </View>
+                                                                            );
+                                                                        }}
+                                                                    />
+                                                                )
+                                                            );
+                                                        })()}
+
+                                                        {/* Render videos */}
+                                                        {newPost.type === 'video' && newPost.media.videos?.length > 0 && (() => {
+                                                            const videos = newPost.media.videos;
+                                                            const isMoreThanFour = videos.length >= 4;
+                                                            const previewVideos = isMoreThanFour ? videos.slice(0, 4) : videos;
+
+                                                            return (
+                                                                videos.length === 1 ? (
+                                                                    <View
+                                                                        style={{
+                                                                            borderRadius: 8,
+                                                                            backgroundColor: 'black',
+                                                                            overflow: 'hidden',
+                                                                            marginTop: 10,
+                                                                            aspectRatio: 1
+                                                                        }}>
+                                                                        {/* <Video
+                                            source={{ uri: videos[0] }}
+                                            style={{
+                                                width: '100%',
+                                                aspectRatio: 1,
+                                                backgroundColor: 'black',
+                                            }}
+                                            resizeMode="cover"
+                                            isLooping
+                                        /> */}
+
+                                                                        <VideoPlayer
+                                                                            uri={videos[0]}
+                                                                            style={{ width: '100%', height: '100%' }}
+                                                                        />
+                                                                    </View>
+                                                                ) : (
+                                                                    <MasonryList
+                                                                        data={previewVideos}
+                                                                        keyExtractor={(uri, index) => uri + index}
+                                                                        numColumns={2}
+                                                                        containerStyle={{ marginTop: 10 }}
+                                                                        style={{ marginVertical: -5, marginHorizontal: -0, }}
+                                                                        renderItem={({ item: video }) => {
+                                                                            const currentIndex = previewVideos.findIndex(v => v === video);
+                                                                            const isLastPreview = isMoreThanFour && currentIndex === 3;
+
+                                                                            return (
+                                                                                <View
+                                                                                    style={{
+                                                                                        borderRadius: 8,
+                                                                                        backgroundColor: 'black',
+                                                                                        overflow: 'hidden',
+                                                                                        marginVertical: 5,
+                                                                                        marginHorizontal: 0,
+                                                                                        position: 'relative',
+                                                                                        aspectRatio: 1,
+                                                                                        borderWidth: 1
+                                                                                    }}>
+                                                                                    {/* <Video
+                                                        source={{ uri: video }}
+                                                        style={{
+                                                            width: '100%',
+                                                            aspectRatio: 1,
+                                                            backgroundColor: 'black',
+                                                        }}
+                                                        resizeMode="cover"
+                                                        isLooping
+                                                    /> */}
+
+                                                                                    <VideoPlayer
+                                                                                        uri={videos[0]}
+                                                                                        style={{ width: '100%', height: '100%' }}
+                                                                                        showFullscreenToggle={true}
+                                                                                    />
+
+                                                                                    {isLastPreview && (
+                                                                                        <View
+                                                                                            style={{
+                                                                                                position: 'absolute',
+                                                                                                width: '100%',
+                                                                                                height: '100%',
+                                                                                                backgroundColor: 'rgba(0,0,0,0.5)',
+                                                                                                justifyContent: 'center',
+                                                                                                alignItems: 'center',
+                                                                                                zIndex: 3,
+                                                                                            }}
+                                                                                        >
+                                                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                                                + {videos.length - 3}
+                                                                                            </Text>
+                                                                                        </View>
+                                                                                    )}
+                                                                                </View>
+                                                                            );
+                                                                        }}
+                                                                    />
+                                                                )
+                                                            );
+                                                        })()}
+
+
+                                                        {/* Render multiple media */}
+                                                        {newPost.type === 'multipleMedia' && (() => {
+                                                            const images = newPost.media.images || [];
+                                                            const videos = newPost.media.videos || [];
+
+                                                            const allMedia = [
+                                                                ...images.map(uri => ({ uri, type: 'image' })),
+                                                                ...videos.map(uri => ({ uri, type: 'video' }))
+                                                            ];
+
+                                                            const isMoreThanFour = allMedia.length > 4;
+                                                            const previewMedia = isMoreThanFour ? allMedia.slice(0, 4) : allMedia;
+
+                                                            return (
+                                                                <MasonryList
+                                                                    data={previewMedia}
+                                                                    keyExtractor={(item, index) => item.uri + index}
+                                                                    numColumns={2}
+                                                                    containerStyle={{ marginTop: 10 }}
+                                                                    style={{ margin: -5 }}
+                                                                    renderItem={({ item }) => {
+                                                                        const currentIndex = previewMedia.findIndex(m => m.uri === item.uri && m.type === item.type);
+                                                                        const isLastPreview = isMoreThanFour && currentIndex === 3;
+
+                                                                        return (
+                                                                            <View
+                                                                                style={{
+                                                                                    borderRadius: 8,
+                                                                                    backgroundColor: 'black',
+                                                                                    overflow: 'hidden',
+                                                                                    margin: 5,
+                                                                                    position: 'relative',
+                                                                                }}
+                                                                            >
+                                                                                {item.type === 'image' ? (
+                                                                                    <Image
+                                                                                        source={{ uri: item.uri }}
+                                                                                        style={{ width: '100%', aspectRatio: 1 }}
+                                                                                        resizeMode="cover"
+                                                                                    />
+                                                                                ) : (
+                                                                                    <Video
+                                                                                        source={{ uri: item.uri }}
+                                                                                        style={{ width: '100%', aspectRatio: 1, backgroundColor: 'black' }}
+                                                                                        resizeMode="cover"
+                                                                                        isLooping
+                                                                                    />
+                                                                                )}
+
+                                                                                {isLastPreview && (
+                                                                                    <View
+                                                                                        style={{
+                                                                                            position: 'absolute',
+                                                                                            width: '100%',
+                                                                                            height: '100%',
+                                                                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                                                                            justifyContent: 'center',
+                                                                                            alignItems: 'center',
+                                                                                            zIndex: 3,
+                                                                                        }}
+                                                                                    >
+                                                                                        <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                                            + {allMedia.length - 3}
+                                                                                        </Text>
+                                                                                    </View>
+                                                                                )}
+                                                                            </View>
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            );
+                                                        })()}
+                                                    </View>
+
+                                                    <View style={styles.postStats}>
+                                                        <TouchableOpacity onPress={() => handleLike(newPost._id)} style={styles.postActionBtn}>
+                                                            <View>
+                                                                <FontAwesome
+                                                                    name={isLiked ? "heart" : "heart-o"}
+                                                                    size={24}
+                                                                    color={isLiked ? "#FF4000" : "#888888"}
+                                                                />
+
+                                                            </View>
+                                                            <Text style={styles.postActionText}>
+                                                                {newPost.likes?.length}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity onPress={() => handleComment(newPost._id)} style={styles.postActionBtn}>
+                                                            <View style={styles.postActionBtn}>
+                                                                <FontAwesome name="comment-o" size={24} color="#888888" />
+                                                                <Text style={styles.postActionText}>{newPost.comments?.length}</Text>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity onPress={() => handleShare(newPost._id)} style={[styles.postActionBtn, { marginBottom: 14 }]}>
+                                                            <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
+                                                                <FontAwesome name="share-square-o" size={24} color="#888888" />
+                                                                {/* <Text style={styles.postActionText}></Text> */}
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        );
+                                    })
                                 }
                             </>
                         }

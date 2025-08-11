@@ -61,6 +61,10 @@ router.post('/', authenticateToken, async (req, res) => {
         });
 
         await newPost.save();
+        await newPost.populate('created_by', '_id name image gender type')
+            .populate('likes', '_id name image')
+            .populate('comments.user', '_id name image')
+
 
         console.log("New Post created: ", newPost)
 
@@ -186,7 +190,7 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
         });
 
         const notificationTitle = `${userThatCommented.name} commented on your post`;
-        const notificationBody = `${content.substring(0,100)}`;
+        const notificationBody = `${content.substring(0, 100)}`;
 
         // Send notification
         try {
