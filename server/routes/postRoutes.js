@@ -115,8 +115,8 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
 
             // console.log("userToNotify= ", userToNotify)
 
-            const notificationTitle = `${userThatLiked.name} liked your post`;
-            const notificationBody = `Tap to check your post's interactions`;
+            const notificationTitle = `❤️ New Like`;
+            const notificationBody = `${userThatLiked.name} liked your post`;
 
             // Send notification
             try {
@@ -191,8 +191,8 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
             });
 
             if (userToNotify) {
-                const notificationTitle = `${userThatCommented.name} commented on your post`;
-                const notificationBody = `${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`;
+                const notificationTitle = `🗨️ New Comment`;
+                const notificationBody = `${userThatCommented.name} commented on your post`;
 
                 try {
                     await sendNotification(

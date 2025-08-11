@@ -352,7 +352,7 @@ router.put('/:teamId/members', authenticateToken, async (req, res) => {
       try {
         await sendNotification(
           user,
-          'Added as member',
+          '👥 Added as member',
           `You have been added to the team "${team.name}"`,
           { teamId }
         );
@@ -450,7 +450,7 @@ router.put('/:teamId/coaches', authenticateToken, async (req, res) => {
       try {
         await sendNotification(
           user,
-          'Added as coach',
+          '📋 Added as coach',
           `You have been assigned to coach the team "${team.name}"`,
           { teamId }
         );

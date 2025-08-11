@@ -19,7 +19,12 @@ const notificationSchema = new mongoose.Schema({
   read: {
     type: Boolean,
     default: false
-  }
+  },
+  ticket: {
+    type: Array,
+    default: []
+  },
+  date: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Notification', notificationSchema);

@@ -273,8 +273,8 @@ router.post('/',
                 });
             }
 
-            const notificationTitle = `New ${eventType}: ${title}`;
-            const notificationBody = `You have a new event scheduled for ${formatDateTime(startDateTime)}.`;
+            const notificationTitle = `📅 New Event`;
+            const notificationBody = `You have a new ${eventType} scheduled for ${formatDateTime(startDateTime)}.`;
 
             console.log("usersToNotify= ", usersToNotify)
 
