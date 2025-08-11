@@ -352,7 +352,7 @@ router.put('/:teamId/members', authenticateToken, async (req, res) => {
       try {
         await sendNotification(
           user,
-          'Added to Team',
+          'Added as member',
           `You have been added to the team "${team.name}"`,
           { teamId }
         );

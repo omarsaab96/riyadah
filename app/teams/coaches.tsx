@@ -190,6 +190,7 @@ export default function Coaches() {
             if (res.ok) {
                 setTeam(data.data);
                 setaddingCoach(prev => prev.filter(id => id !== coach._id));
+                animateRemoveBtn(coach._id, 0);
             } else {
                 setaddingCoach(prev => prev.filter(id => id !== coach._id));
                 console.error(data.message);

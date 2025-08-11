@@ -55,6 +55,7 @@ export default function Landing() {
     const [media, setMedia] = useState([]);
     const [createLoading, setCreateLoading] = useState(false);
     const [posting, setPosting] = useState(false);
+    const [createdNewPosts, setCreatedNewPosts] = useState([])
 
     // ref
     const bottomSheetRef = useRef<BottomSheet>(null);
@@ -1042,7 +1043,7 @@ export default function Landing() {
                 // Reset form after successful post
                 setContent('');
                 setMedia([]);
-                // You might want to navigate away or show a success message
+                setCreatedNewPosts([result.post, ...createdNewPosts]);
             } else {
                 console.error('Failed to create post:', await response.text());
             }
@@ -1152,31 +1153,11 @@ export default function Landing() {
 
                                 </View>
 
-                                {/* <View style={styles.createPostContainer}>
-                                <View style={styles.createPostHeader}>
-                                    <Image
-                                        source={
-                                            user?.image
-                                                ? { uri: user?.image }
-                                                : require('../assets/avatar.png')
-                                        }
-                                        style={styles.userAvatar}
-                                        resizeMode="contain"
-                                    />
-                                    <TextInput
-                                        style={styles.postInput}
-                                        placeholder="What's on your mind?"
-                                        value={newPostText}
-                                        onChangeText={setNewPostText}
-                                        placeholderTextColor="#65676b"
-                                    />
-                                </View>
-                                <View style={styles.createPostActions}>
-                                    <TouchableOpacity style={styles.createPostButton} onPress={handlePost}>
-                                        <Text style={styles.createPostButtonText}>Post</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View> */}
+                                {createdNewPosts.length > 0 &&
+                                    <View>
+                                        <Text>Your post is added</Text>
+                                    </View>
+                                }
                             </>
                         }
                         onEndReached={() => {

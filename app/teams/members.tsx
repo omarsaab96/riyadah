@@ -190,6 +190,7 @@ export default function Members() {
             if (res.ok) {
                 setTeam(data.data);
                 setAddingMember(prev => prev.filter(id => id !== athlete._id));
+                animateRemoveBtn(athlete._id, 0);
             } else {
                 setAddingMember(prev => prev.filter(id => id !== athlete._id));
                 console.error(data.message);
