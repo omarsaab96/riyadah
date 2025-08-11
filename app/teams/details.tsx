@@ -5,7 +5,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -75,7 +75,7 @@ export default function TeamDetails() {
                 if (response.ok) {
                     const userData = await response.json();
                     setTeam(userData.data);
-                    setTeamName(userData.data.name) 
+                    setTeamName(userData.data.name)
 
 
                 } else {
@@ -368,7 +368,8 @@ export default function TeamDetails() {
                             <View style={{ marginVertical: 20 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                     <Text style={styles.title}>{team.coaches.length} Coach{team.coaches.length == 1 ? '' : 'es'}</Text>
-                                    {user && user._id == team.club && <TouchableOpacity style={styles.editToggle}
+                                    {user && user._id === team.club._id &&
+                                    <TouchableOpacity style={styles.editToggle}
                                         onPress={() => router.push({
                                             pathname: '/teams/coaches',
                                             params: { id: team._id },
@@ -432,8 +433,7 @@ export default function TeamDetails() {
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                     <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
                                     {user && (
-                                        (user._id === team.club ||
-                                            (user.role === "Coach" && Array.isArray(team.coaches) && team.coaches.some(coach => coach._id === user._id))
+                                        (user._id === team.club._id || (user.role === "Coach" && Array.isArray(team.coaches) && team.coaches.some(coach => coach._id === user._id))
                                         )) && (
                                             <TouchableOpacity
                                                 style={styles.editToggle}
@@ -765,7 +765,7 @@ const styles = StyleSheet.create({
     uploadHint: {
         fontFamily: 'Manrope',
         marginBottom: 10,
-        color:'#111111'
+        color: '#111111'
     },
     emptyImage: {
         height: 100,
@@ -800,18 +800,18 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: "Bebas",
         fontSize: 20,
-        color:'black'
+        color: 'black'
     },
     subtitle: {
         fontFamily: "Manrope",
         fontSize: 16,
         fontWeight: 'bold',
-        color:'black'
+        color: 'black'
     },
     paragraph: {
         fontFamily: "Manrope",
         fontSize: 16,
-        color:'black'
+        color: 'black'
     },
     locationLink: {
         backgroundColor: '#cccccc',
@@ -943,7 +943,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-   uploadImage: {
+    uploadImage: {
         backgroundColor: '#111111',
         padding: 2,
         paddingRight: 5,

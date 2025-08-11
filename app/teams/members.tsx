@@ -3,7 +3,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Animated,
@@ -320,8 +320,8 @@ export default function Members() {
 
                                     {user._id == userId && editMode &&
                                         <TouchableOpacity style={styles.editToggle} onPress={() => { setEditMode(false) }}>
-                                            <AntDesign name="close" size={16} color="#FF4000" />
-                                            <Text style={styles.editToggleText}>Cancel</Text>
+                                            <AntDesign name="check" size={16} color="#FF4000" />
+                                            <Text style={styles.editToggleText}>Done</Text>
                                         </TouchableOpacity>}
                                 </View>
 

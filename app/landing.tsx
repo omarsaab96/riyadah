@@ -712,14 +712,6 @@ export default function Landing() {
         }
     };
 
-    if (loading && posts.length === 0) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#FF4000" />
-            </View>
-        );
-    }
-
     const VideoPlayer = ({ uri, style, showFullscreenToggle = false }: {
         uri: string;
         style: any;
@@ -1118,7 +1110,7 @@ export default function Landing() {
 
                 <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
 
-                <View style={{ paddingBottom: 100 }}>
+                <View style={{ height: '100%', paddingBottom: 100 }}>
                     <FlatList
                         data={posts}
                         renderItem={renderPost}
@@ -1135,17 +1127,19 @@ export default function Landing() {
                                             resizeMode="contain"
                                         />
                                         <View style={styles.headerActions}>
-                                            {createLoading ? (
-                                                <ActivityIndicator size={'small'} color={'#000'} />
-                                            ) : (
-                                                <TouchableOpacity onPress={handleOpenNewPostModal}>
-                                                    <Image
-                                                        style={styles.postBtnImg}
-                                                        source={require('../assets/addPost.png')}
-                                                        resizeMode="contain"
-                                                    />
-                                                </TouchableOpacity>
-                                            )}
+                                            <TouchableOpacity
+                                                onPress={handleOpenNewPostModal}
+                                                style={(createLoading || loading || posts.length === 0)
+                                                    ? { opacity: 0.3 }
+                                                    : {}}
+                                                disabled={(createLoading || loading || posts.length == 0) ? true : false}
+                                            >
+                                                <Image
+                                                    style={styles.postBtnImg}
+                                                    source={require('../assets/addPost.png')}
+                                                    resizeMode="contain"
+                                                />
+                                            </TouchableOpacity>
                                             <TouchableOpacity onPress={() => { router.push("/messages") }}>
                                                 <Image
                                                     style={styles.dmBtnImg}

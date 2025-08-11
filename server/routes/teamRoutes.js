@@ -444,6 +444,21 @@ router.put('/:teamId/coaches', authenticateToken, async (req, res) => {
     team.coaches.push(...newUniqueCoaches);
     await team.save();
 
+    //send notifications for added members
+    const usersToNotify = await User.find({ _id: { $in: newUniqueCoaches } });
+    for (const user of usersToNotify) {
+      try {
+        await sendNotification(
+          user,
+          'Added as Coach',
+          `You have been assigned to coach the team "${team.name}"`,
+          { teamId }
+        );
+      } catch (err) {
+        console.error(`Failed to send notification to user ${user._id}:`, err.message);
+      }
+    }
+
     const populatedTeam = await Team.findById(teamId)
       .populate('club', 'name image sport')
       .populate('coaches', '_id name image email')
