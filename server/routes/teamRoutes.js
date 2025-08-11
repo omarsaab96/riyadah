@@ -450,7 +450,7 @@ router.put('/:teamId/coaches', authenticateToken, async (req, res) => {
       try {
         await sendNotification(
           user,
-          'Added as Coach',
+          'Added as coach',
           `You have been assigned to coach the team "${team.name}"`,
           { teamId }
         );
