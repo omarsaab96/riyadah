@@ -736,7 +736,9 @@ export default function EditProfile() {
                                     <Text style={styles.profileButtonText}>Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
-                                    <Text style={styles.profileButtonText}>Save</Text>
+                                    <Text style={styles.profileButtonText}>
+                                        {saving ? 'Saving': 'Save'}
+                                    </Text>
                                     {saving && (
                                         <ActivityIndicator
                                             size="small"

@@ -120,6 +120,7 @@ export default function Notifications() {
             }
 
             const data = await res.json();
+            data.notifications.sort((a, b) => new Date(b.date) - new Date(a.date));
             setNotifications(data.notifications);
             console.log('All notifications marked as read');
         } catch (err) {
@@ -209,7 +210,14 @@ export default function Notifications() {
                             <Text style={styles.emptyNotifications}>No notifications</Text>
                         ) : (
                             <>
-                                <TouchableOpacity style={styles.btn} onPress={() => { handleMarkAllRead() }}>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.btn,
+                                        notifications.filter(n => !n.read).length === 0 ? { opacity: 0.3 } : {}
+                                    ]}
+                                    onPress={() => { handleMarkAllRead() }}
+                                    disabled={notifications.filter(n => !n.read).length === 0 ? true : false}
+                                >
                                     <Entypo name="notifications-off" size={18} color="black" />
                                     <Text style={styles.btnText}>Mark all as read</Text>
                                 </TouchableOpacity>

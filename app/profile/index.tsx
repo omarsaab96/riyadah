@@ -395,23 +395,23 @@ export default function Profile() {
 
     const handleShareProfile = async () => {
         const url = `https://riyadah.app/profile/public/${userId}`;
-                try {
-                    const result = await Share.share({
-                        message: `Check out ${user.name}'s profile on Riyadah!\n${url}`,
-                    });
-        
-                    if (result.action === Share.sharedAction) {
-                        if (result.activityType) {
-                            console.log('Shared with activity type:', result.activityType);
-                        } else {
-                            console.log('Post shared');
-                        }
-                    } else if (result.action === Share.dismissedAction) {
-                        console.log('Share dismissed');
-                    }
-                } catch (error) {
-                    console.error('Error sharing post:', error.message);
+        try {
+            const result = await Share.share({
+                message: `Check out ${user.name}'s profile on Riyadah!\n${url}`,
+            });
+
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type:', result.activityType);
+                } else {
+                    console.log('Post shared');
                 }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Share dismissed');
+            }
+        } catch (error) {
+            console.error('Error sharing post:', error.message);
+        }
     };
 
     const getProfileProgress = () => {
@@ -2280,7 +2280,7 @@ export default function Profile() {
                                                 )}
                                                 {member.role && member.role == "Coach" && (
                                                     <TouchableOpacity
-                                                        style={[styles.contactButton,{display:'none'}]}
+                                                        style={[styles.contactButton, { display: 'none' }]}
                                                         onPress={() => console.log(member._id)}
                                                     >
                                                         <AntDesign name="team" size={16} color="#FF4000" />
@@ -2876,18 +2876,18 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: "Bebas",
         fontSize: 20,
-        color:'black'
+        color: 'black'
     },
     subtitle: {
         fontFamily: "Manrope",
         fontSize: 16,
         fontWeight: 'bold',
-        color:'black'
+        color: 'black'
     },
     paragraph: {
         fontFamily: "Manrope",
-        fontSize: 16,        
-        color:'black'
+        fontSize: 16,
+        color: 'black'
     },
     ghostText: {
         color: '#ffffff',
