@@ -303,10 +303,12 @@ router.post('/',
 // @desc    get a specific event
 router.get('/:id', async (req, res) => {
     try {
-        const event = await Schedule.findById(id);
+        const eventId= req.params.id;
+
+        const event = await Schedule.findById(eventId);
 
         if (!event) {
-            res.status(404).json({ success: false, message: 'Event not found'  });
+            res.status(404).json({ success: false, message: 'Event not found' });
         }
 
         res.status(200).json({ success: true, data: event });
