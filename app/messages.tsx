@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
 import { jwtDecode } from "jwt-decode";
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -36,7 +36,14 @@ export default function Messages() {
     const router = useRouter();
     const pageLimit = 10;
     const moreOptionsRef = useRef<BottomSheet>(null);
+    const newChatRef = useRef<BottomSheet>(null);
     const [socket, setSocket] = useState(null);
+    const [participantId, setParticipantId] = useState('');
+    const [selectedChatId, setSelectedChatId] = useState('');
+    const [loadingParticipants, setLoadingParticipants] = useState(true);
+    const [participants, setParticipants] = useState([]);
+
+    const snapPoints = useMemo(() => ["50%", "85%"], []);
 
     useEffect(() => {
         fetchUser();
@@ -61,12 +68,13 @@ export default function Messages() {
             refreshChats();  // Your existing function to refresh chat list
         });
 
+
+
         // Clean up on unmount or userId change
         return () => {
             newSocket.disconnect();
         };
     }, [userId]);
-
 
     const fetchUser = async () => {
         const token = await SecureStore.getItemAsync('userToken');
@@ -76,11 +84,16 @@ export default function Messages() {
 
             // Optionally fetch user details here if needed
             setLoading(false);
+            fetchParticipants();
             refreshChats();
         } else {
             setLoading(false);
         }
     };
+
+    const fetchParticipants = () => {
+        
+    }
 
     const loadChats = useCallback(async () => {
         if (!hasMore || loading) return;
@@ -136,8 +149,13 @@ export default function Messages() {
         moreOptionsRef.current?.expand();
     };
 
+    const handleCreateNewChat = useCallback(() => {
+        newChatRef.current?.snapToIndex(0);
+    }, []);
+
     const handleCloseModalPress = () => {
         moreOptionsRef.current?.close();
+        newChatRef.current?.close();
         setSelectedChat(null);
         setDeleteConfirmation('');
     };
@@ -231,6 +249,39 @@ export default function Messages() {
         </TouchableOpacity>
     );
 
+    const createChat = async () => {
+        if (!participantId) {
+            Alert.alert('Error', 'Please enter participant ID');
+            return;
+        }
+
+        setLoading(true);
+        const token = await SecureStore.getItemAsync('userToken');
+
+        try {
+            const res = await fetch('https://riyadah.onrender.com/api/chats/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ participantId })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setSelectedChatId(data._id);
+                Alert.alert('Chat Created', `Chat ID: ${data._id}`);
+            } else {
+                Alert.alert('Error', data.message || 'Failed to create chat');
+            }
+        } catch (err) {
+            Alert.alert('Error', err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <GestureHandlerRootView style={styles.container}>
             <SafeAreaView>
@@ -251,7 +302,22 @@ export default function Messages() {
                             <View style={styles.header}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Image source={require('../assets/logo_white.png')} style={styles.logo} resizeMode="contain" />
-                                    <View style={styles.headerActions} />
+                                    <View style={styles.headerActions}>
+                                        <TouchableOpacity
+                                            onPress={handleCreateNewChat}
+                                            style={loading
+                                                ? { opacity: 0.3 }
+                                                : {}}
+                                            disabled={loading ? true : false}
+                                        >
+                                            <Image
+                                                style={styles.postBtnImg}
+                                                source={require('../assets/addPost.png')}
+                                                resizeMode="contain"
+                                            />
+                                        </TouchableOpacity>
+
+                                    </View>
                                 </View>
                             </View>
                         }
@@ -322,6 +388,79 @@ export default function Messages() {
                         </BottomSheetView>
                     </BottomSheet>
                 )}
+
+                <BottomSheet
+                    ref={newChatRef}
+                    index={-1}
+                    snapPoints={snapPoints}
+                    enableDynamicSizing={false}
+                    enablePanDownToClose={true}
+                    handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
+                    backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />}
+                    keyboardBehavior="interactive"
+                    keyboardBlurBehavior="restore"
+                >
+                    <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
+                        <View style={[styles.commentModalHeader, {}]}>
+                            <Text style={styles.commentModalTitle}>New message</Text>
+                            <TouchableOpacity
+                                style={styles.commentModalClose}
+                                onPress={handleCloseModalPress}
+                            >
+                                <Ionicons name="close" size={24} color="#888" />
+                            </TouchableOpacity>
+                        </View>
+                    </BottomSheetView>
+
+                    <BottomSheetScrollView
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom: 140 }}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {loadingParticipants ? (
+                            <View style={styles.commentLoading}>
+                                <ActivityIndicator size="large" color="#FF4000" />
+                            </View>
+                        ) : (
+                            participants.length === 0 ? (
+                                <View style={styles.noComments}>
+                                    <Text style={styles.noCommentsText}>No users yet</Text>
+                                </View>
+                            ) : (
+                                participants.map((item) => (
+                                    <View key={item._id} style={styles.commentItem}>
+                                        <View style={styles.profileImage}>
+                                            {/* Default avatars */}
+                                            {(item?.image == null || item?.image === '') && item?.type === 'Club' && (
+                                                <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                            )}
+                                            {(item?.image == null || item?.image === '') && item?.gender === 'Male' && (
+                                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                            )}
+                                            {(item?.image == null || item?.image === '') && item?.gender === 'Female' && (
+                                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                            )}
+                                            {item?.image && (
+                                                <Image source={{ uri: item.image }} style={styles.profileImageAvatar} resizeMode="contain" />
+                                            )}
+                                        </View>
+                                        <View style={styles.commentContent}>
+                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <View>
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Text style={styles.commentAuthor}>{item.name}</Text>
+                                                    </View>
+                                                    <Text style={styles.commentText}>{item.type}</Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                ))
+                            )
+                        )}
+                    </BottomSheetScrollView>
+                </BottomSheet>
+
             </SafeAreaView>
         </GestureHandlerRootView>
     );

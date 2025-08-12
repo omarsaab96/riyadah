@@ -1,7 +1,9 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");  
 const Chat = require("../models/Chat");
 const router = express.Router();
+
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
@@ -122,6 +124,19 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
         console.error(err);
         res.status(500).json({ message: err.message });
     }
+});
+
+router.get("/participants", authenticateToken, async (req, res) => {
+  try {
+    const currentUserId = req.user.userId;
+
+    const users = await User.find({ _id: { $ne: currentUserId } }).select("_id name image gender type");
+
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;
