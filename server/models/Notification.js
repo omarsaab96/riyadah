@@ -20,6 +20,10 @@ const notificationSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  linked: {
+    type: Boolean,
+    default: false
+  },
   ticket: {
     type: Array,
     default: []
