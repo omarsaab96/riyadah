@@ -29,8 +29,10 @@ router.get('/:userId', authenticateToken, async (req, res) => {
     }
 
     try {
-        const notifications = await Notification.find({ userId });
-
+        const notifications = await Notification.find({
+            userId,
+            linked: true
+        });
         if (!notifications || notifications.length === 0) {
             return res.status(200).json([]);
         }
@@ -64,6 +66,55 @@ router.patch('/mark-read/:notificationId', authenticateToken, async (req, res) =
         res.status(500).json({ error: 'Failed to update notification' });
     }
 });
+
+// Mark all notifications as read
+router.patch('/mark-all-read', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const result = await Notification.updateMany(
+            { userId, read: false }, // only unread ones
+            { read: true }
+        );
+
+        const linkedNotifications = await Notification.find({
+            userId,
+            linked: true
+        });
+
+        res.json({
+            success: true,
+            notifications: linkedNotifications
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to mark all notifications as read' });
+    }
+});
+
+//Delete notification
+router.patch('/delete/:notificationId', authenticateToken, async (req, res) => {
+    const { notificationId } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const notification = await Notification.findOneAndUpdate(
+            { _id: notificationId, userId },
+            { linked: false },
+            { new: true }
+        );
+
+        if (!notification) {
+            return res.status(404).json({ error: 'Notification not found' });
+        }
+
+        res.json({ success: true, notification });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to unlink notification' });
+    }
+});
+
 
 
 module.exports = router;

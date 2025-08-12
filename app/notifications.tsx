@@ -1,8 +1,8 @@
+import Entypo from '@expo/vector-icons/Entypo';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from 'react';
-
 import {
     ActivityIndicator,
     Dimensions,
@@ -14,23 +14,20 @@ import {
     View
 } from 'react-native';
 
-
 const { width } = Dimensions.get('window');
-const router = useRouter();
 
-
-export default function EditProfile() {
+export default function Notifications() {
+    const router = useRouter();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [notifications, setNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
         const fetchUser = async () => {
             const token = await SecureStore.getItemAsync('userToken');
             if (token) {
                 const decodedToken = jwtDecode(token);
-                // console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
                 const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
@@ -38,10 +35,10 @@ export default function EditProfile() {
                 });
 
                 if (response.ok) {
-                    const user = await response.json();
-                    setUser(user)
+                    const userData = await response.json();
+                    setUser(userData);
                 } else {
-                    console.error('API error')
+                    console.error('API error');
                 }
             }
         };
@@ -51,6 +48,7 @@ export default function EditProfile() {
 
     useEffect(() => {
         const fetchNotifications = async () => {
+            if (!user) return;
             const token = await SecureStore.getItemAsync('userToken');
             if (token) {
                 const response = await fetch(`https://riyadah.onrender.com/api/notifications/${user._id}`, {
@@ -58,11 +56,12 @@ export default function EditProfile() {
                 });
 
                 if (response.ok) {
-                    const notifications = await response.json();
-                    setNotifications(notifications)
-                    setLoading(false)
+                    const notifData = await response.json();
+                    notifData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    setNotifications(notifData);
+                    setLoading(false);
                 } else {
-                    console.error('API error')
+                    console.error('API error');
                 }
             }
         };
@@ -87,7 +86,6 @@ export default function EditProfile() {
             });
 
             if (response.ok) {
-                // Update local state: mark this notification as read
                 setNotifications(prev =>
                     prev.map(notif =>
                         notif._id === notificationID ? { ...notif, read: true } : notif
@@ -101,6 +99,79 @@ export default function EditProfile() {
         }
     };
 
+    const handleMarkAllRead = async () => {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+        try {
+            const res = await fetch(`https://riyadah.onrender.com/api/notifications/mark-all-read`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Failed to mark notifications as read');
+            }
+
+            const data = await res.json();
+            setNotifications(data.notifications);
+            console.log('All notifications marked as read');
+        } catch (err) {
+            console.error('Error:', err.message);
+        }
+    };
+
+    const handleDelete = async (notificationID) => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
+
+            const response = await fetch(`https://riyadah.onrender.com/api/notifications/delete/${notificationID}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                setNotifications(prev =>
+                    prev.filter(notif => notif._id !== notificationID)
+                );
+            } else {
+                console.error('Failed to delete notification');
+            }
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+        }
+    };
+
+    const timeAgo = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInMs = now.getTime() - date.getTime();
+        const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+        const diffInHours = Math.floor(diffInMinutes / 60);
+
+        if (diffInMinutes < 1) {
+            return 'now';
+        } else if (diffInMinutes < 60) {
+            return `${diffInMinutes}m ago`;
+        } else if (diffInHours < 24) {
+            return `${diffInHours}h ago`;
+        } else {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -113,9 +184,9 @@ export default function EditProfile() {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Notifications</Text>
-                    <Text style={styles.pageDesc}>
-                        You have {notifications.filter(n => !n.read).length} unread notifications
-                    </Text>
+                    {notifications && !loading && <Text style={styles.pageDesc}>
+                        You have {notifications.filter(n => !n.read).length} unread notification{notifications.filter(n => !n.read).length == 1 ? '' : 's'}
+                    </Text>}
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                             <ActivityIndicator
@@ -132,31 +203,42 @@ export default function EditProfile() {
             </View>
 
             {!loading && <ScrollView>
-
-                {notifications.length == 0 ?
-                    (
-                        <View style={styles.contentContainer}>
+                <View style={styles.contentContainer}>
+                    {notifications.length == 0 ?
+                        (
                             <Text style={styles.emptyNotifications}>No notifications</Text>
-                        </View>
-                    ) : (
-                        <View style={styles.contentContainer}>
-                            {notifications.map((notif, index) => (
-                                <View key={index} style={styles.notification}>
-                                    {!notif.read && <View style={styles.notificationUnread} />}
-                                    <Text style={styles.notificationText}>
-                                        {notif.message}
-                                    </Text>
-                                    <View>
-                                        <TouchableOpacity onPress={() => handleMarkAsRead(notif._id)}>
-                                            <Text>Mark as read</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                        ) : (
+                            <>
+                                <TouchableOpacity style={styles.btn} onPress={() => { handleMarkAllRead() }}>
+                                    <Entypo name="notifications-off" size={18} color="black" />
+                                    <Text style={styles.btnText}>Mark all as read</Text>
+                                </TouchableOpacity>
+                                <View>
+                                    {notifications.map((notif, index) => (
+                                        <View key={index} style={styles.notification}>
+                                            <View style={styles.notificationContent}>
+                                                {!notif.read && <View style={styles.notificationUnread} />}
+                                                <Text style={styles.notificationDate}>{timeAgo(notif.date)}</Text>
+                                            </View>
+                                            <Text style={styles.notificationText}>
+                                                {notif.message}
+                                            </Text>
+                                            <View style={{ flexDirection: 'row', gap: 20 }}>
+                                                {!notif.read && <TouchableOpacity onPress={() => handleMarkAsRead(notif._id)}>
+                                                    <Text style={styles.notificationBtnTxt}>Mark as read</Text>
+                                                </TouchableOpacity>}
+
+                                                <TouchableOpacity onPress={() => handleDelete(notif._id)}>
+                                                    <Text style={styles.notificationBtnTxt}>Delete</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    ))}
                                 </View>
-                            ))}
-                        </View>
-                    )}
+                            </>
+                        )}
 
-
+                </View>
 
 
             </ScrollView>
@@ -194,7 +276,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 20,
-        paddingBottom: 100
+        paddingBottom: 130
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -229,15 +311,19 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 10,
         marginBottom: 10,
+    },
+    notificationContent: {
         flexDirection: 'row',
-        alignItems: 'flex-start'
+        alignItems: 'flex-start',
+        marginBottom: 0
     },
     notificationText: {
         fontFamily: "Manrope",
         fontSize: 14,
         flex: 1,
         paddingRight: 20,
-        color: 'black'
+        color: 'black',
+        marginBottom: 10
     },
     notificationUnread: {
         width: 10,
@@ -310,5 +396,25 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 16,
         color: 'black'
-    }
+    },
+    notificationBtnTxt: {
+        color: '#FF4000'
+    },
+    notificationDate: {
+        fontSize: 12,
+        color: '#65676b',
+        marginTop: 2,
+    },
+    btn: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 5,
+        marginBottom: 15
+    },
+    btnText: {
+        color: 'black',
+        fontFamily: 'Bebas',
+        fontSize: 18
+    },
 });

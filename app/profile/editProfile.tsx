@@ -784,7 +784,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 20,
-        paddingBottom: 120
+        paddingBottom: 130
     },
     pageHeader: {
         backgroundColor: '#FF4000',
