@@ -27,6 +27,8 @@
     "expo-blur": "~14.1.5",
     "expo-clipboard": "~7.1.4",
     "expo-constants": "~17.1.7",
+    "expo-dev-client": "~5.2.4",
+    "expo-device": "~7.1.4",
     "expo-font": "~13.3.1",
     "expo-haptics": "~14.1.4",
     "expo-image": "~2.2.0",
@@ -34,6 +36,7 @@
     "expo-linking": "~7.1.5",
     "expo-location": "^18.1.5",
     "expo-navigation-bar": "~4.2.5",
+    "expo-notifications": "~0.31.4",
     "expo-router": "~5.0.6",
     "expo-secure-store": "~14.2.3",
     "expo-splash-screen": "~0.30.9",
@@ -61,10 +64,8 @@
     "react-native-svg": "15.11.2",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "victory-native": "^41.17.3",
-    "expo-notifications": "~0.31.4",
-    "expo-device": "~7.1.4",
-    "expo-dev-client": "~5.2.4"
+    "socket.io-client": "^4.8.1",
+    "victory-native": "^41.17.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

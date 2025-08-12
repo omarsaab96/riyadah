@@ -1,7 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
@@ -20,61 +18,74 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import io from "socket.io-client";
 
 const { width } = Dimensions.get('window');
-export default function messages() {
+
+export default function Messages() {
     const [userId, setUserId] = useState<string | null>(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [page, setPage] = useState(1);
     const [chats, setChats] = useState([]);
-
     const [hasMore, setHasMore] = useState(true);
-    const [selectedChat, setSelectedChat] = useState(null)
-    const [deleteConfirmation, setDeleteConfirmation] = useState('')
+    const [selectedChat, setSelectedChat] = useState(null);
+    const [deleteConfirmation, setDeleteConfirmation] = useState('');
     const router = useRouter();
     const pageLimit = 10;
     const moreOptionsRef = useRef<BottomSheet>(null);
-
-    const handleOpenMoreOptions = useCallback(() => {
-        moreOptionsRef.current?.expand();
-    }, [selectedChat]);
-
-    const handleCloseModalPress = useCallback(() => {
-        moreOptionsRef.current?.close();
-    }, []);
-
-    const renderBackdrop = useCallback(
-        (props) => (
-            <BottomSheetBackdrop
-                {...props}
-                disappearsOnIndex={-1}
-                appearsOnIndex={0}
-            />
-        ),
-        []
-    );
+    const [socket, setSocket] = useState(null);
 
     useEffect(() => {
         fetchUser();
-
-        if (chats.length === 0) {
-            loadChats();
-        }
     }, []);
 
-    // Load posts
-    const loadChats = useCallback(async () => {
-        // Exit early if no more posts or already loading
-        if (!hasMore || loading) {
-            console.log('Stopping loadPosts - hasMore:', hasMore, 'loading:', loading);
-            return;
+    useEffect(() => {
+        if (!userId) return;
+
+        // Connect to your backend socket server
+        const newSocket = io("https://riyadah.onrender.com", {
+            transports: ["websocket"],
+        });
+
+        setSocket(newSocket);
+
+        // Join a room identified by userId to get only relevant messages
+        newSocket.emit("join", userId);
+
+        // Listen for new message event
+        newSocket.on("newMessage", ({ chatId }) => {
+            console.log("New message in chat:", chatId);
+            refreshChats();  // Your existing function to refresh chat list
+        });
+
+        // Clean up on unmount or userId change
+        return () => {
+            newSocket.disconnect();
+        };
+    }, [userId]);
+
+
+    const fetchUser = async () => {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (token) {
+            const decodedToken: any = jwtDecode(token);
+            setUserId(decodedToken.userId || decodedToken.id);
+
+            // Optionally fetch user details here if needed
+            setLoading(false);
+            refreshChats();
+        } else {
+            setLoading(false);
         }
+    };
+
+    const loadChats = useCallback(async () => {
+        if (!hasMore || loading) return;
 
         setLoading(true);
-        // console.log(`Loading page ${page} with limit ${pageLimit}`);
-
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/chats?page=${page}&limit=${pageLimit}`, {
@@ -83,29 +94,25 @@ export default function messages() {
 
             if (res.ok) {
                 const data = await res.json();
-                // console.log(`API Response`,data);
-
                 setChats(prev => {
-                    // Merge new posts ensuring no duplicates
-                    const merged = [...prev, ...data];
-                    // console.log(`Total posts after merge: ${merged.length}`);
-                    return merged;
+                    // Avoid duplicates by ID
+                    const ids = new Set(prev.map(c => c._id));
+                    const newChats = data.filter(c => !ids.has(c._id));
+                    return [...prev, ...newChats];
                 });
-
-                // More accurate hasMore calculation
                 setHasMore(data.length >= pageLimit);
                 setPage(prev => prev + 1);
             }
         } catch (err) {
-            console.error('Fetch error', err);
+            console.error(err);
         } finally {
             setLoading(false);
         }
-    }, [page, hasMore, loading, pageLimit]);
+    }, [page, hasMore, loading]);
 
-    // Handle refresh
-    const onRefresh = useCallback(async () => {
+    const refreshChats = useCallback(async () => {
         setRefreshing(true);
+        setPage(1);
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/chats?page=1&limit=${pageLimit}`, {
@@ -114,8 +121,7 @@ export default function messages() {
 
             if (res.ok) {
                 const data = await res.json();
-                setChats(data);  // Completely replace posts
-                setPage(1);
+                setChats(data);
                 setHasMore(data.length === pageLimit);
             }
         } catch (err) {
@@ -125,13 +131,52 @@ export default function messages() {
         }
     }, []);
 
-    const handleMoreOptions = async (post: any) => {
-        setSelectedChat(post);
-        handleOpenMoreOptions();
+    const handleMoreOptions = (chat: any) => {
+        setSelectedChat(chat);
+        moreOptionsRef.current?.expand();
     };
 
-    // Format date
+    const handleCloseModalPress = () => {
+        moreOptionsRef.current?.close();
+        setSelectedChat(null);
+        setDeleteConfirmation('');
+    };
+
+    const handleDeleteChat = (id: string) => {
+        setDeleteConfirmation(id);
+    };
+
+    const handleConfirmDeleteChat = async (chatId: string) => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`https://riyadah.onrender.com/api/chats/delete/${chatId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                alert(`Error: ${data.message}`);
+                return;
+            }
+
+            setChats(prev => prev.filter(chat => chat._id !== chatId));
+            handleCloseModalPress();
+        } catch (err) {
+            console.error(err);
+            alert('Something went wrong. Please try again.');
+        }
+    };
+
+    const handleCancelDeleteChat = () => {
+        setDeleteConfirmation('');
+    };
+
     const formatDate = (dateString: string) => {
+        if (!dateString) return '';
         const date = new Date(dateString);
         const now = new Date();
         const diffInMs = now.getTime() - date.getTime();
@@ -149,114 +194,42 @@ export default function messages() {
         }
     };
 
-    // Render chat item
     const renderChat = ({ item }: { item: any }) => (
-        <View style={styles.chatContainer}>
+        <TouchableOpacity
+            onPress={() => router.push({ pathname: "chat", params: { chatId: item._id } })}
+            style={styles.chatContainer}
+        >
             <View style={styles.chatContent}>
-                {(item.created_by.image == null || item.created_by.image == "") ? (
+                {!item.otherParticipant?.image ? (
                     <View style={styles.profileImage}>
-                        {item.created_by.gender == "Male" && <Image
-                            source={require('../assets/avatar.png')}
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />}
-                        {item.created_by.gender == "Female" && <Image
-                            source={require('../assets/avatarF.png')}
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />}
-                        {item.created_by.type == "Club" && <Image
-                            source={require('../assets/clublogo.png')}
-                            style={styles.profileImageAvatar}
-                            resizeMode="contain"
-                        />}
+                        {item.otherParticipant?.gender === "Male" && (
+                            <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                        )}
+                        {item.otherParticipant?.gender === "Female" && (
+                            <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                        )}
+                        {item.otherParticipant?.type === "Club" && (
+                            <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                        )}
                     </View>
                 ) : (
-                    <Image
-                        source={{ uri: item.created_by.image }}
-                        style={styles.avatar}
-                        resizeMode="contain"
-                    />
+                    <Image source={{ uri: item.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
                 )}
 
                 <View style={styles.chatInfo}>
                     <View style={styles.chatHeader}>
-                        <Text style={styles.chatUserName}>{item.created_by.name}</Text>
-                        <Text style={styles.chatDate}>{formatDate(item.date)}</Text>
+                        <Text style={styles.chatUserName}>{item.otherParticipant?.name || "Unknown User"}</Text>
+                        <Text style={styles.chatDate}>{formatDate(item.lastMessage?.timestamp)}</Text>
                     </View>
-                    <Text style={styles.lastReply}>Last reply</Text>
+                    <Text style={styles.lastReply}>{item.lastMessage?.text || "No messages yet"}</Text>
                 </View>
 
-                <TouchableOpacity onPress={() => handleMoreOptions(item)} style={[styles.postOptions, {}]}>
+                <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
                     <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                 </TouchableOpacity>
             </View>
-        </View>
-    )
-
-    const fetchUser = async () => {
-        const token = await SecureStore.getItemAsync('userToken');
-
-        console.log(token)
-        if (token) {
-            const decodedToken = jwtDecode(token);
-            console.log("DECODED token: ", decodedToken)
-            setUserId(decodedToken.userId);
-
-            const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                const user = await response.json();
-                setUser(user)
-            } else {
-                console.log(user)
-                console.error('Token API error:', response)
-            }
-            setLoading(false)
-        } else {
-            console.log("no token",)
-        }
-    };
-
-    const handleDeleteChat = (id: string) => {
-        console.log('clicked delete')
-        setDeleteConfirmation(id);
-    }
-
-    const handleConfirmDeleteChat = async (chatid: string) => {
-        try {
-            const token = await SecureStore.getItemAsync('userToken');
-
-            const res = await fetch(`https://riyadah.onrender.com/api/chats/delete/${postid}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                }
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(`Error: ${data.message}`);
-                return;
-            }
-
-            setDeleteConfirmation('');
-            setChats(prevChats => prevChats.filter(chat => chat._id !== chatid));
-            console.log('Unlinked chat:', data.chat);
-            handleCloseModalPress()
-        } catch (err) {
-            console.error('Failed to unlink post:', err);
-            alert('Something went wrong. Please try again.');
-        }
-    }
-
-    const handleCancelDeleteChat = (id: string) => {
-        setDeleteConfirmation('');
-    }
+        </TouchableOpacity>
+    );
 
     return (
         <GestureHandlerRootView style={styles.container}>
@@ -273,48 +246,20 @@ export default function messages() {
                     <FlatList
                         data={chats}
                         renderItem={renderChat}
-                        keyExtractor={item => {
-                            return `${item._id}-${item.createdAt || item.date}`;
-                        }}
+                        keyExtractor={item => `${item._id}-${item.lastMessage?.timestamp || ''}`}
                         ListHeaderComponent={
-                            <>
-                                <View style={styles.header}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} >
-                                        <Image
-                                            source={require('../assets/logo_white.png')}
-                                            style={styles.logo}
-                                            resizeMode="contain"
-                                        />
-                                        <View style={styles.headerActions}>
-
-                                        </View>
-                                    </View>
-
+                            <View style={styles.header}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Image source={require('../assets/logo_white.png')} style={styles.logo} resizeMode="contain" />
+                                    <View style={styles.headerActions} />
                                 </View>
-                            </>
-                        }
-                        onEndReached={() => {
-                            // Only trigger if we have more posts and aren't already loading
-                            if (hasMore && !loading) {
-                                loadChats();
-                            }
-                        }}
-                        onEndReachedThreshold={0.5} // Balanced threshold
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={onRefresh}
-                                colors={['#FF4000']}
-                                tintColor="#FF4000"
-                            />
-                        }
-                        ListFooterComponent={
-                            <View style={styles.loadingFooter}>
-                                {loading && <ActivityIndicator size="large" color="#FF4000" />}
                             </View>
                         }
+                        onEndReached={() => { if (hasMore && !loading) loadChats(); }}
+                        onEndReachedThreshold={0.5}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshChats} colors={['#FF4000']} tintColor="#FF4000" />}
+                        ListFooterComponent={<View style={styles.loadingFooter}>{loading && <ActivityIndicator size="large" color="#FF4000" />}</View>}
                     />
-
                 </View>
 
                 <View style={styles.navBar}>
@@ -323,68 +268,61 @@ export default function messages() {
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/search')}>
-                        <Image source={require('../assets/search.png')} style={styles.icon} />
+                        <Image source={require('../assets/news.png')} style={styles.icon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/landing')}>
-                        <Image source={require('../assets/home.png')} style={[styles.activeIcon]} />
+                        <Image source={require('../assets/home.png')} style={[styles.icon, styles.icon]} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                        <Image source={require('../assets/notifications.png')} style={styles.icon} />
+                        <Image source={require('../assets/notifications.png')} style={styles.activeIcon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/profile')}>
                         <Image source={require('../assets/profile.png')} style={styles.icon} />
                     </TouchableOpacity>
                 </View>
-            </SafeAreaView >
 
-
-            {selectedChat != null && <BottomSheet
-                ref={moreOptionsRef}
-                enablePanDownToClose={true}
-                handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
-                backdropComponent={renderBackdrop}
-            >
-                <BottomSheetView style={{
-                    flex: 1, paddingBottom: 50
-                }}>
-                    <View style={{ padding: 20 }}>
-                        {selectedChat && selectedChat.created_by._id == userId && (
-                            <View>
-                                {deleteConfirmation == '' && <TouchableOpacity onPress={() => { handleDeleteChat(selectedChat._id) }} style={[styles.profileButton, { marginTop: 10 }]}>
-                                    <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete chat</Text>
-                                </TouchableOpacity>}
-                                {deleteConfirmation == selectedChat._id &&
-                                    <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
-                                        <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
-                                        <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
-                                            <TouchableOpacity onPress={() => handleConfirmDeleteChat(selectedChat._id)}
-                                                style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
+                {selectedChat && (
+                    <BottomSheet
+                        ref={moreOptionsRef}
+                        enablePanDownToClose
+                        handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
+                        backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />}
+                    >
+                        <BottomSheetView style={{ flex: 1, paddingBottom: 50 }}>
+                            <View style={{ padding: 20 }}>
+                                {selectedChat.otherParticipant?._id === userId && (
+                                    <View>
+                                        {deleteConfirmation === '' && (
+                                            <TouchableOpacity onPress={() => handleDeleteChat(selectedChat._id)} style={[styles.profileButton, { marginTop: 10 }]}>
+                                                <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete chat</Text>
                                             </TouchableOpacity>
-
-                                            <TouchableOpacity onPress={() => handleCancelDeleteChat(selectedChat._id)}
-                                                style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>}
+                                        )}
+                                        {deleteConfirmation === selectedChat._id && (
+                                            <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
+                                                <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
+                                                <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
+                                                    <TouchableOpacity onPress={() => handleConfirmDeleteChat(selectedChat._id)} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                        <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity onPress={handleCancelDeleteChat} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                        <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        )}
+                                    </View>
+                                )}
+                                <TouchableOpacity onPress={handleCloseModalPress} style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
+                                    <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
+                                </TouchableOpacity>
                             </View>
-                        )}
-
-                        <TouchableOpacity onPress={() => {
-                            handleCloseModalPress();
-                            setSelectedChat(null);
-                        }
-                        } style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
-                            <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </BottomSheetView>
-            </BottomSheet>
-            }
+                        </BottomSheetView>
+                    </BottomSheet>
+                )}
+            </SafeAreaView>
         </GestureHandlerRootView>
     );
 }
