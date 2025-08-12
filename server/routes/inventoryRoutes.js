@@ -66,6 +66,24 @@ router.get('/byClub/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// get inventory item by id
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const item = await Inventory.find({ _id: id, club });
+
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Inventory item not found' });
+    }
+
+    res.json({ success: true, data: item });
+  } catch (err) {
+    console.error('Error updating inventory item:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Update inventory item by id
 router.put('/:id', authenticateToken, async (req, res) => {
   try {

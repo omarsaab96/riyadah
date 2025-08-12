@@ -2381,7 +2381,7 @@ export default function Profile() {
                                         <TouchableOpacity
                                             key={item._id}
                                             style={styles.inventoryCard}
-                                            onPress={() => router.push(`/inventory/${item._id}`)}
+                                            onPress={() => router.push(`/inventory/details?id=${item._id}`)}
                                         >
                                             <View style={styles.inventoryHeader}>
                                                 <View style={[styles.inventoryIcon, styles.defaultInventoryIcon]}>
