@@ -30,6 +30,7 @@ export default function StaffDetailsScreen() {
           `https://riyadah.onrender.com/api/inventory/${id}`,
           {
             headers: {
+              "Authorization": `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           }
@@ -37,8 +38,10 @@ export default function StaffDetailsScreen() {
 
         const data = await response.json();
 
+        console.log(data)
+
         if (!response.ok) {
-          throw new Error(data.message || "Failed to load event details");
+          throw new Error(data.message || "Failed to load item details");
         }
 
         setItem(data.data);

@@ -71,7 +71,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const item = await Inventory.find({ _id: id, club });
+    const item = await Inventory.find({ _id: id });
 
     if (!item) {
       return res.status(404).json({ success: false, message: 'Inventory item not found' });
