@@ -175,23 +175,21 @@ router.get('/byCoach/:coachId', async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     let userType = "";
-    let userRole = "";
 
     try {
       const user = await User.findById(req.user.userId).select('type role');
       if (!user) return res.status(404).json({ error: 'User not found' });
       userType = user.type;
-      userRole = user.role;
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Something went wrong' });
     }
 
     // Check if user is a club
-    if (userType !== 'Club' || userRole !== 'Coach') {
+    if (userType !== 'Club') {
       return res.status(403).json({
         success: false,
-        message: 'Only clubs and coaches can create teams'
+        message: 'Only clubs can create teams'
       });
     }
 

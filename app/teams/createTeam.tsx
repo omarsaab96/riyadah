@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -166,9 +167,10 @@ export default function CreateTeam() {
             // console.log("res = ", response)
 
             if (response.ok) {
-                Alert.alert('Success', 'Team created successfully!', [
-                    { text: 'OK', onPress: () => router.back() }
-                ]);
+                router.replace({
+                    pathname: '/profile',
+                    params: { tab: 'Teams' }
+                })
             } else {
                 throw new Error(data.message || 'Failed to create team');
             }
@@ -220,11 +222,23 @@ export default function CreateTeam() {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Teams' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to teams</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>New Team</Text>
@@ -547,7 +561,7 @@ const styles = StyleSheet.create({
         fontFamily: "Bebas",
         fontSize: 20,
         marginBottom: 10,
-        color:'black'
+        color: 'black'
     },
     input: {
         fontSize: 14,
@@ -569,7 +583,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
-        color:'black'
+        color: 'black'
     },
     submitButton: {
         backgroundColor: '#FF4000',
@@ -626,7 +640,7 @@ const styles = StyleSheet.create({
     uploadHint: {
         fontFamily: 'Manrope',
         marginBottom: 10,
-        color:'#111111'
+        color: '#111111'
     },
     emptyImage: {
         height: 100,
@@ -640,5 +654,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#f4f4f4',
         marginBottom: 5
-    }
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas'
+    },
 });

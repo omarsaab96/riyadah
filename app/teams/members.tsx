@@ -1,5 +1,6 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -267,11 +268,24 @@ export default function Members() {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Teams' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to teams</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>Team Members</Text>
@@ -484,8 +498,8 @@ export default function Members() {
                                                                         ) : (
                                                                             <Animated.View style={{
                                                                                 opacity: animatedOpacity,
-                                                                                alignItems:'center',
-                                                                                justifyContent:'center'
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center'
                                                                             }}>
                                                                                 <Text style={{ color: '#FF4000', fontFamily: 'Bebas', fontSize: 22, marginBottom: 30 }}>
                                                                                     Sure?
@@ -667,6 +681,20 @@ const styles = StyleSheet.create({
         left: 20,
         zIndex: 1,
     },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width:200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize:18,
+        fontFamily:'Bebas'
+    },
     headerTextBlock: {
         position: 'absolute',
         bottom: 20,
@@ -812,7 +840,7 @@ const styles = StyleSheet.create({
     uploadHint: {
         fontFamily: 'Manrope',
         marginBottom: 10,
-        color:'#111111'
+        color: '#111111'
     },
     emptyImage: {
         height: 100,
@@ -847,18 +875,18 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: "Bebas",
         fontSize: 20,
-        color:'black'
+        color: 'black'
     },
     subtitle: {
         fontFamily: "Manrope",
         fontSize: 16,
         fontWeight: 'bold',
-        color:'black'
+        color: 'black'
     },
     paragraph: {
         fontFamily: "Manrope",
         fontSize: 16,
-        color:'black'
+        color: 'black'
     },
     profileLink: {
         color: '#FF4000',

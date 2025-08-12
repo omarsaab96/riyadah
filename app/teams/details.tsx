@@ -2,6 +2,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -158,11 +159,18 @@ export default function TeamDetails() {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
-                        source={require('../../assets/logo_white.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Teams' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to teams</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         {loading && <Text style={styles.pageTitle}>Team details</Text>}
@@ -369,15 +377,15 @@ export default function TeamDetails() {
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                     <Text style={styles.title}>{team.coaches.length} Coach{team.coaches.length == 1 ? '' : 'es'}</Text>
                                     {user && user._id === team.club._id &&
-                                    <TouchableOpacity style={styles.editToggle}
-                                        onPress={() => router.push({
-                                            pathname: '/teams/coaches',
-                                            params: { id: team._id },
-                                        })}
-                                    >
-                                        <Entypo name="edit" size={16} color="#FF4000" />
-                                        <Text style={styles.editToggleText}>Manage</Text>
-                                    </TouchableOpacity>}
+                                        <TouchableOpacity style={styles.editToggle}
+                                            onPress={() => router.push({
+                                                pathname: '/teams/coaches',
+                                                params: { id: team._id },
+                                            })}
+                                        >
+                                            <Entypo name="edit" size={16} color="#FF4000" />
+                                            <Text style={styles.editToggleText}>Manage</Text>
+                                        </TouchableOpacity>}
                                 </View>
 
                                 {team.coaches && team.coaches.length > 0 ? (
@@ -960,5 +968,19 @@ const styles = StyleSheet.create({
         color: '#FF4000',
         fontFamily: 'Bebas',
         fontSize: 16,
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width:200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize:18,
+        fontFamily:'Bebas'
     },
 });

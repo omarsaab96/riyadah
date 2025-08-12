@@ -206,15 +206,15 @@ export default function Landing() {
         setRefreshing(true);
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=1&limit=5`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=1&limit=${pageLimit}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
             if (res.ok) {
                 const data = await res.json();
-                setPosts(data);  // Completely replace posts
-                setPage(2);      // Reset to page 2
-                setHasMore(data.length === 5);
+                setPosts(data);  
+                setPage(1);      
+                setHasMore(data.length === pageLimit);
             }
         } catch (err) {
             console.error(err);

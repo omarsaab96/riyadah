@@ -5,7 +5,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useRef, useState } from 'react';
@@ -30,7 +30,7 @@ const { width } = Dimensions.get('window');
 
 export default function Profile() {
     const router = useRouter();
-
+    const { tab } = useLocalSearchParams();
     const scrollY = useRef(new Animated.Value(0)).current;
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
@@ -177,7 +177,10 @@ export default function Profile() {
 
     useEffect(() => {
         getAdminInfo();
-    }, [user]);
+        if (tab) {
+            updateTab(tab);
+        }
+    }, [user, tab]);
 
     const getAdminInfo = async () => {
         if (user.type == "Club") {
@@ -926,7 +929,7 @@ export default function Profile() {
                 </View>
             )}
 
-            {/* Tabs for Coach */}
+            {/* Tabs for Coaches */}
             {!loading && user.role && user?.role == "Coach" && (
 
                 <View style={styles.tabs}>
@@ -1526,7 +1529,7 @@ export default function Profile() {
                             {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>Club Teams</Text>
-                                {userId == user._id && (
+                                {userId == user._id && user.type === "Club" && (
                                     <TouchableOpacity
                                         style={styles.addButton}
                                         onPress={() => router.push('/teams/createTeam')}
@@ -1540,6 +1543,8 @@ export default function Profile() {
                                 teams.map((team) => (
                                     <TeamCard
                                         key={team._id}
+                                        userId={userId}
+                                        user={user}
                                         team={team}
                                         getAnimatedValue={getAnimatedValue}
                                         loadingDelete={loadingDelete}
@@ -2598,7 +2603,7 @@ export default function Profile() {
     );
 }
 
-const TeamCard = ({ team, deleteTeam, cancelDeleteTeam, loadingDelete, handleDeleteTeam, getAnimatedValue }) => {
+const TeamCard = ({ userId, user, team, deleteTeam, cancelDeleteTeam, loadingDelete, handleDeleteTeam, getAnimatedValue }) => {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     const router = useRouter();
@@ -2722,13 +2727,13 @@ const TeamCard = ({ team, deleteTeam, cancelDeleteTeam, loadingDelete, handleDel
                     <Text style={styles.teamActionText}>Schedule</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                {userId == user._id && user.type == "Club" && <TouchableOpacity
                     style={styles.teamActionButton}
                     onPress={() => deleteTeam(team._id)}
                 >
                     <MaterialCommunityIcons name="delete" size={18} color="#FF4000" />
                     <Text style={styles.teamActionText}>Delete</Text>
-                </TouchableOpacity>
+                </TouchableOpacity>}
             </View>
 
             <Animated.View style={animatedStyle}>
