@@ -19,7 +19,7 @@ const authenticateToken = (req, res, next) => {
 
 // Get paginated chats for logged-in user
 router.get("/", authenticateToken, async (req, res) => {
-    const userId = req.user.id || req.user.userId; // depending on your token payload key
+    const userId = req.user.userId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -54,11 +54,49 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 });
 
+// Create a new chat between two participants
+router.post("/create", authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { participantId } = req.body; // the other participant's userId
+
+    if (!participantId) {
+        return res.status(400).json({ message: "participantId is required" });
+    }
+
+    try {
+        let chat = await Chat.findOne({
+            participants: { $all: [userId, participantId] }
+        });
+
+        if (chat) {
+            // Chat already exists, return it
+            return res.json(chat);
+        }
+
+        // Create a new chat
+        chat = new Chat({
+            participants: [userId, participantId],
+            lastMessage: {
+                text: "",
+                senderId: null,
+                timestamp: null,
+            }
+        });
+
+        await chat.save();
+
+        res.status(201).json(chat);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Add msg to chat
 router.post("/:chatId/message", authenticateToken, async (req, res) => {
     const { chatId } = req.params;
     const { text } = req.body;
-    const userId = req.user.id || req.user.userId;
+    const userId = req.user.userId;
 
     try {
         const chat = await Chat.findById(chatId);
