@@ -1,4 +1,3 @@
-import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -7,8 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  Image,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -23,17 +20,16 @@ export default function StaffDetailsScreen() {
   const id = params.id;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [staff, setStaff] = useState<any>(null);
+  const [event, setEvent] = useState<any>(null);
 
   useEffect(() => {
-    const fetchStaff = async () => {
+    const fetchEvent = async () => {
       try {
         const token = await SecureStore.getItemAsync("userToken");
         const response = await fetch(
-          `https://riyadah.onrender.com/api/staff/${id}`,
+          `https://riyadah.onrender.com/api/schedules/${id}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
           }
@@ -42,12 +38,12 @@ export default function StaffDetailsScreen() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Failed to load staff details");
+          throw new Error(data.message || "Failed to load event details");
         }
 
-        setStaff(data.data);
+        setEvent(data.data);
       } catch (err: any) {
-        console.error("Error fetching staff:", err);
+        console.error("Error fetching event:", err);
         Alert.alert("Error", err.message);
         router.back();
       } finally {
@@ -56,11 +52,9 @@ export default function StaffDetailsScreen() {
     };
 
     if (id) {
-      fetchStaff();
+      fetchEvent();
     }
   }, [id]);
-
-
 
   return (
     <View style={styles.container}>
@@ -69,22 +63,22 @@ export default function StaffDetailsScreen() {
           onPress={() => {
             router.replace({
               pathname: '/profile',
-              params: { tab: 'Staff' }
+              params: { tab: 'Schedule' }
             })
           }}
           style={styles.backBtn}
         >
           <Ionicons name="chevron-back" size={20} color="#ffffff" />
-          <Text style={styles.backBtnText}>Back to staff</Text>
+          <Text style={styles.backBtnText}>Back to Schedule</Text>
         </TouchableOpacity>
 
         <View style={styles.headerTextBlock}>
-          {loading && <Text style={styles.pageTitle}>Staff details</Text>}
+          {loading && <Text style={styles.pageTitle}>Event details</Text>}
 
-          {!loading && staff &&
+          {!loading && event &&
             <>
-              <Text style={styles.pageTitle}>{staff.userRef.name}</Text>
-              <Text style={styles.pageDesc}>{staff.role || "Staff Member"}</Text>
+              <Text style={styles.pageTitle}>{event.title}</Text>
+              <Text style={styles.pageDesc}>{event.eventType}</Text>
             </>
           }
 
@@ -99,134 +93,21 @@ export default function StaffDetailsScreen() {
           }
         </View>
 
-        <Text style={styles.ghostText}>Staff</Text>
-
-        {!loading && staff &&
-          <View style={styles.profileImage}>
-            {(staff.userRef.image == null || staff.userRef.image == "") && staff.userRef.gender == "Male" && <Image
-              source={require('../../assets/avatar.png')}
-              style={styles.profileImageAvatar}
-              resizeMode="contain"
-            />}
-
-            {(staff.userRef.image == null || staff.userRef.image == "") && staff.userRef.gender == "Female" && <Image
-              source={require('../../assets/avatarF.png')}
-              style={styles.profileImageAvatar}
-              resizeMode="contain"
-            />}
-
-            {staff.userRef.image != null && <Image
-              source={{ uri: staff.userRef.image }}
-              style={styles.profileImageAvatar}
-              resizeMode="contain"
-            />}
-          </View>
-        }
+        <Text style={styles.ghostText}>Event</Text>
       </View>
 
-      {!staff && !loading && <View style={styles.centered}>
-        <Text>No staff member found.</Text>
+      {!event && !loading && <View style={styles.centered}>
+        <Text>No event found.</Text>
       </View>}
 
-      {staff && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
+      {event && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact info</Text>
-          {staff.userRef.phone ? (
-            <TouchableOpacity
-              style={styles.contactButton}
-              onPress={() => Linking.openURL(`tel:${staff.userRef.phone}`)}
-            >
-              <FontAwesome5 name="phone" size={14} color="#FF4000" style={{ marginRight: 2 }} />
-              <Text style={styles.contactText}>{staff.userRef.phone}</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {staff.userRef.email ? (
-            <TouchableOpacity
-              style={styles.contactButton}
-              onPress={() => Linking.openURL(`mailto:${staff.userRef.email}`)}
-            >
-              <MaterialCommunityIcons name="email-outline" size={18} color="#FF4000" />
-              <Text style={styles.contactText}>{staff.userRef.email}</Text>
-            </TouchableOpacity>
-          ) : null}
+          <Text style={styles.sectionTitle}>Title</Text>
+          <Text style={styles.contactText}>Text</Text>
         </View>
 
-        {staff.userRef.country && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Country</Text>
-            <Text style={styles.listItem}>
-              {staff.userRef.country}
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Teams</Text>
-          {staff.teams && staff.teams.length > 0 ? (
-            staff.teams.map((team: any) => (
-              <TouchableOpacity key={team._id} onPress={() => router.push({
-                pathname: '/teams/details',
-                params: { id: team._id },
-              })}>
-                <View  style={styles.teamItem}>
-                  <View>
-                    {team.image ? (
-                      <Image
-                        source={{ uri: team.image }}
-                        style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                      />
-                    ) : (
-                      <Image
-                        source={require('../../assets/teamlogo.png')}
-                        style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                      />
-                    )}
-                  </View>
-                  <View>
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamSport}>{team.sport}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-
-            ))
-          ) : (
-            <Text style={styles.noData}>No teams assigned</Text>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Qualifications</Text>
-          {staff.qualifications && staff.qualifications.length > 0 ? (
-            staff.qualifications.map((q: string, i: number) => (
-              <Text key={i} style={styles.listItem}>- {q}</Text>
-            ))
-          ) : (
-            <Text style={styles.noData}>None</Text>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Certifications</Text>
-          {staff.certifications && staff.certifications.length > 0 ? (
-            staff.certifications.map((c: string, i: number) => (
-              <Text key={i} style={styles.listItem}>- {c}</Text>
-            ))
-          ) : (
-            <Text style={styles.noData}>None</Text>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Employment</Text>
-          <Text style={styles.listItem}>Type: {staff.employmentType || "N/A"}</Text>
-          <Text style={styles.listItem}>Salary: {staff.salary || "N/A"}</Text>
-          <Text style={styles.listItem}>Status: {staff.isActive ? "Active" : "Inactive"}</Text>
-        </View>
-
-
+        
       </ScrollView >
       }
     </View >

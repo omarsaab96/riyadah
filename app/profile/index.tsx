@@ -2073,7 +2073,11 @@ export default function Profile() {
                                                                 <TouchableOpacity
                                                                     key={event._id}
                                                                     style={styles.eventCard}
-                                                                    onPress={() => router.push(`/schedule/${event._id}`)}
+                                                                    onPress={() => router.push({
+                                                                        pathname: '/schedule/details',
+                                                                        params: { id: event._id }
+                                                                    })
+                                                                    }
                                                                 >
                                                                     <View style={styles.eventDate}>
                                                                         <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
@@ -2128,7 +2132,10 @@ export default function Profile() {
                                                                         <TouchableOpacity
                                                                             key={event._id}
                                                                             style={styles.eventCard}
-                                                                            onPress={() => router.push(`/schedule/${event._id}`)}
+                                                                            onPress={() => router.push({
+                                                                                pathname: '/schedule/details',
+                                                                                params: { id: event._id }
+                                                                            })}
                                                                         >
                                                                             <View style={styles.eventDate}>
                                                                                 <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
@@ -3009,7 +3016,7 @@ const styles = StyleSheet.create({
     tabs: {
         backgroundColor: '#111111',
         paddingLeft: 10,
-        flexDirection:'row'
+        flexDirection: 'row'
     },
     tab: {
         padding: 10,
