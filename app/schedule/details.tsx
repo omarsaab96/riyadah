@@ -104,10 +104,24 @@ export default function StaffDetailsScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Title</Text>
-          <Text style={styles.contactText}>Text</Text>
+          <Text style={styles.contactText}>{event.title}</Text>
         </View>
 
-        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>description</Text>
+          <Text style={styles.contactText}>{event.description}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>start</Text>
+          <Text style={styles.contactText}>{event.startDateTime}</Text>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>end</Text>
+          <Text style={styles.contactText}>{event.endDateTime}</Text>
+        </View>
+
+
       </ScrollView >
       }
     </View >

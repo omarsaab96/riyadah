@@ -397,6 +397,7 @@ export default function EditProfile() {
 
                                         <View style={styles.map}>
                                             <MapView
+                                              provider={PROVIDER_GOOGLE} 
                                                 style={styles.mapPreview}
                                                 region={{
                                                     latitude: location?.latitude || 0,

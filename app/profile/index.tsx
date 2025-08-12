@@ -25,7 +25,7 @@ import {
     View
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 
@@ -1122,6 +1122,7 @@ export default function Profile() {
                                             <View style={styles.contactLocation}>
                                                 <View style={styles.map}>
                                                     <MapView
+                                                        provider={PROVIDER_GOOGLE} 
                                                         style={styles.mapPreview}
                                                         initialRegion={{
                                                             latitude: parseFloat(user.contactInfo?.location.latitude || 0),

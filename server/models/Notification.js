@@ -22,7 +22,7 @@ const notificationSchema = new mongoose.Schema({
   },
   linked: {
     type: Boolean,
-    default: false
+    default: true
   },
   ticket: {
     type: Array,

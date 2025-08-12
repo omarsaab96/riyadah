@@ -209,7 +209,7 @@ export default function Schedule() {
                                             <TouchableOpacity
                                                 key={event._id}
                                                 style={styles.eventCard}
-                                                onPress={() => router.push(`/schedule/${event._id}`)}
+                                                onPress={() => router.push(`/schedule/details?id=${event._id}`)}
                                             >
                                                 <View style={styles.eventDate}>
                                                     <Text style={styles.eventDay}>{eventDate.getDate()}</Text>

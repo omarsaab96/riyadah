@@ -322,7 +322,7 @@ export default function Members() {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        {team && <View style={styles.profileSection}>
+                        {team && user && <View style={styles.profileSection}>
                             <View style={{ marginBottom: 20 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                                     <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>

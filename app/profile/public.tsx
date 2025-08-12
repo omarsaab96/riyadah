@@ -304,11 +304,7 @@ export default function PublicProfile() {
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
                     {!loading && <Text style={styles.pageDesc}>
-                        {user?.type}
-                    </Text>}
-
-                    {!loading && user.role && <Text style={styles.pageDesc}>
-                        {user.role}
+                        {user?.type} {user.role ? `/ ${user.role}` : ''}
                     </Text>}
 
                     {loading &&
@@ -508,6 +504,8 @@ export default function PublicProfile() {
                                                 <View style={styles.contactLocation}>
                                                     <View style={styles.map}>
                                                         <MapView
+                                                            provider={PROVIDER_GOOGLE}
+
                                                             style={styles.mapPreview}
                                                             initialRegion={{
                                                                 latitude: parseFloat(user.contactInfo?.location.latitude || 0),
@@ -625,7 +623,9 @@ export default function PublicProfile() {
                                 </Text>
                                 {user.memberOf.length > 0 ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
+                                        <Text style={styles.paragraph}>
+                                            {user.memberOf.map(team => team.name).join(", ")}
+                                        </Text>
                                     </View>
                                 ) : (
                                     <Text style={styles.paragraph}>0 teams</Text>
@@ -2066,8 +2066,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         bottom: 2,
     },
-    selectedEventDot:{
-        backgroundColor:'#ffffff'
+    selectedEventDot: {
+        backgroundColor: '#ffffff'
     },
     eventCard: {
         flexDirection: 'row',
@@ -2297,7 +2297,7 @@ const styles = StyleSheet.create({
     calendarHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',        
+        alignItems: 'center',
         marginBottom: 15,
     },
     calArrow: {

@@ -23,7 +23,6 @@ import {
     SafeAreaView,
     Share, StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
     View
@@ -212,8 +211,9 @@ export default function Landing() {
 
             if (res.ok) {
                 const data = await res.json();
-                setPosts(data);  
-                setPage(1);      
+                setPosts(data);
+                setCreatedNewPosts([])
+                setPage(1);
                 setHasMore(data.length === pageLimit);
             }
         } catch (err) {
@@ -432,11 +432,13 @@ export default function Landing() {
                             />}
                         </View>
                     ) : (
-                        <Image
-                            source={{ uri: item.created_by.image }}
-                            style={styles.avatar}
-                            resizeMode="contain"
-                        />
+                        <View style={styles.profileImage}>
+                            <Image
+                                source={{ uri: item.created_by.image }}
+                                style={styles.avatar}
+                                resizeMode="contain"
+                            />
+                        </View>
                     )}
 
                     <View style={styles.postHeaderInfo}>
@@ -1235,11 +1237,14 @@ export default function Landing() {
                                                             />}
                                                         </View>
                                                     ) : (
-                                                        <Image
-                                                            source={{ uri: newPost.created_by.image }}
-                                                            style={styles.avatar}
-                                                            resizeMode="contain"
-                                                        />
+                                                        <View style={styles.profileImage}>
+                                                            <Image
+                                                                source={{ uri: newPost.created_by.image }}
+                                                                style={styles.avatar}
+                                                                resizeMode="contain"
+                                                            />
+                                                        </View>
+
                                                     )}
 
                                                     <View style={styles.postHeaderInfo}>
@@ -1631,7 +1636,7 @@ export default function Landing() {
                                             <View style={styles.profileImage}>
                                                 {/* Default avatars */}
                                                 {(item.user?.image == null || item.user?.image === '') && item.user?.type === 'Club' && (
-                                                    <Image source={require('../assets/clublogo.png')} style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]} resizeMode="contain" />
+                                                    <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
                                                 )}
                                                 {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Male' && (
                                                     <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
@@ -1686,7 +1691,7 @@ export default function Landing() {
 
                                         <View style={[
                                             styles.avatarContainer,
-                                            (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
+                                            { backgroundColor: '#ff4000' }
                                         ]}>
                                             {(user.image == null || user.image == "") && user.type == "Club" && <Image
                                                 source={require('../assets/clublogo.png')}
@@ -1711,7 +1716,7 @@ export default function Landing() {
                                         </View>
 
 
-                                        <TextInput
+                                        <BottomSheetTextInput
                                             style={styles.textInput}
                                             multiline
                                             placeholder="What's on your mind?"
@@ -2306,9 +2311,10 @@ const styles = StyleSheet.create({
     avatarContainer: {
         width: 50,
         height: 50,
+        overflow: 'hidden',
         flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         borderRadius: 25,
     },
     textInput: {

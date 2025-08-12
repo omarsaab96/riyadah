@@ -38,13 +38,12 @@ export default function StaffDetailsScreen() {
 
         const data = await response.json();
 
-        console.log(data)
 
         if (!response.ok) {
           throw new Error(data.message || "Failed to load item details");
         }
 
-        setItem(data.data);
+        setItem(data.data[0]);
       } catch (err: any) {
         console.error("Error fetching item:", err);
         Alert.alert("Error", err.message);
