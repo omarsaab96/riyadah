@@ -1,5 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Picker, Picker as RNPicker } from '@react-native-picker/picker';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
@@ -223,11 +224,19 @@ const CreateStaffScreen = () => {
                 throw new Error(errorMsg);
             }
 
-            setShowBasicInfo(false)
-            setShowProfessionalInfo(false)
-            setShowSearchSection(false)
-            setShowSearchRetrySection(false)
-            setShowConfirmation(true)
+            if (selectedUser == null) {
+                setShowBasicInfo(false)
+                setShowProfessionalInfo(false)
+                setShowSearchSection(false)
+                setShowSearchRetrySection(false)
+                setShowConfirmation(true)
+            } else {
+                router.replace({
+                    pathname: '/profile',
+                    params: { tab: 'Staff' }
+                })
+            }
+
         } catch (error) {
             // console.error('Error creating staff:', error);
             setError(error.message);
@@ -400,11 +409,25 @@ const CreateStaffScreen = () => {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Staff' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to staff</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>New Staff</Text>
@@ -521,7 +544,7 @@ const CreateStaffScreen = () => {
                             )}
                         </View>}
 
-                        {selectedUser != null && !showSearchSection && (
+                        {selectedUser != null && !showSearchSection && !showConfirmation && (
                             <View>
                                 <View>
                                     <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Selected user</Text>
@@ -997,7 +1020,10 @@ const CreateStaffScreen = () => {
                                     <Image source={require('../../assets/buttonAfterLight.png')} style={styles.sideRectAfter} />
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/profile')}>
+                                <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace({
+                                    pathname: '/profile',
+                                    params: { tab: 'Staff' }
+                                })}>
                                     <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
                                     <View style={styles.loginButton}>
                                         <Text style={styles.loginText}>Go back to staff list</Text>
@@ -1475,6 +1501,19 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#150000',
         fontFamily: 'Bebas',
+    },backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width:200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize:18,
+        fontFamily:'Bebas'
     },
 });
 

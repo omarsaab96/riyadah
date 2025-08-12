@@ -16,6 +16,7 @@ import {
     Easing,
     Image,
     Linking,
+    ScrollView,
     Share,
     StyleSheet,
     Text,
@@ -889,22 +890,26 @@ export default function Profile() {
 
             {/* Tabs for clubs */}
             {!loading && user?.type === "Club" && (
-
                 <View style={styles.tabs}>
-                    {tabs.map((label, index) => (
-                        <TouchableOpacity
-                            key={label}
-                            style={[
-                                styles.tab,
-                                activeTab === label && styles.activeTab,
-                            ]}
-                            onPress={() => updateTab(label)}
-                        >
-                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
-                                {label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                    >
+                        {tabs.map((label, index) => (
+                            <TouchableOpacity
+                                key={label}
+                                style={[
+                                    styles.tab,
+                                    activeTab === label && styles.activeTab,
+                                ]}
+                                onPress={() => updateTab(label)}
+                            >
+                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
+                                    {label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </View>
             )}
 
@@ -2464,7 +2469,7 @@ export default function Profile() {
                                             ]}
                                                 onPress={() => { setActivePaymentTab('pending') }}
                                             >
-                                                <Text style={styles.sectionTabText}>Pending</Text>
+                                                <Text style={styles.sectionTabText}>{unpaidPayments.length} Pending</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity style={[
                                                 styles.sectionTab,
@@ -2472,7 +2477,7 @@ export default function Profile() {
                                             ]}
                                                 onPress={() => { setActivePaymentTab('paid') }}
                                             >
-                                                <Text style={styles.sectionTabText}>Paid</Text>
+                                                <Text style={styles.sectionTabText}>{paidPayments.length} Paid</Text>
                                             </TouchableOpacity>
                                         </View>
 
@@ -3003,14 +3008,14 @@ const styles = StyleSheet.create({
     },
     tabs: {
         backgroundColor: '#111111',
-        flexDirection: 'row',
-        paddingLeft: 10
+        paddingLeft: 10,
+        flexDirection:'row'
     },
     tab: {
         padding: 10,
         paddingBottom: 5,
         borderBottomWidth: 5,
-        borderBottomColor: '#111111'
+        borderBottomColor: '#111111',
     },
     activeTab: {
         borderBottomColor: '#FF4000'
@@ -3317,7 +3322,6 @@ const styles = StyleSheet.create({
         fontSize: 22,
         color: '#111111',
         textAlign: 'center',
-        marginBottom: 15,
     },
     daysOfWeek: {
         flexDirection: 'row',
@@ -3712,7 +3716,8 @@ const styles = StyleSheet.create({
     calendarHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginBottom: 15,
     },
     calArrow: {
         width: 20,

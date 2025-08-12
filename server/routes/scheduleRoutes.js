@@ -251,7 +251,7 @@ router.post('/',
                 .populate('team', 'name sport ageGroup members coaches club')
                 .populate('createdBy', 'name type');
 
-                console.log(populatedEvent.team.coaches)
+            console.log(populatedEvent.team.coaches)
 
             // Notification logic
             const creatorType = populatedEvent.createdBy.type;
@@ -297,6 +297,24 @@ router.post('/',
             res.status(500).json({ success: false, message: 'Server error' });
         }
     }
+);
+
+// @route   GET /api/schedules/:id
+// @desc    get a specific event
+router.get('/:id', async (req, res) => {
+    try {
+        const event = await Schedule.findById(id);
+
+        if (!event) {
+            res.status(404).json({ success: false, message: 'Event not found'  });
+        }
+
+        res.status(200).json({ success: true, data: event });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+}
 );
 
 // @route   PUT /api/schedules/:id
@@ -425,18 +443,18 @@ router.get('/team/:teamId',
 
 
 function formatDateTime(dateInput) {
-  const date = new Date(dateInput);
+    const date = new Date(dateInput);
 
-  const pad = (num) => num.toString().padStart(2, '0');
+    const pad = (num) => num.toString().padStart(2, '0');
 
-  const day = pad(date.getDate());
-  const month = pad(date.getMonth() + 1); // Months are zero-based
-  const year = date.getFullYear();
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1); // Months are zero-based
+    const year = date.getFullYear();
 
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
 
-  return `${day}/${month}/${year} at ${hours}:${minutes}`;
+    return `${day}/${month}/${year} at ${hours}:${minutes}`;
 }
 
 module.exports = router;

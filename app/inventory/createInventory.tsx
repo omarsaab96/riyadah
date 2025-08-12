@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -7,7 +8,6 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
-    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -15,7 +15,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 
 
@@ -23,10 +23,9 @@ const { width } = Dimensions.get('window');
 
 interface CreateInventoryProps {
     clubId: string;
-    onCreated?: () => void;
 }
 
-export default function CreateInventory({ clubId, onCreated }: CreateInventoryProps) {
+export default function CreateInventory({ clubId }: CreateInventoryProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -108,16 +107,10 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
             const data = await response.json();
 
             if (response.ok) {
-                Alert.alert('Success', 'Inventory item created successfully!', [
-                    { text: 'OK', onPress: () => onCreated && onCreated() }
-                ]);
-                setFormData({
-                    itemName: '',
-                    category: '',
-                    quantity: '',
-                    unitPrice: '',
-                    description: '',
-                });
+                router.replace({
+                    pathname: '/profile',
+                    params: { tab: 'Inventory' }
+                })
             } else {
                 throw new Error(data.message || 'Failed to create inventory item');
             }
@@ -140,11 +133,24 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Inventory' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to Inventory</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>New Inventory Item</Text>
@@ -267,7 +273,7 @@ export default function CreateInventory({ clubId, onCreated }: CreateInventoryPr
                                 style={[styles.profileButton, styles.savebtn]}
                                 disabled={saving}
                             >
-                                <Text style={styles.profileButtonText}>Save</Text>
+                                <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
                                 {saving && (
                                     <ActivityIndicator
                                         size="small"
@@ -412,5 +418,19 @@ const styles = StyleSheet.create({
         fontSize: 14,
         backgroundColor: '#F4F4F4',
         borderRadius: 8,
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas'
     },
 });

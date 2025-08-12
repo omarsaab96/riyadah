@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -99,8 +100,10 @@ export default function PaymentDetails() {
             const data = await res.json();
 
             if (res.ok) {
-                alert('Payment settled successfully');
-                setPayment(data.data);
+                router.replace({
+                    pathname: '/profile',
+                    params: { tab: 'Financials' }
+                })
             } else {
                 alert(data.message || 'Failed to settle payment');
             }
@@ -117,11 +120,24 @@ export default function PaymentDetails() {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Financials' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to financials</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>Payment details</Text>
@@ -324,7 +340,20 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingBottom: 130
     },
-
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas'
+    },
     saveLoaderContainer: {
         marginLeft: 10
     },

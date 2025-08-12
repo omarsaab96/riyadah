@@ -1,11 +1,12 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -32,7 +33,7 @@ const CreateEventScreen = () => {
         },
         onlineLink: '',
         trainingFocus: '',
-        repeats:'No',
+        repeats: 'No',
         opponent: {
             name: '',
             logo: ''
@@ -281,7 +282,7 @@ const CreateEventScreen = () => {
                 startDateTime: formData.startDateTime.toISOString(),
                 endDateTime: formData.endDateTime.toISOString(),
                 team: formData.team,
-                repeats:repeat
+                repeats: repeat
             };
 
             // Clean up empty fields
@@ -302,9 +303,10 @@ const CreateEventScreen = () => {
             const data = await response.json();
 
             if (response.ok) {
-                Alert.alert('Success', 'Event created successfully!', [
-                    { text: 'OK', onPress: () => router.back() }
-                ]);
+                router.replace({
+                    pathname: '/profile',
+                    params: { tab: 'Schedule' }
+                })
             } else {
                 throw new Error(data.message || 'Failed to create event');
             }
@@ -327,11 +329,24 @@ const CreateEventScreen = () => {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Schedule' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to Schedule</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>New Event</Text>
@@ -1010,7 +1025,21 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Manrope',
-    }
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas'
+    },
 });
 
 export default CreateEventScreen;

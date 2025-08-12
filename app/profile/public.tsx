@@ -44,6 +44,42 @@ export default function PublicProfile() {
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const tabs = ['Profile', 'Teams', 'Schedule'];
 
+    const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth()); // 0-11
+    const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+    const [calendarDays, setCalendarDays] = useState([]);
+    const generateCalendarDays = (year, month, events = []) => {
+        const startOfMonth = new Date(year, month, 1);
+        const endOfMonth = new Date(year, month + 1, 0);
+        const daysInMonth = endOfMonth.getDate();
+        const firstDayIndex = startOfMonth.getDay(); // Sunday = 0
+
+        const days = [];
+
+        for (let i = 0; i < firstDayIndex; i++) {
+            days.push(null); // Fill empty cells
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const hasEvent = events.some(e => {
+                const eventDate = new Date(e.startDateTime);
+                const eventStr = eventDate.toISOString().split('T')[0];
+                return eventStr === dateStr;
+            });
+
+            days.push({ day, dateStr, hasEvent });
+        }
+
+        return days;
+    };
+
+    useEffect(() => {
+        if (schedule) {
+            const updatedDays = generateCalendarDays(calendarYear, calendarMonth, schedule);
+            setCalendarDays(updatedDays);
+        }
+    }, [calendarMonth, calendarYear, schedule]);
+
     // Graph data
     const data = [
         { label: 'Attack', value: user?.skills?.attack },
@@ -898,8 +934,8 @@ export default function PublicProfile() {
             }
 
             {/* scheduleTab */}
-            {!loading && user && activeTab == "Schedule" &&
-                <Animated.ScrollView
+            {
+                !loading && user && activeTab == "Schedule" && <Animated.ScrollView
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                         { useNativeDriver: false }
@@ -916,17 +952,19 @@ export default function PublicProfile() {
                         </View>
                     ) : (
                         <View style={styles.contentContainer}>
+                            {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>Club Schedule</Text>
                             </View>
 
-                            {schedule?.length > 0 ? (
+                            {schedule.length > 0 ? (
                                 <View>
+                                    {/** Create a Set of event dates for dots */}
                                     {(() => {
                                         const eventDatesSet = new Set(
                                             schedule.map((event) => {
                                                 const d = new Date(event.startDateTime);
-                                                return d.toISOString().split('T')[0];
+                                                return d.toISOString().split('T')[0]; // "YYYY-MM-DD"
                                             })
                                         );
 
@@ -942,7 +980,37 @@ export default function PublicProfile() {
                                         return (
                                             <>
                                                 <View style={styles.calendarContainer}>
-                                                    <Text style={styles.monthHeader}>July 2025</Text>
+                                                    <View style={styles.calendarHeader}>
+                                                        <TouchableOpacity onPress={() => {
+                                                            if (calendarMonth === 0) {
+                                                                setCalendarMonth(11);
+                                                                setCalendarYear(calendarYear - 1);
+                                                            } else {
+                                                                setCalendarMonth(calendarMonth - 1);
+                                                            }
+                                                        }}>
+                                                            {/* <Text style={styles.navArrow}>previous</Text> */}
+                                                            <Image source={require('../../assets/leftArrow.png')} style={styles.calArrow} />
+                                                        </TouchableOpacity>
+
+                                                        <Text style={styles.monthHeader}>
+                                                            {new Date(calendarYear, calendarMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+                                                        </Text>
+
+                                                        <TouchableOpacity onPress={() => {
+                                                            if (calendarMonth === 11) {
+                                                                setCalendarMonth(0);
+                                                                setCalendarYear(calendarYear + 1);
+                                                            } else {
+                                                                setCalendarMonth(calendarMonth + 1);
+                                                            }
+                                                        }}>
+                                                            {/* <Text style={styles.navArrow}>next</Text> */}
+                                                            <Image source={require('../../assets/rightArrow.png')} style={styles.calArrow} />
+                                                        </TouchableOpacity>
+                                                    </View>
+
+                                                    {/* <Text style={styles.monthHeader}>July 2025</Text> */}
                                                     <View style={styles.daysOfWeek}>
                                                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                                                             <Text key={day} style={styles.dayHeader}>
@@ -952,27 +1020,29 @@ export default function PublicProfile() {
                                                     </View>
 
                                                     <View style={styles.calendarGrid}>
-                                                        {Array.from({ length: 31 }).map((_, i) => {
-                                                            const day = i + 1;
-                                                            const dateStr = `2025-07-${String(day).padStart(2, '0')}`;
+                                                        {calendarDays.map((item, index) => {
+                                                            if (!item) {
+                                                                return <View key={index} style={styles.calendarDay} />;
+                                                            }
+
+                                                            const day = item.day;
+                                                            const date = new Date(item.dateStr);
+
                                                             const isToday =
-                                                                new Date().getDate() === day &&
-                                                                new Date().getMonth() === 6 &&
-                                                                new Date().getFullYear() === 2025;
+                                                                new Date().toDateString() === date.toDateString();
+
                                                             const isSelected =
-                                                                selectedDate.getDate() === day &&
-                                                                selectedDate.getMonth() === 6 &&
-                                                                selectedDate.getFullYear() === 2025;
+                                                                selectedDate.toDateString() === date.toDateString();
 
                                                             return (
                                                                 <TouchableOpacity
-                                                                    key={day}
+                                                                    key={index}
                                                                     style={[
                                                                         styles.calendarDay,
                                                                         isToday && styles.currentDay,
                                                                         isSelected && styles.selectedDay,
                                                                     ]}
-                                                                    onPress={() => setSelectedDate(new Date(`2025-07-${day}`))}
+                                                                    onPress={() => setSelectedDate(date)}
                                                                 >
                                                                     <Text
                                                                         style={[
@@ -983,8 +1053,12 @@ export default function PublicProfile() {
                                                                     >
                                                                         {day}
                                                                     </Text>
-                                                                    {eventDatesSet.has(dateStr) && (
-                                                                        <View style={styles.eventDot} />
+
+                                                                    {item.hasEvent && (
+                                                                        <View style={[
+                                                                            styles.eventDot,
+                                                                            isSelected && styles.selectedEventDot
+                                                                        ]} />
                                                                     )}
                                                                 </TouchableOpacity>
                                                             );
@@ -993,7 +1067,7 @@ export default function PublicProfile() {
                                                 </View>
 
                                                 <View>
-                                                    <Text style={styles.subSectionTitle}>Upcoming Events</Text>
+                                                    <Text style={styles.subSectionTitle}>Events of the day - {selectedDate.getDate()} {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}</Text>
                                                     {selectedDayEvents.length > 0 ? (
                                                         selectedDayEvents.map((event) => {
                                                             const eventDate = new Date(event.startDateTime);
@@ -1028,12 +1102,68 @@ export default function PublicProfile() {
                                                                             </View>
                                                                         )}
                                                                     </View>
+                                                                    <TouchableOpacity
+                                                                        style={styles.eventAction}
+                                                                        onPress={(e) => {
+                                                                            e.stopPropagation();
+                                                                            // Handle menu press
+                                                                        }}
+                                                                    >
+                                                                        <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
+                                                                    </TouchableOpacity>
                                                                 </TouchableOpacity>
                                                             );
                                                         })
                                                     ) : (
                                                         <Text style={styles.noEventsText}>No events for this day.</Text>
                                                     )}
+
+                                                    <View style={{ marginTop: 30 }}>
+                                                        <Text style={styles.subSectionTitle}>Upcoming Events</Text>
+                                                        {schedule.filter(event => new Date(event.startDateTime) > new Date()).length > 0 ? (
+                                                            schedule
+                                                                .filter(event => new Date(event.startDateTime) > new Date())
+                                                                .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime)) // optional: sort chronologically
+                                                                .map((event) => {
+                                                                    const eventDate = new Date(event.startDateTime);
+                                                                    const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                                    const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                                                    return (
+                                                                        <TouchableOpacity
+                                                                            key={event._id}
+                                                                            style={styles.eventCard}
+                                                                            onPress={() => router.push(`/schedule/${event._id}`)}
+                                                                        >
+                                                                            <View style={styles.eventDate}>
+                                                                                <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
+                                                                                <Text style={styles.eventMonth}>
+                                                                                    {eventDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
+                                                                                </Text>
+                                                                            </View>
+                                                                            <View style={styles.eventDetails}>
+                                                                                <Text style={styles.eventTitle}>{event.title}</Text>
+                                                                                <Text style={styles.eventTime}>
+                                                                                    {formattedTime} - {endTime}
+                                                                                </Text>
+                                                                                <Text style={styles.eventLocation}>
+                                                                                    {event.locationType === 'online'
+                                                                                        ? 'Online Event'
+                                                                                        : event.venue?.name || 'Location TBD'}
+                                                                                </Text>
+                                                                                {event.eventType === 'match' && event.opponent && (
+                                                                                    <View style={styles.opponentContainer}>
+                                                                                        <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                                                    </View>
+                                                                                )}
+                                                                            </View>
+                                                                        </TouchableOpacity>
+                                                                    );
+                                                                })
+                                                        ) : (
+                                                            <Text style={styles.noEventsText}>No upcoming events.</Text>
+                                                        )}
+                                                    </View>
                                                 </View>
                                             </>
                                         );
@@ -1043,8 +1173,18 @@ export default function PublicProfile() {
                                 <View style={styles.emptyState}>
                                     <Text style={styles.emptyStateTitle}>No Scheduled Events</Text>
                                     <Text style={styles.emptyStateText}>
-                                        This club hasn't scheduled any events yet
+                                        {userId === user._id
+                                            ? "Add your first event to get started"
+                                            : "This club hasn't scheduled any events yet"}
                                     </Text>
+                                    {userId === user._id && (
+                                        <TouchableOpacity
+                                            style={styles.emptyStateButton}
+                                            onPress={() => router.push('/schedule/createEvent')}
+                                        >
+                                            <Text style={styles.emptyStateButtonText}>Create Event</Text>
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
                             )}
                         </View>
@@ -1876,7 +2016,6 @@ const styles = StyleSheet.create({
         fontSize: 22,
         color: '#111111',
         textAlign: 'center',
-        marginBottom: 15,
     },
     daysOfWeek: {
         flexDirection: 'row',
@@ -1902,7 +2041,7 @@ const styles = StyleSheet.create({
     },
     currentDay: {
         borderRadius: 20,
-        backgroundColor: '#dddddd'
+        // backgroundColor: '#dddddd'
     },
     selectedDay: {
         backgroundColor: '#FF4000',
@@ -1925,7 +2064,10 @@ const styles = StyleSheet.create({
         height: 5,
         borderRadius: 3,
         backgroundColor: '#FF4000',
-        bottom: 0,
+        bottom: 2,
+    },
+    selectedEventDot:{
+        backgroundColor:'#ffffff'
     },
     eventCard: {
         flexDirection: 'row',
@@ -2152,7 +2294,15 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         marginLeft: 10,
     },
-
-
+    calendarHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',        
+        marginBottom: 15,
+    },
+    calArrow: {
+        width: 20,
+        height: 20
+    }
 });
 

@@ -1,5 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
@@ -175,6 +176,7 @@ export default function AddPayment() {
             return;
         }
         setSaving(true);
+        setError('');
 
         const paymentObject = {
             user: selectedUser._id,
@@ -183,10 +185,42 @@ export default function AddPayment() {
             type: paymentType == "Other" ? paymentTypeOther : paymentType,
             note: paymentNote,
             dueDate: isPaid ? null : paymentDueDate,
-            status: isPaid ? 'Paid' : 'Pending'
         };
 
-        console.log(paymentObject)
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setError('User not authenticated');
+                setSaving(false);
+                return;
+            }
+
+            const response = await fetch('https://riyadah.onrender.com/api/financials', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(paymentObject)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to save payment');
+                setSaving(false);
+                return;
+            }
+
+            router.replace({
+                pathname: '/profile',
+                params: { tab: 'Financials' }
+            })
+
+        } catch (error) {
+            console.error('Error saving payment:', error);
+            setError('Something went wrong. Please try again.');
+            setSaving(false);
+        }
 
 
 
@@ -214,11 +248,24 @@ export default function AddPayment() {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.replace({
+                                pathname: '/profile',
+                                params: { tab: 'Financials' }
+                            })
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back to financials</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>New Payment</Text>
@@ -319,7 +366,7 @@ export default function AddPayment() {
 
                         {selectedUser && <View>
 
-                            <Text style={styles.label}>Selected athlete or coach</Text>
+                            <Text style={styles.label}>Selected user</Text>
 
                             <View style={styles.selectedUserContainer}>
                                 <Image
@@ -389,16 +436,16 @@ export default function AddPayment() {
                                     </Picker>
                                 </View>
                                 {paymentType == "Other" && <View style={styles.inputContainer}>
-                                <TextInput
-                                    style={styles.input}
-                                    value={paymentTypeOther}
-                                    onChangeText={setPaymentTypeOther}
-                                    placeholder="Specify payment type"
-                                />
-                            </View>}
+                                    <TextInput
+                                        style={styles.input}
+                                        value={paymentTypeOther}
+                                        onChangeText={setPaymentTypeOther}
+                                        placeholder="Specify payment type"
+                                    />
+                                </View>}
                             </View>
 
-                            
+
 
                             <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Note</Text>
@@ -621,7 +668,7 @@ const styles = StyleSheet.create({
     },
     searchLoader: {
         position: 'absolute',
-        top:15,
+        top: 15,
         right: 10,
     },
     resultsContainer: {
@@ -763,5 +810,19 @@ const styles = StyleSheet.create({
     },
     savebtn: {
         flexDirection: 'row'
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas'
     },
 });
