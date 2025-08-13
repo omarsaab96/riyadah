@@ -79,6 +79,7 @@ router.post("/create", authenticateToken, async (req, res) => {
         // Create a new chat
         chat = new Chat({
             participants: [userId, participantId],
+            activeParticipants:[],
             lastMessage: {
                 text: "",
                 senderId: null,
