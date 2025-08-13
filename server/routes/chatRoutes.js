@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Chat = require("../models/Chat");
 const Message = require("../models/Message");
 const router = express.Router();
+const { sendNotification } = require('../utils/notificationService');
 
 
 // Middleware to verify token
@@ -79,7 +80,7 @@ router.post("/create", authenticateToken, async (req, res) => {
         // Create a new chat
         chat = new Chat({
             participants: [userId, participantId],
-            activeParticipants:[],
+            activeParticipants: [],
             lastMessage: {
                 text: "",
                 senderId: null,
@@ -163,17 +164,42 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
         // Emit to other participants
         const io = req.app.get("io");
-        chat.participants.forEach((participantId) => {
-            if (participantId.toString() !== userId.toString()) {
-                io.to(participantId.toString()).emit("newMessage", { chatId, message });
-            }
-        });
+        chat.participants.forEach((participantId) => async {
+            if(participantId.toString() !== userId.toString()) {
+            io.to(participantId.toString()).emit("newMessage", { chatId, message });
 
-        res.json({ message: "Message sent", message });
+            const userToNotify = await User.findOne({
+                _id: participantId,
+                expoPushToken: { $exists: true, $ne: null }
+            });
+
+            const sender = await User.findOne({
+                _id: userId,
+                expoPushToken: { $exists: true, $ne: null }
+            }).select("name");
+
+
+            const notificationTitle = `${sender.name} sent you a new message`;
+            const notificationBody = `${text}`;
+            try {
+                await sendNotification(
+                    userToNotify,
+                    notificationTitle,
+                    notificationBody,
+                    { postId: chatId },
+                    false
+                );
+            } catch (err) {
+                console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+            }
+        }
+    });
+
+res.json({ message: "Message sent", message });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: err.message });
-    }
+    console.error(err);
+    res.status(500).json({ message: err.message });
+}
 });
 
 // Get chat details and all messages

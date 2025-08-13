@@ -390,7 +390,7 @@ export default function Messages() {
                         }
                         ListEmptyComponent={() => (
                             <View style={{ padding: 20, }}>
-                                <Text>No chats yet</Text>
+                                {!loading && <Text>No chats yet</Text>}
                             </View>
                         )}
                         onEndReached={() => { if (hasMore && !loading) loadChats(); }}
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     pageTitle: {
         fontFamily: 'Bebas',
         fontSize: 30,
-        color:'black'
+        color: 'black'
     },
     logo: {
         width: 120,
@@ -755,15 +755,15 @@ const styles = StyleSheet.create({
     chatHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap:10
+        gap: 10
     },
     chatUserName: {
         fontWeight: 'bold',
-        color:'black'
+        color: 'black'
     },
-    chatDate:{
-        color:'#aaa',
-        fontSize:14
+    chatDate: {
+        color: '#aaa',
+        fontSize: 14
     },
     chat: {
         flexDirection: 'row',
