@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Chat = require("../models/Chat");
+const Message = require("../models/Message");
 const router = express.Router();
 
 
@@ -118,36 +119,67 @@ router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
     }
 });
 
-// Add msg to chat
+// Get all messages for a chat
+router.get("/:chatId/messages", authenticateToken, async (req, res) => {
+  const { chatId } = req.params;
+  const userId = req.user.userId;
+
+  try {
+    const chat = await Chat.findById(chatId);
+    if (!chat) return res.status(404).json({ message: "Chat not found" });
+    if (!chat.participants.some(p => p.toString() === userId))
+      return res.status(403).json({ message: "Not authorized" });
+
+    const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+    res.json(messages);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+// Add a new message to a chat
 router.post("/:chatId/message", authenticateToken, async (req, res) => {
-    const { chatId } = req.params;
-    const { text } = req.body;
-    const userId = req.user.userId;
+  const { chatId } = req.params;
+  const { text } = req.body;
+  const userId = req.user.userId;
 
-    try {
-        const chat = await Chat.findById(chatId);
-        if (!chat) return res.status(404).json({ message: "Chat not found" });
+  try {
+    const chat = await Chat.findById(chatId);
+    if (!chat) return res.status(404).json({ message: "Chat not found" });
+    if (!chat.participants.some(p => p.toString() === userId))
+      return res.status(403).json({ message: "Not authorized" });
 
-        chat.lastMessage = {
-            text,
-            senderId: userId,
-            timestamp: new Date(),
-        };
-        await chat.save();
+    // Save the message
+    const message = new Message({
+      chatId,
+      senderId: userId,
+      text,
+    });
+    await message.save();
 
-        // Emit new message event
-        const io = req.app.get('io');
-        chat.participants.forEach((participantId) => {
-            if (participantId.toString() !== userId.toString()) {
-                io.to(participantId.toString()).emit("newMessage", { chatId });
-            }
-        });
+    // Update lastMessage in chat
+    chat.lastMessage = {
+      text,
+      senderId: userId,
+      timestamp: message.timestamp,
+    };
+    await chat.save();
 
-        res.json({ message: "Message sent", chat });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: err.message });
-    }
+    // Emit to other participants
+    const io = req.app.get("io");
+    chat.participants.forEach((participantId) => {
+      if (participantId.toString() !== userId.toString()) {
+        io.to(participantId.toString()).emit("newMessage", { chatId, message });
+      }
+    });
+
+    res.json({ message: "Message sent", message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
 });
 
 router.get("/participants", authenticateToken, async (req, res) => {

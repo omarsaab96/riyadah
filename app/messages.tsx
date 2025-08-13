@@ -193,24 +193,22 @@ export default function Messages() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/chats/delete/${chatId}`, {
-                method: 'PUT',
+                method: 'delete',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 }
             });
 
-            console.log(res)
-
             const data = await res.json();
-            
+
             if (!res.ok) {
                 alert(`Error: ${data.message}`);
                 return;
             }
 
-            setChats(prev => prev.filter(chat => chat._id !== chatId));
             handleCloseModalPress();
+            refreshChats()
         } catch (err) {
             console.error(err);
             alert('Something went wrong. Please try again.');
@@ -242,7 +240,10 @@ export default function Messages() {
 
     const renderChat = ({ item }: { item: any }) => (
         <TouchableOpacity
-            onPress={() => router.push({ pathname: "chat", params: { chatId: item._id } })}
+            onPress={() => router.push({
+                pathname: "/chat",
+                params: { chatId: item._id }
+            })}
             style={styles.chatContainer}
         >
             <View style={styles.chatContent}>
@@ -306,10 +307,10 @@ export default function Messages() {
 
     const handleSelectParticipant = (participantId: string) => {
         setParticipantId(participantId)
-        createChat();
+        createChat(participantId);
     };
 
-    const createChat = async () => {
+    const createChat = async (participantId: string) => {
         console.log('Creating chat with ', participantId)
 
         if (!participantId) {
@@ -335,7 +336,8 @@ export default function Messages() {
 
             if (res.ok) {
                 setSelectedChatId(data._id);
-                Alert.alert('Chat Created', `Chat ID: ${data._id}`);
+                handleCloseModalPress();
+                refreshChats()
             } else {
                 Alert.alert('Error', data.message || 'Failed to create chat');
             }
