@@ -99,6 +99,8 @@ router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
     const { chatId } = req.params;
     const userId = req.user.userId;
 
+    console.log(chatId)
+
     try {
         const chat = await Chat.findById(chatId);
         if (!chat) return res.status(404).json({ message: "Chat not found" });
