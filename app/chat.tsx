@@ -6,7 +6,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
-    Image,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
@@ -94,9 +93,10 @@ export default function ChatPage() {
     // Fetch chat and messages from API
     const fetchChat = async () => {
         setLoading(true);
+
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/messages`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -104,29 +104,12 @@ export default function ChatPage() {
             if (!res.ok) throw new Error('Failed to fetch chat');
 
             const data = await res.json();
-            setChat(data);
-            console.log(data)
-
-            try {
-                const token = await SecureStore.getItemAsync('userToken');
-                const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/messages`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                if (!res.ok) throw new Error('Failed to fetch chat');
-
-                const data = await res.json();
-                setMessages(data || []);
-            } catch (error) {
-                console.error(error);
-                alert('Failed to load chat');
-            }
-
+            setMessages(data || []);
         } catch (error) {
             console.error(error);
             alert('Failed to load chat');
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     };
@@ -211,23 +194,7 @@ export default function ChatPage() {
                     <Ionicons name="chevron-back" size={20} color="#ffffff" />
                     <Text style={styles.backBtnText}>chats</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={{position:'absolute',left:'50%',transform:[{translateX:-25}], bottom:10}}>
-                    {!chat?.otherParticipant?.image ? (
-                        <View style={styles.profileImage}>
-                            {chat?.otherParticipant?.gender === "Male" && (
-                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                            )}
-                            {chat?.otherParticipant?.gender === "Female" && (
-                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                            )}
-                            {chat?.otherParticipant?.type === "Club" && (
-                                <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                            )}
-                        </View>
-                    ) : (
-                        <Image source={{ uri: chat?.otherParticipant.image }} style={styles.profileImageAvatar} resizeMode="contain" />
-                    )}
-                </TouchableOpacity>
+
             </View>
 
             <KeyboardAvoidingView
@@ -271,8 +238,8 @@ const styles = StyleSheet.create({
         paddingTop: 50,
         paddingBottom: 15,
         paddingHorizontal: 10,
-        position:'relative',
-        height:100
+        position: 'relative',
+        height: 100
     },
     backBtn: {
         width: 200,
