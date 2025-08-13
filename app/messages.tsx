@@ -261,7 +261,9 @@ export default function Messages() {
                             )}
                         </View>
                     ) : (
-                        <Image source={{ uri: item.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
+                        <View style={styles.profileImage}>
+                            <Image source={{ uri: item.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
+                        </View>
                     )}
 
                     <View style={styles.chatInfo}>
