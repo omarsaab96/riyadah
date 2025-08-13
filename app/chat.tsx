@@ -96,7 +96,7 @@ export default function ChatPage() {
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/messages`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -104,7 +104,8 @@ export default function ChatPage() {
             if (!res.ok) throw new Error('Failed to fetch chat');
 
             const data = await res.json();
-            setMessages(data || []);
+            setChat(data.messages || null);
+            setMessages(data.messages || []);
         } catch (error) {
             console.error(error);
             alert('Failed to load chat');
