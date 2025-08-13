@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
@@ -33,6 +33,7 @@ export default function Messages() {
     const [hasMore, setHasMore] = useState(true);
     const [selectedChat, setSelectedChat] = useState(null);
     const [deleteConfirmation, setDeleteConfirmation] = useState('');
+    const [keyword, setKeyword] = useState('');
     const router = useRouter();
     const pageLimit = 10;
     const moreOptionsRef = useRef<BottomSheet>(null);
@@ -42,6 +43,10 @@ export default function Messages() {
     const [selectedChatId, setSelectedChatId] = useState('');
     const [loadingParticipants, setLoadingParticipants] = useState(true);
     const [participants, setParticipants] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
+    const [searchResults, setSearchResults] = useState([]);
+
 
     const snapPoints = useMemo(() => ["50%", "85%"], []);
 
@@ -91,8 +96,28 @@ export default function Messages() {
         }
     };
 
-    const fetchParticipants = () => {
-        
+    const fetchParticipants = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch('https://riyadah.onrender.com/api/chats/participants', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                // Exclude current user from participants list
+                const filtered = data.filter(user => user._id !== userId);
+                setParticipants(filtered);
+            } else {
+                console.error('Failed to fetch participants');
+            }
+        } catch (error) {
+            console.error('Error fetching participants:', error);
+        } finally {
+            setLoadingParticipants(false);
+        }
     }
 
     const loadChats = useCallback(async () => {
@@ -218,30 +243,31 @@ export default function Messages() {
             style={styles.chatContainer}
         >
             <View style={styles.chatContent}>
-                {!item.otherParticipant?.image ? (
-                    <View style={styles.profileImage}>
-                        {item.otherParticipant?.gender === "Male" && (
-                            <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                        )}
-                        {item.otherParticipant?.gender === "Female" && (
-                            <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                        )}
-                        {item.otherParticipant?.type === "Club" && (
-                            <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                        )}
-                    </View>
-                ) : (
-                    <Image source={{ uri: item.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
-                )}
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {!item.otherParticipant?.image ? (
+                        <View style={styles.profileImage}>
+                            {item.otherParticipant?.gender === "Male" && (
+                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                            {item.otherParticipant?.gender === "Female" && (
+                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                            {item.otherParticipant?.type === "Club" && (
+                                <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                        </View>
+                    ) : (
+                        <Image source={{ uri: item.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
+                    )}
 
-                <View style={styles.chatInfo}>
-                    <View style={styles.chatHeader}>
-                        <Text style={styles.chatUserName}>{item.otherParticipant?.name || "Unknown User"}</Text>
-                        <Text style={styles.chatDate}>{formatDate(item.lastMessage?.timestamp)}</Text>
+                    <View style={styles.chatInfo}>
+                        <View style={styles.chatHeader}>
+                            <Text style={styles.chatUserName}>{item.otherParticipant?.name || "Unknown User"}</Text>
+                            <Text style={styles.chatDate}>{formatDate(item.lastMessage?.timestamp)}</Text>
+                        </View>
+                        <Text style={styles.lastReply}>{item.lastMessage?.text || "No messages yet"}</Text>
                     </View>
-                    <Text style={styles.lastReply}>{item.lastMessage?.text || "No messages yet"}</Text>
                 </View>
-
                 <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
                     <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                 </TouchableOpacity>
@@ -249,9 +275,42 @@ export default function Messages() {
         </TouchableOpacity>
     );
 
+    const handleSearchInput = (text: string) => {
+        setKeyword(text);
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        // Clear previous timeout
+        if (debounceTimeout) clearTimeout(debounceTimeout);
+
+        // Set new debounce timeout
+        const timeout = setTimeout(() => {
+            if (text.trim().length >= 3) {
+                const filtered = participants.filter(p =>
+                    p.name?.toLowerCase().includes(text.trim().toLowerCase())
+                );
+
+                setSearchResults(filtered);
+            } else {
+                setSearchResults([]);
+            }
+        }, 500); // delay: 500ms
+
+        setDebounceTimeout(timeout);
+    };
+
+    const handleSelectParticipant = (participantId: string) => {
+        setParticipantId(participantId)
+        createChat();
+    };
+
     const createChat = async () => {
+        console.log('Creating chat with ', participantId)
+
         if (!participantId) {
-            Alert.alert('Error', 'Please enter participant ID');
+            Alert.alert('Error', 'Please select a user to start a chat with');
             return;
         }
 
@@ -269,6 +328,8 @@ export default function Messages() {
             });
 
             const data = await res.json();
+            console.log('response ', data)
+
             if (res.ok) {
                 setSelectedChatId(data._id);
                 Alert.alert('Chat Created', `Chat ID: ${data._id}`);
@@ -300,7 +361,7 @@ export default function Messages() {
                         keyExtractor={item => `${item._id}-${item.lastMessage?.timestamp || ''}`}
                         ListHeaderComponent={
                             <View style={styles.header}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
                                     <Image source={require('../assets/logo_white.png')} style={styles.logo} resizeMode="contain" />
                                     <View style={styles.headerActions}>
                                         <TouchableOpacity
@@ -319,8 +380,14 @@ export default function Messages() {
 
                                     </View>
                                 </View>
+                                <Text style={styles.pageTitle}>Chats</Text>
                             </View>
                         }
+                        ListEmptyComponent={() => (
+                            <View style={{ padding: 20, }}>
+                                <Text>No chats yet</Text>
+                            </View>
+                        )}
                         onEndReached={() => { if (hasMore && !loading) loadChats(); }}
                         onEndReachedThreshold={0.5}
                         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshChats} colors={['#FF4000']} tintColor="#FF4000" />}
@@ -342,7 +409,7 @@ export default function Messages() {
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/notifications')}>
-                        <Image source={require('../assets/notifications.png')} style={styles.activeIcon} />
+                        <Image source={require('../assets/notifications.png')} style={styles.icon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/profile')}>
@@ -359,28 +426,27 @@ export default function Messages() {
                     >
                         <BottomSheetView style={{ flex: 1, paddingBottom: 50 }}>
                             <View style={{ padding: 20 }}>
-                                {selectedChat.otherParticipant?._id === userId && (
-                                    <View>
-                                        {deleteConfirmation === '' && (
-                                            <TouchableOpacity onPress={() => handleDeleteChat(selectedChat._id)} style={[styles.profileButton, { marginTop: 10 }]}>
-                                                <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete chat</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                        {deleteConfirmation === selectedChat._id && (
-                                            <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
-                                                <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
-                                                <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
-                                                    <TouchableOpacity onPress={() => handleConfirmDeleteChat(selectedChat._id)} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                        <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity onPress={handleCancelDeleteChat} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                        <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
-                                                    </TouchableOpacity>
-                                                </View>
+                                <View>
+                                    {deleteConfirmation === '' && (
+                                        <TouchableOpacity onPress={() => handleDeleteChat(selectedChat._id)} style={[styles.profileButton, { marginTop: 10 }]}>
+                                            <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete chat</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    {deleteConfirmation === selectedChat._id && (
+                                        <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
+                                            <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
+                                            <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
+                                                <TouchableOpacity onPress={() => handleConfirmDeleteChat(selectedChat._id)} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                    <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={handleCancelDeleteChat} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
+                                                    <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
+                                                </TouchableOpacity>
                                             </View>
-                                        )}
-                                    </View>
-                                )}
+                                        </View>
+                                    )}
+                                </View>
+
                                 <TouchableOpacity onPress={handleCloseModalPress} style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
                                     <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
                                 </TouchableOpacity>
@@ -401,7 +467,7 @@ export default function Messages() {
                     keyboardBlurBehavior="restore"
                 >
                     <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
-                        <View style={[styles.commentModalHeader, {}]}>
+                        <View style={styles.commentModalHeader}>
                             <Text style={styles.commentModalTitle}>New message</Text>
                             <TouchableOpacity
                                 style={styles.commentModalClose}
@@ -410,11 +476,27 @@ export default function Messages() {
                                 <Ionicons name="close" size={24} color="#888" />
                             </TouchableOpacity>
                         </View>
+                        <View style={styles.searchInputContainer}>
+                            <BottomSheetTextInput
+                                style={styles.searchInput}
+                                placeholder="Search users (Min. 3 chars)"
+                                placeholderTextColor="#A8A8A8"
+                                value={keyword}
+                                onChangeText={handleSearchInput}
+                            />
+                            {searching &&
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#FF4000"
+                                    style={styles.searchLoader}
+                                />
+                            }
+                        </View>
                     </BottomSheetView>
 
-                    <BottomSheetScrollView
+                    {keyword.length < 3 && <BottomSheetScrollView
                         keyboardShouldPersistTaps="handled"
-                        contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom: 140 }}
+                        contentContainerStyle={{ paddingHorizontal: 15, marginTop: 110, paddingBottom: 140 }}
                         showsVerticalScrollIndicator={false}
                     >
                         {loadingParticipants ? (
@@ -428,7 +510,53 @@ export default function Messages() {
                                 </View>
                             ) : (
                                 participants.map((item) => (
-                                    <View key={item._id} style={styles.commentItem}>
+                                    <TouchableOpacity key={item._id} onPress={() => { handleSelectParticipant(item._id) }}>
+                                        <View style={styles.commentItem}>
+                                            <View style={styles.profileImage}>
+                                                {/* Default avatars */}
+                                                {(item?.image == null || item?.image === '') && item?.type === 'Club' && (
+                                                    <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                                )}
+                                                {(item?.image == null || item?.image === '') && item?.gender === 'Male' && (
+                                                    <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                                )}
+                                                {(item?.image == null || item?.image === '') && item?.gender === 'Female' && (
+                                                    <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                                                )}
+                                                {item?.image && (
+                                                    <Image source={{ uri: item.image }} style={styles.profileImageAvatar} resizeMode="contain" />
+                                                )}
+                                            </View>
+                                            <View style={styles.commentContent}>
+                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <View>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                            <Text style={styles.commentAuthor}>{item.name}</Text>
+                                                        </View>
+                                                        <Text style={styles.commentText}>{item.type}</Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </TouchableOpacity>
+                                ))
+                            )
+                        )}
+                    </BottomSheetScrollView>}
+
+                    {keyword.length >= 3 && <BottomSheetScrollView
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={{ paddingHorizontal: 15, marginTop: 110, paddingBottom: 140 }}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        {searchResults.length === 0 ? (
+                            <View style={styles.noComments}>
+                                <Text style={styles.noCommentsText}>No users found</Text>
+                            </View>
+                        ) : (
+                            searchResults.map((item) => (
+                                <TouchableOpacity key={item._id} onPress={() => { handleSelectParticipant(item._id) }}>
+                                    <View style={styles.commentItem}>
                                         <View style={styles.profileImage}>
                                             {/* Default avatars */}
                                             {(item?.image == null || item?.image === '') && item?.type === 'Club' && (
@@ -455,10 +583,12 @@ export default function Messages() {
                                             </View>
                                         </View>
                                     </View>
-                                ))
-                            )
-                        )}
-                    </BottomSheetScrollView>
+                                </TouchableOpacity>
+                            ))
+                        )
+
+                        }
+                    </BottomSheetScrollView>}
                 </BottomSheet>
 
             </SafeAreaView>
@@ -474,6 +604,10 @@ const styles = StyleSheet.create({
     header: {
         paddingVertical: 15,
         paddingHorizontal: 20,
+    },
+    pageTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 30
     },
     logo: {
         width: 120,
@@ -570,14 +704,21 @@ const styles = StyleSheet.create({
         marginRight: 10,
         backgroundColor: "#FF4000"
     },
-    postInput: {
+    searchInputContainer: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+        paddingVertical: 5
+    },
+    searchInput: {
         flex: 1,
-        backgroundColor: '#f0f2f5',
-        borderRadius: 10,
         paddingHorizontal: 15,
-        paddingVertical: 10,
         fontSize: 16,
         color: '#050505',
+    },
+    searchLoader: {
+        position: 'absolute',
+        top: 15,
+        right: 20,
     },
     createPostActions: {
         flexDirection: 'row',
@@ -593,7 +734,7 @@ const styles = StyleSheet.create({
         color: '#150000',
         fontFamily: 'Bebas',
     },
-    postContainer: {
+    chatContainer: {
         backgroundColor: '#ffffff',
         borderRadius: 15,
         marginBottom: 10,
@@ -605,30 +746,39 @@ const styles = StyleSheet.create({
         shadowRadius: 1,
         elevation: 2,
     },
-    postHeader: {
+    chatHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
     },
-    post: {
+    chatUserName: {
+        fontWeight: 'bold'
+    },
+    chat: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         justifyContent: 'space-between'
     },
-    postContent: {
-        width: width - 100,
+    chatContent: {
+        // width: width - 100,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        // borderWidth:1
     },
-    postStats: {
+    chatInfo: {
+        // flex:1
+    },
+    chatStats: {
         width: 30,
     },
-    postActionBtn: {
+    chatActionBtn: {
         alignItems: 'center',
         marginBottom: 15,
     },
-    postActionBtnLast: {
+    chatActionBtnLast: {
         marginBottom: 0,
     },
-    postActionText: {
+    chatActionText: {
         fontFamily: 'Manrope',
         fontSize: 14,
         color: '#888888'
@@ -659,7 +809,6 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     postOptions: {
-        padding: 5,
     },
     postTitle: {
         fontWeight: 'bold',
@@ -831,6 +980,7 @@ const styles = StyleSheet.create({
     },
     commentItem: {
         flexDirection: 'row',
+        alignItems: 'center',
         paddingVertical: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#f5f5f5',
@@ -846,7 +996,7 @@ const styles = StyleSheet.create({
     },
     commentAuthor: {
         fontWeight: 'bold',
-        fontSize: 14,
+        fontSize: 16,
         color: '#333',
         marginBottom: 3,
         marginRight: 15

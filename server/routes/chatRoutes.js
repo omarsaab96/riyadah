@@ -1,6 +1,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");  
+const User = require("../models/User");
 const Chat = require("../models/Chat");
 const router = express.Router();
 
@@ -94,6 +94,28 @@ router.post("/create", authenticateToken, async (req, res) => {
     }
 });
 
+// Delete chat route
+router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
+    const { chatId } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const chat = await Chat.findById(chatId);
+        if (!chat) return res.status(404).json({ message: "Chat not found" });
+
+        // Optional: Check if user is a participant of this chat
+        if (!chat.participants.some(p => p.toString() === userId)) {
+            return res.status(403).json({ message: "Not authorized to delete this chat" });
+        }
+
+        await Chat.findByIdAndDelete(chatId);
+        res.json({ message: "Chat deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Add msg to chat
 router.post("/:chatId/message", authenticateToken, async (req, res) => {
     const { chatId } = req.params;
@@ -127,16 +149,16 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 });
 
 router.get("/participants", authenticateToken, async (req, res) => {
-  try {
-    const currentUserId = req.user.userId;
+    try {
+        const currentUserId = req.user.userId;
 
-    const users = await User.find({ _id: { $ne: currentUserId } }).select("_id name image gender type");
+        const users = await User.find({ _id: { $ne: currentUserId } }).select("_id name image gender type");
 
-    res.json(users);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-  }
+        res.json(users);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
 });
 
 module.exports = router;
