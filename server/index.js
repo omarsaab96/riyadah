@@ -55,12 +55,47 @@ io.use((socket, next) => {
     });
 });
 
-io.on('connection', (socket) => {
-    console.log('User connected:', socket.userId);
-    socket.join(socket.userId);
+io.on('connection', async (socket) => {
+    const userId = socket.userId;
+    const chatId = socket.handshake.query.chatId;
+    if (!chatId) {
+        console.log('chatId missing on socket connection, disconnecting');
+        socket.disconnect();
+        return;
+    }
 
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.userId);
+    console.log('User connected:', userId, 'to chat:', chatId);
+
+    socket.join(chatId);
+
+    // Add user to activeParticipants
+    try {
+        await Chat.findByIdAndUpdate(chatId, {
+            $addToSet: { activeParticipants: userId }
+        });
+        console.log(`User ${userId} marked active in chat ${chatId}`);
+    } catch (err) {
+        console.error('Error adding active participant:', err);
+    }
+
+    socket.on('disconnect', async () => {
+        console.log('User disconnected:', userId, 'from chat:', chatId);
+
+        // Remove user from activeParticipants
+        try {
+            await Chat.findByIdAndUpdate(chatId, {
+                $pull: { activeParticipants: userId }
+            });
+
+            // Optional: Check if no active participants remain
+            const chat = await Chat.findById(chatId);
+            if (chat && chat.activeParticipants.length === 0) {
+                console.log(`No active participants left in chat ${chatId}`);
+                // Trigger notification logic here if needed
+            }
+        } catch (err) {
+            console.error('Error removing active participant:', err);
+        }
     });
 });
 

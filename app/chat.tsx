@@ -124,16 +124,18 @@ export default function ChatPage() {
 
         const socket = io('https://riyadah.onrender.com', {
             auth: { token },
+            query: { chatId },
         });
 
         socket.on('connect', () => {
             console.log('Socket connected:', socket.id);
         });
 
-        socket.on('newMessage', (data: { chatId: string }) => {
+        socket.on('newMessage', (data: { chatId: string, message: Message }) => {
             if (data.chatId === chatId) {
                 // Refetch messages or update locally
-                fetchChat();
+                setMessages((prevMessages) => [...prevMessages, data.message]);
+                // fetchChat();
             }
         });
 
@@ -174,13 +176,13 @@ export default function ChatPage() {
         );
     };
 
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#FF4000" />
-            </View>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <View style={styles.loadingContainer}>
+    //             <ActivityIndicator size="large" color="#FF4000" />
+    //         </View>
+    //     );
+    // }
 
     return (
         <View style={styles.container}>
@@ -240,8 +242,9 @@ export default function ChatPage() {
                         style={styles.input}
                         multiline
                     />
-                    <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
-                        <Ionicons name="send" size={24} color="#fff" />
+                    <TouchableOpacity disabled = {loading} onPress={handleSendMessage} style={[styles.sendButton,loading && {backgroundColor:'transparent'}]}>
+                        {!loading && <Ionicons name="send" size={24} color="#fff" />}
+                        {loading && <ActivityIndicator size="small" color="#FF4000" />}
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>

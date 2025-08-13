@@ -187,11 +187,11 @@ router.get("/:chatId", authenticateToken, async (req, res) => {
         if (!chat.participants.some(p => p._id.toString() === userId))
             return res.status(403).json({ message: "Not authorized" });
 
-        const messages = await Message.find({ chatId }).sort({ timestamp: 1});
+        const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
 
         res.json({
-            chat:chat,
-            messages:messages
+            chat: chat,
+            messages: messages
         });
     } catch (err) {
         console.error(err);
