@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -32,6 +33,8 @@ interface Chat {
 export default function ChatPage() {
     const router = useRouter();
     const { chatId } = useLocalSearchParams();
+    const [userId, setUserId] = useState<string | null>(null);
+    const [user, setUser] = useState(null);
 
     const [chat, setChat] = useState<Chat | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -39,6 +42,10 @@ export default function ChatPage() {
     const [loading, setLoading] = useState(false);
 
     const socketRef = useRef<any>(null);
+
+    useEffect(() => {
+        fetchUser();
+    }, []);
 
     useEffect(() => {
         if (!chatId) return;
@@ -56,6 +63,36 @@ export default function ChatPage() {
         };
     }, [chatId]);
 
+    const fetchUser = async () => {
+        const token = await SecureStore.getItemAsync('userToken');
+
+        console.log(token)
+        if (token) {
+            const decodedToken = jwtDecode(token);
+            console.log("DECODED token: ", decodedToken)
+            setUserId(decodedToken.userId);
+
+            const pushToken = await registerForPushNotificationsAsync(decodedToken.userId, token);
+            console.log('Push token from registration function:', pushToken);
+
+            const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+
+            if (response.ok) {
+                const user = await response.json();
+                setUser(user)
+            } else {
+                console.log(user)
+                console.error('Token API error:', response)
+            }
+            setLoading(false)
+        } else {
+            console.log("no token",)
+        }
+    };
+
     // Fetch chat and messages from API
     const fetchChat = async () => {
         setLoading(true);
@@ -69,8 +106,9 @@ export default function ChatPage() {
             if (!res.ok) throw new Error('Failed to fetch chat');
 
             const data = await res.json();
+            console.log(data)
             setChat(data.chat);
-            setMessages(data.messages || []);
+            setMessages(data || []);
         } catch (error) {
             console.error(error);
             alert('Failed to load chat');
@@ -127,14 +165,11 @@ export default function ChatPage() {
     };
 
     const renderMessage = ({ item }: { item: Message }) => {
-        const isMine = item.senderId === chat?.participants[0]?._id; // or your logged userId
+        const isMine = item.senderId === userId;
 
         return (
             <View style={[styles.messageContainer, isMine ? styles.myMessage : styles.otherMessage]}>
                 <Text style={styles.messageText}>{item.text}</Text>
-                <Text style={styles.messageTimestamp}>
-                    {new Date(item.timestamp).toLocaleTimeString()}
-                </Text>
             </View>
         );
     };
@@ -158,7 +193,7 @@ export default function ChatPage() {
                 renderItem={renderMessage}
                 keyExtractor={(item, idx) => item._id || idx.toString()}
                 inverted
-                contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', padding: 10 }}
+                contentContainerStyle={{ flexGrow: 1, padding: 10 }}
             />
 
             <View style={styles.inputContainer}>
@@ -178,16 +213,17 @@ export default function ChatPage() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
+    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 100 },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     messageContainer: {
         maxWidth: '80%',
         padding: 10,
-        marginVertical: 5,
+        marginVertical: 2,
         borderRadius: 8,
+        backgroundColor: 'yellow',
     },
     myMessage: {
-        backgroundColor: '#FF4000',
+        backgroundColor: '#f1f1f1',
         alignSelf: 'flex-end',
     },
     otherMessage: {
@@ -202,6 +238,9 @@ const styles = StyleSheet.create({
         color: '#555',
         textAlign: 'right',
         marginTop: 4,
+        position: 'absolute',
+        bottom: 5,
+        right: '100%'
     },
     inputContainer: {
         flexDirection: 'row',

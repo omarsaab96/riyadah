@@ -130,14 +130,13 @@ router.get("/:chatId/messages", authenticateToken, async (req, res) => {
     if (!chat.participants.some(p => p.toString() === userId))
       return res.status(403).json({ message: "Not authorized" });
 
-    const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+    const messages = await Message.find({ chatId }).sort({ timestamp: -1 });
     res.json(messages);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: err.message });
   }
 });
-
 
 // Add a new message to a chat
 router.post("/:chatId/message", authenticateToken, async (req, res) => {
