@@ -612,7 +612,8 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         fontFamily: 'Bebas',
-        fontSize: 30
+        fontSize: 30,
+        color:'black'
     },
     logo: {
         width: 120,
@@ -754,9 +755,15 @@ const styles = StyleSheet.create({
     chatHeader: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap:10
     },
     chatUserName: {
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color:'black'
+    },
+    chatDate:{
+        color:'#aaa',
+        fontSize:14
     },
     chat: {
         flexDirection: 'row',

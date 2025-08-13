@@ -192,8 +192,12 @@ export default function ChatPage() {
                 data={messages}
                 renderItem={renderMessage}
                 keyExtractor={(item, idx) => item._id || idx.toString()}
-                inverted
-                contentContainerStyle={{ flexGrow: 1, padding: 10 }}
+                contentContainerStyle={{ justifyContent:'flex-end',flexGrow: 1, padding: 10 }}
+                ListHeaderComponent={
+                    <View style={styles.chatHeader}>
+                        <Text style={styles.pageTitle}>Chats</Text>
+                    </View>
+                }
             />
 
             <View style={styles.inputContainer}>
@@ -213,7 +217,7 @@ export default function ChatPage() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 100 },
+    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 60 },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     messageContainer: {
         maxWidth: '80%',
@@ -225,13 +229,15 @@ const styles = StyleSheet.create({
     myMessage: {
         backgroundColor: '#f1f1f1',
         alignSelf: 'flex-end',
+
     },
     otherMessage: {
         backgroundColor: '#eee',
         alignSelf: 'flex-start',
     },
     messageText: {
-        color: '#000',
+        fontSize: 16,
+        color: 'black'
     },
     messageTimestamp: {
         fontSize: 10,
@@ -255,10 +261,11 @@ const styles = StyleSheet.create({
         flex: 1,
         maxHeight: 100,
         paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingVertical: 12,
         backgroundColor: '#f1f1f1',
         borderRadius: 20,
         fontSize: 16,
+        color: 'black'
     },
     sendButton: {
         marginLeft: 10,
