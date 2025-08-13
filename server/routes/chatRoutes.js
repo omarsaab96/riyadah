@@ -57,6 +57,35 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 });
 
+// Get specific chat by id
+router.get("/:chatId", authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const chatId = req.params.chatId;
+
+    try {
+        const chats = await Chat.find({
+            _id: chatId
+        })
+            .populate("participants", "name image gender type");
+
+        const chatsWithOther = chats.map(chat => {
+            const otherParticipant = chat.participants.find(
+                p => p._id.toString() !== userId.toString()
+            );
+
+            return {
+                _id: chat._id,
+                otherParticipant: otherParticipant || null,
+            };
+        });
+
+        res.json(chatsWithOther);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Create a new chat between two participants
 router.post("/create", authenticateToken, async (req, res) => {
     const userId = req.user.userId;

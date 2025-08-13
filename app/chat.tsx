@@ -6,13 +6,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Image,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import io from 'socket.io-client';
 
@@ -72,9 +73,6 @@ export default function ChatPage() {
             console.log("DECODED token: ", decodedToken)
             setUserId(decodedToken.userId);
 
-            const pushToken = await registerForPushNotificationsAsync(decodedToken.userId, token);
-            console.log('Push token from registration function:', pushToken);
-
             const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -98,7 +96,7 @@ export default function ChatPage() {
         setLoading(true);
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/messages`, {
+            const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -106,9 +104,27 @@ export default function ChatPage() {
             if (!res.ok) throw new Error('Failed to fetch chat');
 
             const data = await res.json();
-            console.log(data)
-            setChat(data.chat);
-            setMessages(data || []);
+            setChat(data);
+
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/messages`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (!res.ok) throw new Error('Failed to fetch chat');
+
+                const data = await res.json();
+                console.log(data)
+                setChat(data.chat);
+                setMessages(data || []);
+            } catch (error) {
+                console.error(error);
+                alert('Failed to load chat');
+            }
+
+
         } catch (error) {
             console.error(error);
             alert('Failed to load chat');
@@ -183,48 +199,97 @@ export default function ChatPage() {
     }
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={styles.container}
-            keyboardVerticalOffset={90}
-        >
-            <FlatList
-                data={messages}
-                renderItem={renderMessage}
-                keyExtractor={(item, idx) => item._id || idx.toString()}
-                contentContainerStyle={{ justifyContent:'flex-end',flexGrow: 1, padding: 10 }}
-                ListHeaderComponent={
-                    <View style={styles.chatHeader}>
-                        <Text style={styles.pageTitle}>Chats</Text>
-                    </View>
-                }
-            />
-
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Type a message..."
-                    value={text}
-                    onChangeText={setText}
-                    style={styles.input}
-                    multiline
-                />
-                <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
-                    <Ionicons name="send" size={24} color="#fff" />
+        <View style={styles.container}>
+            <View style={styles.topBanner}>
+                <TouchableOpacity
+                    onPress={() => {
+                        router.replace({
+                            pathname: '/profile',
+                            params: { tab: 'Inventory' }
+                        })
+                    }}
+                    style={styles.backBtn}
+                >
+                    <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                    <Text style={styles.backBtnText}>chats</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                    {!chat?.otherParticipant?.image ? (
+                        <View style={styles.profileImage}>
+                            {chat?.otherParticipant?.gender === "Male" && (
+                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                            {chat?.otherParticipant?.gender === "Female" && (
+                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                            {chat?.otherParticipant?.type === "Club" && (
+                                <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                        </View>
+                    ) : (
+                        <Image source={{ uri: chat?.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
+                    )}
                 </TouchableOpacity>
             </View>
-        </KeyboardAvoidingView>
+
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={90}
+            >
+                <FlatList
+                    data={messages}
+                    renderItem={renderMessage}
+                    keyExtractor={(item, idx) => item._id || idx.toString()}
+                    contentContainerStyle={{ justifyContent: 'flex-end', flexGrow: 1, padding: 15 }}
+                    ListHeaderComponent={
+                        <View style={styles.chatHeader}>
+                            <Text style={styles.pageTitle}>Chats</Text>
+                        </View>
+                    }
+                />
+
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        placeholder="Type a message..."
+                        value={text}
+                        onChangeText={setText}
+                        style={styles.input}
+                        multiline
+                    />
+                    <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
+                        <Ionicons name="send" size={24} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAvoidingView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 60 },
+    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 60, borderWidth: 2 },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    topBanner: {
+        backgroundColor: '#FF4000',
+        paddingTop: 50,
+        paddingBottom: 15,
+        paddingHorizontal: 10
+    },
+    backBtn: {
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas',
+    },
     messageContainer: {
         maxWidth: '80%',
         padding: 10,
         marginVertical: 2,
         borderRadius: 8,
-        backgroundColor: 'yellow',
     },
     myMessage: {
         backgroundColor: '#f1f1f1',
@@ -250,7 +315,7 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         flexDirection: 'row',
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         paddingVertical: 8,
         borderTopWidth: 1,
         borderColor: '#ddd',
