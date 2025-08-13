@@ -119,30 +119,18 @@ router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
     }
 });
 
-// Get chat details and all messages
-router.get("/:chatId", authenticateToken, async (req, res) => {
-    const { chatId } = req.params;
-    const userId = req.user.userId;
-
+router.get("/participants", authenticateToken, async (req, res) => {
     try {
-        const chat = await Chat.findById(chatId).populate('participants', '_id name type gender image');
-        if (!chat) return res.status(404).json({ message: "Chat not found" });
+        const currentUserId = req.user.userId;
 
-        if (!chat.participants.some(p => p._id.toString() === userId))
-            return res.status(403).json({ message: "Not authorized" });
+        const users = await User.find({ _id: { $ne: currentUserId } }).select("_id name image gender type");
 
-        const messages = await Message.find({ chatId }).sort({ timestamp: 1});
-
-        res.json({
-            chat:chat,
-            messages:messages
-        });
+        res.json(users);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
     }
 });
-
 
 // Add a new message to a chat
 router.post("/:chatId/message", authenticateToken, async (req, res) => {
@@ -187,18 +175,30 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
     }
 });
 
-router.get("/participants", authenticateToken, async (req, res) => {
+// Get chat details and all messages
+router.get("/:chatId", authenticateToken, async (req, res) => {
+    const { chatId } = req.params;
+    const userId = req.user.userId;
+
     try {
-        const currentUserId = req.user.userId;
+        const chat = await Chat.findById(chatId).populate('participants', '_id name type gender image');
+        if (!chat) return res.status(404).json({ message: "Chat not found" });
 
-        const users = await User.find({ _id: { $ne: currentUserId } }).select("_id name image gender type");
+        if (!chat.participants.some(p => p._id.toString() === userId))
+            return res.status(403).json({ message: "Not authorized" });
 
-        res.json(users);
+        const messages = await Message.find({ chatId }).sort({ timestamp: 1});
+
+        res.json({
+            chat:chat,
+            messages:messages
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
     }
 });
+
 
 module.exports = router;
 
