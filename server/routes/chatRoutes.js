@@ -63,10 +63,9 @@ router.get("/:chatId", authenticateToken, async (req, res) => {
     const chatId = req.params.chatId;
 
     try {
-        const chats = await Chat.find({
+        const chats = await Chat.findOne({
             _id: chatId
-        })
-            .populate("participants", "name image gender type");
+        }).populate("participants", "name image gender type");
 
         const chatsWithOther = chats.map(chat => {
             const otherParticipant = chat.participants.find(

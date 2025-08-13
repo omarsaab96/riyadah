@@ -105,6 +105,7 @@ export default function ChatPage() {
 
             const data = await res.json();
             setChat(data);
+            console.log(data)
 
             try {
                 const token = await SecureStore.getItemAsync('userToken');
@@ -116,14 +117,11 @@ export default function ChatPage() {
                 if (!res.ok) throw new Error('Failed to fetch chat');
 
                 const data = await res.json();
-                console.log(data)
-                setChat(data.chat);
                 setMessages(data || []);
             } catch (error) {
                 console.error(error);
                 alert('Failed to load chat');
             }
-
 
         } catch (error) {
             console.error(error);
@@ -213,7 +211,7 @@ export default function ChatPage() {
                     <Ionicons name="chevron-back" size={20} color="#ffffff" />
                     <Text style={styles.backBtnText}>chats</Text>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity style={{position:'absolute',left:'50%',transform:[{translateX:-25}], bottom:10}}>
                     {!chat?.otherParticipant?.image ? (
                         <View style={styles.profileImage}>
                             {chat?.otherParticipant?.gender === "Male" && (
@@ -227,7 +225,7 @@ export default function ChatPage() {
                             )}
                         </View>
                     ) : (
-                        <Image source={{ uri: chat?.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
+                        <Image source={{ uri: chat?.otherParticipant.image }} style={styles.profileImageAvatar} resizeMode="contain" />
                     )}
                 </TouchableOpacity>
             </View>
@@ -243,7 +241,7 @@ export default function ChatPage() {
                     contentContainerStyle={{ justifyContent: 'flex-end', flexGrow: 1, padding: 15 }}
                     ListHeaderComponent={
                         <View style={styles.chatHeader}>
-                            <Text style={styles.pageTitle}>Chats</Text>
+                            <Text style={styles.pageTitle}>{chat._id}</Text>
                         </View>
                     }
                 />
@@ -266,13 +264,15 @@ export default function ChatPage() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 60, borderWidth: 2 },
+    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 60 },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     topBanner: {
         backgroundColor: '#FF4000',
         paddingTop: 50,
         paddingBottom: 15,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+        position:'relative',
+        height:100
     },
     backBtn: {
         width: 200,
@@ -337,5 +337,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         borderRadius: 20,
         padding: 10,
+    },
+    profileImage: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#dddddd',
+        overflow: 'hidden',
+    },
+    profileImageAvatar: {
+        height: '100%',
+        width: undefined,
+        aspectRatio: 1,
+        resizeMode: 'contain',
     },
 });
