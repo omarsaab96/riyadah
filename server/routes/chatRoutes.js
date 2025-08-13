@@ -162,44 +162,40 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
         };
         await chat.save();
 
+        const sender = await User.findById(userId).select("name");
+
         // Emit to other participants
         const io = req.app.get("io");
-        chat.participants.forEach((participantId) => async {
-            if(participantId.toString() !== userId.toString()) {
-            io.to(participantId.toString()).emit("newMessage", { chatId, message });
+        for (const participantId of chat.participants) {
+            if (participantId.toString() !== userId.toString()) {
+                if (chat.activeParticipants.includes(participantId.toString())) {
+                    io.to(participantId.toString()).emit("newMessage", { chatId, message });
+                } else {
+                    const userToNotify = await User.findOne({
+                        _id: participantId,
+                        expoPushToken: { $exists: true, $ne: null }
+                    });
 
-            const userToNotify = await User.findOne({
-                _id: participantId,
-                expoPushToken: { $exists: true, $ne: null }
-            });
+                    if (!userToNotify) continue;
 
-            const sender = await User.findOne({
-                _id: userId,
-                expoPushToken: { $exists: true, $ne: null }
-            }).select("name");
+                    const notificationTitle = `${sender.name} sent you a new message`;
+                    const notificationBody = text;
 
-
-            const notificationTitle = `${sender.name} sent you a new message`;
-            const notificationBody = `${text}`;
-            try {
-                await sendNotification(
-                    userToNotify,
-                    notificationTitle,
-                    notificationBody,
-                    { postId: chatId },
-                    false
-                );
-            } catch (err) {
-                console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+                    try {
+                        await sendNotification(userToNotify, notificationTitle, notificationBody, { postId: chatId }, false);
+                    } catch (err) {
+                        console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
+                    }
+                }
             }
         }
-    });
 
-res.json({ message: "Message sent", message });
+
+        res.json({ success: true, message: "Message sent", data: message });
     } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-}
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
 });
 
 // Get chat details and all messages

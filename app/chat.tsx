@@ -134,7 +134,7 @@ export default function ChatPage() {
         socket.on('newMessage', (data: { chatId: string, message: Message }) => {
             if (data.chatId === chatId) {
                 // Refetch messages or update locally
-                setMessages((prevMessages) => [...prevMessages, data.message]);
+                setMessages((prevMessages) => [...prevMessages, data.data]);
                 // fetchChat();
             }
         });
