@@ -14,7 +14,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const postRoutes = require('./routes/postRoutes')
 const searchRoutes = require('./routes/searchRoutes')
 const chatRouter = require('./routes/chatRoutes');
-const Chat = require("../models/Chat");
+const Chat = require("./models/Chat");
 
 const app = express();
 app.use(cors());
