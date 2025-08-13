@@ -241,7 +241,7 @@ export default function ChatPage() {
                     contentContainerStyle={{ justifyContent: 'flex-end', flexGrow: 1, padding: 15 }}
                     ListHeaderComponent={
                         <View style={styles.chatHeader}>
-                            <Text style={styles.pageTitle}>{chat._id}</Text>
+                            <Text style={styles.pageTitle}>Chats</Text>
                         </View>
                     }
                 />

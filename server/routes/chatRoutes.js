@@ -57,35 +57,6 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 });
 
-// Get specific chat by id
-router.get("/:chatId", authenticateToken, async (req, res) => {
-    const userId = req.user.userId;
-    const chatId = req.params.chatId;
-
-    try {
-        const chat = await Chat.findById(chatId)
-            .populate("participants", "name image gender type");
-
-        if (!chat) {
-            return res.status(404).json({ message: "Chat not found" });
-        }
-
-        const otherParticipant = chat.participants.find(
-            p => p._id.toString() !== userId.toString()
-        );
-
-        res.json({
-            _id: chat._id,
-            participants: chat.participants,
-            otherParticipant: otherParticipant || null,
-            lastMessage: chat.lastMessage
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
 // Create a new chat between two participants
 router.post("/create", authenticateToken, async (req, res) => {
     const userId = req.user.userId;
