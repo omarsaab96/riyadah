@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Image,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
@@ -104,8 +105,9 @@ export default function ChatPage() {
             if (!res.ok) throw new Error('Failed to fetch chat');
 
             const data = await res.json();
-            setChat(data.messages || null);
+            setChat(data.chat || null);
             setMessages(data.messages || []);
+
         } catch (error) {
             console.error(error);
             alert('Failed to load chat');
@@ -186,8 +188,7 @@ export default function ChatPage() {
                 <TouchableOpacity
                     onPress={() => {
                         router.replace({
-                            pathname: '/profile',
-                            params: { tab: 'Inventory' }
+                            pathname: '/messages'
                         })
                     }}
                     style={styles.backBtn}
@@ -195,12 +196,29 @@ export default function ChatPage() {
                     <Ionicons name="chevron-back" size={20} color="#ffffff" />
                     <Text style={styles.backBtnText}>chats</Text>
                 </TouchableOpacity>
-
+                {chat && <TouchableOpacity style={{ position: 'absolute', left: '50%', transform: [{ translateX: -25 }], bottom: 10 }}>
+                    {!chat.participants.filter(p => p._id != userId)[0].image ? (
+                        <View style={styles.profileImage}>
+                            {chat.participants.filter(p => p._id != userId)[0].gender === "Male" && (
+                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                            {chat.participants.filter(p => p._id != userId)[0].gender === "Female" && (
+                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                            {chat.participants.filter(p => p._id != userId)[0].type === "Club" && (
+                                <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
+                            )}
+                        </View>
+                    ) : (
+                        <Image source={{ uri: chat.participants.filter(p => p._id != userId)[0].image }} style={styles.profileImageAvatar} resizeMode="contain" />
+                    )}
+                </TouchableOpacity>}
             </View>
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 keyboardVerticalOffset={90}
+                style={{ flex: 1 }}
             >
                 <FlatList
                     data={messages}
@@ -209,7 +227,7 @@ export default function ChatPage() {
                     contentContainerStyle={{ justifyContent: 'flex-end', flexGrow: 1, padding: 15 }}
                     ListHeaderComponent={
                         <View style={styles.chatHeader}>
-                            <Text style={styles.pageTitle}>Chats</Text>
+                            <Text style={styles.disclaimer}>By chatting through Riyadah app, you agree to the terms and conditions and privacy policy</Text>
                         </View>
                     }
                 />
@@ -232,8 +250,16 @@ export default function ChatPage() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff', paddingBottom: 60 },
-    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    container: {
+        flex: 1,
+        backgroundColor: '#f4f4f4',
+        paddingBottom: 60
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     topBanner: {
         backgroundColor: '#FF4000',
         paddingTop: 50,
@@ -260,7 +286,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     myMessage: {
-        backgroundColor: '#f1f1f1',
+        backgroundColor: '#dedede',
         alignSelf: 'flex-end',
 
     },
@@ -287,7 +313,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderTopWidth: 1,
         borderColor: '#ddd',
-        backgroundColor: '#fff',
+        backgroundColor: '#f4f4f4',
         alignItems: 'center',
     },
     input: {
@@ -295,7 +321,7 @@ const styles = StyleSheet.create({
         maxHeight: 100,
         paddingHorizontal: 12,
         paddingVertical: 12,
-        backgroundColor: '#f1f1f1',
+        backgroundColor: '#dedede',
         borderRadius: 20,
         fontSize: 16,
         color: 'black'
@@ -319,4 +345,16 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         resizeMode: 'contain',
     },
+    chatHeader: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom:30
+    },
+    disclaimer: {
+        fontSize: 12,
+        color: '#aaa',
+        fontStyle: 'italic',
+        maxWidth:300,
+        textAlign:'center'
+    }
 });
