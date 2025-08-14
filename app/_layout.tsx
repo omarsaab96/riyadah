@@ -4,7 +4,6 @@ import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { StatusBar } from 'expo-status-bar';
 import { useEffect } from "react";
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -69,7 +68,6 @@ export default function RootLayout() {
             <Stack.Screen name="index" options={{ title: "Home" }} />
             <Stack.Screen name="+not-found" />
           </Stack>
-          <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
         </ThemeProvider>
       </RegistrationProvider>
     </SafeAreaProvider >

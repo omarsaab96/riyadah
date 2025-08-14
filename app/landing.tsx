@@ -1167,7 +1167,7 @@ export default function Landing() {
                     <View style={{ height: 25, backgroundColor: '#FF4000' }} />
                 )}
 
-                <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
+                <StatusBar style="light"/>
 
                 <View style={{ height: '100%', paddingBottom: 100 }}>
                     <FlatList
