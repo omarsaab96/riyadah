@@ -305,7 +305,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 4,
     fontSize: 18,
-    fontFamily: 'Bebas'
+    fontFamily: 'Bebas',
+    color:'black'
   },
   contactButton: {
     flexDirection: "row",
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   },
   contactText: {
     marginLeft: 8,
-    // color: "#FF4000",
+    color:'black',
     fontFamily: 'Manrope',
     fontSize: 16
   },
@@ -334,10 +335,11 @@ const styles = StyleSheet.create({
   },
   listItem: {
     marginBottom: 2,
-    fontSize: 16
+    fontSize: 16,
+    color:'black'
   },
   noData: {
-    color: "#666", fontSize: 16
+    color: "#888", fontSize: 16
   },
   backBtn: {
     position: 'absolute',

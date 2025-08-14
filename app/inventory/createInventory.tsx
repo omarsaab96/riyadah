@@ -180,6 +180,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                             <Text style={styles.label}>Item Name *</Text>
                             <TextInput
                                 style={styles.input}
+                                placeholderTextColor={"#888"}
                                 placeholder="Enter item name"
                                 value={formData.itemName}
                                 onChangeText={(text) => handleChange('itemName', text)}
@@ -214,6 +215,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter quantity"
+                                placeholderTextColor={"#888"}
                                 keyboardType="numeric"
                                 value={formData.quantity}
                                 onChangeText={(text) => handleChange('quantity', text)}
@@ -227,6 +229,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                                     style={[styles.input, { flex: 1, marginBottom: 0 }]}
                                     placeholder="Amount"
                                     keyboardType="numeric"
+                                    placeholderTextColor={"#888"}
                                     value={formData.unitPrice?.split(' ')[0] || ''}
                                     onChangeText={(text) => {
                                         const amount = text.trim();
@@ -378,7 +381,8 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: "Bebas",
         fontSize: 20,
-        marginBottom: 10
+        marginBottom: 10,
+        color: 'black'
     },
     input: {
         fontSize: 14,
@@ -386,7 +390,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F4F4F4',
         marginBottom: 16,
         color: 'black',
-        borderRadius: 10
+        borderRadius: 10,
     },
     error: {
         backgroundColor: '#FF4000',
@@ -418,6 +422,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         backgroundColor: '#F4F4F4',
         borderRadius: 8,
+        color: 'black'
     },
     backBtn: {
         position: 'absolute',

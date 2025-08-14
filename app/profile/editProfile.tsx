@@ -22,7 +22,7 @@ import {
     View
 } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 
 const { width } = Dimensions.get('window');

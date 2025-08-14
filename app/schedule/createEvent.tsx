@@ -378,6 +378,7 @@ const CreateEventScreen = () => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter event title"
+                                placeholderTextColor={"#888"}
                                 value={formData.title}
                                 onChangeText={(text) => handleChange('title', text)}
                             />
@@ -388,6 +389,7 @@ const CreateEventScreen = () => {
                             <TextInput
                                 style={[styles.input]}
                                 placeholder="Enter description"
+                                placeholderTextColor={"#888"}
                                 multiline
                                 value={formData.description}
                                 onChangeText={(text) => handleChange('description', text)}
@@ -505,6 +507,7 @@ const CreateEventScreen = () => {
                                     <Text style={styles.label}>Venue Name</Text>
                                     <TextInput
                                         style={styles.input}
+                                        placeholderTextColor={"#888"}
                                         placeholder="Enter venue name"
                                         value={formData.venue.name}
                                         onChangeText={(text) => handleNestedChange('venue', 'name', text)}
@@ -514,6 +517,7 @@ const CreateEventScreen = () => {
                                     <Text style={styles.label}>Venue Address</Text>
                                     <TextInput
                                         style={styles.input}
+                                        placeholderTextColor={"#888"}
                                         placeholder="Enter venue address"
                                         value={formData.venue.address}
                                         onChangeText={(text) => handleNestedChange('venue', 'address', text)}
@@ -527,6 +531,7 @@ const CreateEventScreen = () => {
                                 <Text style={styles.label}>Online Meeting Link</Text>
                                 <TextInput
                                     style={styles.input}
+                                    placeholderTextColor={"#888"}
                                     placeholder="Enter meeting link"
                                     value={formData.onlineLink}
                                     onChangeText={(text) => handleChange('onlineLink', text)}
@@ -539,6 +544,7 @@ const CreateEventScreen = () => {
                                 <Text style={styles.label}>Training Focus</Text>
                                 <TextInput
                                     style={styles.input}
+                                    placeholderTextColor={"#888"}
                                     placeholder="E.g. Passing drills, defensive positioning"
                                     value={formData.trainingFocus}
                                     onChangeText={(text) => handleChange('trainingFocus', text)}
@@ -555,6 +561,7 @@ const CreateEventScreen = () => {
                                             style={[styles.input, { marginBottom: 0, flex: 1 }]}
                                             placeholder="Search equipment (min. 3 characters)"
                                             value={equipmentSearch}
+                                            placeholderTextColor={"#888"}
                                             onChangeText={handleSearch}
                                         />
                                     </View>
@@ -663,6 +670,7 @@ const CreateEventScreen = () => {
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Enter opponent team name"
+                                        placeholderTextColor={"#888"}
                                         value={formData.opponent.name}
                                         onChangeText={(text) => handleNestedChange('opponent', 'name', text)}
                                     />
@@ -672,6 +680,7 @@ const CreateEventScreen = () => {
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Enter opponent logo URL"
+                                        placeholderTextColor={"#888"}
                                         value={formData.opponent.logo}
                                         onChangeText={(text) => handleNestedChange('opponent', 'logo', text)}
                                     />
@@ -848,7 +857,8 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: "Bebas",
         fontSize: 20,
-        marginBottom: 10
+        marginBottom: 10,
+        color: 'black'
     },
 
     input: {
@@ -870,12 +880,12 @@ const styles = StyleSheet.create({
         width: '100%',
         fontFamily: 'Manrope',
         backgroundColor: '#F4F4F4',
+        color: 'black'
     },
     dateInput: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ccc',
+        backgroundColor: '#F4F4F4',
         padding: 12,
         borderRadius: 4,
         justifyContent: 'space-between',

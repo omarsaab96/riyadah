@@ -401,14 +401,14 @@ export default function TeamDetails() {
                                                     })}>
                                                     <View style={{ alignItems: 'center' }}>
                                                         {coach.image ? (
-                                                            <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
+                                                            <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden', marginBottom:5 }]}>
                                                                 <Image
                                                                     source={{ uri: coach.image }}
                                                                     style={{ width: '100%', aspectRatio: 1 }}
                                                                 />
                                                             </View>
                                                         ) : (
-                                                            <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
+                                                            <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden', marginBottom:5 }]}>
                                                                 {coach.gender == "Male" ? (
                                                                     <Image
                                                                         style={styles.searchResultItemImage}
@@ -425,7 +425,7 @@ export default function TeamDetails() {
                                                             </View>
                                                         )}
 
-                                                        <Text style={styles.paragraph}>{coach.name.trim()}</Text>
+                                                        <Text style={[styles.paragraph,{fontSize:14}]}>{coach.name.trim()}</Text>
                                                     </View>
                                                 </TouchableOpacity>
                                             ))}
@@ -468,7 +468,7 @@ export default function TeamDetails() {
                                                         params: { id: member._id },
                                                     })}>
                                                     <View style={{ alignItems: 'center' }}>
-                                                        <View style={{ marginBottom: 10 }}>
+                                                        <View style={{ marginBottom: 5 }}>
                                                             {member.image ? (
                                                                 <View style={[styles.searchResultItemImageContainer, { width: '100%', backgroundColor: '#dddddd', borderRadius: 100, overflow: 'hidden' }]}>
                                                                     <Image
@@ -494,7 +494,7 @@ export default function TeamDetails() {
                                                                 </View>
                                                             )}
                                                         </View>
-                                                        <Text style={styles.paragraph}>{member?.name?.trim()}</Text>
+                                                        <Text style={[styles.paragraph,{fontSize:14}]}>{member?.name?.trim()}</Text>
                                                     </View>
                                                 </TouchableOpacity>
                                             ))}
@@ -522,7 +522,7 @@ export default function TeamDetails() {
                                             <TouchableOpacity
                                                 key={event._id}
                                                 style={styles.eventCard}
-                                                onPress={() => router.push(`/schedule/${event._id}`)}
+                                                onPress={() => router.push(`/schedule/details?id=${event._id}`)}
                                             >
                                                 <View style={styles.eventDate}>
                                                     <Text style={styles.eventDay}>{eventDate.getDate()}</Text>

@@ -502,11 +502,11 @@ const CreateStaffScreen = () => {
                                         ))}
                                     </View>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginTop: 10, fontWeight: 'bold' }}>
+                                    <Text style={{ fontFamily: 'Manrope', marginTop: 10, fontWeight: 'bold', color: 'black' }}>
                                         Can't find the account you are looking for?
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10, color: 'black' }}>
                                         Don't worry you can still create a new staff by clicking on the button below.
                                     </Text>
 
@@ -522,15 +522,15 @@ const CreateStaffScreen = () => {
 
                             {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && keyword.trim().length >= 3 && (
                                 <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
-                                    <Text style={{ fontFamily: 'Manrope', fontWeight: 'bold' }}>
+                                    <Text style={{ fontFamily: 'Manrope', fontWeight: 'bold', color: 'black' }}>
                                         No results.
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10, color: 'black' }}>
                                         Looks like the staff you are looking for does not have an account on Riyadah.
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10, color: 'black' }}>
                                         Don't worry you can still create a new staff by clicking on the button below.
                                     </Text>
 
@@ -623,6 +623,7 @@ const CreateStaffScreen = () => {
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Enter staff name"
+                                    placeholderTextColor={"#888"}
                                     value={formData.name}
                                     onChangeText={(text) => handleChange('name', text)}
                                 />
@@ -634,6 +635,7 @@ const CreateStaffScreen = () => {
                                     style={[styles.input, { marginBottom: 5 }]}
                                     placeholder="Enter email address"
                                     keyboardType="email-address"
+                                    placeholderTextColor={"#888"}
                                     autoCapitalize="none"
                                     value={formData.email}
                                     onChangeText={(text) => handleChange('email', text)}
@@ -783,6 +785,7 @@ const CreateStaffScreen = () => {
                                     <TextInput
                                         style={[styles.input, { marginBottom: 0, flex: 1 }]}
                                         placeholder="Add qualification"
+                                        placeholderTextColor={"#888"}
                                         value={qualificationInput}
                                         onChangeText={setQualificationInput}
                                         onSubmitEditing={addQualification}
@@ -813,6 +816,7 @@ const CreateStaffScreen = () => {
                                     <TextInput
                                         style={[styles.input, { marginBottom: 0, flex: 1 }]}
                                         placeholder="Add certification"
+                                        placeholderTextColor={"#888"}
                                         value={certificationInput}
                                         onChangeText={setCertificationInput}
                                         onSubmitEditing={addCertification}
@@ -1149,6 +1153,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
+        color: 'black'
     },
     dateInput: {
         backgroundColor: '#F4F4F4',
@@ -1201,6 +1206,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 10,
+        color: 'black'
     },
     teamCheckbox: {
         marginRight: 10,
@@ -1208,6 +1214,7 @@ const styles = StyleSheet.create({
     teamName: {
         fontFamily: 'Manrope',
         fontSize: 16,
+        color: 'black'
     },
     noTeamsText: {
         fontFamily: 'Manrope',
@@ -1235,6 +1242,7 @@ const styles = StyleSheet.create({
     statusButtonText: {
         fontFamily: 'Manrope',
         fontWeight: 'bold',
+        color: 'black'
     },
     activeStatusButtonText: {
         color: '#fff',
@@ -1403,6 +1411,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 16,
         fontWeight: 'bold',
+        color: 'black'
     },
     userEmail: {
         fontFamily: 'Manrope',
@@ -1428,6 +1437,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontWeight: 'bold',
         fontSize: 16,
+        color: 'black'
     },
     selectedUserEmail: {
         fontFamily: 'Manrope',
@@ -1501,19 +1511,19 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#150000',
         fontFamily: 'Bebas',
-    },backBtn: {
+    }, backBtn: {
         position: 'absolute',
         top: 60,
         left: 10,
-        width:200,
+        width: 200,
         zIndex: 1,
         flexDirection: 'row',
         alignContent: 'center',
     },
     backBtnText: {
         color: '#FFF',
-        fontSize:18,
-        fontFamily:'Bebas'
+        fontSize: 18,
+        fontFamily: 'Bebas'
     },
 });
 

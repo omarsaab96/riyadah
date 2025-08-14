@@ -598,7 +598,7 @@ export default function Coaches() {
                                                                     </View>
                                                                 )}
                                                             </View>
-                                                            <Text>{coach?.name?.trim()}</Text>
+                                                            <Text style={{color:'black',fontSize:14,fontFamily:'Manrope'}}>{coach?.name?.trim()}</Text>
                                                         </TouchableOpacity>
                                                     </View>
                                                 );
@@ -847,7 +847,8 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: "Bebas",
-        fontSize: 20
+        fontSize: 20,
+        color:'black'
     },
     subtitle: {
         fontFamily: "Manrope",
@@ -922,19 +923,21 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         flexDirection: 'row',
         alignItems: 'center',
-        flex: 1
+        flex: 1,
     },
     searchResultItemLink: {
         color: '#FF4000'
     },
     searchResultItemDescription: {
         // fontSize:16,
-        marginBottom: 5
+        marginBottom: 5,
+        color:'#888888'
     },
     searchResultItemName: {
         fontWeight: 'bold',
         fontSize: 16,
-        // marginBottom:5
+        // marginBottom:5,
+        color:'black'
     },
     removeBtn: {
         width: 25,

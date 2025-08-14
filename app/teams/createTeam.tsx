@@ -305,6 +305,7 @@ export default function CreateTeam() {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter team name"
+                                placeholderTextColor={"#888888"}
                                 value={teamData.name}
                                 onChangeText={(text) => setTeamData({ ...teamData, name: text })}
                             />

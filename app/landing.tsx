@@ -9,7 +9,6 @@ import { Video } from 'expo-av';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { StatusBar } from 'expo-status-bar';
 import { jwtDecode } from "jwt-decode";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -1160,15 +1159,13 @@ export default function Landing() {
 
     return (
         <GestureHandlerRootView style={styles.container}>
+            {Platform.OS === 'ios' ? (
+                <View style={{ height: 44, backgroundColor: 'white' }} />
+            ) : (
+                <View style={{ height: 25, backgroundColor: '#FF4000' }} />
+            )}
+
             <SafeAreaView>
-                {Platform.OS === 'ios' ? (
-                    <View style={{ height: 44, backgroundColor: 'white' }} />
-                ) : (
-                    <View style={{ height: 25, backgroundColor: '#FF4000' }} />
-                )}
-
-                <StatusBar style="light"/>
-
                 <View style={{ height: '100%', paddingBottom: 100 }}>
                     <FlatList
                         data={posts}

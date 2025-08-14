@@ -611,7 +611,7 @@ export default function Members() {
                                                                     </View>
                                                                 )}
                                                             </View>
-                                                            <Text>{member?.name?.trim()}</Text>
+                                                            <Text style={{color:'black',fontSize:14,fontFamily:'Manrope'}}>{member?.name?.trim()}</Text>
                                                         </TouchableOpacity>
                                                     </View>
                                                 );
@@ -959,12 +959,14 @@ const styles = StyleSheet.create({
     },
     searchResultItemDescription: {
         // fontSize:16,
-        marginBottom: 5
+        marginBottom: 5,
+        color:'#888888'
     },
     searchResultItemName: {
         fontWeight: 'bold',
         fontSize: 16,
         // marginBottom:5
+        color:'black'
     },
     removeBtn: {
         width: 25,

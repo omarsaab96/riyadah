@@ -1,3 +1,4 @@
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -6,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -106,10 +108,21 @@ export default function StaffDetailsScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>image</Text>
-          <Text style={styles.contactText}>{item.image}</Text>
+          {item.image ? (
+            <Image
+              source={{ uri: item.image }}
+              style={{ width: 100, height: 100 }}
+            />
+          ) : (
+            <View style={[styles.inventoryIcon, styles.defaultInventoryIcon]}>
+              <FontAwesome5 name="box-open" size={36} color="#fff" />
+            </View>
+          )
+
+          }
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>quantity</Text>
+          <Text style={styles.sectionTitle}>Available quantity</Text>
           <Text style={styles.contactText}>{item.quantity}</Text>
         </View>
         <View style={styles.section}>
@@ -118,9 +131,9 @@ export default function StaffDetailsScreen() {
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>description</Text>
-          <Text style={styles.contactText}>{item.description}</Text>
+          <Text style={styles.contactText}>{item.description || '-'}</Text>
         </View>
-        
+
       </ScrollView >
       }
     </View >
@@ -199,7 +212,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 4,
     fontSize: 18,
-    fontFamily: 'Bebas'
+    fontFamily: 'Bebas',
+    color: 'black'
   },
   contactButton: {
     flexDirection: "row",
@@ -207,10 +221,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   contactText: {
-    marginLeft: 8,
     // color: "#FF4000",
     fontFamily: 'Manrope',
-    fontSize: 16
+    fontSize: 16,
+    color: 'black'
   },
   teamItem: {
     backgroundColor: "#f2f2f2",
@@ -270,4 +284,14 @@ const styles = StyleSheet.create({
     right: -5,
     opacity: 0.2
   },
+  inventoryIcon: {
+        width: 100,
+        height: 100,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    defaultInventoryIcon: {
+        backgroundColor: '#FF4000',
+    },
 });

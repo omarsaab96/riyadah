@@ -43,6 +43,8 @@ export default function ChatPage() {
     const [loading, setLoading] = useState(false);
 
     const socketRef = useRef<any>(null);
+    const flatListRef = useRef<FlatList>(null);
+
 
     useEffect(() => {
         fetchUser();
@@ -106,7 +108,7 @@ export default function ChatPage() {
 
             const data = await res.json();
             setChat(data.chat || null);
-            setMessages(data.messages || []);
+            setMessages(data.messages.reverse() || []);
 
         } catch (error) {
             console.error(error);
@@ -133,9 +135,7 @@ export default function ChatPage() {
 
         socket.on('newMessage', (data: { chatId: string, message: Message }) => {
             if (data.chatId === chatId) {
-                // Refetch messages or update locally
-                setMessages((prevMessages) => [...prevMessages, data.data]);
-                // fetchChat();
+                setMessages((prevMessages) => [ data.data, ...prevMessages]);
             }
         });
 
@@ -185,7 +185,9 @@ export default function ChatPage() {
     // }
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={90}
+            style={styles.container}>
             <View style={styles.topBanner}>
                 <TouchableOpacity
                     onPress={() => {
@@ -198,57 +200,92 @@ export default function ChatPage() {
                     <Ionicons name="chevron-back" size={20} color="#ffffff" />
                     <Text style={styles.backBtnText}>chats</Text>
                 </TouchableOpacity>
-                {chat && <TouchableOpacity style={{ position: 'absolute', left: '50%', transform: [{ translateX: -25 }], bottom: 10 }}>
-                    {!chat.participants.filter(p => p._id != userId)[0].image ? (
-                        <View style={styles.profileImage}>
-                            {chat.participants.filter(p => p._id != userId)[0].gender === "Male" && (
-                                <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                            )}
-                            {chat.participants.filter(p => p._id != userId)[0].gender === "Female" && (
-                                <Image source={require('../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                            )}
-                            {chat.participants.filter(p => p._id != userId)[0].type === "Club" && (
-                                <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                            )}
-                        </View>
-                    ) : (
-                        <Image source={{ uri: chat.participants.filter(p => p._id != userId)[0].image }} style={styles.profileImageAvatar} resizeMode="contain" />
-                    )}
-                </TouchableOpacity>}
+
+                {chat && chat.participants && (() => {
+                    const otherParticipant = chat.participants.find(p => p._id !== userId);
+                    return (
+                        <TouchableOpacity
+                            style={{
+                                position: 'absolute',
+                                left: '50%',
+                                transform: [{ translateX: -25 }],
+                                bottom: 10,
+                                zIndex: 1
+                            }}
+                            onPress={() => {
+                                router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: otherParticipant._id },
+                                })
+                            }}
+                        >
+                            <View style={styles.profileImage}>
+                                {otherParticipant ? (
+                                    otherParticipant.image ? (
+                                        <Image
+                                            source={{ uri: otherParticipant.image }}
+                                            style={styles.profileImageAvatar}
+                                            resizeMode="contain"
+                                        />
+                                    ) : otherParticipant.type === "Club" ? (
+                                        <Image
+                                            source={require('../assets/clublogo.png')}
+                                            style={styles.profileImageAvatar}
+                                            resizeMode="contain"
+                                        />
+                                    ) : otherParticipant.gender === "Female" ? (
+                                        <Image
+                                            source={require('../assets/avatarF.png')}
+                                            style={styles.profileImageAvatar}
+                                            resizeMode="contain"
+                                        />
+                                    ) : (
+                                        <Image
+                                            source={require('../assets/avatar.png')}
+                                            style={styles.profileImageAvatar}
+                                            resizeMode="contain"
+                                        />
+                                    )
+                                ) : null}
+                            </View>
+                        </TouchableOpacity>
+                    );
+                })()}
             </View>
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                keyboardVerticalOffset={90}
-                style={{ flex: 1 }}
-            >
-                <FlatList
-                    data={messages}
-                    renderItem={renderMessage}
-                    keyExtractor={(item, idx) => item._id || idx.toString()}
-                    contentContainerStyle={{ justifyContent: 'flex-end', flexGrow: 1, padding: 15 }}
-                    ListHeaderComponent={
-                        <View style={styles.chatHeader}>
-                            <Text style={styles.disclaimer}>By chatting through Riyadah app, you agree to the terms and conditions and privacy policy</Text>
-                        </View>
-                    }
-                />
 
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        placeholder="Type a message..."
-                        value={text}
-                        onChangeText={setText}
-                        style={styles.input}
-                        multiline
-                    />
-                    <TouchableOpacity disabled = {loading} onPress={handleSendMessage} style={[styles.sendButton,loading && {backgroundColor:'transparent'}]}>
-                        {!loading && <Ionicons name="send" size={24} color="#fff" />}
-                        {loading && <ActivityIndicator size="small" color="#FF4000" />}
-                    </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
-        </View>
+            <FlatList
+                ref={flatListRef}
+                data={messages}
+                inverted
+                renderItem={renderMessage}
+                keyExtractor={(item, idx) => item._id || idx.toString()}
+                contentContainerStyle={{
+                    padding: 15
+                }}
+                ListFooterComponent={
+                    <View style={styles.chatHeader}>
+                        <Text style={styles.disclaimer}>By chatting through Riyadah app, you agree to the terms and conditions and privacy policy</Text>
+                    </View>
+                }
+            />
+
+            <View style={styles.inputContainer}>
+                <TextInput
+                    placeholder="Type a message..."
+                    placeholderTextColor='#888'
+                    value={text}
+                    onChangeText={setText}
+                    style={styles.input}
+                    multiline
+                />
+                <TouchableOpacity disabled={loading} onPress={handleSendMessage} style={[styles.sendButton, loading && { backgroundColor: 'transparent' }]}>
+                    {!loading && <Ionicons name="send" size={24} color="#fff" />}
+                    {loading && <ActivityIndicator size="small" color="#FF4000" />}
+                </TouchableOpacity>
+            </View>
+
+        </KeyboardAvoidingView>
     );
 }
 
@@ -276,6 +313,7 @@ const styles = StyleSheet.create({
         zIndex: 1,
         flexDirection: 'row',
         alignContent: 'center',
+        // borderWidth: 1
     },
     backBtnText: {
         color: '#FFF',
@@ -339,7 +377,7 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: '#dddddd',
+        backgroundColor: '#ddd',
         overflow: 'hidden',
     },
     profileImageAvatar: {
@@ -351,13 +389,13 @@ const styles = StyleSheet.create({
     chatHeader: {
         flexDirection: 'row',
         justifyContent: 'center',
-        marginBottom:30
+        marginBottom: 30
     },
     disclaimer: {
         fontSize: 12,
         color: '#aaa',
         fontStyle: 'italic',
-        maxWidth:300,
-        textAlign:'center'
+        maxWidth: 300,
+        textAlign: 'center'
     }
 });

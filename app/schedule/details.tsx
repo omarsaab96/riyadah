@@ -61,15 +61,12 @@ export default function StaffDetailsScreen() {
       <View style={styles.pageHeader}>
         <TouchableOpacity
           onPress={() => {
-            router.replace({
-              pathname: '/profile',
-              params: { tab: 'Schedule' }
-            })
+            router.back()
           }}
           style={styles.backBtn}
         >
           <Ionicons name="chevron-back" size={20} color="#ffffff" />
-          <Text style={styles.backBtnText}>Back to Schedule</Text>
+          <Text style={styles.backBtnText}>Back</Text>
         </TouchableOpacity>
 
         <View style={styles.headerTextBlock}>
@@ -109,7 +106,7 @@ export default function StaffDetailsScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>description</Text>
-          <Text style={styles.contactText}>{event.description}</Text>
+          <Text style={styles.contactText}>{event.description || "No description"}</Text>
         </View>
 
         <View style={styles.section}>
@@ -200,7 +197,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 4,
     fontSize: 18,
-    fontFamily: 'Bebas'
+    fontFamily: 'Bebas',
+    color:'black'
   },
   contactButton: {
     flexDirection: "row",
@@ -208,10 +206,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   contactText: {
-    marginLeft: 8,
-    // color: "#FF4000",
     fontFamily: 'Manrope',
-    fontSize: 16
+    fontSize: 16,
+    color:'black'
   },
   teamItem: {
     backgroundColor: "#f2f2f2",

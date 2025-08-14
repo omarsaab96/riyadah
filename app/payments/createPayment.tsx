@@ -397,6 +397,7 @@ export default function AddPayment() {
                                     <TextInput
                                         style={[styles.input, { flex: 1 }]}
                                         placeholder="e.g. 50.00"
+                                        placeholderTextColor={"#888"}
                                         keyboardType="numeric"
                                         value={paymentAmount.split(' ')[0] || '0'}
                                         onChangeText={(text) => {
@@ -438,6 +439,7 @@ export default function AddPayment() {
                                 {paymentType == "Other" && <View style={styles.inputContainer}>
                                     <TextInput
                                         style={styles.input}
+                                        placeholderTextColor={"#888"}
                                         value={paymentTypeOther}
                                         onChangeText={setPaymentTypeOther}
                                         placeholder="Specify payment type"
@@ -451,6 +453,7 @@ export default function AddPayment() {
                                 <Text style={styles.label}>Note</Text>
                                 <TextInput
                                     style={styles.input}
+                                    placeholderTextColor={"#888"}
                                     value={paymentNote}
                                     onChangeText={(val) => setPaymentNote(val)}
                                     placeholder="Comment or note ..."
@@ -576,6 +579,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
+        color:'black'
     },
     saveButton: {
         backgroundColor: '#FF4000',
@@ -689,8 +693,9 @@ const styles = StyleSheet.create({
     },
     userName: {
         fontFamily: 'Manrope',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
+        color:'black'
     },
     userEmail: {
         fontFamily: 'Manrope',
@@ -731,6 +736,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontWeight: 'bold',
         fontSize: 16,
+        color:'black'
     },
     selectedUserEmail: {
         fontFamily: 'Manrope',
@@ -777,6 +783,7 @@ const styles = StyleSheet.create({
     statusButtonText: {
         fontFamily: 'Manrope',
         fontWeight: 'bold',
+        color:'black'
     },
     activeStatusButtonText: {
         color: '#fff',

@@ -239,10 +239,12 @@ export default function Messages() {
 
     const renderChat = ({ item }: { item: any }) => (
         <TouchableOpacity
-            onPress={() => router.push({
-                pathname: "/chat",
-                params: { chatId: item._id }
-            })}
+            onPress={() => {
+                router.push({
+                    pathname: "/chat",
+                    params: { chatId: item._id }
+                })
+            }}
             style={styles.chatContainer}
         >
             <View style={styles.chatContent}>
@@ -351,13 +353,12 @@ export default function Messages() {
 
     return (
         <GestureHandlerRootView style={styles.container}>
-            <SafeAreaView>
-                {Platform.OS === 'ios' ? (
-                    <View style={{ height: 44, backgroundColor: 'white' }} />
+            {Platform.OS === 'ios' ? (
+                    <View style={{ height: 44, backgroundColor: 'white' }} pointerEvents="none" />
                 ) : (
-                    <View style={{ height: 25, backgroundColor: '#FF4000' }} />
+                    <View style={{ height: 25, backgroundColor: '#FF4000' }} pointerEvents="none" />
                 )}
-
+            <SafeAreaView>
                 <View style={{ height: '100%', paddingBottom: 100 }}>
                     <FlatList
                         data={chats}
@@ -758,6 +759,9 @@ const styles = StyleSheet.create({
     },
     chatUserName: {
         fontWeight: 'bold',
+        color: 'black'
+    },
+    lastReply: {
         color: 'black'
     },
     chatDate: {

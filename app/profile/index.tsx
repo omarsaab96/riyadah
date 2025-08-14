@@ -776,6 +776,13 @@ export default function Profile() {
         }
     };
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year:'numeric' });
+
+    };
+
 
     return (
         <View style={styles.container}>
@@ -1056,7 +1063,7 @@ export default function Profile() {
                                     <View>
                                         {user.contactInfo?.description != null && user.type == "Club" &&
                                             <View style={styles.contactDescription}>
-                                                <Text>{user.contactInfo?.description}</Text>
+                                                <Text style={{ color: 'black' }}>{user.contactInfo?.description}</Text>
                                             </View>
                                         }
                                         <View style={styles.contactInfo}>
@@ -1122,7 +1129,7 @@ export default function Profile() {
                                             <View style={styles.contactLocation}>
                                                 <View style={styles.map}>
                                                     <MapView
-                                                        provider={PROVIDER_GOOGLE} 
+                                                        provider={PROVIDER_GOOGLE}
                                                         style={styles.mapPreview}
                                                         initialRegion={{
                                                             latitude: parseFloat(user.contactInfo?.location.latitude || 0),
@@ -2516,7 +2523,7 @@ export default function Profile() {
                                                                 <View style={styles.inventoryDetails}>
                                                                     <View style={styles.inventoryDetailRow}>
                                                                         <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                                        <Text style={styles.inventoryDetailValue}>{formatDate(item.dueDate)}</Text>
                                                                     </View>
                                                                 </View>
                                                             </TouchableOpacity>
@@ -2554,8 +2561,8 @@ export default function Profile() {
 
                                                                 <View style={styles.inventoryDetails}>
                                                                     <View style={styles.inventoryDetailRow}>
-                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                                        <Text style={styles.inventoryDetailValue}>{item.dueDate}</Text>
+                                                                        <Text style={styles.inventoryDetailLabel}>Paid on</Text>
+                                                                        <Text style={styles.inventoryDetailValue}>{formatDate(item.paidDate)}</Text>
                                                                     </View>
                                                                 </View>
                                                             </TouchableOpacity>
@@ -3051,7 +3058,8 @@ const styles = StyleSheet.create({
         height: (width - 120) / 8,
     },
     contactDescription: {
-        marginBottom: 15
+        marginBottom: 15,
+        color: 'black'
     },
     contactLink: {
         height: '100%',
@@ -3118,7 +3126,9 @@ const styles = StyleSheet.create({
     },
     adminName: {
         fontFamily: 'Manrope',
-        fontSize: 16
+        fontSize: 16,
+        color: 'black',
+        fontWeight: 'bold'
     },
     adminLink: {
         color: '#FF4000',
@@ -3445,7 +3455,9 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     noEventsText: {
-
+        color: 'black',
+        fontFamily: 'Manrope',
+        fontSize: 14
     },
     opponentContainer: {
 
@@ -3624,6 +3636,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 20,
         padding: 5,
+        color: 'black'
     },
     sectionTabActive: {
         backgroundColor: '#FF4000'

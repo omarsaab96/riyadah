@@ -202,33 +202,45 @@ export default function PaymentDetails() {
                                             <Text style={[styles.title, { marginBottom: 10 }]}>payable</Text>
                                             <View>
                                                 <TouchableOpacity
-                                                    style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
                                                     onPress={() => router.push({
                                                         pathname: '/profile/public',
                                                         params: { id: payment.user._id },
                                                     })}>
-                                                    {payment.user.image ? (
-                                                        <Image
-                                                            source={{ uri: payment.user.image }}
-                                                            style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                                                        />
-                                                    ) : (
-                                                        <View>
-                                                            {payment.user.gender == "Male" ? (
+                                                    <View style={{ backgroundColor: '#FF4000', borderRadius: 30, width: 60, height: 60, overflow: 'hidden', marginRight: 20 }}>
+
+                                                        {payment.user.image ? (
+                                                            <Image
+                                                                source={{ uri: payment.user.image }}
+                                                                style={{ width: '100%', aspectRatio: 1 }}
+                                                            />
+                                                        ) : (
+                                                            payment.user.gender == "Male" ? (
                                                                 <Image
-                                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                                    style={{
+                                                                        height: '100%',
+                                                                        width: undefined,
+                                                                        aspectRatio: 1,
+                                                                        resizeMode: 'contain',
+                                                                    }}
                                                                     source={require('../../assets/avatar.png')}
                                                                     resizeMode="contain"
                                                                 />
                                                             ) : (
                                                                 <Image
-                                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                                    style={{
+                                                                        height: '100%',
+                                                                        width: undefined,
+                                                                        aspectRatio: 1,
+                                                                        resizeMode: 'contain',
+                                                                    }}
                                                                     source={require('../../assets/avatarF.png')}
                                                                     resizeMode="contain"
                                                                 />
-                                                            )}
-                                                        </View>
-                                                    )}
+                                                            )
+                                                        )}
+                                                    </View>
+
 
                                                     <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
 
@@ -266,22 +278,31 @@ export default function PaymentDetails() {
                                             <Text style={[styles.title, { marginBottom: 10 }]}>Recipient</Text>
                                             <View>
                                                 <TouchableOpacity
-                                                    style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
                                                     onPress={() => router.push({
                                                         pathname: '/profile/public',
                                                         params: { id: payment.club._id },
                                                     })}>
-                                                    {payment.club.image ? (
-                                                        <Image
-                                                            source={{ uri: payment.club.image }}
-                                                            style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                                                        />
-                                                    ) : (
-                                                        <Image
-                                                            source={require('../../assets/clublogo.png')}
-                                                            style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                                                        />
-                                                    )}
+                                                    <View style={{ backgroundColor: '#FF4000', borderRadius: 30, width: 60, height: 60, overflow: 'hidden', marginRight: 20 }}>
+                                                        {payment.club.image ? (
+                                                            <Image
+                                                                source={{ uri: payment.club.image }}
+                                                                style={{ width: '100%', aspectRatio: 1 }}
+                                                                resizeMode="cover"
+                                                            />
+                                                        ) : (
+                                                            <Image
+                                                                source={require('../../assets/clublogo.png')}
+                                                                style={{
+                                                                    height: '100%',
+                                                                    width: undefined,
+                                                                    aspectRatio: 1,
+                                                                    resizeMode: 'contain',
+                                                                }}
+                                                                resizeMode="cover"
+                                                            />
+                                                        )}
+                                                    </View>
 
                                                     <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
 
@@ -454,15 +475,10 @@ const styles = StyleSheet.create({
         color: 'red',
         fontFamily: 'Manrope',
     },
-    avatarPreview: {
-        height: 100,
-        width: 100,
-        borderRadius: 20,
-        marginBottom: 5
-    },
     title: {
         fontFamily: "Bebas",
-        fontSize: 20
+        fontSize: 20,
+        color: 'black'
     },
     subtitle: {
         fontFamily: "Manrope",
@@ -471,7 +487,8 @@ const styles = StyleSheet.create({
     },
     paragraph: {
         fontFamily: "Manrope",
-        fontSize: 16
+        fontSize: 16,
+        color: 'black'
     },
     profileLink: {
         color: '#FF4000',

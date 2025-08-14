@@ -19,7 +19,7 @@ import {
     View
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 
