@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetTextInput, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { StatusBar } from 'expo-status-bar';
 import { jwtDecode } from "jwt-decode";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -358,8 +357,6 @@ export default function Messages() {
                 ) : (
                     <View style={{ height: 25, backgroundColor: '#FF4000' }} />
                 )}
-
-                <StatusBar style="light" translucent={false} backgroundColor="#FF4000" />
 
                 <View style={{ height: '100%', paddingBottom: 100 }}>
                     <FlatList
