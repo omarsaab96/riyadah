@@ -639,7 +639,7 @@ export default function EditProfile() {
                                             maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.attack || 0}%
                                         </Text>
                                     </View>
@@ -660,7 +660,7 @@ export default function EditProfile() {
                                             maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.defense || 0}%
                                         </Text>
                                     </View>
@@ -681,7 +681,7 @@ export default function EditProfile() {
                                             maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.skill || 0}%
                                         </Text>
                                     </View>
@@ -702,7 +702,7 @@ export default function EditProfile() {
                                             maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.speed || 0}%
                                         </Text>
                                     </View>
@@ -723,7 +723,7 @@ export default function EditProfile() {
                                             maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.stamina || 0}%
                                         </Text>
                                     </View>

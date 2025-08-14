@@ -356,15 +356,15 @@ h4 {
 .hero .section .container .image {
   display: block;
   position: absolute;
-  bottom: -150px;
+  bottom: -120px;
   right: 0;
   width: 500px;
-  height: 500px;
+  height: 332px;
 }
 .hero .section .container .image img {
   display: block;
-  height: 100%;
-  width: auto;
+  height: auto;
+  width: 100%;
   object-fit: cover;
 }
 
@@ -538,6 +538,178 @@ ul.list li::before {
 }
 .footer .link {
   font-size: 14px;
+}
+
+@media all and (max-width: 1024px) {
+  /* Base mobile-first adjustments */
+  body {
+    font-family: "Manrope", sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  /* Make all images scale down */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  /* General container padding for smaller screens */
+  .container {
+    padding: 0 15px;
+  }
+  /* Stack navigation & buttons on mobile */
+  .header .flex {
+    flex-wrap: wrap;
+  }
+  .nav {
+    display: none;
+    /* hidden by default on mobile, add JS to toggle if needed */
+    flex-direction: column;
+    gap: 10px;
+  }
+  .header .btn {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+  /* Hero section mobile layout */
+  .heroContent {
+    flex-direction: column;
+  }
+  .heroContent .left {
+    text-align: center;
+  }
+  .hero h2 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  /* Cards: stack on mobile */
+  .cards.flex.third {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .cards.flex.third .card {
+    flex: 1 1 100%;
+  }
+  /* Listings: stack image and text */
+  .section.listing .flex.half {
+    flex-direction: column;
+    text-align: center;
+  }
+  .section.listing .left,
+  .section.listing .right {
+    justify-content: center;
+  }
+  /* Testimonials: stack cards */
+  .testimonials .flex.third {
+    flex-direction: column;
+  }
+  /* Banner section stacking */
+  .banner .flex.half {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  /* Footer stacking */
+  .footer .flex {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  .nav {
+    display: flex;
+    flex-direction: row;
+  }
+  .navigation {
+    display: none;
+  }
+  .hero h2 {
+    font-size: 30px;
+    line-height: 34px;
+  }
+  .cards.flex.third {
+    flex-direction: row;
+    gap: 20px;
+  }
+  .section.listing .flex.half {
+    flex-direction: column;
+    text-align: left;
+  }
+  .testimonials .flex.third {
+    flex-direction: row;
+  }
+  .banner {
+    padding: 50px 0 50px;
+    margin-bottom: 220px;
+  }
+  .banner .flex.align-center {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .banner .download {
+    width: 100%;
+    padding: 0;
+    margin-top: 50px;
+  }
+  .banner .download::after {
+    bottom: auto;
+    right: 0;
+    top: 50px;
+    left: auto;
+    transform: none;
+    width: 100%;
+    height: 300px;
+  }
+  .footer .flex {
+    flex-direction: column;
+    text-align: left;
+  }
+  .footer .flex .links {
+    flex-direction: row;
+  }
+  .logo a {
+    width: 120px;
+  }
+  .half .left,
+  .half .right {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+  .heroctas {
+    justify-content: center;
+  }
+  .hero .section {
+    padding-bottom: 0;
+  }
+  .hero .section .container .image {
+    position: relative;
+    bottom: -50px;
+    right: auto;
+    width: 100%;
+    height: auto;
+  }
+  h3 {
+    font-size: 28px;
+    line-height: 32px;
+  }
+  .third .card {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+  .cards.flex.third,
+  .testimonials .flex.third {
+    flex-wrap: wrap;
+  }
+  .section.listing .container .flex.half {
+    flex-wrap: wrap;
+  }
+  .section.listing .container .flex.half:nth-child(2) {
+    flex-direction: column-reverse;
+  }
+  .section.listing .container .flex.half .left.flex.align-end {
+    align-items: flex-start;
+  }
+  .section.listing .container .flex.half .left.flex.align-end ul li {
+    text-align: left;
+  }
 }
 
 /*# sourceMappingURL=styles.css.map */
