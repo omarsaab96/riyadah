@@ -593,7 +593,7 @@ const CreateEventScreen = () => {
                                     </View>
                                 )}
                                 {!searching && equipmentSearch.trim().length >= 3 && searchResults.length == 0 && (
-                                    <Text style={{ fontFamily: 'Manrope' }}>
+                                    <Text style={{ fontFamily: 'Manrope',color:'black' }}>
                                         No results. Try another keyword
                                     </Text>
                                 )}
@@ -919,6 +919,7 @@ const styles = StyleSheet.create({
     searchResultText: {
         fontSize: 16,
         fontFamily: 'Manrope',
+        color:'black'
     },
     searchResultSubText: {
         fontSize: 12,
@@ -935,6 +936,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Manrope',
         marginBottom: 8,
+        color:'black'
     },
     quantityControls: {
         flexDirection: 'row',
@@ -970,7 +972,8 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         fontSize: 16,
         padding: 0,
-        lineHeight: 1
+        lineHeight: 1,
+        color:'black'
     },
     quantityInputSmall: {
         width: 40,
@@ -980,7 +983,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 4,
         fontSize: 14,
-        lineHeight: 1
+        lineHeight: 1,
+        color:'black'
     },
     addSelectedButton: {
         backgroundColor: '#FF4000',
@@ -1009,11 +1013,13 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 14,
         flex: 1,
+        color:'black'
     },
     equipmentQuantity: {
         flexDirection: 'row',
         alignItems: 'center',
         marginRight: 8,
+        color:'black'
     },
     error: {
         marginBottom: 15,
