@@ -87,7 +87,7 @@ export default function Profile() {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/search')}>
-                    <Image source={require('../assets/news.png')} style={styles.icon} />
+                    <Image source={require('../assets/search.png')} style={styles.icon} />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => router.replace('/landing')}>

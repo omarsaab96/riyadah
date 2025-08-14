@@ -1201,6 +1201,7 @@ const styles = StyleSheet.create({
     itemText: {
         marginRight: 8,
         fontFamily: 'Manrope',
+        color:'black'
     },
     teamItem: {
         flexDirection: 'row',
