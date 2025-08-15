@@ -15,6 +15,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import io from 'socket.io-client';
 
 interface Message {
@@ -32,6 +34,8 @@ interface Chat {
 }
 
 export default function ChatPage() {
+    const insets = useSafeAreaInsets();
+
     const router = useRouter();
     const { chatId } = useLocalSearchParams();
     const [userId, setUserId] = useState<string | null>(null);
@@ -41,10 +45,17 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
+    const inputRef = useRef<TextInput>(null);
 
     const socketRef = useRef<any>(null);
     const flatListRef = useRef<FlatList>(null);
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            inputRef.current?.focus();
+        }, 300); // slight delay so UI mounts fully before focus
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         fetchUser();
@@ -134,8 +145,10 @@ export default function ChatPage() {
         });
 
         socket.on('newMessage', (data: { chatId: string, message: Message }) => {
+            console.log("got a new message")
             if (data.chatId === chatId) {
-                setMessages((prevMessages) => [ data.data, ...prevMessages]);
+                console.log("will show it")
+                setMessages((prevMessages) => [data.message, ...prevMessages]);
             }
         });
 
@@ -146,6 +159,9 @@ export default function ChatPage() {
     const handleSendMessage = async () => {
         if (!text.trim()) return;
 
+        setMessages((prevMessages) => [{ chatId: chatId, text: text, senderId: userId }, ...prevMessages]);
+        let msgContent = text;
+        setText('')
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/message`, {
@@ -154,12 +170,11 @@ export default function ChatPage() {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ text }),
+                body: JSON.stringify({ text:msgContent }),
             });
+
             if (!res.ok) throw new Error('Failed to send message');
 
-            setText('');
-            fetchChat(); // Refresh messages after sending
         } catch (error) {
             console.error(error);
             alert('Failed to send message');
@@ -185,107 +200,117 @@ export default function ChatPage() {
     // }
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={90}
-            style={styles.container}>
-            <View style={styles.topBanner}>
-                <TouchableOpacity
-                    onPress={() => {
-                        router.replace({
-                            pathname: '/messages'
-                        })
-                    }}
-                    style={styles.backBtn}
-                >
-                    <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                    <Text style={styles.backBtnText}>chats</Text>
-                </TouchableOpacity>
+        <View style={{ flex: 1, backgroundColor: '#f4f4f4' }}>
+            <View style={{ height: insets.top, backgroundColor: '#FF4000' }} />
 
-                {chat && chat.participants && (() => {
-                    const otherParticipant = chat.participants.find(p => p._id !== userId);
-                    return (
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+            >
+
+                <View style={{ flex: 1 }}>
+                    <View style={styles.topBanner}>
                         <TouchableOpacity
-                            style={{
-                                position: 'absolute',
-                                left: '50%',
-                                transform: [{ translateX: -25 }],
-                                bottom: 10,
-                                zIndex: 1
-                            }}
                             onPress={() => {
-                                router.push({
-                                    pathname: '/profile/public',
-                                    params: { id: otherParticipant._id },
+                                router.replace({
+                                    pathname: '/messages'
                                 })
                             }}
+                            style={styles.backBtn}
                         >
-                            <View style={styles.profileImage}>
-                                {otherParticipant ? (
-                                    otherParticipant.image ? (
-                                        <Image
-                                            source={{ uri: otherParticipant.image }}
-                                            style={styles.profileImageAvatar}
-                                            resizeMode="contain"
-                                        />
-                                    ) : otherParticipant.type === "Club" ? (
-                                        <Image
-                                            source={require('../assets/clublogo.png')}
-                                            style={styles.profileImageAvatar}
-                                            resizeMode="contain"
-                                        />
-                                    ) : otherParticipant.gender === "Female" ? (
-                                        <Image
-                                            source={require('../assets/avatarF.png')}
-                                            style={styles.profileImageAvatar}
-                                            resizeMode="contain"
-                                        />
-                                    ) : (
-                                        <Image
-                                            source={require('../assets/avatar.png')}
-                                            style={styles.profileImageAvatar}
-                                            resizeMode="contain"
-                                        />
-                                    )
-                                ) : null}
-                            </View>
+                            <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                            <Text style={styles.backBtnText}>chats</Text>
                         </TouchableOpacity>
-                    );
-                })()}
-            </View>
 
-
-            <FlatList
-                ref={flatListRef}
-                data={messages}
-                inverted
-                renderItem={renderMessage}
-                keyExtractor={(item, idx) => item._id || idx.toString()}
-                contentContainerStyle={{
-                    padding: 15
-                }}
-                ListFooterComponent={
-                    <View style={styles.chatHeader}>
-                        <Text style={styles.disclaimer}>By chatting through Riyadah app, you agree to the terms and conditions and privacy policy</Text>
+                        {chat && chat.participants && (() => {
+                            const otherParticipant = chat.participants.find(p => p._id !== userId);
+                            return (
+                                <TouchableOpacity
+                                    style={{
+                                        position: 'absolute',
+                                        left: '50%',
+                                        transform: [{ translateX: -25 }],
+                                        bottom: 10,
+                                        zIndex: 1
+                                    }}
+                                    onPress={() => {
+                                        router.push({
+                                            pathname: '/profile/public',
+                                            params: { id: otherParticipant._id },
+                                        })
+                                    }}
+                                >
+                                    <View style={styles.profileImage}>
+                                        {otherParticipant ? (
+                                            otherParticipant.image ? (
+                                                <Image
+                                                    source={{ uri: otherParticipant.image }}
+                                                    style={styles.profileImageAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                            ) : otherParticipant.type === "Club" ? (
+                                                <Image
+                                                    source={require('../assets/clublogo.png')}
+                                                    style={styles.profileImageAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                            ) : otherParticipant.gender === "Female" ? (
+                                                <Image
+                                                    source={require('../assets/avatarF.png')}
+                                                    style={styles.profileImageAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                            ) : (
+                                                <Image
+                                                    source={require('../assets/avatar.png')}
+                                                    style={styles.profileImageAvatar}
+                                                    resizeMode="contain"
+                                                />
+                                            )
+                                        ) : null}
+                                    </View>
+                                </TouchableOpacity>
+                            );
+                        })()}
                     </View>
-                }
-            />
 
-            <View style={styles.inputContainer}>
-                <TextInput
-                    placeholder="Type a message..."
-                    placeholderTextColor='#888'
-                    value={text}
-                    onChangeText={setText}
-                    style={styles.input}
-                    multiline
-                />
-                <TouchableOpacity disabled={loading} onPress={handleSendMessage} style={[styles.sendButton, loading && { backgroundColor: 'transparent' }]}>
-                    {!loading && <Ionicons name="send" size={24} color="#fff" />}
-                    {loading && <ActivityIndicator size="small" color="#FF4000" />}
-                </TouchableOpacity>
-            </View>
+                    <FlatList
+                        ref={flatListRef}
+                        data={messages}
+                        inverted
+                        renderItem={renderMessage}
+                        keyExtractor={(item, idx) => item._id || idx.toString()}
+                        contentContainerStyle={{
+                            padding: 15
+                        }}
+                        ListFooterComponent={
+                            <View style={styles.chatHeader}>
+                                <Text style={styles.disclaimer}>By chatting through Riyadah app, you agree to the terms and conditions and privacy policy</Text>
+                            </View>
+                        }
+                    />
 
-        </KeyboardAvoidingView>
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            ref={inputRef}
+                            placeholder="Type a message..."
+                            placeholderTextColor='#888'
+                            value={text}
+                            onChangeText={setText}
+                            style={styles.input}
+                            multiline
+                        />
+                        <TouchableOpacity disabled={loading} onPress={handleSendMessage} style={[styles.sendButton, loading && { backgroundColor: 'transparent' }]}>
+                            {!loading && <Ionicons name="send" size={24} color="#fff" />}
+                            {loading && <ActivityIndicator size="small" color="#FF4000" />}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+            </KeyboardAvoidingView>
+        </View>
+
     );
 }
 
@@ -293,7 +318,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f4f4f4',
-        paddingBottom: 60
     },
     loadingContainer: {
         flex: 1,
@@ -302,11 +326,11 @@ const styles = StyleSheet.create({
     },
     topBanner: {
         backgroundColor: '#FF4000',
-        paddingTop: 50,
+        paddingTop: 30,
         paddingBottom: 15,
         paddingHorizontal: 10,
         position: 'relative',
-        height: 100
+        height: 80
     },
     backBtn: {
         width: 200,
