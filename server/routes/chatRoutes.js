@@ -170,7 +170,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
             if (participantId.toString() !== userId.toString()) {
                 if (chat.activeParticipants.includes(participantId.toString())) {
                     console.log('sending message "'+message.text+'" to '+ participantId)
-                    io.to(participantId.toString()).emit("newMessage", { chatId, message });
+                    io.to(chatId).emit("newMessage", { chatId, message });
                 } else {
                     const userToNotify = await User.findOne({
                         _id: participantId,
