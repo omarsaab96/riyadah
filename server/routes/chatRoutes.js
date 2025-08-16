@@ -132,6 +132,7 @@ router.post("/create", authenticateToken, async (req, res) => {
         const chatData = {
             _id: populatedChat._id,
             participants: populatedChat.participants,
+            otherParticipant: chat.participants.filter(p => p._id != userId),
             lastMessage: populatedChat.lastMessage
         };
 
@@ -245,7 +246,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                     }
                 }
             }
-            
+
             notifyChatListUpdate(participant._id, {
                 _id: chat._id,
                 participants: chat.participants,
