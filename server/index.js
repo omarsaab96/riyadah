@@ -48,7 +48,7 @@ const chatListNamespace = io.of('/chat-list');
 chatListNamespace.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error('Authentication error'));
-
+    const jwt = require('jsonwebtoken');
     jwt.verify(token, '123456', (err, decoded) => {
         if (err) return next(new Error('Authentication error'));
         socket.userId = decoded.userId || decoded.id;
