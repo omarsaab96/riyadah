@@ -72,7 +72,7 @@ router.post("/create", authenticateToken, async (req, res) => {
     try {
         let chat = await Chat.findOne({
             participants: { $all: [userId, participantId] }
-        });
+        }).populate("participants", "_id name image gender type");
 
         if (chat) {
             // If chat exists but is not visible to this user, make it visible
@@ -90,14 +90,14 @@ router.post("/create", authenticateToken, async (req, res) => {
             notifyChatListUpdate(userId, {
                 _id: chat._id,
                 participants: chat.participants,
-                otherParticipant: chat.participants.filter(p=>p!=userId),
+                otherParticipant: chat.participants.filter(p=>p._id!=userId),
                 lastMessage: chat.lastMessage
             });
 
             notifyChatListUpdate(participantId, {
                 _id: chat._id,
                 participants: chat.participants,
-                otherParticipant: chat.participants.filter(p=>p!=participantId),
+                otherParticipant: chat.participants.filter(p=>p._id!=participantId),
                 lastMessage: chat.lastMessage
             });
 
