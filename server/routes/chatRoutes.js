@@ -82,7 +82,7 @@ router.post("/create", authenticateToken, async (req, res) => {
             }
 
             // Reset lastMessage if deleted
-            if (chat.deleted?.[userId] && chat.lastMessage?.timestamp >= chat.deleted[userId]) {
+            if (chat.deleted?.[userId] && chat.lastMessage?.timestamp <= chat.deleted[userId]) {
                 chat.lastMessage = { text: "", senderId: null, timestamp: null };
             }
 
@@ -96,8 +96,6 @@ router.post("/create", authenticateToken, async (req, res) => {
                 otherParticipant: chat.participants.filter(p => p._id != userId),
                 lastMessage: chat.lastMessage
             });
-
-
 
             return res.json(chat);
         }

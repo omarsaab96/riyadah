@@ -389,7 +389,7 @@ export default function Messages() {
             if (res.ok) {
                 setSelectedChatId(data._id);
                 handleCloseModalPress();
-                router.push(`/chat?chatId=${data._id}`)
+                // router.push(`/chat?chatId=${data._id}`)
             } else {
                 Alert.alert('Error', data.message || 'Failed to create chat');
             }
