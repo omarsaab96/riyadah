@@ -85,6 +85,8 @@ router.post("/create", authenticateToken, async (req, res) => {
             const io = req.app.get("io");
             const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
 
+            console.log("chat.participants",chat.participants)
+
             notifyChatListUpdate(userId, {
                 _id: chat._id,
                 participants: chat.participants,
