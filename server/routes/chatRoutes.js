@@ -30,9 +30,10 @@ router.get("/", authenticateToken, async (req, res) => {
 
     try {
         const chats = await Chat.find({
-            participants: userId
+            participants: userId,
+            visibleFor: userId
         })
-            .populate("participants", "name image gender type") // get only needed user fields
+            .populate("participants", "name image gender type")
             .sort({ "lastMessage.timestamp": -1 })
             .skip(skip)
             .limit(limit);
@@ -95,12 +96,13 @@ router.post("/create", authenticateToken, async (req, res) => {
         // Create new chat
         chat = new Chat({
             participants: [userId, participantId],
-            activeParticipants: [],
+            activeParticipants: [userId],
             lastMessage: {
                 text: "",
                 senderId: null,
                 timestamp: null,
-            }
+            },
+            visibleFor: [userId]
         });
 
         await chat.save();
@@ -132,36 +134,34 @@ router.post("/create", authenticateToken, async (req, res) => {
 });
 
 router.patch("/:chatId/open", async (req, res) => {
-  const { chatId } = req.params;
-  const userId = req.body.userId; // pass current user ID from frontend
+    const { chatId } = req.params;
+    const userId = req.body.userId; // pass current user ID from frontend
 
-  // validate chatId and userId
-  if (!mongoose.Types.ObjectId.isValid(chatId)) {
-    return res.status(400).json({ error: "Invalid chatId" });
-  }
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).json({ error: "Invalid userId" });
-  }
+    // validate chatId and userId
+    if (!mongoose.Types.ObjectId.isValid(chatId)) {
+        return res.status(400).json({ error: "Invalid chatId" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid userId" });
+    }
 
-  try {
-    // Update lastOpened for this user
-    await Chat.findByIdAndUpdate(chatId, {
-      [`lastOpened.${userId}`]: new Date() // per-user lastOpened
-    });
+    try {
+        // Update lastOpened for this user
+        await Chat.findByIdAndUpdate(chatId, {
+            [`lastOpened.${userId}`]: new Date() // per-user lastOpened
+        });
 
-    res.json({ message: "Chat marked as opened" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
+        res.json({ message: "Chat marked as opened" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
 });
 
 // Delete chat route
 router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
     const { chatId } = req.params;
     const userId = req.user.userId;
-
-    console.log(chatId)
 
     try {
         const chat = await Chat.findById(chatId);
@@ -172,8 +172,10 @@ router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: "Not authorized to delete this chat" });
         }
 
-        await Chat.findByIdAndDelete(chatId);
-        res.json({ message: "Chat deleted successfully" });
+        await Chat.findByIdAndUpdate(chatId, {
+            $pull: { visibleFor: userId } // remove the user from visibleFor
+        });
+        res.json({ message: "Chat unlinked" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
@@ -222,6 +224,10 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
             senderId: userId,
             timestamp: message.timestamp,
         };
+
+        //make chat visible for all
+        chat.visibleFor = Array.from(new Set(chat.participants.map(p => p.toString())));
+
         await chat.save();
 
         const sender = await User.findById(userId).select("name");
