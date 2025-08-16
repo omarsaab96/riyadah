@@ -90,6 +90,16 @@ router.post("/create", authenticateToken, async (req, res) => {
 
         await chat.save();
 
+        notifyChatListUpdate(participantId, {
+            _id: chat._id,
+            participants: chat.participants,
+            lastMessage: {
+                text: "",
+                senderId: null,
+                timestamp: null,
+            }
+        });
+
         res.status(201).json(chat);
     } catch (err) {
         console.error(err);
