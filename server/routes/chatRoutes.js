@@ -137,7 +137,7 @@ router.get("/participants", authenticateToken, async (req, res) => {
 // Add a new message to a chat
 router.post("/:chatId/message", authenticateToken, async (req, res) => {
     const { chatId } = req.params;
-    const { text } = req.body;
+    const { text, tempid } = req.body;
     const userId = req.user.userId;
 
     try {
@@ -149,6 +149,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
         // Save the message
         const message = new Message({
             chatId,
+            tempid,
             senderId: userId,
             text,
         });

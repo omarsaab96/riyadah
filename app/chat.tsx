@@ -16,11 +16,13 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { v4 as uuidv4 } from 'uuid';
 
 import io from 'socket.io-client';
 
 interface Message {
     _id?: string;
+    tempId?: string;
     text: string;
     senderId: string;
     timestamp: string;
@@ -145,10 +147,14 @@ export default function ChatPage() {
         });
 
         socket.on('newMessage', (data: { chatId: string, message: Message }) => {
-            console.log("got a new message")
             if (data.chatId === chatId) {
-                console.log("will show it")
-                setMessages((prevMessages) => [data.message, ...prevMessages]);
+                setMessages((prevMessages) => {
+                    const withoutPending = prevMessages.filter(
+                        (msg) => msg.tempId !== data.message.tempId
+                    );
+                    return [data.message, ...withoutPending];
+                });
+
             }
         });
 
@@ -159,7 +165,17 @@ export default function ChatPage() {
     const handleSendMessage = async () => {
         if (!text.trim()) return;
 
-        setMessages((prevMessages) => [{ chatId: chatId, text: text, senderId: userId }, ...prevMessages]);
+        const tempId = uuidv4();
+
+        const optimisticMessage: Message = {
+            tempId,
+            text,
+            senderId: userId!,
+            timestamp: new Date().toISOString(),
+        };
+
+
+        setMessages((prev) => [optimisticMessage, ...prev]);
         let msgContent = text;
         setText('')
         try {
@@ -170,7 +186,7 @@ export default function ChatPage() {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ text:msgContent }),
+                body: JSON.stringify({ text: msgContent }),
             });
 
             if (!res.ok) throw new Error('Failed to send message');

@@ -46,7 +46,6 @@ export default function Messages() {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchResults, setSearchResults] = useState([]);
 
-
     const snapPoints = useMemo(() => ["50%", "85%"], []);
 
     useEffect(() => {
