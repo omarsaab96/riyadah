@@ -131,8 +131,6 @@ export default function Messages() {
         initializeChatListSocket();
     }, [userId]);
 
-
-
     const fetchUser = async () => {
         const token = await SecureStore.getItemAsync('userToken');
         if (token) {
