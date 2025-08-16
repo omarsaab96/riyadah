@@ -85,19 +85,17 @@ router.post("/create", authenticateToken, async (req, res) => {
             const io = req.app.get("io");
             const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
 
-            console.log("chat.participants",chat.participants.filter(p=>p._id!=userId))
-
             notifyChatListUpdate(userId, {
                 _id: chat._id,
                 participants: chat.participants,
-                otherParticipant: chat.participants.filter(p=>p._id!=userId),
+                otherParticipant: chat.participants.filter(p => p._id != userId),
                 lastMessage: chat.lastMessage
             });
 
             notifyChatListUpdate(participantId, {
                 _id: chat._id,
                 participants: chat.participants,
-                otherParticipant: chat.participants.filter(p=>p._id!=participantId),
+                otherParticipant: chat.participants.filter(p => p._id != participantId),
                 lastMessage: chat.lastMessage
             });
 
@@ -248,18 +246,18 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                         console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
                     }
                 }
+            } else {
+                notifyChatListUpdate(participant._id, {
+                    _id: chat._id,
+                    participants: chat.participants,
+                    lastMessage: {
+                        text,
+                        senderId: userId,
+                        timestamp: message.timestamp,
+                    },
+                });
             }
 
-            //update message screen
-            notifyChatListUpdate(participant._id, {
-                _id: chat._id,
-                participants: chat.participants,
-                lastMessage: {
-                    text,
-                    senderId: userId,
-                    timestamp: message.timestamp,
-                },
-            });
         }
 
         res.json({ success: true, message: "Message sent", data: message });

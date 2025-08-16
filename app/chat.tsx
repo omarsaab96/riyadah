@@ -146,8 +146,7 @@ export default function ChatPage() {
         if (!token) return;
 
         const socket = io('https://riyadah.onrender.com', {
-            auth: { token },
-            query: { chatId },
+            auth: { token,chatId },
         });
 
         socket.on('connect', () => {
@@ -155,11 +154,16 @@ export default function ChatPage() {
         });
 
         socket.on('newMessage', (data: { chatId: string, message: Message }) => {
+            console.log("🔴 New message received:", data.message);
             if (data.chatId === chatId) {
+                console.log("2")
+
                 setMessages((prevMessages) => {
                     const withoutPending = prevMessages.filter(
                         (msg) => msg.tempId == data.message.tempId
                     );
+
+                    console.log("withoutPending",withoutPending)
                     return [data.message, ...withoutPending];
                 });
 
@@ -186,8 +190,11 @@ export default function ChatPage() {
         setMessages((prev) => [optimisticMessage, ...prev]);
         let msgContent = text;
         setText('')
+
+        console.log("sending msg 3")
         try {
             const token = await SecureStore.getItemAsync('userToken');
+            console.log("sending msg 4")
             const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/message`, {
                 method: 'POST',
                 headers: {
@@ -197,6 +204,7 @@ export default function ChatPage() {
                 body: JSON.stringify({ text: msgContent }),
             });
 
+            console.log("sending msg 5")
             if (!res.ok) throw new Error('Failed to send message');
 
         } catch (error) {

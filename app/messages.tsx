@@ -83,15 +83,11 @@ export default function Messages() {
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
 
                     if (isNewChat) {
-                        // For new chat, add to beginning of list
-                        const otherParticipant = updatedChat.participants.find(
-                            (p: any) => p.toString() !== userId?.toString()
-                        );
 
                         return [{
                             _id: updatedChat._id,
                             participants: updatedChat.participants,
-                            otherParticipant: otherParticipant || null,
+                            otherParticipant: updatedChat.otherParticipant[0] || null,
                             lastMessage: updatedChat.lastMessage,
                         }, ...prevChats];
                     } else {
@@ -99,6 +95,7 @@ export default function Messages() {
                         const updatedChats = prevChats.map(chat =>
                             chat._id === updatedChat._id ? {
                                 ...chat,
+                                otherParticipant: updatedChat.otherParticipant[0] || null,
                                 lastMessage: updatedChat.lastMessage,
                                 updatedAt: new Date().toISOString()
                             } : chat
@@ -115,7 +112,6 @@ export default function Messages() {
                     }
                 });
             });
-
 
             setChatListSocket(socket);
 
@@ -335,7 +331,7 @@ export default function Messages() {
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>
-    );
+    )
 
     const handleSearchInput = (text: string) => {
         setKeyword(text);
