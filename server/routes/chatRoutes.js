@@ -270,7 +270,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 router.patch("/open/:chatId", authenticateToken, async (req, res) => {
     const { chatId } = req.params;
     const userId = req.user.userId;
-    console.log("updating last open for ", userId)
+    console.log("UPDATING last open for ", userId)
 
     // validate chatId and userId
     if (!mongoose.Types.ObjectId.isValid(chatId)) {
@@ -280,12 +280,15 @@ router.patch("/open/:chatId", authenticateToken, async (req, res) => {
         return res.status(400).json({ error: "Invalid userId" });
     }
 
+    console.log("TRYING TO UPDATE NOW ")
+
     try {
         // Update lastOpened for this user
         await Chat.findByIdAndUpdate(chatId, {
             [`lastOpened.${userId}`]: new Date() // per-user lastOpened
         });
 
+        console.log("Chat marked as opened for user ", userId)
         res.json({ message: "Chat marked as opened" });
     } catch (err) {
         console.error(err);
