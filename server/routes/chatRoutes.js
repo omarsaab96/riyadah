@@ -245,16 +245,17 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                     }
                 }
 
-                notifyChatListUpdate(participant._id, {
-                    _id: chat._id,
-                    participants: chat.participants,
-                    lastMessage: {
-                        text,
-                        senderId: userId,
-                        timestamp: message.timestamp,
-                    },
-                });
+
             }
+            notifyChatListUpdate(participant._id, {
+                _id: chat._id,
+                participants: chat.participants,
+                lastMessage: {
+                    text,
+                    senderId: userId,
+                    timestamp: message.timestamp,
+                },
+            });
 
         }
 
