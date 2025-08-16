@@ -12,6 +12,10 @@ const ChatSchema = new mongoose.Schema({
     type: Map,
     of: Date
   },
+  deleted: {
+    type: Map,
+    of: Date
+  },
   visibleFor: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 }, {
   timestamps: true,

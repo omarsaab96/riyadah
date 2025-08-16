@@ -107,6 +107,10 @@ router.post("/create", authenticateToken, async (req, res) => {
             lastOpened: {
                 [userId]: new Date()
             },
+            deleted: {
+                [userId]: new Date(),
+                [participantId]: new Date()
+            },
             visibleFor: [userId]
         });
 
@@ -145,14 +149,16 @@ router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
         const chat = await Chat.findById(chatId);
         if (!chat) return res.status(404).json({ message: "Chat not found" });
 
-        // Optional: Check if user is a participant of this chat
+        // Check if user is a participant of this chat
         if (!chat.participants.some(p => p.toString() === userId)) {
             return res.status(403).json({ message: "Not authorized to delete this chat" });
         }
 
         await Chat.findByIdAndUpdate(chatId, {
-            $pull: { visibleFor: userId } // remove the user from visibleFor
+            $pull: { visibleFor: userId },              // remove user from visibleFor array
+            $set: { [`lastOpened.${userId}`]: new Date() } // set per-user lastOpened timestamp
         });
+
         res.json({ message: "Chat unlinked" });
     } catch (err) {
         console.error(err);
