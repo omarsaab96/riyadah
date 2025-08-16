@@ -129,15 +129,19 @@ router.post("/create", authenticateToken, async (req, res) => {
         const io = req.app.get("io");
         const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
 
-        const chatData = {
+        notifyChatListUpdate(userId, {
             _id: populatedChat._id,
             participants: populatedChat.participants,
-            otherParticipant: chat.participants.filter(p => p._id != userId),
+            otherParticipant: populatedChat.participants.filter(p => p._id != userId),
             lastMessage: populatedChat.lastMessage
-        };
+        });
 
-        notifyChatListUpdate(userId, chatData);
-        notifyChatListUpdate(participantId, chatData);
+        notifyChatListUpdate(participantId, {
+            _id: populatedChat._id,
+            participants: populatedChat.participants,
+            otherParticipant: populatedChat.participants.filter(p => p._id != participantId),
+            lastMessage: populatedChat.lastMessage
+        });
 
         res.status(201).json(populatedChat);
     } catch (err) {
