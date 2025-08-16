@@ -211,7 +211,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
         };
 
         //make chat visible for all
-        chat.visibleFor = Array.from(new Set(chat.participants.map(p => p.toString())));
+        chat.visibleFor = Array.from(new Set(chat.participants.map(p => p._id.toString())));
 
         await chat.save();
 
@@ -235,8 +235,6 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                             timestamp: message.timestamp,
                         },
                     });
-
-
 
                     //send notification
                     const userToNotify = await User.findOne({
