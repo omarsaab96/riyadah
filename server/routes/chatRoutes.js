@@ -90,14 +90,14 @@ router.post("/create", authenticateToken, async (req, res) => {
             notifyChatListUpdate(userId, {
                 _id: chat._id,
                 participants: chat.participants,
-                otherParticipant: chat.participants.filter(p=>p._id!=userId),
+                otherParticipant: chat.participants.filter(p=>p!=userId),
                 lastMessage: chat.lastMessage
             });
 
             notifyChatListUpdate(participantId, {
                 _id: chat._id,
                 participants: chat.participants,
-                otherParticipant: chat.participants.filter(p=>p._id!=participantId),
+                otherParticipant: chat.participants.filter(p=>p!=participantId),
                 lastMessage: chat.lastMessage
             });
 
