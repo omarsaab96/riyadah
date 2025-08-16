@@ -81,8 +81,6 @@ router.post("/create", authenticateToken, async (req, res) => {
                 await chat.save();
             }
 
-
-
             // Chat already exists - still notify both participants
             const io = req.app.get("io");
             const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
@@ -110,6 +108,9 @@ router.post("/create", authenticateToken, async (req, res) => {
                 text: "",
                 senderId: null,
                 timestamp: null,
+            },
+            lastOpened: {
+                [userId]: new Date()
             },
             visibleFor: [userId]
         });
@@ -266,7 +267,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
     }
 });
 
-router.patch("/open/:chatId",authenticateToken, async (req, res) => {
+router.patch("/open/:chatId", authenticateToken, async (req, res) => {
     const { chatId } = req.params;
     const userId = req.user.userId;
     console.log("updating last open for ", userId)
