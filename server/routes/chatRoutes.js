@@ -74,6 +74,14 @@ router.post("/create", authenticateToken, async (req, res) => {
         });
 
         if (chat) {
+            // If chat exists but is not visible to this user, make it visible
+            if (!chat.visibleFor.includes(userId)) {
+                chat.visibleFor.push(userId);
+                await chat.save();
+            }
+
+            
+
             // Chat already exists - still notify both participants
             const io = req.app.get("io");
             const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
