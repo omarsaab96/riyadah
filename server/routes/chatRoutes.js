@@ -191,7 +191,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
     try {
         const chat = await Chat.findById(chatId).populate("participants", "_id name image gender type");
         if (!chat) return res.status(404).json({ message: "Chat not found" });
-        if (!chat.participants.some(p => p.toString() === userId))
+        if (!chat.participants.some(p => p._id.toString() === userId))
             return res.status(403).json({ message: "Not authorized" });
 
         // Save the message

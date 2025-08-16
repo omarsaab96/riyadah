@@ -108,8 +108,9 @@ export default function ChatPage() {
     // Fetch chat and messages from API
     const fetchChat = async () => {
         setLoading(true);
+        const token = await SecureStore.getItemAsync('userToken');
+
         try {
-            const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -132,7 +133,8 @@ export default function ChatPage() {
             await fetch(`https://riyadah.onrender.com/api/chats/open/${chatId}`, {
                 method: "PATCH",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
             });
         }
