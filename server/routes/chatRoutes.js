@@ -92,13 +92,6 @@ router.post("/create", authenticateToken, async (req, res) => {
                 lastMessage: chat.lastMessage
             });
 
-            notifyChatListUpdate(participantId, {
-                _id: chat._id,
-                participants: chat.participants,
-                otherParticipant: chat.participants.filter(p => p._id != participantId),
-                lastMessage: chat.lastMessage
-            });
-
             return res.json(chat);
         }
 
@@ -133,13 +126,6 @@ router.post("/create", authenticateToken, async (req, res) => {
             _id: populatedChat._id,
             participants: populatedChat.participants,
             otherParticipant: populatedChat.participants.filter(p => p._id != userId),
-            lastMessage: populatedChat.lastMessage
-        });
-
-        notifyChatListUpdate(participantId, {
-            _id: populatedChat._id,
-            participants: populatedChat.participants,
-            otherParticipant: populatedChat.participants.filter(p => p._id != participantId),
             lastMessage: populatedChat.lastMessage
         });
 
