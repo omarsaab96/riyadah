@@ -78,6 +78,7 @@ export default function Messages() {
             });
 
             socket.on('chatUpdate', (updatedChat) => {
+                console.log("Got message", updatedChat._id)
                 setChats(prevChats => {
                     // Check if this is a new chat (not in existing list)
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
@@ -95,7 +96,6 @@ export default function Messages() {
                         const updatedChats = prevChats.map(chat =>
                             chat._id === updatedChat._id ? {
                                 ...chat,
-                                otherParticipant: updatedChat.otherParticipant[0] || null,
                                 lastMessage: updatedChat.lastMessage,
                                 updatedAt: new Date().toISOString()
                             } : chat
