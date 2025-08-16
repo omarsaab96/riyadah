@@ -131,6 +131,30 @@ router.post("/create", authenticateToken, async (req, res) => {
     }
 });
 
+router.patch("/:chatId/open", async (req, res) => {
+  const { chatId } = req.params;
+  const userId = req.body.userId; // pass current user ID from frontend
+
+  // validate chatId and userId
+  if (!mongoose.Types.ObjectId.isValid(chatId)) {
+    return res.status(400).json({ error: "Invalid chatId" });
+  }
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ error: "Invalid userId" });
+  }
+
+  try {
+    // Update lastOpened for this user
+    await Chat.findByIdAndUpdate(chatId, {
+      [`lastOpened.${userId}`]: new Date() // per-user lastOpened
+    });
+
+    res.json({ message: "Chat marked as opened" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 // Delete chat route
 router.delete('/delete/:chatId', authenticateToken, async (req, res) => {

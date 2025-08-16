@@ -8,7 +8,10 @@ const ChatSchema = new mongoose.Schema({
     senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     timestamp: Date,
   },
-  lastOpened: Date
+  lastOpened: {
+    type: Map,
+    of: Date
+  }
 }, {
   timestamps: true,
 });

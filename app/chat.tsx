@@ -117,7 +117,7 @@ export default function ChatPage() {
             });
             if (!res.ok) throw new Error('Failed to fetch chat');
 
-            
+
             const data = await res.json();
             setChat(data.chat || null);
             setMessages(data.messages.reverse() || []);
@@ -128,6 +128,13 @@ export default function ChatPage() {
         }
         finally {
             setLoading(false);
+            await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/open`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ userId: userId })
+            });
         }
     };
 
