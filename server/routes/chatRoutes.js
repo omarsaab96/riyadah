@@ -5,6 +5,7 @@ const Chat = require("../models/Chat");
 const Message = require("../models/Message");
 const router = express.Router();
 const { sendNotification } = require('../utils/notificationService');
+const mongoose = require("mongoose");
 
 
 // Middleware to verify token
