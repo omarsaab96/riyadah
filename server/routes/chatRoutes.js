@@ -142,9 +142,9 @@ router.post("/create", authenticateToken, async (req, res) => {
     }
 });
 
-router.patch("/:chatId/open", async (req, res) => {
+router.patch("/:chatId/open",authenticateToken, async (req, res) => {
     const { chatId } = req.params;
-    const userId = req.body.userId;
+    const userId = req.user.userId;
     console.log("updating last open for ", userId)
 
     // validate chatId and userId
