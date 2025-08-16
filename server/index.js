@@ -85,7 +85,7 @@ io.use((socket, next) => {
 
 io.on('connection', async (socket) => {
     const userId = socket.userId;
-    const chatId = socket.handshake.auth.chatId;
+    const chatId = socket.handshake.query.chatId;
     if (!chatId) {
         console.log('chatId missing on socket connection, disconnecting');
         socket.disconnect();

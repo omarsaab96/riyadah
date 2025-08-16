@@ -217,8 +217,6 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
         await chat.save();
 
-        console.log("CHAT= ", chat)
-
         const sender = await User.findById(userId).select("name");
 
         // Emit to other participants
