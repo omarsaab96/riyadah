@@ -156,7 +156,7 @@ router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
 
         await Chat.findByIdAndUpdate(chatId, {
             $pull: { visibleFor: userId },              // remove user from visibleFor array
-            $set: { [`lastOpened.${userId}`]: new Date() } // set per-user lastOpened timestamp
+            $set: { [`deleted.${userId}`]: new Date() } // set per-user lastOpened timestamp
         });
 
         res.json({ message: "Chat unlinked" });
