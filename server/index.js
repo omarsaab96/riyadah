@@ -128,9 +128,14 @@ io.on('connection', async (socket) => {
 });
 
 // Helper function to notify chat list updates
-function notifyChatListUpdate(userId, updatedChat) {
-    chatListNamespace.to(`user-${userId}`).emit('chatUpdate', updatedChat);
+function setupChatListUpdates(io) {
+    return function notifyChatListUpdate(userId, updatedChat) {
+        io.of('/chat-list').to(`user-${userId}`).emit('chatUpdate', updatedChat);
+    };
 }
+
+const notifyChatListUpdate = setupChatListUpdates(io);
+app.set('notifyChatListUpdate', notifyChatListUpdate);
 
 
 const PORT = 5000;

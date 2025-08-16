@@ -139,6 +139,8 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
     const { chatId } = req.params;
     const { text, tempid } = req.body;
     const userId = req.user.userId;
+    const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
+
 
     try {
         const chat = await Chat.findById(chatId);
@@ -183,6 +185,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                             timestamp: message.timestamp,
                         },
                     });
+
 
 
                     //send notification
