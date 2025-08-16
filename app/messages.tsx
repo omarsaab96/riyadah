@@ -79,25 +79,43 @@ export default function Messages() {
 
             socket.on('chatUpdate', (updatedChat) => {
                 setChats(prevChats => {
-                    // Update the specific chat
-                    const updatedChats = prevChats.map(chat =>
-                        chat._id === updatedChat._id ? {
-                            ...chat,
+                    // Check if this is a new chat (not in existing list)
+                    const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
+
+                    if (isNewChat) {
+                        // For new chat, add to beginning of list
+                        const otherParticipant = updatedChat.participants.find(
+                            (p: any) => p._id.toString() !== userId?.toString()
+                        );
+
+                        return [{
+                            _id: updatedChat._id,
+                            participants: updatedChat.participants,
+                            otherParticipant: otherParticipant || null,
                             lastMessage: updatedChat.lastMessage,
-                            updatedAt: new Date().toISOString()
-                        } : chat
-                    );
+                        }, ...prevChats];
+                    } else {
+                        // Existing chat - update it
+                        const updatedChats = prevChats.map(chat =>
+                            chat._id === updatedChat._id ? {
+                                ...chat,
+                                lastMessage: updatedChat.lastMessage,
+                                updatedAt: new Date().toISOString()
+                            } : chat
+                        );
 
-                    // Move updated chat to top
-                    const index = updatedChats.findIndex(c => c._id === updatedChat._id);
-                    if (index > 0) {
-                        const [chat] = updatedChats.splice(index, 1);
-                        updatedChats.unshift(chat);
+                        // Move updated chat to top
+                        const index = updatedChats.findIndex(c => c._id === updatedChat._id);
+                        if (index > 0) {
+                            const [chat] = updatedChats.splice(index, 1);
+                            updatedChats.unshift(chat);
+                        }
+
+                        return updatedChats;
                     }
-
-                    return updatedChats;
                 });
             });
+
 
             setChatListSocket(socket);
 

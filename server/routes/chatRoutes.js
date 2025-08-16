@@ -61,7 +61,7 @@ router.get("/", authenticateToken, async (req, res) => {
 // Create a new chat between two participants
 router.post("/create", authenticateToken, async (req, res) => {
     const userId = req.user.userId;
-    const { participantId } = req.body; // the other participant's userId
+    const { participantId } = req.body;
 
     if (!participantId) {
         return res.status(400).json({ message: "participantId is required" });
@@ -73,11 +73,26 @@ router.post("/create", authenticateToken, async (req, res) => {
         });
 
         if (chat) {
-            // Chat already exists, return it
+            // Chat already exists - still notify both participants
+            const io = req.app.get("io");
+            const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
+
+            notifyChatListUpdate(userId, {
+                _id: chat._id,
+                participants: chat.participants,
+                lastMessage: chat.lastMessage
+            });
+
+            notifyChatListUpdate(participantId, {
+                _id: chat._id,
+                participants: chat.participants,
+                lastMessage: chat.lastMessage
+            });
+
             return res.json(chat);
         }
 
-        // Create a new chat
+        // Create new chat
         chat = new Chat({
             participants: [userId, participantId],
             activeParticipants: [],
@@ -90,22 +105,32 @@ router.post("/create", authenticateToken, async (req, res) => {
 
         await chat.save();
 
-        notifyChatListUpdate(participantId, {
-            _id: chat._id,
-            participants: chat.participants,
-            lastMessage: {
-                text: "",
-                senderId: null,
-                timestamp: null,
-            }
+        // Populate participants for the socket event
+        const populatedChat = await Chat.populate(chat, {
+            path: 'participants',
+            select: 'name image gender type'
         });
 
-        res.status(201).json(chat);
+        // Notify both participants
+        const io = req.app.get("io");
+        const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
+
+        const chatData = {
+            _id: populatedChat._id,
+            participants: populatedChat.participants,
+            lastMessage: populatedChat.lastMessage
+        };
+
+        notifyChatListUpdate(userId, chatData);
+        notifyChatListUpdate(participantId, chatData);
+
+        res.status(201).json(populatedChat);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
     }
 });
+
 
 // Delete chat route
 router.delete('/delete/:chatId', authenticateToken, async (req, res) => {
