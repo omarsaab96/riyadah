@@ -369,7 +369,6 @@ export default function Messages() {
     };
 
     const createChat = async (participantId: string) => {
-        console.log('Creating chat with ', participantId)
 
         if (!participantId) {
             Alert.alert('Error', 'Please select a user to start a chat with');
@@ -390,12 +389,11 @@ export default function Messages() {
             });
 
             const data = await res.json();
-            console.log('response ', data)
 
             if (res.ok) {
                 setSelectedChatId(data._id);
                 handleCloseModalPress();
-                router.push(`/chat?id=${data._id}`)
+                router.push(`/chat?chatId=${data._id}`)
             } else {
                 Alert.alert('Error', data.message || 'Failed to create chat');
             }
