@@ -244,9 +244,8 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                         console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
                     }
                 }
-
-
             }
+            
             notifyChatListUpdate(participant._id, {
                 _id: chat._id,
                 participants: chat.participants,
