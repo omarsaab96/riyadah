@@ -45,6 +45,7 @@ export default function Messages() {
     const [searching, setSearching] = useState(false);
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchResults, setSearchResults] = useState([]);
+    const [chatListSocket, setChatListSocket] = useState<any>(null);
 
     const snapPoints = useMemo(() => ["50%", "85%"], []);
 
@@ -55,29 +56,65 @@ export default function Messages() {
     useEffect(() => {
         if (!userId) return;
 
-        // Connect to your backend socket server
-        const newSocket = io("https://riyadah.onrender.com", {
-            transports: ["websocket"],
-        });
+        const initializeChatListSocket = async () => {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) return;
 
-        setSocket(newSocket);
+            const socket = io('https://riyadah.onrender.com/chat-list', {
+                auth: { token },
+                transports: ["websocket"]
+            });
 
-        // Join a room identified by userId to get only relevant messages
-        newSocket.emit("join", userId);
+            socket.on('connect', () => {
+                console.log('Chat List Socket Connected:', socket.id);
+            });
 
-        // Listen for new message event
-        newSocket.on("newMessage", ({ chatId }) => {
-            console.log("New message in chat:", chatId);
-            refreshChats();  // Your existing function to refresh chat list
-        });
+            socket.on('disconnect', () => {
+                console.log('Chat List Socket Disconnected');
+            });
 
+            socket.on('connect_error', (err) => {
+                console.log('Chat List Socket Connection Error:', err);
+            });
 
+            socket.on('chatUpdate', (updatedChat) => {
+                console.log('Received chat update:', updatedChat);
+                setChats(prevChats => {
+                    // Update the specific chat
+                    const updatedChats = prevChats.map(chat =>
+                        chat._id === updatedChat._id ? {
+                            ...chat,
+                            lastMessage: updatedChat.lastMessage,
+                            updatedAt: new Date().toISOString()
+                        } : chat
+                    );
 
-        // Clean up on unmount or userId change
-        return () => {
-            newSocket.disconnect();
+                    // Move updated chat to top
+                    const index = updatedChats.findIndex(c => c._id === updatedChat._id);
+                    if (index > 0) {
+                        const [chat] = updatedChats.splice(index, 1);
+                        updatedChats.unshift(chat);
+                    }
+
+                    return updatedChats;
+                });
+            });
+
+            setChatListSocket(socket);
+
+            return () => {
+                socket.off('connect');
+                socket.off('disconnect');
+                socket.off('connect_error');
+                socket.off('chatUpdate');
+                socket.disconnect();
+            };
         };
+
+        initializeChatListSocket();
     }, [userId]);
+
+
 
     const fetchUser = async () => {
         const token = await SecureStore.getItemAsync('userToken');
@@ -271,7 +308,11 @@ export default function Messages() {
                             <Text style={styles.chatUserName}>{item.otherParticipant?.name || "Unknown User"}</Text>
                             <Text style={styles.chatDate}>{formatDate(item.lastMessage?.timestamp)}</Text>
                         </View>
-                        <Text style={styles.lastReply}>{item.lastMessage?.text || "No messages yet"}</Text>
+                        <Text style={[
+                            styles.lastReply,
+                            !item.lastMessage?.text && { fontStyle: 'italic', color: '#888' }
+                        ]}>
+                            {item.lastMessage?.text || "No messages yet"}</Text>
                     </View>
                 </View>
                 <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
@@ -352,10 +393,10 @@ export default function Messages() {
     return (
         <GestureHandlerRootView style={styles.container}>
             {Platform.OS === 'ios' ? (
-                    <View style={{ height: 44, backgroundColor: 'white' }} pointerEvents="none" />
-                ) : (
-                    <View style={{ height: 25, backgroundColor: '#FF4000' }} pointerEvents="none" />
-                )}
+                <View style={{ height: 44, backgroundColor: 'white' }} pointerEvents="none" />
+            ) : (
+                <View style={{ height: 25, backgroundColor: '#FF4000' }} pointerEvents="none" />
+            )}
             <SafeAreaView>
                 <View style={{ height: '100%', paddingBottom: 100 }}>
                     <FlatList
@@ -388,7 +429,7 @@ export default function Messages() {
                         }
                         ListEmptyComponent={() => (
                             <View style={{ padding: 20, }}>
-                                {!loading && <Text>No chats yet</Text>}
+                                {!loading && <Text style={{ color: 'black' }}>No chats yet</Text>}
                             </View>
                         )}
                         onEndReached={() => { if (hasMore && !loading) loadChats(); }}

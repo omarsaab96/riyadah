@@ -42,6 +42,33 @@ const io = new Server(server, {
     cors: { origin: '*', methods: ['GET', 'POST'] },
 });
 
+const chatListNamespace = io.of('/chat-list');
+
+// Authentication middleware for chat list namespace
+chatListNamespace.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) return next(new Error('Authentication error'));
+
+    jwt.verify(token, '123456', (err, decoded) => {
+        if (err) return next(new Error('Authentication error'));
+        socket.userId = decoded.userId || decoded.id;
+        next();
+    });
+});
+
+// Chat list namespace connection handler
+chatListNamespace.on('connection', (socket) => {
+    const userId = socket.userId;
+    console.log(`User ${userId} connected to chat list updates`);
+
+    // Join a room specific to this user's chat list updates
+    socket.join(`user-${userId}`);
+
+    socket.on('disconnect', () => {
+        console.log(`User ${userId} disconnected from chat list updates`);
+    });
+});
+
 // Attach io instance to app so routes can access it
 app.set('io', io);
 
@@ -99,6 +126,11 @@ io.on('connection', async (socket) => {
         }
     });
 });
+
+// Helper function to notify chat list updates
+function notifyChatListUpdate(userId, updatedChat) {
+    chatListNamespace.to(`user-${userId}`).emit('chatUpdate', updatedChat);
+}
 
 
 const PORT = 5000;

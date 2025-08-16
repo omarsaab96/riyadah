@@ -16,7 +16,6 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { v4 as uuidv4 } from 'uuid';
 
 import io from 'socket.io-client';
 
@@ -150,7 +149,7 @@ export default function ChatPage() {
             if (data.chatId === chatId) {
                 setMessages((prevMessages) => {
                     const withoutPending = prevMessages.filter(
-                        (msg) => msg.tempId !== data.message.tempId
+                        (msg) => msg.tempId == data.message.tempId
                     );
                     return [data.message, ...withoutPending];
                 });
@@ -165,7 +164,7 @@ export default function ChatPage() {
     const handleSendMessage = async () => {
         if (!text.trim()) return;
 
-        const tempId = uuidv4();
+        const tempId = Date.now().toString() + Math.random().toString(36).substring(2, 9);
 
         const optimisticMessage: Message = {
             tempId,
@@ -289,6 +288,20 @@ export default function ChatPage() {
                                 </TouchableOpacity>
                             );
                         })()}
+
+                        {(!chat || !chat.participants) &&
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    transform: [{ translateX: -10 }],
+                                    bottom: 20,
+                                    zIndex: 1
+                                }}
+                            >
+                                <ActivityIndicator size={'large'} color={'#fff'} />
+                            </View>
+                        }
                     </View>
 
                     <FlatList
