@@ -108,8 +108,6 @@ export default function ChatPage() {
     // Fetch chat and messages from API
     const fetchChat = async () => {
         setLoading(true);
-
-        console.log('getting chat')
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`https://riyadah.onrender.com/api/chats/${chatId}`, {
@@ -119,11 +117,10 @@ export default function ChatPage() {
             });
             if (!res.ok) throw new Error('Failed to fetch chat');
 
-            console.log('1')
+            
             const data = await res.json();
             setChat(data.chat || null);
             setMessages(data.messages.reverse() || []);
-        console.log('2')
 
         } catch (error) {
             console.error(error);
@@ -132,8 +129,6 @@ export default function ChatPage() {
         finally {
             setLoading(false);
         }
-
-        console.log('3')
     };
 
     // Connect to socket.io
