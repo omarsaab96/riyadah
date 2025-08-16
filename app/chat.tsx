@@ -128,12 +128,12 @@ export default function ChatPage() {
         }
         finally {
             setLoading(false);
-            await fetch(`https://riyadah.onrender.com/api/chats/${chatId}/open`, {
+            console.log("updating last open")
+            await fetch(`https://riyadah.onrender.com/api/chats/open/${chatId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ userId: userId })
             });
         }
     };
