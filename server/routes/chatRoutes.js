@@ -227,6 +227,17 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                     console.log('sending message "' + message.text + '" to ' + participant._id)
                     io.to(chatId).emit("newMessage", { chatId, message });
                 } else {
+                    notifyChatListUpdate(participant._id, {
+                        _id: chat._id,
+                        participants: chat.participants,
+                        lastMessage: {
+                            text,
+                            senderId: userId,
+                            timestamp: message.timestamp,
+                        },
+                    });
+
+
                     //send notification
                     const userToNotify = await User.findOne({
                         _id: participant._id,
@@ -244,17 +255,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                         console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
                     }
                 }
-            } else {
-                notifyChatListUpdate(participant._id, {
-                    _id: chat._id,
-                    participants: chat.participants,
-                    lastMessage: {
-                        text,
-                        senderId: userId,
-                        timestamp: message.timestamp,
-                    },
-                });
-            }
+            } 
 
         }
 
