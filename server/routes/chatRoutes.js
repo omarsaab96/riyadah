@@ -88,12 +88,14 @@ router.post("/create", authenticateToken, async (req, res) => {
             notifyChatListUpdate(userId, {
                 _id: chat._id,
                 participants: chat.participants,
+                otherParticipant: chat.participants.filter(p=>p._id!=userId),
                 lastMessage: chat.lastMessage
             });
 
             notifyChatListUpdate(participantId, {
                 _id: chat._id,
                 participants: chat.participants,
+                otherParticipant: chat.participants.filter(p=>p._id!=participantId),
                 lastMessage: chat.lastMessage
             });
 
@@ -245,7 +247,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                     }
                 }
             }
-            
+
             //update message screen
             notifyChatListUpdate(participant._id, {
                 _id: chat._id,
