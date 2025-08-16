@@ -237,9 +237,7 @@ export default function ChatPage() {
                     <View style={styles.topBanner}>
                         <TouchableOpacity
                             onPress={() => {
-                                router.replace({
-                                    pathname: '/messages'
-                                })
+                                router.back()
                             }}
                             style={styles.backBtn}
                         >

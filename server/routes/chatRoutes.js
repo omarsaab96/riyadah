@@ -215,18 +215,20 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
         await chat.save();
 
+        console.log("CHAT= ", chat)
+
         const sender = await User.findById(userId).select("name");
 
         // Emit to other participants
         const io = req.app.get("io");
-        for (const participantId of chat.participants) {
-            if (participantId.toString() !== userId.toString()) {
-                if (chat.activeParticipants.includes(participantId.toString())) {
-                    console.log('sending message "' + message.text + '" to ' + participantId)
+        for (const participant of chat.participants) {
+            if (participant._id.toString() !== userId.toString()) {
+                if (chat.activeParticipants.includes(participant._id.toString())) {
+                    console.log('sending message "' + message.text + '" to ' + participant._id)
                     io.to(chatId).emit("newMessage", { chatId, message });
                 } else {
                     //update message screen
-                    notifyChatListUpdate(participantId, {
+                    notifyChatListUpdate(participant._id, {
                         _id: chat._id,
                         participants: chat.participants,
                         lastMessage: {
@@ -238,7 +240,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
                     //send notification
                     const userToNotify = await User.findOne({
-                        _id: participantId,
+                        _id: participant._id,
                         expoPushToken: { $exists: true, $ne: null }
                     });
 
