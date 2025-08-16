@@ -144,7 +144,8 @@ router.post("/create", authenticateToken, async (req, res) => {
 
 router.patch("/:chatId/open", async (req, res) => {
     const { chatId } = req.params;
-    const userId = req.body.userId; // pass current user ID from frontend
+    const userId = req.body.userId;
+    console.log("updating last open for ", userId)
 
     // validate chatId and userId
     if (!mongoose.Types.ObjectId.isValid(chatId)) {
