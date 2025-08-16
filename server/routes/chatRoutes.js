@@ -33,7 +33,7 @@ router.get("/", authenticateToken, async (req, res) => {
             participants: userId,
             visibleFor: userId
         })
-            .populate("participants", "name image gender type")
+            .populate("participants", "_id name image gender type")
             .sort({ "lastMessage.timestamp": -1 })
             .skip(skip)
             .limit(limit);
@@ -80,7 +80,7 @@ router.post("/create", authenticateToken, async (req, res) => {
                 await chat.save();
             }
 
-            
+
 
             // Chat already exists - still notify both participants
             const io = req.app.get("io");
@@ -212,7 +212,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
 
     try {
-        const chat = await Chat.findById(chatId);
+        const chat = await Chat.findById(chatId).populate("participants", "_id name image gender type");
         if (!chat) return res.status(404).json({ message: "Chat not found" });
         if (!chat.participants.some(p => p.toString() === userId))
             return res.status(403).json({ message: "Not authorized" });

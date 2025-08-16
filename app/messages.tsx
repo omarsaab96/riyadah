@@ -83,6 +83,7 @@ export default function Messages() {
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
 
                     if (isNewChat) {
+                        console.log("UPDATED:", updatedChat)
                         // For new chat, add to beginning of list
                         const otherParticipant = updatedChat.participants.find(
                             (p: any) => p._id.toString() !== userId?.toString()
