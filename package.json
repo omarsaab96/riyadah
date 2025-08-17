@@ -45,6 +45,7 @@
     "expo-system-ui": "~5.0.8",
     "expo-web-browser": "~14.1.6",
     "jwt-decode": "^4.0.0",
+    "libphonenumber-js": "^1.12.12",
     "lodash": "^4.17.21",
     "react": "19.0.0",
     "react-dom": "19.0.0",

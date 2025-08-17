@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import React, { useEffect, useState } from 'react';
 import CountryPicker from 'react-native-country-picker-modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -25,11 +26,12 @@ const { width } = Dimensions.get('window');
 export default function Register() {
   const { formData, updateFormData } = useRegistration();
   const router = useRouter();
-  const [countryCode, setCountryCode] = useState('LB');
+  const [countryCode, setCountryCode] = useState("EG");
+  const [callingCode, setCallingCode] = useState(20);
 
   const [name, setName] = useState<string | null>(formData.name || null);
   const [email, setEmail] = useState<string | null>(formData.email || null);
-  const [phoneNumber, setPhoneNumber] = useState<string | null>(formData.phone || null);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(formData.phone.replace(`+${callingCode}`, "") || null);
   const [password, setPassword] = useState<string | null>(formData.password || null);
   const [agreed, setAgreed] = useState<boolean | null>(formData.agreed || null);
   const [error, setError] = useState('');
@@ -64,10 +66,49 @@ export default function Register() {
     }
   };
 
+  const capitalizeWords = (str: string) => {
+    return str
+      .trim()
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  const isValidEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email.toLowerCase());
+  };
+
+  const isValidPassword = (password: string) => {
+    let result = false;
+    if (password.length >= 6) {
+      result = true
+    }
+    return result;
+  };
+
   const handleRegister = async () => {
     setLoading(true)
 
     if (name != null && email != null && phoneNumber != null && password != null && agreed) {
+
+      if (!isValidEmail(email)) {
+        setError("Invalid email address")
+        setLoading(false);
+        return;
+      }
+      if (!isValidPhoneNumber(phoneNumber, countryCode)) {
+        setError("Invalid phone number");
+        setLoading(false);
+        return;
+      }
+      if (!isValidPassword(password)) {
+        setError("Password should be at least 6 characters");
+        setLoading(false);
+        return;
+      }
+
+      setError('')
 
       const checkResult = await checkAvailability(email, phoneNumber);
 
@@ -78,14 +119,14 @@ export default function Register() {
       }
 
       updateFormData({
-        name: name,
+        name: capitalizeWords(name),
         email: email,
-        phone: phoneNumber,
+        phone: "+" + callingCode + phoneNumber,
         password: password,
         country: countryCode,
         agreed: agreed
       });
-      router.replace('/wizard');
+      router.push('/wizard');
 
     } else {
       setLoading(false)
@@ -162,9 +203,10 @@ export default function Register() {
                   withEmoji={false}
                   onSelect={(country) => {
                     setCountryCode(country.cca2);
+                    console.log(country.callingCode[0])
                     setCallingCode(country.callingCode[0]);
                   }}
-                  containerButtonStyle={{marginTop:-2}}
+                  containerButtonStyle={{ marginTop: -2 }}
                 />
               </View>
               <TextInput
@@ -222,7 +264,7 @@ export default function Register() {
           </View>
 
           <View style={styles.switchLinkContainer}>
-            <Text style={{color:'black'}}>Already have an account?</Text>
+            <Text style={{ color: 'black' }}>Already have an account?</Text>
             <TouchableOpacity onPress={() => router.replace('/login')}>
               <Text style={styles.switchLink}>LOGIN HERE</Text>
             </TouchableOpacity>
@@ -230,7 +272,7 @@ export default function Register() {
 
           <View style={styles.disclaimer}>
             <Text style={styles.hint}>
-                By creating and using an account on Riyadah, you are agreeing to the Riyadah's terms and conditions and privacy policy terms and clauses.
+              By creating and using an account on Riyadah, you are agreeing to the Riyadah's terms and conditions and privacy policy terms and clauses.
             </Text>
           </View>
         </ScrollView>
@@ -288,7 +330,7 @@ const styles = StyleSheet.create({
   },
   input: {
     fontSize: 14,
-    lineHeight:14,
+    lineHeight: 14,
     padding: 15,
     backgroundColor: '#F4F4F4',
     marginBottom: 16,
@@ -302,18 +344,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: '#F4F4F4',
     borderRadius: 10,
-    paddingHorizontal:15,
-    paddingVertical:12,
-    gap:5
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    gap: 5
   },
   phonePicker: {
-    justifyContent:'center'
+    justifyContent: 'center'
   },
   phoneInput: {
     marginBottom: 0,
     backgroundColor: 'transparent',
-    flex:1,
-    padding:0,
+    flex: 1,
+    padding: 0,
   },
   passwordInput: {
     letterSpacing: 1,
