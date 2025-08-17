@@ -49,7 +49,7 @@ router.get("/", authenticateToken, async (req, res) => {
                 const lastOpened = chat.lastOpened?.get(userId) || new Date(0);
 
                 const unreadCount = await Message.countDocuments({
-                    chat: chat._id,
+                    chatId: chat._id,
                     timestamp: { $gt: lastOpened }
                 });
 
