@@ -46,10 +46,11 @@ router.get("/", authenticateToken, async (req, res) => {
             );
 
             const lastOpened = chat.lastOpened?.get(userId);
-            console.log("lastOpened ID", lastOpened)
             const unreadCount = chat.messages?.filter(msg =>
                 msg.timestamp > lastOpened
-            ).length || 0;
+            ).length;
+
+            console.log("UNREAD COUNT: ", unreadCount)
 
             return {
                 _id: chat._id,

@@ -322,8 +322,7 @@ export default function Messages() {
                         <Text style={[
                             styles.lastReply,
                             !item.lastMessage?.text && { fontStyle: 'italic', color: '#888' }
-                        ]}>
-                            {item.lastMessage?.text || "No messages yet"}</Text>
+                        ]}>{item.lastMessage?.text || "No messages yet"}</Text>
                     </View>
                 </View>
                 <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
@@ -811,7 +810,10 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     lastReply: {
-        color: 'black'
+        color: 'black',
+        fontSize:14,
+        lineHeight:16,
+        height:18
     },
     // unreadBadge: {
     //     paddingTop:2,
