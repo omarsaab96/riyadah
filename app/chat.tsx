@@ -138,6 +138,7 @@ export default function ChatPage() {
                 },
             });
         }
+        
     };
 
     // Connect to socket.io

@@ -287,6 +287,13 @@ export default function Messages() {
     const renderChat = ({ item }: { item: any }) => (
         <TouchableOpacity
             onPress={() => {
+                setChats(prevChats =>
+                    prevChats.map(c =>
+                        c._id === item._id
+                            ? { ...c, unreadCount: 0 }
+                            : c
+                    )
+                );
                 router.push({
                     pathname: "/chat",
                     params: { chatId: item._id }
@@ -326,7 +333,7 @@ export default function Messages() {
                     </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    {item.unreadCount >0 && <Text style={styles.unreadBadge}>
+                    {item.unreadCount > 0 && <Text style={styles.unreadBadge}>
                         {item.unreadCount}
                     </Text>}
                     <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
