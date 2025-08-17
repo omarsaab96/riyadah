@@ -325,9 +325,14 @@ export default function Messages() {
                         ]}>{item.lastMessage?.text || "No messages yet"}</Text>
                     </View>
                 </View>
-                <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
-                    <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <Text style={styles.unreadBadge}>
+                        {item.unreadCount}
+                    </Text>
+                    <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
+                        <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
+                    </TouchableOpacity>
+                </View>
             </View>
         </TouchableOpacity>
     )
@@ -811,29 +816,24 @@ const styles = StyleSheet.create({
     },
     lastReply: {
         color: 'black',
-        fontSize:14,
-        lineHeight:16,
-        height:18
+        fontSize: 14,
+        lineHeight: 16,
+        height: 18
     },
-    // unreadBadge: {
-    //     paddingTop:2,
-    //     paddingBottom:3,
-    //     paddingLeft:6,
-    //     paddingRight:5,
-    //     backgroundColor: '#FF4000',
-    //     borderRadius: 15,
-    //     flexDirection:'row',
-    //     justifyContent: 'center',
-    //     alignItems: 'center'
-    // },
-    // unreadBadgeText: {
-    //     fontWeight:'bold',
-    //     fontFamily:'Manrope',
-    //     fontSize:16,
-    //     color:'black',
-    //     lineHeight:16,
-    //     textAlign:'center',
-    // },
+    unreadBadge: {
+        paddingTop: 2,
+        paddingBottom: 3,
+        paddingLeft: 6,
+        paddingRight: 5,
+        backgroundColor: '#FF4000',
+        borderRadius: 15,
+        fontWeight: 'bold',
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        color: 'black',
+        lineHeight: 16,
+        textAlign: 'center',
+    },
     chatDate: {
         color: '#aaa',
         fontSize: 14

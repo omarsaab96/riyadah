@@ -65,8 +65,6 @@ router.get("/", authenticateToken, async (req, res) => {
             })
         );
 
-        console.log(chatsWithOther.unreadCount)
-
         res.json(chatsWithOther);
     } catch (err) {
         console.error(err);
@@ -276,7 +274,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
             notifyChatListUpdate(participant._id, {
                 _id: chat._id,
                 participants: chat.participants,
-                unread: unreadCount || 0,
+                unreadCount: unreadCount || 0,
                 lastMessage: {
                     text,
                     senderId: userId,
