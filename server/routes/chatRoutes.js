@@ -40,26 +40,30 @@ router.get("/", authenticateToken, async (req, res) => {
             .limit(limit);
 
         // For each chat, find the other participant (exclude current user)
-        const chatsWithOther = chats.map(chat => {
-            const otherParticipant = chat.participants.find(
-                p => p._id.toString() !== userId.toString()
-            );
+        const chatsWithOther = await Promise.all(
+            chats.map(async (chat) => {
+                const otherParticipant = chat.participants.find(
+                    (p) => p._id.toString() !== userId.toString()
+                );
 
-            const lastOpened = chat.lastOpened?.get(userId);
-            const unreadCount = chat.messages?.filter(msg =>
-                msg.timestamp > lastOpened
-            ).length;
+                const lastOpened = chat.lastOpened?.get(userId) || new Date(0);
 
-            console.log("UNREAD COUNT: ", unreadCount)
+                const unreadCount = await Message.countDocuments({
+                    chat: chat._id,
+                    timestamp: { $gt: lastOpened }
+                });
 
-            return {
-                _id: chat._id,
-                unreadCount:unreadCount,
-                participants: chat.participants,
-                otherParticipant: otherParticipant || null,
-                lastMessage: chat.lastMessage,
-            };
-        });
+                console.log("UNREAD COUNT: ", unreadCount);
+
+                return {
+                    _id: chat._id,
+                    unreadCount,
+                    participants: chat.participants,
+                    otherParticipant: otherParticipant || null,
+                    lastMessage: chat.lastMessage,
+                };
+            })
+        );
 
         console.log(chatsWithOther.unreadCount)
 
