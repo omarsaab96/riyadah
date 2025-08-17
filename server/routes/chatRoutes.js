@@ -307,8 +307,23 @@ router.patch("/open/:chatId", authenticateToken, async (req, res) => {
 
     try {
         // Update lastOpened for this user
-        await Chat.findByIdAndUpdate(chatId, {
-            [`lastOpened.${userId}`]: new Date() // per-user lastOpened
+        const chat = await Chat.findById(chatId)
+            .populate("participants", "_id name image gender type");
+
+        chat.lastOpened.set(userId.toString(), new Date());
+
+        const io = req.app.get("io");
+        const notifyChatListUpdate = req.app.get("notifyChatListUpdate");
+
+        await chat.save();
+
+
+        notifyChatListUpdate(userId, {
+            _id: chatId,
+            participants: chat.participants,
+            unreadCount: 0,
+            otherParticipant: chat.participants.filter(p => p._id != userId),
+            lastMessage: chat.lastMessage
         });
 
         console.log("Chat marked as opened for user ", userId)
@@ -338,6 +353,7 @@ router.get("/:chatId", authenticateToken, async (req, res) => {
             chatId,
             timestamp: { $gt: deletedAt }
         }).sort({ timestamp: 1 });
+
 
         res.json({
             chat: chat,

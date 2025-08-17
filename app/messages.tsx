@@ -326,9 +326,9 @@ export default function Messages() {
                     </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <Text style={styles.unreadBadge}>
+                    {item.unreadCount >0 && <Text style={styles.unreadBadge}>
                         {item.unreadCount}
-                    </Text>
+                    </Text>}
                     <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
                         <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                     </TouchableOpacity>
@@ -393,7 +393,7 @@ export default function Messages() {
             if (res.ok) {
                 setSelectedChatId(data._id);
                 handleCloseModalPress();
-                // router.push(`/chat?chatId=${data._id}`)
+                router.push(`/chat?chatId=${data._id}`)
             } else {
                 Alert.alert('Error', data.message || 'Failed to create chat');
             }
