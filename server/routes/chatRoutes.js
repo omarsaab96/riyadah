@@ -52,7 +52,7 @@ router.get("/", authenticateToken, async (req, res) => {
 
             return {
                 _id: chat._id,
-                unread:unreadCount,
+                unreadCount:unreadCount,
                 participants: chat.participants,
                 otherParticipant: otherParticipant || null,
                 lastMessage: chat.lastMessage,

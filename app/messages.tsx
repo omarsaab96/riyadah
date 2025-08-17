@@ -178,6 +178,7 @@ export default function Messages() {
 
             if (res.ok) {
                 const data = await res.json();
+                console.log("data[0].unread", data[0].unread)
                 setChats(prev => {
                     // Avoid duplicates by ID
                     const ids = new Set(prev.map(c => c._id));
@@ -819,12 +820,19 @@ const styles = StyleSheet.create({
     },
     unreadBadge: {
         position: 'absolute',
-        top: 5,
+        top: 10,
         right: 30,
-        width:30,
-        height:30,
-        backgroundColor:'red',
-        borderRadius:15,
+        width: 20,
+        height: 20,
+        backgroundColor: '#FF4000',
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    unreadBadgeText: {
+        fontWeight:'bold',
+        fontSize:16,
+        color:'black'
     },
     chatDate: {
         color: '#aaa',
@@ -841,7 +849,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         // borderWidth:1
-        position:'relative'
+        position: 'relative'
     },
     chatInfo: {
         // flex:1
