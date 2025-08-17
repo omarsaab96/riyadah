@@ -78,7 +78,6 @@ export default function Messages() {
             });
 
             socket.on('chatUpdate', (updatedChat) => {
-                console.log("Got message", updatedChat._id)
                 setChats(prevChats => {
                     // Check if this is a new chat (not in existing list)
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
@@ -89,14 +88,14 @@ export default function Messages() {
                             participants: updatedChat.participants,
                             otherParticipant: updatedChat.otherParticipant[0] || null,
                             lastMessage: updatedChat.lastMessage,
-                            unreadCount: updatedChat.unreadCount || 0
+                            unreadCount: updatedChat.unread || 0
                         }, ...prevChats];
                     } else {
                         // Existing chat - update it
                         const updatedChats = prevChats.map(chat =>
                             chat._id === updatedChat._id ? {
                                 ...chat,
-                                unreadCount: updatedChat.unreadCount || 0,
+                                unreadCount: updatedChat.unread,
                                 lastMessage: updatedChat.lastMessage,
                                 updatedAt: new Date().toISOString()
                             } : chat
@@ -319,7 +318,6 @@ export default function Messages() {
                         <View style={styles.chatHeader}>
                             <Text style={styles.chatUserName}>{item.otherParticipant?.name || "Unknown User"}</Text>
                             <Text style={styles.chatDate}>{formatDate(item.lastMessage?.timestamp)}</Text>
-                            <Text style={styles.chatUserName}>{item.unreadCount}</Text>
                         </View>
                         <Text style={[
                             styles.lastReply,
@@ -821,11 +819,12 @@ const styles = StyleSheet.create({
     },
     unreadBadge: {
         position: 'absolute',
-        top: 30,
-        right: 10,
+        top: 5,
+        right: 30,
         width:30,
         height:30,
-        backgroundColor:'red'
+        backgroundColor:'red',
+        borderRadius:15,
     },
     chatDate: {
         color: '#aaa',

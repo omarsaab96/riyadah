@@ -45,8 +45,14 @@ router.get("/", authenticateToken, async (req, res) => {
                 p => p._id.toString() !== userId.toString()
             );
 
+            const lastOpened = chat.lastOpened?.get(userId);
+            const unreadCount = chat.messages?.filter(msg =>
+                msg.timestamp > lastOpened
+            ).length || 0;
+
             return {
                 _id: chat._id,
+                unread:unreadCount,
                 participants: chat.participants,
                 otherParticipant: otherParticipant || null,
                 lastMessage: chat.lastMessage,
