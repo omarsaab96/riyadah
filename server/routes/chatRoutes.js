@@ -227,10 +227,9 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
         const io = req.app.get("io");
         for (const participant of chat.participants) {
             if (participant._id.toString() !== userId.toString()) {
-                const pid = participant._id.toString();
 
-                if (chat.activeParticipants.includes(pid)) {
-                    console.log('sending message "' + message.text + '" to ' + pid)
+                if (chat.activeParticipants.includes(participant._id.toString())) {
+                    console.log('sending message "' + message.text + '" to ' + participant._id.toString())
                     io.to(chatId).emit("newMessage", { chatId, message });
                 } else {
 
@@ -253,7 +252,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                 }
             }
 
-            const lastOpened = chat.lastOpened?.get(participantId);
+            const lastOpened = chat.lastOpened?.get(participant._id);
 
             const unreadCount = await Message.countDocuments({
                 chatId,

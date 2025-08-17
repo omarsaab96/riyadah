@@ -96,7 +96,7 @@ export default function Messages() {
                         const updatedChats = prevChats.map(chat =>
                             chat._id === updatedChat._id ? {
                                 ...chat,
-                                unreadCount:updatedChat.unreadCount || 0,
+                                unreadCount: updatedChat.unreadCount || 0,
                                 lastMessage: updatedChat.lastMessage,
                                 updatedAt: new Date().toISOString()
                             } : chat
@@ -319,6 +319,7 @@ export default function Messages() {
                         <View style={styles.chatHeader}>
                             <Text style={styles.chatUserName}>{item.otherParticipant?.name || "Unknown User"}</Text>
                             <Text style={styles.chatDate}>{formatDate(item.lastMessage?.timestamp)}</Text>
+                            <Text style={styles.chatUserName}>{item.unreadCount}</Text>
                         </View>
                         <Text style={[
                             styles.lastReply,
@@ -327,6 +328,10 @@ export default function Messages() {
                             {item.lastMessage?.text || "No messages yet"}</Text>
                     </View>
                 </View>
+                {item.unreadCount && item.unreadCount >= 0 && <View style={styles.unreadBadge}>
+                    <Text style={{ color: 'black' }}>{item.unreadCount}</Text>
+                </View>
+                }
                 <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
                     <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                 </TouchableOpacity>
@@ -814,6 +819,14 @@ const styles = StyleSheet.create({
     lastReply: {
         color: 'black'
     },
+    unreadBadge: {
+        position: 'absolute',
+        top: 30,
+        right: 10,
+        width:30,
+        height:30,
+        backgroundColor:'red'
+    },
     chatDate: {
         color: '#aaa',
         fontSize: 14
@@ -829,6 +842,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         // borderWidth:1
+        position:'relative'
     },
     chatInfo: {
         // flex:1
