@@ -313,7 +313,12 @@ router.get("/:chatId", authenticateToken, async (req, res) => {
         if (!chat.participants.some(p => p._id.toString() === userId))
             return res.status(403).json({ message: "Not authorized" });
 
-        const messages = await Message.find({ chatId }).sort({ timestamp: 1 });
+        const deletedAt = chat.deleted?.get(userId) 
+
+        const messages = await Message.find({ 
+            chatId,
+            timestamp: { $gt: deletedAt }
+        }).sort({ timestamp: 1 });
 
         res.json({
             chat: chat,
