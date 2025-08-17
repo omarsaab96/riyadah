@@ -59,6 +59,8 @@ router.get("/", authenticateToken, async (req, res) => {
             };
         });
 
+        console.log(chatsWithOther.unreadCount)
+
         res.json(chatsWithOther);
     } catch (err) {
         console.error(err);

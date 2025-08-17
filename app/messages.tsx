@@ -178,7 +178,6 @@ export default function Messages() {
 
             if (res.ok) {
                 const data = await res.json();
-                console.log("data[0].unread", data[0].unread)
                 setChats(prev => {
                     // Avoid duplicates by ID
                     const ids = new Set(prev.map(c => c._id));
@@ -327,10 +326,6 @@ export default function Messages() {
                             {item.lastMessage?.text || "No messages yet"}</Text>
                     </View>
                 </View>
-                {item.unreadCount && item.unreadCount >= 0 && <View style={styles.unreadBadge}>
-                    <Text style={{ color: 'black' }}>{item.unreadCount}</Text>
-                </View>
-                }
                 <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
                     <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                 </TouchableOpacity>
@@ -818,22 +813,25 @@ const styles = StyleSheet.create({
     lastReply: {
         color: 'black'
     },
-    unreadBadge: {
-        position: 'absolute',
-        top: 10,
-        right: 30,
-        width: 20,
-        height: 20,
-        backgroundColor: '#FF4000',
-        borderRadius: 15,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    unreadBadgeText: {
-        fontWeight:'bold',
-        fontSize:16,
-        color:'black'
-    },
+    // unreadBadge: {
+    //     paddingTop:2,
+    //     paddingBottom:3,
+    //     paddingLeft:6,
+    //     paddingRight:5,
+    //     backgroundColor: '#FF4000',
+    //     borderRadius: 15,
+    //     flexDirection:'row',
+    //     justifyContent: 'center',
+    //     alignItems: 'center'
+    // },
+    // unreadBadgeText: {
+    //     fontWeight:'bold',
+    //     fontFamily:'Manrope',
+    //     fontSize:16,
+    //     color:'black',
+    //     lineHeight:16,
+    //     textAlign:'center',
+    // },
     chatDate: {
         color: '#aaa',
         fontSize: 14
