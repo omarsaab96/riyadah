@@ -81,7 +81,7 @@ router.post("/create", authenticateToken, async (req, res) => {
                 await chat.save();
             }
 
-            console.log(chat.deleted?.[userId], chat.lastMessage?.timestamp, chat.deleted?.[userId] && chat.lastMessage?.timestamp <= chat.deleted[userId])
+            console.log(chat.deleted?.userId, chat.lastMessage?.timestamp, chat.deleted?.[userId] && chat.lastMessage?.timestamp <= chat.deleted[userId])
 
             // Reset lastMessage if deleted
             if (chat.deleted?.[userId] && chat.lastMessage?.timestamp <= chat.deleted[userId]) {
