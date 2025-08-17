@@ -81,11 +81,9 @@ router.post("/create", authenticateToken, async (req, res) => {
                 await chat.save();
             }
 
-             console.log(chat)
-            console.log(chat.deleted?.get(userId) , chat.lastMessage?.timestamp, chat.deleted?.get(userId)  && chat.lastMessage?.timestamp <= chat.deleted?.get(userId) )
 
             // Reset lastMessage if deleted
-            if (chat.deleted?.get(userId)  && chat.lastMessage?.timestamp <= chat.deleted?.get(userId) ) {
+            if (chat.deleted?.get(userId) && chat.lastMessage?.timestamp <= chat.deleted?.get(userId)) {
                 console.log("deleted is TRUE")
                 chat.lastMessage = { text: "", senderId: null, timestamp: null };
             }
@@ -229,10 +227,13 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
         const io = req.app.get("io");
         for (const participant of chat.participants) {
             if (participant._id.toString() !== userId.toString()) {
-                if (chat.activeParticipants.includes(participant._id.toString())) {
-                    console.log('sending message "' + message.text + '" to ' + participant._id)
+                const pid = participant._id.toString();
+
+                if (chat.activeParticipants.includes(pid)) {
+                    console.log('sending message "' + message.text + '" to ' + pid)
                     io.to(chatId).emit("newMessage", { chatId, message });
                 } else {
+
                     //send notification
                     const userToNotify = await User.findOne({
                         _id: participant._id,
@@ -252,16 +253,23 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                 }
             }
 
+            const lastOpened = chat.lastOpened?.get(participantId);
+
+            const unreadCount = await Message.countDocuments({
+                chatId,
+                timestamp: { $gt: lastOpened }
+            });
+
             notifyChatListUpdate(participant._id, {
                 _id: chat._id,
                 participants: chat.participants,
+                unread: unreadCount || 0,
                 lastMessage: {
                     text,
                     senderId: userId,
                     timestamp: message.timestamp,
                 },
             });
-
         }
 
         res.json({ success: true, message: "Message sent", data: message });
@@ -313,9 +321,9 @@ router.get("/:chatId", authenticateToken, async (req, res) => {
         if (!chat.participants.some(p => p._id.toString() === userId))
             return res.status(403).json({ message: "Not authorized" });
 
-        const deletedAt = chat.deleted?.get(userId) 
+        const deletedAt = chat.deleted?.get(userId)
 
-        const messages = await Message.find({ 
+        const messages = await Message.find({
             chatId,
             timestamp: { $gt: deletedAt }
         }).sort({ timestamp: 1 });

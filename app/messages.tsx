@@ -84,18 +84,19 @@ export default function Messages() {
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
 
                     if (isNewChat) {
-
                         return [{
                             _id: updatedChat._id,
                             participants: updatedChat.participants,
                             otherParticipant: updatedChat.otherParticipant[0] || null,
                             lastMessage: updatedChat.lastMessage,
+                            unreadCount: updatedChat.unreadCount || 0
                         }, ...prevChats];
                     } else {
                         // Existing chat - update it
                         const updatedChats = prevChats.map(chat =>
                             chat._id === updatedChat._id ? {
                                 ...chat,
+                                unreadCount:updatedChat.unreadCount || 0,
                                 lastMessage: updatedChat.lastMessage,
                                 updatedAt: new Date().toISOString()
                             } : chat
