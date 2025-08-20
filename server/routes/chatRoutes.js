@@ -319,7 +319,7 @@ router.patch("/open/:chatId", authenticateToken, async (req, res) => {
         notifyChatListUpdate(userId, {
             _id: chatId,
             participants: chat.participants,
-            unreadCount: 0,
+            unreadMessages: null,
             otherParticipant: chat.participants.filter(p => p._id != userId),
             lastMessage: chat.lastMessage
         });
