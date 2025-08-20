@@ -493,7 +493,7 @@ export default function Messages() {
                         handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
                         backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />}
                     >
-                        <BottomSheetView style={{ flex: 1, paddingBottom: 50 }}>
+                        <BottomSheetView style={{ flex: 1, paddingBottom: 75 }}>
                             <View style={{ padding: 20 }}>
                                 <View>
                                     {deleteConfirmation === '' && (
