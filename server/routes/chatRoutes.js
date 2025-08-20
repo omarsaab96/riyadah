@@ -239,7 +239,6 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
         const io = req.app.get("io");
         for (const participant of chat.participants) {
             if (participant._id.toString() !== userId.toString()) {
-
                 if (chat.activeParticipants.includes(participant._id.toString())) {
                     console.log('sending message "' + message.text + '" to ' + participant._id.toString())
                     io.to(chatId).emit("newMessage", { chatId, message });
@@ -268,7 +267,8 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
             const unreadCount = await Message.countDocuments({
                 chatId,
-                timestamp: { $gt: lastOpened }
+                timestamp: { $gt: lastOpened },
+                senderId: { $ne: userId }
             });
 
             notifyChatListUpdate(participant._id, {
