@@ -129,7 +129,6 @@ export default function ChatPage() {
         }
         finally {
             setLoading(false);
-            console.log("updating last open")
             await fetch(`https://riyadah.onrender.com/api/chats/open/${chatId}`, {
                 method: "PATCH",
                 headers: {
