@@ -235,7 +235,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
         // Emit to other participants
         const io = req.app.get("io");
-        const unreadMessages = null;
+        let unreadMessages = null;
 
         for (const participant of chat.participants) {
             if (participant._id.toString() !== userId.toString()) {
