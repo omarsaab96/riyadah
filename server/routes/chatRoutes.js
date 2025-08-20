@@ -235,6 +235,8 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
 
         // Emit to other participants
         const io = req.app.get("io");
+        const unreadMessages = null;
+
         for (const participant of chat.participants) {
             if (participant._id.toString() !== userId.toString()) {
                 if (chat.activeParticipants.includes(participant._id.toString())) {
@@ -242,6 +244,13 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                     io.to(chatId).emit("newMessage", { chatId, message });
 
                 } else {
+
+                    const lastOpened = chat.lastOpened?.get(participant._id);
+
+                    unreadMessages = await Message.find({
+                        chatId,
+                        timestamp: { $gt: lastOpened },
+                    }).sort({ timestamp: 1 });
 
                     //send notification
                     const userToNotify = await User.findOne({
@@ -262,12 +271,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                 }
             }
 
-            const lastOpened = chat.lastOpened?.get(participant._id);
 
-            const unreadMessages = await Message.find({
-                chatId,
-                timestamp: { $gt: lastOpened },
-            }).sort({ timestamp: 1 });
 
             notifyChatListUpdate(participant._id, {
                 _id: chat._id,

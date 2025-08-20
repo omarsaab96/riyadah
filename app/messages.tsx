@@ -82,20 +82,22 @@ export default function Messages() {
                     // Check if this is a new chat (not in existing list)
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
 
+                    const unreadFromOthers = updatedChat.unreadMessages?.filter(m => m.senderId !== userId);
+
                     if (isNewChat) {
                         return [{
                             _id: updatedChat._id,
                             participants: updatedChat.participants,
                             otherParticipant: updatedChat.otherParticipant[0] || null,
                             lastMessage: updatedChat.lastMessage,
-                            unreadMessages: updatedChat.unreadMessages
+                            unreadMessages: unreadFromOthers
                         }, ...prevChats];
                     } else {
                         // Existing chat - update it
                         const updatedChats = prevChats.map(chat =>
                             chat._id === updatedChat._id ? {
                                 ...chat,
-                                unreadMessages: updatedChat.unreadMessages,
+                                unreadMessages: unreadFromOthers,
                                 lastMessage: updatedChat.lastMessage,
                                 updatedAt: new Date().toISOString()
                             } : chat
@@ -290,7 +292,7 @@ export default function Messages() {
                 setChats(prevChats =>
                     prevChats.map(c =>
                         c._id === item._id
-                            ? { ...c, unreadCount: 0 }
+                            ? { ...c, unreadMessages: null }
                             : c
                     )
                 );
@@ -333,9 +335,11 @@ export default function Messages() {
                     </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    {item.unreadMessages.length > 0 && <Text style={styles.unreadBadge}>
-                        {item.unreadMessages.senderId}
-                    </Text>}
+                    {item.unreadMessages && item.unreadMessages.length > 0 &&
+                        <Text style={styles.unreadBadge}>
+                            {item.unreadMessages.length}
+                        </Text>
+                    }
                     <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
                         <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                     </TouchableOpacity>
