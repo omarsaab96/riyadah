@@ -53,8 +53,6 @@ router.get("/", authenticateToken, async (req, res) => {
                     timestamp: { $gt: lastOpened }
                 });
 
-                console.log("UNREAD COUNT: ", unreadCount);
-
                 return {
                     _id: chat._id,
                     unreadMessages: unreadMessages,
