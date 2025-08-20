@@ -88,14 +88,14 @@ export default function Messages() {
                             participants: updatedChat.participants,
                             otherParticipant: updatedChat.otherParticipant[0] || null,
                             lastMessage: updatedChat.lastMessage,
-                            unreadCount: updatedChat.unreadCount || 0
+                            unreadMessages: updatedChat.unreadMessages
                         }, ...prevChats];
                     } else {
                         // Existing chat - update it
                         const updatedChats = prevChats.map(chat =>
                             chat._id === updatedChat._id ? {
                                 ...chat,
-                                unreadCount: updatedChat.unreadCount || 0,
+                                unreadMessages: updatedChat.unreadMessages,
                                 lastMessage: updatedChat.lastMessage,
                                 updatedAt: new Date().toISOString()
                             } : chat
@@ -333,8 +333,8 @@ export default function Messages() {
                     </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    {item.unreadCount > 0 && <Text style={styles.unreadBadge}>
-                        {item.unreadCount}
+                    {item.unreadMessages.length > 0 && <Text style={styles.unreadBadge}>
+                        {item.unreadMessages.senderId}
                     </Text>}
                     <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
                         <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />

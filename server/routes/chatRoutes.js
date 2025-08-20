@@ -48,7 +48,7 @@ router.get("/", authenticateToken, async (req, res) => {
 
                 const lastOpened = chat.lastOpened?.get(userId) || new Date(0);
 
-                const unreadCount = await Message.countDocuments({
+                const unreadMessages = await Message.find({
                     chatId: chat._id,
                     timestamp: { $gt: lastOpened }
                 });
@@ -57,7 +57,7 @@ router.get("/", authenticateToken, async (req, res) => {
 
                 return {
                     _id: chat._id,
-                    unreadCount,
+                    unreadMessages: unreadMessages,
                     participants: chat.participants,
                     otherParticipant: otherParticipant || null,
                     lastMessage: chat.lastMessage,
