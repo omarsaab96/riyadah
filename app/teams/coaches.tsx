@@ -1,5 +1,6 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -267,11 +268,21 @@ export default function Coaches() {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.back()
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>Team Coaches</Text>
@@ -598,7 +609,7 @@ export default function Coaches() {
                                                                     </View>
                                                                 )}
                                                             </View>
-                                                            <Text style={{color:'black',fontSize:14,fontFamily:'Manrope'}}>{coach?.name?.trim()}</Text>
+                                                            <Text style={{ color: 'black', fontSize: 14, fontFamily: 'Manrope' }}>{coach?.name?.trim()}</Text>
                                                         </TouchableOpacity>
                                                     </View>
                                                 );
@@ -813,7 +824,7 @@ const styles = StyleSheet.create({
     uploadHint: {
         fontFamily: 'Manrope',
         marginBottom: 10,
-        color:'#111111'
+        color: '#111111'
     },
     emptyImage: {
         height: 100,
@@ -848,7 +859,7 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: "Bebas",
         fontSize: 20,
-        color:'black'
+        color: 'black'
     },
     subtitle: {
         fontFamily: "Manrope",
@@ -931,13 +942,13 @@ const styles = StyleSheet.create({
     searchResultItemDescription: {
         // fontSize:16,
         marginBottom: 5,
-        color:'#888888'
+        color: '#888888'
     },
     searchResultItemName: {
         fontWeight: 'bold',
         fontSize: 16,
         // marginBottom:5,
-        color:'black'
+        color: 'black'
     },
     removeBtn: {
         width: 25,
@@ -961,5 +972,19 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         zIndex: 2,
-    }
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width:200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize:18,
+        fontFamily:'Bebas'
+    },
 });

@@ -418,7 +418,7 @@ export default function Messages() {
     return (
         <GestureHandlerRootView style={styles.container}>
             {Platform.OS === 'ios' ? (
-                <View style={{ height: 44, backgroundColor: 'white' }} pointerEvents="none" />
+                <View style={{ height: 60, backgroundColor: '#FF4000' }} pointerEvents="none" />
             ) : (
                 <View style={{ height: 25, backgroundColor: '#FF4000' }} pointerEvents="none" />
             )}
@@ -470,7 +470,7 @@ export default function Messages() {
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/search')}>
-                        <Image source={require('../assets/news.png')} style={styles.icon} />
+                        <Image source={require('../assets/search.png')} style={styles.icon} />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.replace('/landing')}>
@@ -547,7 +547,7 @@ export default function Messages() {
                         </View>
                         <View style={styles.searchInputContainer}>
                             <BottomSheetTextInput
-                                style={styles.searchInput}
+                                style={[styles.searchInput,Platform.OS=="ios" && {padding:15}]}
                                 placeholder="Search users (Min. 3 chars)"
                                 placeholderTextColor="#A8A8A8"
                                 value={keyword}

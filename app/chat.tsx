@@ -230,7 +230,7 @@ export default function ChatPage() {
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+                keyboardVerticalOffset={Platform.OS === "ios" ? -40 : 0}
             >
 
                 <View style={{ flex: 1 }}>
@@ -327,7 +327,7 @@ export default function ChatPage() {
                         }
                     />
 
-                    <View style={styles.inputContainer}>
+                    <View style={[styles.inputContainer,Platform.OS === "ios" &&{paddingBottom:50}]}>
                         <TextInput
                             ref={inputRef}
                             placeholder="Type a message..."
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#dedede',
         borderRadius: 20,
         fontSize: 16,
-        color: 'black'
+        color: 'black',
     },
     sendButton: {
         marginLeft: 10,

@@ -31,7 +31,7 @@ export default function Register() {
 
   const [name, setName] = useState<string | null>(formData.name || null);
   const [email, setEmail] = useState<string | null>(formData.email || null);
-  const [phoneNumber, setPhoneNumber] = useState<string | null>(formData.phone.replace(`+${callingCode}`, "") || null);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(formData.phone?.replace(`+${callingCode}`, "") || null);
   const [password, setPassword] = useState<string | null>(formData.password || null);
   const [agreed, setAgreed] = useState<boolean | null>(formData.agreed || null);
   const [error, setError] = useState('');
@@ -206,7 +206,7 @@ export default function Register() {
                     console.log(country.callingCode[0])
                     setCallingCode(country.callingCode[0]);
                   }}
-                  containerButtonStyle={{ marginTop: -2 }}
+                  containerButtonStyle={Platform.OS=="ios" ? { marginTop: -5 } : { marginTop: -2 }}
                 />
               </View>
               <TextInput
@@ -329,8 +329,8 @@ const styles = StyleSheet.create({
     paddingRight: 20
   },
   input: {
-    fontSize: 14,
-    lineHeight: 14,
+    fontSize: Platform.OS=='ios'?16:14,
+    lineHeight: Platform.OS=='ios'?18:14,
     padding: 15,
     backgroundColor: '#F4F4F4',
     marginBottom: 16,
@@ -349,13 +349,16 @@ const styles = StyleSheet.create({
     gap: 5
   },
   phonePicker: {
-    justifyContent: 'center'
+    justifyContent: 'center',
+    fontSize:16
   },
   phoneInput: {
     marginBottom: 0,
     backgroundColor: 'transparent',
     flex: 1,
     padding: 0,
+    fontSize:16,
+    lineHeight: Platform.OS=='ios'?17:16,
   },
   passwordInput: {
     letterSpacing: 1,

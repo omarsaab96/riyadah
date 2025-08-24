@@ -276,15 +276,12 @@ export default function Members() {
 
                     <TouchableOpacity
                         onPress={() => {
-                            router.replace({
-                                pathname: '/profile',
-                                params: { tab: 'Teams' }
-                            })
+                            router.back()
                         }}
                         style={styles.backBtn}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to teams</Text>
+                        <Text style={styles.backBtnText}>Back</Text>
                     </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>

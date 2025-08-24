@@ -1,6 +1,8 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -295,11 +297,21 @@ export default function PublicProfile() {
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
-                <Animated.Image
+                {/* <Animated.Image
                     source={require('../../assets/logo_white.png')}
                     style={[styles.logo, { opacity: logoOpacity }]}
                     resizeMode="contain"
-                />
+                /> */}
+
+                <TouchableOpacity
+                    onPress={() => {
+                        router.back()
+                    }}
+                    style={styles.backBtn}
+                >
+                    <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                    <Text style={styles.backBtnText}>Back</Text>
+                </TouchableOpacity>
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
@@ -1514,15 +1526,6 @@ const styles = StyleSheet.create({
         padding: 5,
         borderRadius: 20,
     },
-    coachAvatar: {
-        width: 25,
-        height: 25,
-        borderRadius: 15,
-        backgroundColor: '#FF4000',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 10,
-    },
     coachName: {
         fontFamily: 'Manrope',
         fontSize: 14,
@@ -1930,10 +1933,6 @@ const styles = StyleSheet.create({
         color: '#666666',
         marginRight: 10,
     },
-    coachInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
     coachAvatar: {
         width: 30,
         height: 30,
@@ -1942,11 +1941,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 10,
-    },
-    coachName: {
-        fontFamily: 'Manrope',
-        fontSize: 14,
-        color: '#111111',
     },
     teamActions: {
         flexDirection: 'row',
@@ -2134,7 +2128,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     noEventsText: {
-        color:'black'
+        color: 'black'
     },
     opponentContainer: {
 
@@ -2303,6 +2297,20 @@ const styles = StyleSheet.create({
     calArrow: {
         width: 20,
         height: 20
-    }
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas'
+    },
 });
 

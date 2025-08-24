@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from 'react';
-import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
@@ -347,7 +347,8 @@ const styles = StyleSheet.create({
         color: 'black',
         textAlign: 'center',
         backgroundColor: '#F4F4F4',
-        borderRadius: 10
+        borderRadius: 10,
+        padding: Platform.OS=='ios'? 15: 0
     },
     dobSeperator: {
         fontSize: 30,

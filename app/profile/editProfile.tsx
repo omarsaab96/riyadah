@@ -489,7 +489,7 @@ export default function EditProfile() {
                                 </Text>
                                 <View style={styles.dobRow}>
                                     <TextInput
-                                        style={styles.dobInput}
+                                        style={[styles.dobInput,Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="DD"
                                         placeholderTextColor="#aaa"
                                         keyboardType="number-pad"
@@ -499,7 +499,7 @@ export default function EditProfile() {
                                     />
                                     <Text style={styles.dobSeperator}>/</Text>
                                     <TextInput
-                                        style={styles.dobInput}
+                                        style={[styles.dobInput,Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="MM"
                                         placeholderTextColor="#aaa"
                                         keyboardType="number-pad"
@@ -509,7 +509,7 @@ export default function EditProfile() {
                                     />
                                     <Text style={styles.dobSeperator}>/</Text>
                                     <TextInput
-                                        style={styles.dobInput}
+                                        style={[styles.dobInput,Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="YYYY"
                                         placeholderTextColor="#aaa"
                                         keyboardType="number-pad"

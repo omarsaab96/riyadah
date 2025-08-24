@@ -1253,7 +1253,10 @@ export default function Profile() {
                             </Text>
                             {user.memberOf.length > 0 ? (
                                 <View>
-                                    <Text style={styles.paragraph}>{user.memberOf.toString()}</Text>
+                                    <Text style={styles.paragraph}>
+                                        {/* {user.memberOf.toString()} */}
+                                        {user.memberOf.map(team => team.name).join(", ")}
+                                    </Text>
                                 </View>
                             ) : (
                                 <Text style={styles.paragraph}>0 teams</Text>
