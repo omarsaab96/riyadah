@@ -1160,7 +1160,7 @@ export default function Landing() {
     return (
         <GestureHandlerRootView style={styles.container}>
             {Platform.OS === 'ios' ? (
-                <View style={{ height: 44, backgroundColor: 'white' }} />
+                <View style={{ height: 60, backgroundColor: '#FF4000' }} />
             ) : (
                 <View style={{ height: 25, backgroundColor: '#FF4000' }} />
             )}

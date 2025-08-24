@@ -9,7 +9,6 @@ import {
     Dimensions,
     Image,
     Platform,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
@@ -178,9 +177,9 @@ export default function SearchScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             {Platform.OS === 'ios' ? (
-                <View style={{ height: 44, backgroundColor: 'white' }} />
+                <View style={{ height: 60, backgroundColor: '#FF4000' }} />
             ) : (
                 <View style={{ height: 25, backgroundColor: '#FF4000' }} />
             )}
@@ -197,7 +196,7 @@ export default function SearchScreen() {
 
             <View style={styles.searchContainer}>
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, Platform.OS === 'ios' && { padding: 15 }]}
                     value={keyword}
                     onChangeText={handleSearchInput}
                     placeholderTextColor={'#888888'}
@@ -461,7 +460,7 @@ export default function SearchScreen() {
                     <Image source={require('../assets/profile.png')} style={styles.icon} />
                 </TouchableOpacity>
             </View>
-        </SafeAreaView >
+        </View >
     );
 }
 
@@ -523,7 +522,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F4F4F4',
         color: 'black',
         borderRadius: 10,
-        fontFamily: 'Manrope'
+        fontFamily: 'Manrope',
     },
     searchLoader: {
         position: 'absolute',
