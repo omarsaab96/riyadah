@@ -15,7 +15,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
-      "bundleIdentifier": "app.riyadah",
+      "bundleIdentifier": "app.omarsaab96.riyadah",
       "associatedDomains": [
         "applinks:riyadah.app",
         "applinks:riyadah.app"
