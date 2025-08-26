@@ -300,15 +300,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope',
   },
   backBtn: {
+    position: 'absolute',
+    top: 60,
+    left: 10,
     width: 200,
     zIndex: 1,
     flexDirection: 'row',
     alignContent: 'center',
-    // borderWidth: 1
   },
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
-    fontFamily: 'Bebas',
+    fontFamily: 'Bebas'
   },
 });
