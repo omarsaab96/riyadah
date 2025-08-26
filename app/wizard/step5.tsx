@@ -418,7 +418,8 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: 'Bebas',
         fontSize: 16,
-        marginBottom: 10
+        marginBottom: 10,
+        color:'black'
     },
     input: {
         fontSize: 14,
