@@ -121,7 +121,7 @@ export default function Landing() {
 
 
     // variables
-    const snapPoints = useMemo(() => ["50%", "85%"], []);
+    const snapPoints = useMemo(() => ["50%", "90%"], []);
 
     const handlePresentModalPress = useCallback(() => {
         bottomSheetRef.current?.snapToIndex(0);
@@ -1185,10 +1185,10 @@ export default function Landing() {
                                         <View style={styles.headerActions}>
                                             <TouchableOpacity
                                                 onPress={handleOpenNewPostModal}
-                                                style={(createLoading || loading || posts.length === 0)
+                                                style={(createLoading || loading)
                                                     ? { opacity: 0.3 }
                                                     : {}}
-                                                disabled={(createLoading || loading || posts.length == 0) ? true : false}
+                                                disabled={(createLoading || loading) ? true : false}
                                             >
                                                 <Image
                                                     style={styles.postBtnImg}
@@ -1533,6 +1533,11 @@ export default function Landing() {
                                 }
                             </>
                         }
+                        ListEmptyComponent={() => (
+                            <View style={{ padding: 20, }}>
+                                {!loading && <Text style={{ color: 'black' }}>No posts yet</Text>}
+                            </View>
+                        )}
                         onEndReached={() => {
                             // Only trigger if we have more posts and aren't already loading
                             if (hasMore && !loading) {
@@ -1598,8 +1603,9 @@ export default function Landing() {
                                 onSubmitComment={handleSubmitComment}
                             />
                         )}
-                        keyboardBehavior="interactive"
+                        keyboardBehavior="extend"
                         keyboardBlurBehavior="restore"
+
                     >
                         <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
                             <View style={[styles.commentModalHeader, {}]}>
@@ -1671,6 +1677,8 @@ export default function Landing() {
                         enablePanDownToClose={true}
                         handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
                         backdropComponent={renderBackdrop}
+                        keyboardBehavior="extend"
+                        keyboardBlurBehavior="restore"
                     >
                         <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
                             <View style={[styles.commentModalHeader, { borderBottomWidth: 0 }]}>

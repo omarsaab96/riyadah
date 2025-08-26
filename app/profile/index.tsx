@@ -468,7 +468,7 @@ export default function Profile() {
             progress = Math.round((filledFields / totalFields) * 100);
 
         } else {
-            const totalFields = 21;
+            const totalFields = 20;
 
             if (user.name != null) filledFields++;
             if (user.email != null) filledFields++;
@@ -477,7 +477,6 @@ export default function Profile() {
             if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
             if (user.type != null) filledFields++;
             if (user.sport != null && user.sport.length >= 1) filledFields++;
-            if (user.club != null) filledFields++;
             if (user.gender != null) filledFields++;
             if (user.bio != null) filledFields++;
             if (user.height != null) filledFields++;

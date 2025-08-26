@@ -205,7 +205,7 @@ export default function WizardStep4() {
                             {(() => {
                                 const visibleClubs = featuredClubs.filter(club => club.visible);
 
-                                if (visibleClubs.length === 0) {
+                                if (visibleClubs.length === 0 && keyword.trim().length >= 3) {
                                     return (
                                         <Text style={styles.paragraph}>
                                             No clubs found for '<Text style={{ fontWeight: 'bold' }}>{keyword}</Text>'

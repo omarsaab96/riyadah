@@ -146,7 +146,7 @@ export default function Register() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Adjust as needed
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} // Adjust as needed
       >
         <View style={styles.pageHeader}>
           {/* <Image

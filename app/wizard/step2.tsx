@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         backgroundColor: '#F4F4F4',
         borderRadius: 10,
-        padding: Platform.OS=='ios'? 15: 0
+        padding: Platform.OS=='ios'? 15: 10
     },
     dobSeperator: {
         fontSize: 30,
