@@ -1,6 +1,5 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import {
     Dimensions,
@@ -30,8 +29,7 @@ export default function Home() {
         checkAuth();
     }, []);
 
-    return (<>
-        <StatusBar style="dark" />
+    return (
         <SafeAreaView style={styles.container}>
 
             {/* Logo */}
@@ -79,7 +77,6 @@ export default function Home() {
             </View>
 
         </SafeAreaView>
-    </>
     );
 }
 
