@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import {
     Dimensions,
@@ -30,6 +31,7 @@ export default function Home() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <StatusBar style="dark" />
             {/* Logo */}
             <Image
                 source={require('../assets/logo_orangeBlack.png')}
@@ -82,20 +84,20 @@ const styles = StyleSheet.create({
     container: {
         width,
         height: '100%',
-        backgroundColor: '#FAFAFA'
+        backgroundColor: '#FAFAFA',
     },
     logo: {
         width: 195,
         height: 45,
         position: 'absolute',
-        top: 60,
+        top: 40,
         left: 20,
         zIndex: 1,
     },
     heroContainer: {
         position: 'relative',
         width: width,
-        top: 50,
+        top: 0,
         left: 0,
     },
     heroImage: {
