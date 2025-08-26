@@ -5,11 +5,12 @@ import React, { useEffect } from 'react';
 import {
     Dimensions,
     Image,
+    Platform,
     SafeAreaView,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 
 
@@ -29,9 +30,10 @@ export default function Home() {
         checkAuth();
     }, []);
 
-    return (
+    return (<>
+        <StatusBar style="dark" />
         <SafeAreaView style={styles.container}>
-            <StatusBar style="dark" />
+
             {/* Logo */}
             <Image
                 source={require('../assets/logo_orangeBlack.png')}
@@ -77,6 +79,7 @@ export default function Home() {
             </View>
 
         </SafeAreaView>
+    </>
     );
 }
 
@@ -90,7 +93,7 @@ const styles = StyleSheet.create({
         width: 195,
         height: 45,
         position: 'absolute',
-        top: 40,
+        top: Platform.OS == "ios" ? 60 : 40,
         left: 20,
         zIndex: 1,
     },

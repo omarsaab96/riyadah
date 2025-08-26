@@ -1,4 +1,5 @@
 
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
@@ -76,11 +77,21 @@ export default function Login() {
   return (
     <View style={styles.container}>
       <View style={styles.pageHeader}>
-        <Image
+        {/* <Image
           source={require('../assets/logo_white.png')}
           style={styles.logo}
           resizeMode="contain"
-        />
+        /> */}
+
+        <TouchableOpacity
+          onPress={() => {
+            router.back()
+          }}
+          style={styles.backBtn}
+        >
+          <Ionicons name="chevron-back" size={20} color="#ffffff" />
+          <Text style={styles.backBtnText}>Back</Text>
+        </TouchableOpacity>
 
         <View style={styles.headerTextBlock}>
           <Text style={styles.pageTitle}>
@@ -144,7 +155,7 @@ export default function Login() {
       </View>
 
       <View style={styles.switchLinkContainer}>
-        <Text style={{color:'black'}}>Need a new account?</Text>
+        <Text style={{ color: 'black' }}>Need a new account?</Text>
         <TouchableOpacity onPress={() => router.replace('/register')}>
           <Text style={styles.switchLink}>REGISTER HERE</Text>
         </TouchableOpacity>
@@ -287,5 +298,17 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontFamily: 'Manrope',
-  }
+  },
+  backBtn: {
+    width: 200,
+    zIndex: 1,
+    flexDirection: 'row',
+    alignContent: 'center',
+    // borderWidth: 1
+  },
+  backBtnText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontFamily: 'Bebas',
+  },
 });

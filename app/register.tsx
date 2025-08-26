@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { isValidPhoneNumber } from 'libphonenumber-js';
@@ -148,11 +149,21 @@ export default function Register() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Adjust as needed
       >
         <View style={styles.pageHeader}>
-          <Image
-            source={require('../assets/logo_white.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          {/* <Image
+          source={require('../assets/logo_white.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        /> */}
+
+          <TouchableOpacity
+            onPress={() => {
+              router.back()
+            }}
+            style={styles.backBtn}
+          >
+            <Ionicons name="chevron-back" size={20} color="#ffffff" />
+            <Text style={styles.backBtnText}>Back</Text>
+          </TouchableOpacity>
 
           <View style={styles.headerTextBlock}>
             <Text style={styles.pageTitle}>
@@ -206,7 +217,7 @@ export default function Register() {
                     console.log(country.callingCode[0])
                     setCallingCode(country.callingCode[0]);
                   }}
-                  containerButtonStyle={Platform.OS=="ios" ? { marginTop: -5 } : { marginTop: -2 }}
+                  containerButtonStyle={Platform.OS == "ios" ? { marginTop: -5 } : { marginTop: -2 }}
                 />
               </View>
               <TextInput
@@ -329,8 +340,8 @@ const styles = StyleSheet.create({
     paddingRight: 20
   },
   input: {
-    fontSize: Platform.OS=='ios'?16:14,
-    lineHeight: Platform.OS=='ios'?18:14,
+    fontSize: Platform.OS == 'ios' ? 16 : 14,
+    lineHeight: Platform.OS == 'ios' ? 18 : 14,
     padding: 15,
     backgroundColor: '#F4F4F4',
     marginBottom: 16,
@@ -350,15 +361,15 @@ const styles = StyleSheet.create({
   },
   phonePicker: {
     justifyContent: 'center',
-    fontSize:16
+    fontSize: 16
   },
   phoneInput: {
     marginBottom: 0,
     backgroundColor: 'transparent',
     flex: 1,
     padding: 0,
-    fontSize:16,
-    lineHeight: Platform.OS=='ios'?17:16,
+    fontSize: 16,
+    lineHeight: Platform.OS == 'ios' ? 17 : 16,
   },
   passwordInput: {
     letterSpacing: 1,
@@ -485,5 +496,17 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontFamily: 'Manrope',
-  }
+  },
+  backBtn: {
+    width: 200,
+    zIndex: 1,
+    flexDirection: 'row',
+    alignContent: 'center',
+    // borderWidth: 1
+  },
+  backBtnText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontFamily: 'Bebas',
+  },
 });
