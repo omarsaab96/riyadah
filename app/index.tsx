@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     container: {
         width,
         height: '100%',
-        backgroundColor: '#FAFAFA',
+        backgroundColor: '#FAFAFA'
     },
     logo: {
         width: 195,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         // top: 12,
         // left: 0,
         width: width,
-        aspectRatio: 390 / 490,
+        aspectRatio: 390 / 470,
     },
     fixedBottomSection: {
         position: 'absolute',
