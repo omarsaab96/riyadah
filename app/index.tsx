@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     headline: {
         fontSize: 64,
         fontFamily: 'Bebas',
-        lineHeight: 60,
+        lineHeight: 64,
         color: '#150000',
     },
     subtext: {
