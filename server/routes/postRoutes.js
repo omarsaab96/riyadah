@@ -24,8 +24,12 @@ const authenticateToken = (req, res, next) => {
 
 // Get paginated posts
 router.get('/', async (req, res) => {
+    console.log("Fetching posts with query:", req.query);
+    console.log("Headers:", req.headers);
+
     const { page = 1, limit = 10 } = req.query;
     try {
+        console.log('Fetching posts now....');
         const posts = await Post.find({ linked: true })
             .populate('created_by', '_id name image gender type')
             .populate('likes', '_id name image')
@@ -33,8 +37,11 @@ router.get('/', async (req, res) => {
             .sort({ date: -1 })
             .skip((page - 1) * limit)
             .limit(parseInt(limit));
+        console.log(`Fetched ${posts.length} posts`);
         res.json(posts);
+        console.log("Returned:", posts);
     } catch (err) {
+        console.log('Error fetching posts:', err);
         res.status(500).json({ error: 'Failed to fetch posts' });
     }
 });
