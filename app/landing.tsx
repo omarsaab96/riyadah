@@ -16,6 +16,7 @@ import {
     Dimensions,
     FlatList,
     Image,
+    Keyboard,
     Modal,
     Platform,
     RefreshControl,
@@ -29,9 +30,23 @@ import {
 
 const { width } = Dimensions.get('window');
 
-const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }) => {
+const CommentFooter = ({ footerProps, user, submittingComment, onSubmitCommentm }) => {
     const [newComment, setNewComment] = useState('');
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
 
+    useEffect(() => {
+        const showSub = Keyboard.addListener("keyboardDidShow", () => {
+            setKeyboardVisible(true);
+        });
+        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+            setKeyboardVisible(false);
+        });
+
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
     const handlePress = () => {
         onSubmitComment(newComment);
         setNewComment('');
@@ -39,7 +54,7 @@ const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }
 
     return (
         <BottomSheetFooter {...footerProps}>
-            <View style={styles.commentInputContainer}>
+            <View style={[styles.commentInputContainer, keyboardVisible && { paddingBottom: 10 }]}>
                 <View style={styles.profileImage}>
                     {(user?.image == null || user?.image == "") && (user?.type == "Club" || user?.type == "Association") && <Image
                         source={require('../assets/clublogo.png')}
@@ -2269,7 +2284,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 15,
         paddingTop: 10,
-        paddingBottom: 50,
+        paddingBottom: Platform.OS == "ios" ? 30 : 50,
         borderTopWidth: 1,
         borderTopColor: '#eee',
         backgroundColor: 'white'
@@ -2285,7 +2300,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f5f5',
         borderRadius: 18,
         paddingHorizontal: 15,
-        paddingVertical: 8,
+        paddingVertical: Platform.OS == "ios" ? 10 : 8,
         fontSize: 14,
         color: '#333',
     },

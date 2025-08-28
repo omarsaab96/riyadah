@@ -335,9 +335,9 @@ export default function Messages() {
                     </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    {item.unreadMessages && item.unreadMessages.length > 0 &&
+                    {item.unreadMessages && item.unreadMessages?.filter(m => m.senderId != userId) && item.unreadMessages?.filter(m => m.senderId != userId).length > 0 &&
                         <Text style={styles.unreadBadge}>
-                            {item.unreadMessages.length}
+                            {item.unreadMessages?.filter(m => m.senderId != userId).length}
                         </Text>
                     }
                     <TouchableOpacity onPress={() => handleMoreOptions(item)} style={styles.postOptions}>
@@ -547,7 +547,7 @@ export default function Messages() {
                         </View>
                         <View style={styles.searchInputContainer}>
                             <BottomSheetTextInput
-                                style={[styles.searchInput,Platform.OS=="ios" && {padding:15}]}
+                                style={[styles.searchInput, Platform.OS == "ios" && { padding: 15 }]}
                                 placeholder="Search users (Min. 3 chars)"
                                 placeholderTextColor="#A8A8A8"
                                 value={keyword}

@@ -364,9 +364,27 @@ export default function SearchScreen() {
                                     params: { id: user._id },
                                 })}
                             >
-                                <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
-                                <Text>{user.name}</Text>
-                                <Text>{user.role}</Text>
+                                <View style={[
+                                    styles.avatarContainer,
+                                    (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
+                                ]}>
+                                    {(user.image == null || user.image == "") && <Image
+                                        source={require('../assets/clublogo.png')}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                    {user.image != null && <Image
+                                        source={{ uri: user.image }}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                </View>
+                                <View style={{ justifyContent: 'center' }}>
+                                    <Text style={styles.name}>{user.name}</Text>
+                                    {user.sport && <Text style={styles.role}>
+                                        {user.sport.map(s => s).join(", ")}
+                                    </Text>}
+                                </View>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -386,9 +404,27 @@ export default function SearchScreen() {
                                     params: { id: user._id },
                                 })}
                             >
-                                <Image source={{ uri: user.image }} style={{ width: 40, height: 40, borderRadius: 20 }} />
-                                <Text>{user.name}</Text>
-                                <Text>{user.role}</Text>
+                                <View style={[
+                                    styles.avatarContainer,
+                                    (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
+                                ]}>
+                                    {(user.image == null || user.image == "") && <Image
+                                        source={require('../assets/association.png')}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                    {user.image != null && <Image
+                                        source={{ uri: user.image }}
+                                        style={styles.avatar}
+                                        resizeMode="contain"
+                                    />}
+                                </View>
+                                <View style={{ justifyContent: 'center' }}>
+                                    <Text style={styles.name}>{user.name}</Text>
+                                    {user.sport && <Text style={styles.role}>
+                                        {user.sport.map(s => s).join(", ")}
+                                    </Text>}
+                                </View>
                             </TouchableOpacity>
                         ))}
                     </View>

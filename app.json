@@ -20,7 +20,7 @@
         "applinks:riyadah.app",
         "applinks:riyadah.app"
       ],
-      "supportsTablet": true,
+      "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "Allow access to your camera to take profile pictures",
         "NSPhotoLibraryUsageDescription": "Allow access to your photos to choose a profile picture",
