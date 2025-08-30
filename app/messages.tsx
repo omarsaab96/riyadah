@@ -719,7 +719,7 @@ const styles = StyleSheet.create({
     },
     navBar: {
         position: 'absolute',
-        bottom: 70,
+        bottom: Platform.OS == 'ios' ? 100 : 70,
         left: 10,
         width: width - 20,
         height: 60,
@@ -837,13 +837,16 @@ const styles = StyleSheet.create({
         paddingLeft: 6,
         paddingRight: 5,
         backgroundColor: '#FF4000',
-        borderRadius: 15,
+        borderRadius: 10,
         fontWeight: 'bold',
         fontFamily: 'Manrope',
         fontSize: 16,
         color: 'black',
-        lineHeight: 16,
+        lineHeight: 19,
         textAlign: 'center',
+        overflow: 'hidden',
+        width:20,
+        height:20
     },
     chatDate: {
         color: '#aaa',

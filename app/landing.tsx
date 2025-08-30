@@ -206,6 +206,7 @@ export default function Landing() {
                 // More accurate hasMore calculation
                 setHasMore(data.length >= pageLimit);
                 setPage(prev => prev + 1);
+                // console.log(data)
             }
         } catch (err) {
             console.error('Fetch error', err);
@@ -1924,7 +1925,7 @@ const styles = StyleSheet.create({
     },
     navBar: {
         position: 'absolute',
-        bottom: 70,
+        bottom: Platform.OS == 'ios' ? 100 : 70,
         left: 10,
         width: width - 20,
         height: 60,
