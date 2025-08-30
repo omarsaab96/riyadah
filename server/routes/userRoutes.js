@@ -379,7 +379,7 @@ router.put('/:userId', authenticateToken, async (req, res) => {
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
 
-  console.log('userId = ', userId)
+  console.log('getting user info for userId = ', userId)
 
   try {
     const user = await User.findById(userId)

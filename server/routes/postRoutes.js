@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
             .limit(parseInt(limit));
         console.log(`Fetched ${posts.length} posts`);
         res.json(posts);
-        console.log("Returned:", posts);
+        console.log("Returned:", posts.length, "post(s)");
     } catch (err) {
         console.log('Error fetching posts:', err);
         res.status(500).json({ error: 'Failed to fetch posts' });
