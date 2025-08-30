@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 16,
         color: 'black',
-        lineHeight: Platform.OS == "ios" ? 19: 16,
+        lineHeight: Platform.OS == "ios" ? 18: 16,
         textAlign: 'center',
         overflow: 'hidden',
         width:20,
