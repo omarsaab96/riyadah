@@ -2,15 +2,15 @@ const express = require('express');
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require('../models/User');
-import nodemailer from "nodemailer";
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.hostinger.com",  // 👈 Hostinger SMTP
-  port: 465,                   // 465 for SSL
-  secure: true,                // true for port 465, false for 587
+  host: "smtp.hostinger.com",  
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER, // e.g. noreply@yourdomain.com
-    pass: process.env.EMAIL_PASS, // password you set for this email
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
