@@ -29,6 +29,49 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+router.get("/test-smtp", async (req, res) => {
+  try {
+    // test connection
+    await transporter.verify();
+
+    // for demo, get email + otp from query
+    const newEmail = req.query.email;
+    const otp = req.query.otp || Math.floor(100000 + Math.random() * 900000);
+
+    if (!newEmail) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    // send test email
+    await transporter.sendMail({
+      from: `"Riyadah App" <${process.env.EMAIL_USER}>`,
+      to: newEmail,
+      subject: "Verify your new email",
+      html: `
+        <div style="font-family:Arial,sans-serif;padding:20px;">
+          <h2>Email Verification</h2>
+          <p>Your OTP is:</p>
+          <h3 style="color:#007bff;">${otp}</h3>
+          <p>This code expires in <strong>10 minutes</strong>.</p>
+          <p>If you didn’t request this, ignore this email.</p>
+          <br>
+          <p>— Riyadah Team</p>
+        </div>
+      `,
+    });
+
+    res.json({ success: true, message: "Test email sent successfully!" });
+  } catch (err) {
+    console.error("SMTP error:", err);
+    res.status(500).json({
+      success: false,
+      message: "SMTP test failed",
+      error: err.message,
+    });
+  }
+});
+
+
 router.post("/:id", authenticateToken, async (req, res) => {
   const userId = req.user.userId;
   const { type, newEmail, oldEmail } = req.body;
@@ -53,15 +96,6 @@ router.post("/:id", authenticateToken, async (req, res) => {
 
     const otp = generateOTP();
     const { token } = generateVerificationToken(otp);
-
-    transporter.verify((error, success) => {
-      if (error) {
-        console.error("SMTP error:", error);
-        return res.status(400).json({ success: false, message: 'SMTP error' });
-      } else {
-        console.log("SMTP server is ready:", success);
-      }
-    });
 
     // send OTP via email
     await transporter.sendMail({
