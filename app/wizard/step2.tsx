@@ -45,6 +45,20 @@ export default function WizardStep2() {
         if (!isComplete) return;
 
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
+        const dobDate = new Date(dob);
+        const today = new Date();
+
+        // Basic validity checks
+        if (isNaN(dobDate.getTime())) {
+            setError('Please enter a valid date');
+            return;
+        }
+
+        if (dobDate > today) {
+            setError('Date cannot be in the future');
+            return;
+        }
+
         const age = calculateAge(dob);
 
         if (age < 18 && formData.type == "Parent") {
@@ -94,9 +108,22 @@ export default function WizardStep2() {
 
     const handleNext = () => {
         const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
+        const dobDate = new Date(dob);
+        const today = new Date();
+
+        // Basic validity checks
+        if (isNaN(dobDate.getTime())) {
+            setError('Please enter a valid date');
+            return;
+        }
+
+        if (dobDate > today) {
+            setError('Date cannot be in the future');
+            return;
+        }
 
         if (formData.type == "Scout" || formData.type == "Sponsor") {
-            if (day != null && month != null && year != null && day.trim()!='' && month.trim()!='' && year.trim()!='') {
+            if (day != null && month != null && year != null && day.trim() != '' && month.trim() != '' && year.trim() != '') {
                 const age = calculateAge(dob);
                 if ((formData.type == "Scout" || formData.type == "Sponsor") && age < 18) {
                     setError(`${formData.type} cannot be under 18`)
@@ -197,7 +224,7 @@ export default function WizardStep2() {
 
                 {(formData.type == "Club" || formData.type == "Association") && <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Established On</Text>
-                    <Text style={styles.pageDesc}>When was the {formData.type == "Club" ? 'club':'association'} established?</Text>
+                    <Text style={styles.pageDesc}>When was the {formData.type == "Club" ? 'club' : 'association'} established?</Text>
                 </View>
                 }
 
@@ -348,7 +375,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         backgroundColor: '#F4F4F4',
         borderRadius: 10,
-        padding: Platform.OS=='ios'? 15: 10
+        padding: Platform.OS == 'ios' ? 15 : 10
     },
     dobSeperator: {
         fontSize: 30,

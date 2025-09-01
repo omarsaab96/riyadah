@@ -104,7 +104,10 @@ router.post(
           sport: null,
           stats: null,
           type: null,
-          verified: null,
+          verified: {
+            email: null,
+            phone: null
+          },
           weight: null
         });
         newUser.isStaff.push(club);

@@ -8,7 +8,7 @@ import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -36,6 +36,8 @@ export default function EditProfile() {
     const [saving, setSaving] = useState(false);
     const [children, setChildren] = useState([]);
     const [location, setLocation] = useState(null);
+    const [error, setError] = useState<string | null>(null);
+    const scrollRef = useRef(null);
 
 
     useEffect(() => {
@@ -97,6 +99,24 @@ export default function EditProfile() {
     }
 
     const handleSave = async () => {
+
+        const dob = `${user?.dob.year?.padStart(4, '0')}-${user?.dob.month?.padStart(2, '0')}-${user?.dob.day?.padStart(2, '0')}`;
+        const dobDate = new Date(dob);
+        const today = new Date();
+
+        // Basic validity checks
+        if (isNaN(dobDate.getTime())) {
+            setError('Please enter a valid date');
+            scrollRef.current?.scrollTo({ y: 0, animated: true });
+            return;
+        }
+
+        if (dobDate > today) {
+            setError('Date cannot be in the future');
+            scrollRef.current?.scrollTo({ y: 0, animated: true });
+            return;
+        }
+
         setSaving(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
@@ -207,8 +227,13 @@ export default function EditProfile() {
 
                     </View>
 
-                    {user && !loading && <ScrollView>
+                    {user && !loading && <ScrollView ref={scrollRef}>
+
                         <View style={styles.contentContainer}>
+                            {error != null && <View style={styles.error}>
+                                <View style={styles.errorIcon}></View>
+                                <Text style={styles.errorText}>{error}</Text>
+                            </View>}
                             {user.type == "Parent" && <View style={styles.entity}>
                                 <View style={styles.noChildrenView}>
                                     <Text style={[styles.title, { marginBottom: 0 }]}>
@@ -397,7 +422,7 @@ export default function EditProfile() {
 
                                         <View style={styles.map}>
                                             <MapView
-                                              provider={PROVIDER_GOOGLE} 
+                                                provider={PROVIDER_GOOGLE}
                                                 style={styles.mapPreview}
                                                 region={{
                                                     latitude: location?.latitude || 0,
@@ -489,7 +514,7 @@ export default function EditProfile() {
                                 </Text>
                                 <View style={styles.dobRow}>
                                     <TextInput
-                                        style={[styles.dobInput,Platform.OS === 'ios' && { padding: 15 }]}
+                                        style={[styles.dobInput, Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="DD"
                                         placeholderTextColor="#aaa"
                                         keyboardType="number-pad"
@@ -499,7 +524,7 @@ export default function EditProfile() {
                                     />
                                     <Text style={styles.dobSeperator}>/</Text>
                                     <TextInput
-                                        style={[styles.dobInput,Platform.OS === 'ios' && { padding: 15 }]}
+                                        style={[styles.dobInput, Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="MM"
                                         placeholderTextColor="#aaa"
                                         keyboardType="number-pad"
@@ -509,7 +534,7 @@ export default function EditProfile() {
                                     />
                                     <Text style={styles.dobSeperator}>/</Text>
                                     <TextInput
-                                        style={[styles.dobInput,Platform.OS === 'ios' && { padding: 15 }]}
+                                        style={[styles.dobInput, Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="YYYY"
                                         placeholderTextColor="#aaa"
                                         keyboardType="number-pad"
@@ -636,10 +661,10 @@ export default function EditProfile() {
                                             value={user?.skills?.attack || 0}
                                             onValueChange={(value) => updateField('skills.attack', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#111111"
+                                            maximumTrackTintColor="#F4F4F4"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color: 'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.attack || 0}%
                                         </Text>
                                     </View>
@@ -657,10 +682,10 @@ export default function EditProfile() {
                                             value={user?.skills?.defense || 0}
                                             onValueChange={(value) => updateField('skills.defense', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#111111"
+                                            maximumTrackTintColor="#F4F4F4"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color: 'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.defense || 0}%
                                         </Text>
                                     </View>
@@ -678,10 +703,10 @@ export default function EditProfile() {
                                             value={user?.skills?.skill || 0}
                                             onValueChange={(value) => updateField('skills.skill', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#111111"
+                                            maximumTrackTintColor="#F4F4F4"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color: 'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.skill || 0}%
                                         </Text>
                                     </View>
@@ -699,10 +724,10 @@ export default function EditProfile() {
                                             value={user?.skills?.speed || 0}
                                             onValueChange={(value) => updateField('skills.speed', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#111111"
+                                            maximumTrackTintColor="#F4F4F4"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color: 'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.speed || 0}%
                                         </Text>
                                     </View>
@@ -720,10 +745,10 @@ export default function EditProfile() {
                                             value={user?.skills?.stamina || 0}
                                             onValueChange={(value) => updateField('skills.stamina', value)}
                                             minimumTrackTintColor="#FF4000"
-                                            maximumTrackTintColor="#111111"
+                                            maximumTrackTintColor="#F4F4F4"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ color:'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={{ color: 'black', textAlign: 'center', fontSize: 16, marginTop: 10 }}>
                                             {user?.skills?.stamina || 0}%
                                         </Text>
                                     </View>
@@ -738,7 +763,7 @@ export default function EditProfile() {
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
                                     <Text style={styles.profileButtonText}>
-                                        {saving ? 'Saving': 'Save'}
+                                        {saving ? 'Saving' : 'Save'}
                                     </Text>
                                     {saving && (
                                         <ActivityIndicator
@@ -788,6 +813,27 @@ const styles = StyleSheet.create({
     contentContainer: {
         padding: 20,
         paddingBottom: 130
+    },
+    error: {
+        marginBottom: 15,
+        backgroundColor: '#fce3e3',
+        paddingHorizontal: 5,
+        paddingVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    errorIcon: {
+        width: 3,
+        height: 15,
+        backgroundColor: 'red',
+        borderRadius: 5,
+        marginRight: 10,
+        marginTop: 3
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Manrope',
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -867,7 +913,7 @@ const styles = StyleSheet.create({
         fontFamily: "Bebas",
         fontSize: 20,
         marginBottom: 10,
-        color:'black'
+        color: 'black'
     },
     subtitle: {
         fontFamily: "Manrope",
@@ -875,7 +921,7 @@ const styles = StyleSheet.create({
         // fontWeight: 'bold',
         width: '100%',
         textTransform: 'capitalize',
-        color:'black'
+        color: 'black'
     },
     contactSubTitle: {
         marginBottom: 5,
@@ -884,7 +930,7 @@ const styles = StyleSheet.create({
     paragraph: {
         fontFamily: "Manrope",
         fontSize: 16,
-        color:'black'
+        color: 'black'
     },
     ghostText: {
         color: '#ffffff',

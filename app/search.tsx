@@ -81,7 +81,7 @@ export default function SearchScreen() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("Search results: ", data);
+                // console.log("Search results: ", data);
 
                 // Separate users by type
                 const groupedUsers = {

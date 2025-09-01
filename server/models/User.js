@@ -83,8 +83,14 @@ const userSchema = new mongoose.Schema({
   stats: String,
   type: String,
   verified: {
-    type: Date,
-    default: null
+    email: {
+      type: Date,
+      default: null
+    },
+    phone: {
+      type: Date,
+      default: null
+    }
   },
   weight: Number,
   expoPushToken: { type: String, default: null }

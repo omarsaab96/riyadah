@@ -396,6 +396,9 @@ export default function Profile() {
     const handleEdit = async () => {
         router.push('/profile/editProfile');
     };
+    const handleVerification = async () => {
+        router.push('/profile/verification');
+    };
 
     const handleShareProfile = async () => {
         const url = `https://riyadah.app/profile/public/${userId}`;
@@ -778,9 +781,14 @@ export default function Profile() {
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year:'numeric' });
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     };
+
+    const isVerified = (): boolean => {
+        return false;
+    };
+
 
 
     return (
@@ -987,6 +995,21 @@ export default function Profile() {
             >
 
                 <View style={styles.contentContainer}>
+                    {userId == user._id && (!isVerified()) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleVerification}>
+                        <View style={styles.profileProgressPercentage}>
+                            <Text style={styles.profileProgressPercentageText}>!</Text>
+                        </View>
+                        <View style={styles.profileProgressTextSection}>
+                            <Text style={styles.profileProgressText}>Verify your account now</Text>
+                            <Image
+                                style={styles.profileProgressImg}
+                                source={require('../../assets/rightArrow.png')}
+                                resizeMode="contain"
+                            />
+                        </View>
+                    </TouchableOpacity>
+                    }
+
                     {userId == user._id && (getProfileProgress() < 100) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
                         <View style={styles.profileProgressPercentage}>
                             <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>

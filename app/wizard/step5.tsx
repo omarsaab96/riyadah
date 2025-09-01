@@ -96,9 +96,12 @@ export default function WizardStep5() {
                 bio: bio,
                 gender: selectedGender,
                 image: null,
-                isStaff:[],
-                personalAccount:true,
-                verified:null
+                isStaff: [],
+                personalAccount: true,
+                verified: {
+                    email: null,
+                    phone: null
+                },
             };
 
             console.log('Submitting user data:', newUserData);
@@ -419,7 +422,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 16,
         marginBottom: 10,
-        color:'black'
+        color: 'black'
     },
     input: {
         fontSize: 14,
@@ -463,9 +466,9 @@ const styles = StyleSheet.create({
         color: 'red',
         fontFamily: 'Manrope',
     },
-    hint:{
-        color:'#A8A8A8',
-        fontFamily:'Manrope',
-        fontSize:12
+    hint: {
+        color: '#A8A8A8',
+        fontFamily: 'Manrope',
+        fontSize: 12
     }
 });

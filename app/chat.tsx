@@ -242,7 +242,7 @@ export default function ChatPage() {
                             style={styles.backBtn}
                         >
                             <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                            <Text style={styles.backBtnText}>chats</Text>
+                            <Text style={styles.backBtnText}>Back</Text>
                         </TouchableOpacity>
 
                         {chat && chat.participants && (() => {

@@ -138,14 +138,14 @@ export default function ParentCreateAthlete() {
     };
 
     const handleCopy = () => {
-            const loginInfo = `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`;
-            Clipboard.setStringAsync(loginInfo);
-            setCopied(true);
-    
-            setTimeout(() => {
-                setCopied(false)
-            }, 2000)
-        }
+        const loginInfo = `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`;
+        Clipboard.setStringAsync(loginInfo);
+        setCopied(true);
+
+        setTimeout(() => {
+            setCopied(false)
+        }, 2000)
+    }
 
     const handleShare = async () => {
         try {
@@ -222,7 +222,10 @@ export default function ParentCreateAthlete() {
             //     year: year
             // },
             // club: independent ? 'Independent' : selectedClub,
-            verified: null,
+            verified: {
+                email: null,
+                phone: null
+            },
             personalAccount: false,
             isStaff: []
         });
@@ -266,7 +269,7 @@ export default function ParentCreateAthlete() {
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} // Adjust as needed
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0} // Adjust as needed
             >
 
                 <View style={styles.pageHeader}>
@@ -868,12 +871,12 @@ const styles = StyleSheet.create({
         fontFamily: 'Bebas',
         fontSize: 20,
         marginBottom: 5,
-        color:'black'
+        color: 'black'
     },
     confirmationSubTitle: {
         fontFamily: 'Manrope',
         fontSize: 16,
-        color:'black'
+        color: 'black'
     },
     profileActions: {
         borderTopWidth: 1,

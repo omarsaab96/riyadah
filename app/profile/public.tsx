@@ -10,6 +10,7 @@ import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Animated,
     Dimensions,
     Image,
@@ -36,6 +37,7 @@ export default function PublicProfile() {
     const [userCoachOf, setUserCoachOf] = useState([]);
     const [inventory, setInventory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [chatLoading, setChatLoading] = useState(false);
     const [teamsLoading, setTeamsLoading] = useState(true);
     const [scheduleLoading, setScheduleLoading] = useState(true);
     const [staffLoading, setStaffLoading] = useState(true);
@@ -294,6 +296,40 @@ export default function PublicProfile() {
         }
     };
 
+    const createChat = async (participantId: string) => {
+
+        if (!participantId) {
+            Alert.alert('Error', 'Please select a user to start a chat with');
+            return;
+        }
+
+        setChatLoading(true);
+        const token = await SecureStore.getItemAsync('userToken');
+
+        try {
+            const res = await fetch('https://riyadah.onrender.com/api/chats/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ participantId })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                router.push(`/chat?chatId=${data._id}`)
+            } else {
+                Alert.alert('Error', data.message || 'Failed to create chat');
+            }
+        } catch (err) {
+            Alert.alert('Error', err.message);
+        } finally {
+            setChatLoading(false);
+        }
+    };
+
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -444,9 +480,28 @@ export default function PublicProfile() {
                                     || user.contactInfo?.tiktok != null || user.contactInfo?.snapchat != null || user.contactInfo?.location?.latitude != null
                                     || user.contactInfo?.location?.longitude != null || user.contactInfo?.description != null) ? (
                                     <View>
-                                        <Text style={[styles.title, styles.contactTitle]}>
-                                            CONTACT
-                                        </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                            <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
+                                                CONTACT
+                                            </Text>
+                                            <TouchableOpacity style={styles.dmLink} onPress={() => { createChat(user._id) }}>
+                                                {
+                                                    chatLoading ? (
+                                                        <ActivityIndicator size='small' color={'black'} />
+                                                    ) : (
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5 }}>
+                                                            <Image
+                                                                style={styles.dmBtnImg}
+                                                                source={require('../../assets/dm.png')}
+                                                                resizeMode="contain"
+                                                            />
+                                                            <Text style={{color:'black'}}>Send DM</Text>
+                                                        </View>
+                                                    )
+                                                }
+
+                                            </TouchableOpacity>
+                                        </View>
                                         <View>
                                             {user.contactInfo?.description != null && user.type == "Club" && (
                                                 <View style={styles.contactDescription}>
@@ -560,9 +615,28 @@ export default function PublicProfile() {
                                     </View>
                                 ) : (
                                     <View>
-                                        <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
-                                            CONTACT
-                                        </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                            <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
+                                                CONTACT
+                                            </Text>
+                                            <TouchableOpacity style={styles.dmLink} onPress={() => { createChat(user._id) }}>
+                                                {
+                                                    chatLoading ? (
+                                                        <ActivityIndicator size='small' color={'black'} />
+                                                    ) : (
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5 }}>
+                                                            <Image
+                                                                style={styles.dmBtnImg}
+                                                                source={require('../../assets/dm.png')}
+                                                                resizeMode="contain"
+                                                            />
+                                                            <Text style={{color:'black'}}>Send DM</Text>
+                                                        </View>
+                                                    )
+                                                }
+
+                                            </TouchableOpacity>
+                                        </View>
                                         <View>
                                             <Text style={[styles.emptyContactInfo, { marginBottom: 5 }]}>
                                                 No contact info
@@ -1753,6 +1827,10 @@ const styles = StyleSheet.create({
     contactTitle: {
         marginBottom: 10
     },
+    dmBtnImg: {
+        width: 15,
+        height: 15,
+    },
     contactItem: {
         borderRadius: 10,
         backgroundColor: '#cccccc',
@@ -1767,6 +1845,11 @@ const styles = StyleSheet.create({
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    dmLink: {
+        backgroundColor: "#cccccc",
+        borderRadius: 8,
+        padding:5
     },
     contactLocation: {
         marginTop: 15,
@@ -1828,7 +1911,7 @@ const styles = StyleSheet.create({
     adminName: {
         fontFamily: 'Manrope',
         fontSize: 16,
-        color:'black'
+        color: 'black'
     },
     adminLink: {
         color: '#FF4000',

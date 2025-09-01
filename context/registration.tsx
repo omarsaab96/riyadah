@@ -41,7 +41,7 @@ interface RegistrationData {
   highlights: any;
   image: string | null;
   isStaff: [String] | [];
-  memberOf:[String] | [];
+  memberOf: [String] | [];
   name: string | null;
   organization: {
     name: string | null;
@@ -59,7 +59,10 @@ interface RegistrationData {
   sport: string | null;
   stats: any;
   type: string | null;
-  verified: Date | null;
+  verified: {
+    email: Date | null;
+    phone: Date | null;
+  }
   weight: Number | null;
 }
 
@@ -143,7 +146,10 @@ export const RegistrationProvider = ({ children }: Props) => {
     sport: null,
     stats: null,
     type: null,
-    verified: null,
+    verified: {
+      email: null,
+      phone: null
+    },
     weight: null
   });
 
@@ -216,7 +222,10 @@ export const RegistrationProvider = ({ children }: Props) => {
       sport: null,
       stats: null,
       type: null,
-      verified: null,
+      verified: {
+        email: null,
+        phone: null
+      },
       weight: null
     });
 

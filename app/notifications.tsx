@@ -200,7 +200,7 @@ export default function Notifications() {
 
                 </View>
 
-                <Text style={styles.ghostText}>Notifica</Text>
+                <Text style={styles.ghostText}>Notifi</Text>
             </View>
 
             {!loading && <ScrollView>
