@@ -106,6 +106,7 @@ export default function VerifyProfile() {
 
         if (res.ok && res.result == "success") {
             setEmailOTPSent(true)
+            console.log(res)
         } else {
             setEmailOTPSent(false)
             console.error(response)
