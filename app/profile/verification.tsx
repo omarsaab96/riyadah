@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -40,7 +41,8 @@ export default function VerifyProfile() {
     const [phoneOTPSent, setPhoneOTPSent] = useState(false);
 
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-    const [secondsLeft, setSecondsLeft] = useState(60);
+    const [secondsLeft, setSecondsLeft] = useState(0);
+    const timerRef = useRef(null);
     const inputsRef = useRef([]);
 
 
@@ -75,6 +77,9 @@ export default function VerifyProfile() {
         };
 
         fetchUser();
+
+        return () => clearInterval(timerRef.current);
+
     }, []);
 
     const isValidEmail = (email: string) => {
@@ -112,6 +117,8 @@ export default function VerifyProfile() {
             setEmailOTPSent(true)
             setError(null)
             SecureStore.setItem('emailOTPToken', res.verificationToken)
+            inputsRef.current[0]?.focus();
+            startCountdown();
         } else {
             setEmailOTPSent(false)
             console.error(res)
@@ -120,6 +127,21 @@ export default function VerifyProfile() {
 
         setVerifyingEmail(false)
     }
+
+    const startCountdown = (duration = 60) => {
+        clearInterval(timerRef.current); // clear any existing timer
+        setSecondsLeft(duration);
+
+        timerRef.current = setInterval(() => {
+            setSecondsLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
 
     const handleVerifyPhone = async () => {
         //validate phone number
@@ -165,6 +187,7 @@ export default function VerifyProfile() {
         if (text.length === 6) {
             newOtp = text.split("");
             setOtp(newOtp);
+            inputsRef.current[5].blur();
             return;
         }
 
@@ -177,6 +200,16 @@ export default function VerifyProfile() {
         }
     };
 
+    const handleFocus = async (index: number) => {
+        const clipboardText = await Clipboard.getStringAsync();
+        if (/^\d{6}$/.test(clipboardText)) {
+            // Paste full OTP from clipboard starting from first input
+            const newOtp = clipboardText.split("");
+            setOtp(newOtp);
+            inputsRef.current[5]?.blur(); // blur last input after filling
+        }
+    };
+
     // Handle backspace
     const handleKeyPress = (e, index) => {
         if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
@@ -184,14 +217,13 @@ export default function VerifyProfile() {
         }
     };
 
-    const handleVerifyEmailOTP = async async async () => {
-        const enteredOTP = otp.join("");
+    const handleVerifyEmailOTP = async () => {
 
         setVerifyingEmail(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
-        const response = await fetch(`https://riyadah.onrender.com/api/verify/${userId}`, {
+        const response = await fetch(`https://riyadah.onrender.com/api/verify/${userId}/otp`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -199,30 +231,37 @@ export default function VerifyProfile() {
             },
             body: JSON.stringify({
                 type: 'email',
-                oldEmail: user?.email,
-                newEmail: emailAddress,
+                otp: otp.join(""),
+                verificationToken: SecureStore.getItem("emailOTPToken"),
             })
         });
 
         const res = await response.json();
 
         if (res.result == "success") {
-            setEmailOTPSent(true)
-            setError(null)
-            SecureStore.setItem('emailOTPToken', res.verificationToken)
-        } else {
             setEmailOTPSent(false)
+            setError(null)
+        } else {
+            setEmailOTPSent(true)
             console.error(res)
-            setError("Failed to verify email address");
+            setError("Failed to verify email OTP");
         }
 
         setVerifyingEmail(false)
     };
 
     const handleResend = () => {
-        resendOTP();
-        setSecondsLeft(60);
+        handleVerifyEmail()
+        setOtp(["", "", "", "", "", ""]);
+        inputsRef.current[0]?.focus();
     };
+
+    const onChangeEmail = () => {
+        setOtp(["", "", "", "", "", ""]);
+        inputsRef.current[5]?.blur();
+        setEmailOTPSent(false);
+        setVerifyingEmail(false);
+    }
 
     return (
         <KeyboardAvoidingView
@@ -375,10 +414,12 @@ export default function VerifyProfile() {
                                             key={idx}
                                             ref={el => (inputsRef.current[idx] = el)}
                                             style={{
-                                                borderBottomWidth: 2,
-                                                width: 40,
+                                                borderWidth: 1,
+                                                width: 50,
+                                                height: 60,
                                                 textAlign: "center",
-                                                fontSize: 20,
+                                                fontSize: 40,
+                                                borderRadius: 10,
                                                 marginHorizontal: 5,
                                             }}
                                             keyboardType="number-pad"
@@ -386,6 +427,7 @@ export default function VerifyProfile() {
                                             value={digit}
                                             onChangeText={text => handleChange(text, idx)}
                                             onKeyPress={e => handleKeyPress(e, idx)}
+                                            onFocus={() => handleFocus(idx)}
                                         />
                                     ))}
                                 </View>
