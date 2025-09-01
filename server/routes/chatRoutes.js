@@ -246,10 +246,15 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                 } else {
 
                     const lastOpened = chat.lastOpened?.get(participant._id);
+                    const deletedAt = chat.deleted?.get(participant._id);
+
+                    const minTimestamp = deletedAt && lastOpened
+                        ? new Date(Math.max(deletedAt.getTime(), lastOpened.getTime()))
+                        : deletedAt || lastOpened || new Date(0);
 
                     unreadMessages = await Message.find({
                         chatId,
-                        timestamp: { $gt: lastOpened },
+                        timestamp: { $gt: minTimestamp },
                     }).sort({ timestamp: 1 });
 
                     //send notification

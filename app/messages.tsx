@@ -82,13 +82,15 @@ export default function Messages() {
                     // Check if this is a new chat (not in existing list)
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
 
+                    
                     const unreadFromOthers = updatedChat.unreadMessages?.filter(m => m.senderId !== userId);
 
                     if (isNewChat) {
+                        
                         return [{
                             _id: updatedChat._id,
                             participants: updatedChat.participants,
-                            otherParticipant: updatedChat.otherParticipant[0] || null,
+                            otherParticipant: updatedChat.participants.filter(op=>op._id!=userId)[0] || null,
                             lastMessage: updatedChat.lastMessage,
                             unreadMessages: unreadFromOthers
                         }, ...prevChats];

@@ -175,68 +175,69 @@ export default function Landing() {
         }
     }, []);
 
-    // Load posts
-    const loadPosts = useCallback(async () => {
-        // Exit early if no more posts or already loading
-        if (!hasMore || loading) {
-            console.log('Stopping loadPosts - hasMore:', hasMore, 'loading:', loading);
+    const loadPosts = useCallback(async (isRefreshing = false) => {
+        // Prevent multiple simultaneous requests
+        if (loading && !isRefreshing) return;
+
+        const currentPage = isRefreshing ? 1 : page;
+
+        // Check if we've reached the end
+        if (!isRefreshing && !hasMore) {
+            console.log('No more posts to load');
             return;
         }
 
         setLoading(true);
-        // console.log(`Loading page ${page} with limit ${pageLimit}`);
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=${page}&limit=${pageLimit}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            console.log("getting posts")
+            const res = await fetch(
+                `https://riyadah.onrender.com/api/posts?page=${currentPage}&limit=${pageLimit}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Cache-Control': 'no-cache' // Prevent caching issues
+                    }
+                }
+            );
 
             if (res.ok) {
                 const data = await res.json();
-                // console.log(`API Response`,data);
+
+                setCreatedNewPosts([])
 
                 setPosts(prev => {
-                    // Merge new posts ensuring no duplicates
+                    if (isRefreshing) {
+                        return data;
+                    }
+                    // Merge and deduplicate posts
                     const merged = [...prev, ...data];
-                    // console.log(`Total posts after merge: ${merged.length}`);
-                    return merged;
+                    const uniquePosts = merged.filter((post, index, self) =>
+                        index === self.findIndex(p => p._id === post._id)
+                    );
+                    return uniquePosts;
                 });
 
-                // More accurate hasMore calculation
+                console.log("posts set")
+
                 setHasMore(data.length >= pageLimit);
-                setPage(prev => prev + 1);
-                // console.log(data)
+                setPage(isRefreshing ? 2 : prev => prev + 1);
             }
         } catch (err) {
             console.error('Fetch error', err);
+            // Add retry logic here if needed
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, [page, hasMore, loading, pageLimit]);
 
-    // Handle refresh
+
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        try {
-            const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/posts?page=1&limit=${pageLimit}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setPosts(data);
-                setCreatedNewPosts([])
-                setPage(1);
-                setHasMore(data.length === pageLimit);
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setRefreshing(false);
-        }
-    }, []);
+        loadPosts(true);
+    }, [loadPosts]);
 
     // Handle like animation
     const handleLike = async (postId: string) => {
@@ -422,7 +423,6 @@ export default function Landing() {
 
     // Render post item
     const renderPost = ({ item }: { item: any }) => {
-
         const isLiked = userId && item.likes?.some((like: any) => like._id === userId);
 
         return (
@@ -760,9 +760,6 @@ export default function Landing() {
             console.log("DECODED token: ", decodedToken)
             setUserId(decodedToken.userId);
 
-            const pushToken = await registerForPushNotificationsAsync(decodedToken.userId, token);
-            console.log('Push token from registration function:', pushToken);
-
             const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -771,6 +768,7 @@ export default function Landing() {
             if (response.ok) {
                 const user = await response.json();
                 setUser(user)
+                registerForPushNotificationsAsync(user, token);
             } else {
                 console.log(user)
                 console.error('Token API error:', response)
@@ -1186,9 +1184,8 @@ export default function Landing() {
                     <FlatList
                         data={posts}
                         renderItem={renderPost}
-                        keyExtractor={item => {
-                            return `${item._id}-${item.createdAt || item.date}`;
-                        }}
+                        keyExtractor={item => item._id}
+                        initialNumToRender={1}
                         ListHeaderComponent={
                             <>
                                 <View style={styles.header}>

@@ -24,7 +24,10 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Allow access to your camera to take profile pictures",
         "NSPhotoLibraryUsageDescription": "Allow access to your photos to choose a profile picture",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
