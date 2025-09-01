@@ -53,7 +53,7 @@ router.get("/test-smtp", async (req, res) => {
           <p>Your OTP is:</p>
           <h3 style="color:#007bff;">${otp}</h3>
           <p>This code expires in <strong>10 minutes</strong>.</p>
-          <p>If you didn’t request this, ignore this email.</p>
+          <p>If you didn't request this, ignore this email.</p>
           <br>
           <p>— Riyadah Team</p>
         </div>
@@ -77,6 +77,8 @@ router.post("/:id", authenticateToken, async (req, res) => {
   const { type, newEmail, oldEmail } = req.body;
 
   if (type == "email") {
+    await transporter.verify();
+
     if (oldEmail != newEmail) {
       const user = await User.findById(userId);
 
@@ -108,7 +110,7 @@ router.post("/:id", authenticateToken, async (req, res) => {
       <p>Your OTP is:</p>
       <h3 style="color:#007bff;">${otp}</h3>
       <p>This code expires in <strong>10 minutes</strong>.</p>
-      <p>If you didn’t request this, ignore this email.</p>
+      <p>If you didn't request this, ignore this email.</p>
       <br>
       <p>— Riyadah Team</p>
     </div>
