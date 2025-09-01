@@ -102,10 +102,13 @@ export default function VerifyProfile() {
             })
         });
 
-        if (response.ok && response.result == "success") {
+        const res = await response.json();
+
+        if (res.ok && res.result == "success") {
             setEmailOTPSent(true)
         } else {
             setEmailOTPSent(false)
+            console.error(response)
             setError("Failed to verify email address");
         }
 
