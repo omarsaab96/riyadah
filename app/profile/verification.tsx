@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import { isValidPhoneNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import {
     ActivityIndicator,
@@ -27,18 +27,22 @@ export default function VerifyProfile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [countryCode, setCountryCode] = useState<any>("EG");
+    const [callingCode, setCallingCode] = useState<any>(20);
+    const [emailAddress, setEmailAddress] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState<any>(null);
+
     const [verifyingEmail, setVerifyingEmail] = useState(false);
     const [verifyingPhone, setVerifyingPhone] = useState(false);
 
     const [emailOTPSent, setEmailOTPSent] = useState(false);
     const [phoneOTPSent, setPhoneOTPSent] = useState(false);
 
-    const [error, setError] = useState<string | null>(null);
+    const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [secondsLeft, setSecondsLeft] = useState(60);
+    const inputsRef = useRef([]);
 
-    const [countryCode, setCountryCode] = useState<any>("EG");
-    const [callingCode, setCallingCode] = useState<any>(20);
-    const [emailAddress, setEmailAddress] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState<any>(null);
 
 
     useEffect(() => {
@@ -104,12 +108,13 @@ export default function VerifyProfile() {
 
         const res = await response.json();
 
-        if (res.ok && res.result == "success") {
+        if (res.result == "success") {
             setEmailOTPSent(true)
-            console.log(res)
+            setError(null)
+            SecureStore.setItem('emailOTPToken', res.verificationToken)
         } else {
             setEmailOTPSent(false)
-            console.error(response)
+            console.error(res)
             setError("Failed to verify email address");
         }
 
@@ -121,7 +126,7 @@ export default function VerifyProfile() {
         if (!isValidPhoneNumber(phoneNumber, countryCode)) {
             setError("Invalid phone number");
             return;
-        }else{
+        } else {
             console.log(phoneNumber, countryCode)
         }
 
@@ -151,6 +156,73 @@ export default function VerifyProfile() {
 
         setVerifyingPhone(false)
     }
+
+    // Handle individual input change
+    const handleChange = (text, index) => {
+        let newOtp = [...otp];
+
+        // If user pasted full OTP
+        if (text.length === 6) {
+            newOtp = text.split("");
+            setOtp(newOtp);
+            return;
+        }
+
+        newOtp[index] = text.slice(-1); // only last char
+        setOtp(newOtp);
+
+        // Move to next input if text entered
+        if (text && index < 5) {
+            inputsRef.current[index + 1].focus();
+        }
+    };
+
+    // Handle backspace
+    const handleKeyPress = (e, index) => {
+        if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
+            inputsRef.current[index - 1].focus();
+        }
+    };
+
+    const handleVerifyEmailOTP = async async async () => {
+        const enteredOTP = otp.join("");
+
+        setVerifyingEmail(true)
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token || !userId) return;
+
+        const response = await fetch(`https://riyadah.onrender.com/api/verify/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'email',
+                oldEmail: user?.email,
+                newEmail: emailAddress,
+            })
+        });
+
+        const res = await response.json();
+
+        if (res.result == "success") {
+            setEmailOTPSent(true)
+            setError(null)
+            SecureStore.setItem('emailOTPToken', res.verificationToken)
+        } else {
+            setEmailOTPSent(false)
+            console.error(res)
+            setError("Failed to verify email address");
+        }
+
+        setVerifyingEmail(false)
+    };
+
+    const handleResend = () => {
+        resendOTP();
+        setSecondsLeft(60);
+    };
 
     return (
         <KeyboardAvoidingView
@@ -294,7 +366,48 @@ export default function VerifyProfile() {
 
                         {
                             emailOTPSent &&
-                            <View></View>
+                            <View style={{ alignItems: "center" }}>
+                                <Text>Enter OTP sent to {emailAddress}</Text>
+
+                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginVertical: 20 }}>
+                                    {otp.map((digit, idx) => (
+                                        <TextInput
+                                            key={idx}
+                                            ref={el => (inputsRef.current[idx] = el)}
+                                            style={{
+                                                borderBottomWidth: 2,
+                                                width: 40,
+                                                textAlign: "center",
+                                                fontSize: 20,
+                                                marginHorizontal: 5,
+                                            }}
+                                            keyboardType="number-pad"
+                                            maxLength={1}
+                                            value={digit}
+                                            onChangeText={text => handleChange(text, idx)}
+                                            onKeyPress={e => handleKeyPress(e, idx)}
+                                        />
+                                    ))}
+                                </View>
+
+                                <TouchableOpacity onPress={handleVerifyEmailOTP} style={{ marginVertical: 10 }}>
+                                    <Text style={{ color: "white", backgroundColor: "#007bff", padding: 10, borderRadius: 5 }}>
+                                        Verify
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity onPress={onChangeEmail} style={{ marginVertical: 5 }}>
+                                    <Text style={{ color: "red" }}>Change Email</Text>
+                                </TouchableOpacity>
+
+                                {secondsLeft > 0 ? (
+                                    <Text>Resend OTP in {secondsLeft}s</Text>
+                                ) : (
+                                    <TouchableOpacity onPress={handleResend}>
+                                        <Text style={{ color: "#007bff" }}>Resend OTP</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         }
 
                         {
