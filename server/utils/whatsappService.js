@@ -18,7 +18,7 @@ async function sendWhatsapp(to, code) {
             })
         });
 
-        if (!response.ok) {
+        if (!response.status=='success') {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
