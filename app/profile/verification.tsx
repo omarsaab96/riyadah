@@ -229,6 +229,13 @@ export default function VerifyProfile() {
         if (res.result == "success") {
             setEmailOTPSent(false)
             setError(null)
+            setUser({
+                ...user,
+                verified: {
+                    email: Date.now(),
+                    phone: user.verified?.phone
+                }
+            });
         } else {
             setEmailOTPSent(true)
             console.error(res)
@@ -261,6 +268,13 @@ export default function VerifyProfile() {
         if (res.result == "success") {
             setPhoneOTPSent(false)
             setError(null)
+            setUser({
+                ...user,
+                verified: {
+                    email: user.verified?.email,
+                    phone: Date.now()
+                }
+            });
         } else {
             setPhoneOTPSent(true)
             console.error(res)

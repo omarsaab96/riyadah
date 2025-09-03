@@ -70,12 +70,12 @@ router.post("/:id/otp", async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    if(type="email"){
+    if (type == "email") {
       // Ensure verified object exists
       if (!user.verified) user.verified = { email: null, phone: null };
       user.verified.email = Date.now();
     }
-    if(type="phone"){
+    if (type == "phone") {
       // Ensure verified object exists
       if (!user.verified) user.verified = { email: null, phone: null };
       user.verified.phone = Date.now();
