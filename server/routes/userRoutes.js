@@ -118,6 +118,8 @@ router.post('/checkpassword', authenticateToken, async (req, res) => {
     console.log('hashed password=', user.password)
     console.log('req.body=', req.body.password)
     const match = await bcrypt.compare(req.body.password, user.password);
+        console.log('match=', match)
+
     if (!match) {
       return res.status(200).json({ success: false });
     }
