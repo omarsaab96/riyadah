@@ -228,6 +228,7 @@ export default function ParentCreateAthlete() {
             },
             personalAccount: false,
             skillsAreVerified: null,
+            accountBadge:false,
             isStaff: []
         });
 

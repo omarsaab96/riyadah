@@ -49,6 +49,7 @@ router.post(
         req.body.userRef = user._id;
       } else {
         const newUser = new User({
+          accountBadge:false,
           achievements: null,
           admin: {
             name: null,

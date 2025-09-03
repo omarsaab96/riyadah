@@ -3,6 +3,7 @@ import React, { createContext, ReactNode, useContext, useState } from 'react';
 
 // 1. Define the shape of your form data
 interface RegistrationData {
+  accountBadge:Boolean;
   achievements: any;
   admin: {
     id: string | null;
@@ -88,6 +89,7 @@ interface Props {
 
 export const RegistrationProvider = ({ children }: Props) => {
   const [formData, setFormData] = useState<RegistrationData>({
+    accountBadge:false,
     achievements: null,
     admin: {
       id: null,
@@ -168,6 +170,7 @@ export const RegistrationProvider = ({ children }: Props) => {
 
   const resetFormData = () => {
     setFormData({
+      accountBadge:false,
       achievements: null,
       admin: {
         id: null,

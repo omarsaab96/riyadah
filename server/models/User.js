@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+  accountBadge: {
+    type:Boolean,
+    default:false
+  },
   achievements: String,
   admin: {
     name: String,
