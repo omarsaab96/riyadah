@@ -77,25 +77,34 @@ export default function ChangePassword() {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
-        const response = await fetch(`https://riyadah.onrender.com/api/users/checkpassword/`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                password: oldPassword
-            })
-        });
+        try {
+            const response = await fetch(`https://riyadah.onrender.com/api/users/checkpassword/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    password: oldPassword
+                })
+            });
 
-        if (response.ok) {
-            console.log("Profile updated successfully");
-            setOldPasswordVerified(true)
-            setCheckingCurrentPassword(false)
-        } else {
-            setOldPasswordVerified(false)
-            setCheckingCurrentPassword(false)
-            setError('Current password is wrong')
+            const resp = await response.json();
+
+            console.log(resp)
+
+            if (response.ok && resp.success) {
+                console.log("Profile updated successfully");
+                setOldPasswordVerified(true)
+            } else {
+                setOldPasswordVerified(false)
+                setError('Current password is wrong')
+            }
+        } catch (error) {
+            setOldPasswordVerified(false);
+            setError('Something went wrong.');
+        } finally {
+            setCheckingCurrentPassword(false);
         }
     }
 
