@@ -4,6 +4,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -796,6 +797,7 @@ export default function Profile() {
                 />
 
                 <View style={styles.headerTextBlock}>
+                    {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
                     {!loading && <Text style={styles.pageDesc}>
                         {user?.type} {user.role ? `/ ${user.role}` : ''}
@@ -1490,7 +1492,7 @@ export default function Profile() {
                             <Text style={styles.title}>
                                 Skills
                             </Text>
-                            {user.skillsAreVerified!=null &&
+                            {user.skillsAreVerified?.by!=null &&
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                     <Octicons name="verified" size={16} color="#009933" />
                                     <Text style={{color:"#009933"}}>Verified</Text>

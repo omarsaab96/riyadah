@@ -72,8 +72,16 @@ export default function Profile() {
         router.push('/profile/verification')
     }
 
+    const handleAccountBadge = async()=>{
+        router.push('/profile/badge')
+    }
+
+    const handleChangePassword = async () => {
+        router.push('/profile/changePassword')
+    };
+
     const handleAccountSettings = async () => {
-        console.log('account settings clicked');
+        router.push('/profile/accountSettings')
     };
 
     return (
@@ -97,7 +105,13 @@ export default function Profile() {
                 <View style={styles.contentContainer}>
                     <View style={styles.settings}>
                         <TouchableOpacity onPress={handleAccountSettings} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Account</Text>
+                            <Text style={styles.profileButtonText}>Account settings</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleChangePassword} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Change password</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleAccountBadge} style={styles.profileButton}>
+                            <Text style={styles.profileButtonText}>Riyadah badge</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleAccountVerification} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }]}>
                             <Text style={styles.profileButtonText}>Account Verification</Text>

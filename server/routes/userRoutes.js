@@ -99,6 +99,27 @@ router.post('/check', async (req, res) => {
   }
 });
 
+router.post('/checkpassword', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select('password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (user.password != req.body.password) {
+      return res.status(200).json({ success: false });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 router.post('/getUserId', async (req, res) => {
   const { email, } = req.body;
 
@@ -418,7 +439,7 @@ router.post('/push-token', authenticateToken, async (req, res) => {
       { new: true }
     );
 
-    console.log('Found user= ',user._id)
+    console.log('Found user= ', user._id)
 
 
     if (!user) return res.status(404).json({ error: 'User not found' });
