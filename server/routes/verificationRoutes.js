@@ -144,6 +144,8 @@ router.post("/:id", authenticateToken, async (req, res) => {
         // `Your OTP is:\n${otp}\nThis code expires in 10 minutes.`
       );
 
+      console.log(whatsappSent)
+
       if (!whatsappSent) {
         return res.status(500).json({ success: false, message: "Failed to send phone OTP" });
       }
