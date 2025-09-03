@@ -117,7 +117,7 @@ router.post('/checkpassword', authenticateToken, async (req, res) => {
     }
 
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(user.password, saltRounds);
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     console.log(hashedPassword)
 
     const match = await bcrypt.compare(req.body.password.trim(), user.password);
