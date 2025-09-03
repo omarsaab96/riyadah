@@ -21,7 +21,7 @@ async function sendWhatsapp(to, code) {
         const data = await response.json();
 
         if (data.status!='success') {
-            throw new Error(`HTTP error! status: ${data}`);
+            throw new Error(`HTTP error! ${response}`);
         }
 
         console.log("WhatsApp sent successfully:", data);
