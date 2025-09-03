@@ -79,9 +79,17 @@ const userSchema = new mongoose.Schema({
     speed: Number,
     defense: Number
   },
-  skillsAreVerified:{
-    type: Boolean,
-    default: false
+  skillsAreVerified: {
+    by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
+    date: {
+      type: Date,
+      default: null
+    },
+    default: null
   },
   sport: [String],
   stats: String,

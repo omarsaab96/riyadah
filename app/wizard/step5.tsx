@@ -98,7 +98,7 @@ export default function WizardStep5() {
                 image: null,
                 isStaff: [],
                 personalAccount: true,
-                skillsAreVerified:false,
+                skillsAreVerified:null,
                 verified: {
                     email: null,
                     phone: null

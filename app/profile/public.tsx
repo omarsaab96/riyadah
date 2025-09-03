@@ -945,7 +945,7 @@ export default function PublicProfile() {
                                     <Text style={styles.title}>
                                         Skills
                                     </Text>
-                                    {user.skillsAreVerified &&
+                                    {user.skillsAreVerified!=null &&
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                             <Octicons name="verified" size={16} color="#009933" />
                                             <Text style={{ color: "#009933" }}>Verified</Text>

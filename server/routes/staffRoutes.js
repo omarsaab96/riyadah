@@ -101,7 +101,7 @@ router.post(
             speed: null,
             defense: null
           },
-          skillsAreVerified:false,
+          skillsAreVerified:null,
           sport: null,
           stats: null,
           type: null,
