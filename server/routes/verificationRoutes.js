@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const User = require('../models/User');
 const { generateOTP, generateVerificationToken, verifyOTP } = require('../utils/otpService.js');
 const { sendEmail } = require('../utils/emailService.js');
+const { sendWhatsapp } = require('../utils/whatsappService.js');
+
 
 // Middleware to verify token
 const authenticateToken = (req, res, next) => {
@@ -62,10 +64,10 @@ router.post("/:id/otp", async (req, res) => {
       return res.status(400).json({ error: "Invalid or expired OTP" });
     }
 
-    // ✅ OTP valid → mark email as verified
+    // OTP valid → mark email as verified
     const user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     // Ensure verified object exists
@@ -82,28 +84,13 @@ router.post("/:id/otp", async (req, res) => {
 });
 
 router.post("/:id", authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-  const { type, newEmail, oldEmail } = req.body;
+  const { type } = req.body;
 
   if (type == "email") {
     try {
-
-
-      if (oldEmail != newEmail) {
-        const user = await User.findById(userId);
-
-        if (!user) {
-          return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
-        user.email = newEmail;
-
-        if (user.verified != null && user.verified.email != null) {
-          user.verified.email = null;
-        }
-
-        await user.save();
-
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
       }
 
       const otp = generateOTP();
@@ -111,20 +98,20 @@ router.post("/:id", authenticateToken, async (req, res) => {
 
       // send test email
       const emailSent = await sendEmail(
-        newEmail,
+        user.email,
         "Verify your email",
         `
       <div style="font-family:Arial,sans-serif;padding:20px;">
         <h2>Email Verification</h2>
         <p>Your OTP is:</p>
-        <h3 style="color:#007bff;">${otp}</h3>
+        <h3 style="color:#FF4000;">${otp}</h3>
         <p>This code expires in <strong>10 minutes</strong>.</p>
       </div>
       `
       );
 
       if (!emailSent) {
-        return res.status(500).json({ success: false, message: "Failed to send OTP email" });
+        return res.status(500).json({ success: false, message: "Failed to send email OTP" });
       }
 
       // send hashed token to frontend
@@ -134,13 +121,43 @@ router.post("/:id", authenticateToken, async (req, res) => {
         message: "OTP sent to email",
       });
     } catch (err) {
-      console.error("Email update error:", err);
-      res.status(500).json({ success: false, message: "Failed to update email", error: err.message });
+      console.error("Failed to send OTP to email:", err);
+      res.status(500).json({ success: false, message: "Failed to send OTP to email", error: err.message });
     }
   }
 
   if (type == "phone") {
-    //send wtp
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+
+      const otp = generateOTP();
+      const { token } = generateVerificationToken(otp);
+
+      //send whatsapp OTP
+      const whatsappSent = await sendWhatsapp(
+        user.phone,
+        otp
+        // "Verify your phone number",
+        // `Your OTP is:\n${otp}\nThis code expires in 10 minutes.`
+      );              
+
+      if (!whatsappSent) {
+        return res.status(500).json({ success: false, message: "Failed to send phone OTP" });
+      }
+
+      // send hashed token to frontend
+      res.json({
+        result: "success",
+        verificationToken: token,
+        message: "OTP sent to phone",
+      });
+    } catch (err) {
+      console.error("Failed to send OTP to phone:", err);
+      res.status(500).json({ success: false, message: "Failed to send OTP to phone", error: err.message });
+    }
   }
 });
 

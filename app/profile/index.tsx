@@ -786,7 +786,10 @@ export default function Profile() {
     };
 
     const isVerified = (): boolean => {
-        return false;
+        if (user == null || user.verified == null || user.verified.email == null || user.verified.phone == null) {
+            return false;
+        }
+        return true;
     };
 
 

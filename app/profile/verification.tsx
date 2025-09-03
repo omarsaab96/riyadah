@@ -1,10 +1,11 @@
-import * as Clipboard from 'expo-clipboard';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Octicons from '@expo/vector-icons/Octicons';
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
-import { isValidPhoneNumber, parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import React, { useEffect, useRef, useState } from 'react';
-
 import {
     ActivityIndicator,
     Dimensions,
@@ -17,7 +18,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import CountryPicker from 'react-native-country-picker-modal';
 
 
 const { width } = Dimensions.get('window');
@@ -40,12 +40,13 @@ export default function VerifyProfile() {
     const [emailOTPSent, setEmailOTPSent] = useState(false);
     const [phoneOTPSent, setPhoneOTPSent] = useState(false);
 
-    const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [emailOtp, setEmailOtp] = useState(["", "", "", "", "", ""]);
+    const [phoneOtp, setPhoneOtp] = useState(["", "", "", "", "", ""]);
+
     const [secondsLeft, setSecondsLeft] = useState(0);
     const timerRef = useRef(null);
-    const inputsRef = useRef([]);
-
-
+    const emailInputsRef = useRef([]);
+    const phoneInputsRef = useRef([]);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -87,12 +88,12 @@ export default function VerifyProfile() {
         return re.test(email.toLowerCase());
     };
 
-    const handleVerifyEmail = async () => {
+    const handleSendEmailOTP = async () => {
         // validate email
-        if (!isValidEmail(emailAddress)) {
-            setError("Please enter a valid email address to verify.")
-            return;
-        }
+        // if (!isValidEmail(emailAddress)) {
+        //     setError("Please enter a valid email address to verify.")
+        //     return;
+        // }
 
         setVerifyingEmail(true)
         const token = await SecureStore.getItemAsync('userToken');
@@ -105,9 +106,7 @@ export default function VerifyProfile() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                type: 'email',
-                oldEmail: user?.email,
-                newEmail: emailAddress,
+                type: 'email'
             })
         });
 
@@ -117,15 +116,53 @@ export default function VerifyProfile() {
             setEmailOTPSent(true)
             setError(null)
             SecureStore.setItem('emailOTPToken', res.verificationToken)
-            inputsRef.current[0]?.focus();
+            emailInputsRef.current[0]?.focus();
             startCountdown();
         } else {
             setEmailOTPSent(false)
             console.error(res)
-            setError("Failed to verify email address");
+            setError("Failed to send email OTP");
         }
 
         setVerifyingEmail(false)
+    }
+
+    const handleSendPhoneOTP = async () => {
+        //validate phone number
+        // if (!isValidPhoneNumber(phoneNumber, countryCode)) {
+        //     setError("Invalid phone number");
+        //     return;
+        // }
+
+        setVerifyingPhone(true)
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token || !userId) return;
+
+        const response = await fetch(`https://riyadah.onrender.com/api/verify/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'phone'
+            })
+        });
+
+        const res = await response.json();
+
+        if (response.result == "success") {
+            setPhoneOTPSent(true)
+            setError(null)
+            SecureStore.setItem('phoneOTPToken', res.verificationToken)
+            phoneInputsRef.current[0]?.focus();
+            startCountdown();
+        } else {
+            setPhoneOTPSent(false)
+            setError("Failed to send phone OTP");
+        }
+
+        setVerifyingPhone(false)
     }
 
     const startCountdown = (duration = 60) => {
@@ -143,77 +180,26 @@ export default function VerifyProfile() {
         }, 1000);
     };
 
-    const handleVerifyPhone = async () => {
-        //validate phone number
-        if (!isValidPhoneNumber(phoneNumber, countryCode)) {
-            setError("Invalid phone number");
-            return;
-        } else {
-            console.log(phoneNumber, countryCode)
-        }
-
-        setVerifyingPhone(true)
-        const token = await SecureStore.getItemAsync('userToken');
-        if (!token || !userId) return;
-
-        const response = await fetch(`https://riyadah.onrender.com/api/verify/${userId}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                type: 'phone',
-                oldPhone: user?.phone,
-                newPhone: "+" + callingCode + phoneNumber,
-            })
-        });
-
-        if (response.ok && response.result == "success") {
-            setPhoneOTPSent(true)
-        } else {
-            setPhoneOTPSent(false)
-            setError("Failed to verify phone number.");
-        }
-
-        setVerifyingPhone(false)
-    }
-
-    // Handle individual input change
-    const handleChange = (text, index) => {
-        let newOtp = [...otp];
-
-        // If user pasted full OTP
-        if (text.length === 6) {
-            newOtp = text.split("");
-            setOtp(newOtp);
-            inputsRef.current[5].blur();
-            return;
-        }
+    const handleChange = (text: string, index: number, refType: 'email' | 'phone') => {
+        let newOtp = refType === 'email' ? [...emailOtp] : [...phoneOtp];
+        const currentRef = refType === 'email' ? emailInputsRef : phoneInputsRef;
 
         newOtp[index] = text.slice(-1); // only last char
-        setOtp(newOtp);
+
+        refType === 'email' ? setEmailOtp(newOtp) : setPhoneOtp(newOtp);
 
         // Move to next input if text entered
         if (text && index < 5) {
-            inputsRef.current[index + 1].focus();
+            currentRef.current[index + 1]?.focus();
         }
     };
 
-    const handleFocus = async (index: number) => {
-        const clipboardText = await Clipboard.getStringAsync();
-        if (/^\d{6}$/.test(clipboardText)) {
-            // Paste full OTP from clipboard starting from first input
-            const newOtp = clipboardText.split("");
-            setOtp(newOtp);
-            inputsRef.current[5]?.blur(); // blur last input after filling
-        }
-    };
+    const handleKeyPress = (e: any, index: number, refType: 'email' | 'phone') => {
+        const currentRef = refType === 'email' ? emailInputsRef : phoneInputsRef;
+        let otp = refType === 'email' ? emailOtp : phoneOtp;
 
-    // Handle backspace
-    const handleKeyPress = (e, index) => {
         if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
-            inputsRef.current[index - 1].focus();
+            currentRef.current[index - 1]?.focus();
         }
     };
 
@@ -231,7 +217,7 @@ export default function VerifyProfile() {
             },
             body: JSON.stringify({
                 type: 'email',
-                otp: otp.join(""),
+                otp: emailOtp.join(""),
                 verificationToken: SecureStore.getItem("emailOTPToken"),
             })
         });
@@ -250,18 +236,96 @@ export default function VerifyProfile() {
         setVerifyingEmail(false)
     };
 
-    const handleResend = () => {
-        handleVerifyEmail()
-        setOtp(["", "", "", "", "", ""]);
-        inputsRef.current[0]?.focus();
+    const handleVerifyPhoneOTP = async () => {
+        setVerifyingPhone(true)
+        const token = await SecureStore.getItemAsync('userToken');
+        if (!token || !userId) return;
+
+        const response = await fetch(`https://riyadah.onrender.com/api/verify/${userId}/otp`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'phone',
+                otp: phoneOtp.join(""),
+                verificationToken: SecureStore.getItem("phoneOTPToken"),
+            })
+        });
+
+        const res = await response.json();
+
+        if (res.result == "success") {
+            setPhoneOTPSent(false)
+            setError(null)
+        } else {
+            setPhoneOTPSent(true)
+            console.error(res)
+            setError("Failed to verify phone OTP");
+        }
+
+        setVerifyingPhone(false)
+    }
+
+    const handleResendEmailOTP = () => {
+        handleSendEmailOTP()
+        setEmailOtp(["", "", "", "", "", ""]);
+        emailInputsRef.current[0]?.focus();
+    };
+
+    const handleResendPhoneOTP = () => {
+        handleSendPhoneOTP()
+        setPhoneOtp(["", "", "", "", "", ""]);
+        phoneInputsRef.current[0]?.focus();
     };
 
     const onChangeEmail = () => {
-        setOtp(["", "", "", "", "", ""]);
-        inputsRef.current[5]?.blur();
+        setEmailOtp(["", "", "", "", "", ""]);
+        emailInputsRef.current.forEach(ref => ref?.blur());
         setEmailOTPSent(false);
         setVerifyingEmail(false);
     }
+
+    const onChangePhone = () => {
+        setPhoneOtp(["", "", "", "", "", ""]);
+        phoneInputsRef.current.forEach(ref => ref?.blur());
+        setPhoneOTPSent(false);
+        setVerifyingPhone(false);
+    }
+
+    const pasteEmailOTP = async () => {
+        const pasteData = (await Clipboard.getStringAsync()).trim();
+
+        if (!/^\d+$/.test(pasteData)) return; // only digits allowed
+
+        const digits = pasteData.split("").slice(0, 6); // take max 6
+        const newOtp = [...emailOtp];
+
+        digits.forEach((digit, i) => {
+            newOtp[i] = digit;
+        });
+
+        setEmailOtp(newOtp);
+    };
+
+    const pastePhoneOTP = async () => {
+        console.log('gettinf paste data')
+        const pasteData = (await Clipboard.getStringAsync()).trim();
+        console.log('pasteData ', pasteData)
+
+        if (!/^\d+$/.test(pasteData)) return;
+
+        const digits = pasteData.split("").slice(0, 6);
+        const newOtp = [...phoneOtp];
+
+        digits.forEach((digit, i) => {
+            newOtp[i] = digit;
+        });
+
+        setPhoneOtp(newOtp);
+
+    };
 
     return (
         <KeyboardAvoidingView
@@ -327,134 +391,221 @@ export default function VerifyProfile() {
                         {!emailOTPSent && !phoneOTPSent &&
                             <View>
                                 <View style={styles.entity}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', "justifyContent": 'space-between' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <Text style={styles.title}>
                                             Email address
                                         </Text>
-                                        <TouchableOpacity onPress={handleVerifyEmail} style={[styles.profileButton, styles.savebtn]}>
-                                            <Text style={styles.profileButtonText}>
-                                                {verifyingEmail ? 'Verifying' : 'Verify'}
-                                            </Text>
-                                            {verifyingEmail && (
-                                                <ActivityIndicator
-                                                    size="small"
-                                                    color="#111111"
-                                                    style={styles.saveLoaderContainer}
-                                                />
-                                            )}
-                                        </TouchableOpacity>
+                                        {user.verified.email == null &&
+                                            <TouchableOpacity onPress={handleSendEmailOTP} style={[styles.profileButton, styles.savebtn]}>
+                                                <Text style={styles.profileButtonText}>
+                                                    {verifyingEmail ? 'Sending OTP' : 'Send OTP'}
+                                                </Text>
+                                                {verifyingEmail && (
+                                                    <ActivityIndicator
+                                                        size="small"
+                                                        color="#111111"
+                                                        style={styles.saveLoaderContainer}
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                        }
+
+                                        {user.verified.email != null &&
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <Octicons name="verified" size={14} color="#009933" />
+                                                <Text style={styles.verifiedbadge}>
+                                                    Verified
+                                                </Text>
+                                            </View>
+                                        }
                                     </View>
 
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Email"
-                                        placeholderTextColor="#A8A8A8"
-                                        value={emailAddress}
-                                        onChangeText={setEmailAddress}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                    />
+                                    {/* {user.verified.email == null &&
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Email"
+                                            placeholderTextColor="#A8A8A8"
+                                            value={emailAddress}
+                                            onChangeText={setEmailAddress}
+                                            keyboardType="email-address"
+                                            autoCapitalize="none"
+                                        />
+                                    } */}
+
+                                    {/* {user.verified.email != null && */}
+                                    <Text style={{ paddingTop: 5, paddingBottom: 20, color: 'black', fontSize: 16 }}>
+                                        {user.email}
+                                    </Text>
+                                    {/* } */}
                                 </View>
 
                                 <View style={styles.entity}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', "justifyContent": 'space-between' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <Text style={styles.title}>
                                             Phone number
                                         </Text>
-                                        <TouchableOpacity onPress={handleVerifyPhone} style={[styles.profileButton, styles.savebtn]}>
-                                            <Text style={styles.profileButtonText}>
-                                                {verifyingPhone ? 'Verifying' : 'Verify'}
-                                            </Text>
-                                            {verifyingPhone && (
-                                                <ActivityIndicator
-                                                    size="small"
-                                                    color="#111111"
-                                                    style={styles.saveLoaderContainer}
-                                                />
-                                            )}
-                                        </TouchableOpacity>
+
+                                        {user.verified.phone == null &&
+                                            <TouchableOpacity onPress={handleSendPhoneOTP} style={[styles.profileButton, styles.savebtn]}>
+                                                <Text style={styles.profileButtonText}>
+                                                    {verifyingPhone ? 'Sending OTP' : 'Send OTP'}
+                                                </Text>
+                                                {verifyingPhone && (
+                                                    <ActivityIndicator
+                                                        size="small"
+                                                        color="#111111"
+                                                        style={styles.saveLoaderContainer}
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                        }
+
+                                        {user.verified.phone != null &&
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <Octicons name="verified" size={14} color="#009933" />
+                                                <Text style={styles.verifiedbadge}>
+                                                    Verified
+                                                </Text>
+                                            </View>
+                                        }
                                     </View>
-                                    <View style={styles.phoneContainer}>
-                                        <View style={styles.phonePicker}>
-                                            <CountryPicker
-                                                countryCode={countryCode}
-                                                withFilter
-                                                withFlag
-                                                withCallingCode
-                                                withAlphaFilter
-                                                withCallingCodeButton
-                                                withEmoji={false}
-                                                onSelect={(country) => {
-                                                    setCountryCode(country.cca2);
-                                                    setCallingCode(country.callingCode[0]);
-                                                }}
-                                                containerButtonStyle={Platform.OS == "ios" ? { marginTop: -5 } : { marginTop: -2 }}
+                                    {/* {user.verified.phone == null &&
+                                        <View style={styles.phoneContainer}>
+                                            <View style={styles.phonePicker}>
+                                                <CountryPicker
+                                                    countryCode={countryCode}
+                                                    withFilter
+                                                    withFlag
+                                                    withCallingCode
+                                                    withAlphaFilter
+                                                    withCallingCodeButton
+                                                    withEmoji={false}
+                                                    onSelect={(country) => {
+                                                        setCountryCode(country.cca2);
+                                                        setCallingCode(country.callingCode[0]);
+                                                    }}
+                                                    containerButtonStyle={Platform.OS == "ios" ? { marginTop: -5 } : { marginTop: -2 }}
+                                                />
+                                            </View>
+                                            <TextInput
+                                                style={[styles.input, styles.phoneInput]}
+                                                placeholder="Phone number"
+                                                keyboardType="phone-pad"
+                                                value={phoneNumber}
+                                                onChangeText={setPhoneNumber}
                                             />
                                         </View>
-                                        <TextInput
-                                            style={[styles.input, styles.phoneInput]}
-                                            placeholder="Phone number"
-                                            keyboardType="phone-pad"
-                                            value={phoneNumber}
-                                            onChangeText={setPhoneNumber}
-                                        />
-                                    </View>
+                                    } */}
+
+                                    {/* {user.verified.phone != null && */}
+                                    <Text style={{ paddingTop: 5, paddingBottom: 20, color: 'black', fontSize: 16 }}>
+                                        {user.phone}
+                                    </Text>
+                                    {/* } */}
                                 </View>
                             </View>
                         }
 
-                        {
-                            emailOTPSent &&
-                            <View style={{ alignItems: "center" }}>
-                                <Text>Enter OTP sent to {emailAddress}</Text>
+                        {emailOTPSent &&
+                            <View>
+                                <Text style={{ textAlign: 'center', marginBottom: 10, color: 'black', fontSize: 14 }}>We sent you a code on</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                                    <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 14 }}>
+                                        {emailAddress}
+                                    </Text>
+                                    {/* <TouchableOpacity onPress={onChangeEmail} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={{ color: "#000", fontSize: 14 }}>(</Text>
+                                        <Text style={{ color: "#FF4000", fontSize: 14 }}>Change</Text>
+                                        <Text style={{ color: "#000", fontSize: 14 }}>)</Text>
+                                    </TouchableOpacity> */}
+                                </View>
 
-                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginVertical: 20 }}>
-                                    {otp.map((digit, idx) => (
+                                <View style={{ flexDirection: "row", alignItems: 'center', justifyContent: "space-between", marginVertical: 20 }}>
+                                    {emailOtp.map((digit, idx) => (
                                         <TextInput
                                             key={idx}
-                                            ref={el => (inputsRef.current[idx] = el)}
-                                            style={{
-                                                borderWidth: 1,
-                                                width: 50,
-                                                height: 60,
-                                                textAlign: "center",
-                                                fontSize: 40,
-                                                borderRadius: 10,
-                                                marginHorizontal: 5,
-                                            }}
+                                            ref={el => (emailInputsRef.current[idx] = el)}
+                                            style={styles.otpInput}
                                             keyboardType="number-pad"
                                             maxLength={1}
                                             value={digit}
-                                            onChangeText={text => handleChange(text, idx)}
-                                            onKeyPress={e => handleKeyPress(e, idx)}
-                                            onFocus={() => handleFocus(idx)}
+                                            onChangeText={text => handleChange(text, idx, 'email')}
+                                            onKeyPress={e => handleKeyPress(e, idx, 'email')}
                                         />
                                     ))}
+                                    <TouchableOpacity onPress={() => pasteEmailOTP()} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                        <MaterialIcons name="content-paste" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
                                 </View>
 
-                                <TouchableOpacity onPress={handleVerifyEmailOTP} style={{ marginVertical: 10 }}>
-                                    <Text style={{ color: "white", backgroundColor: "#007bff", padding: 10, borderRadius: 5 }}>
-                                        Verify
-                                    </Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity onPress={onChangeEmail} style={{ marginVertical: 5 }}>
-                                    <Text style={{ color: "red" }}>Change Email</Text>
-                                </TouchableOpacity>
-
-                                {secondsLeft > 0 ? (
-                                    <Text>Resend OTP in {secondsLeft}s</Text>
-                                ) : (
-                                    <TouchableOpacity onPress={handleResend}>
-                                        <Text style={{ color: "#007bff" }}>Resend OTP</Text>
-                                    </TouchableOpacity>
-                                )}
+                                <View style={{ flexDirection: 'row', alignItems: "center", justifyContent: 'space-between' }}>
+                                    {secondsLeft > 0 ? (
+                                        <Text style={{ color: "#aaa" }}>Get a new code {secondsLeft}s</Text>
+                                    ) : (
+                                        <TouchableOpacity onPress={handleResendEmailOTP}>
+                                            <Text style={{ color: "#FF4000" }}>Get a new code</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
+                                        <TouchableOpacity onPress={handleVerifyEmailOTP} style={[styles.profileButton, { marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
+                                            <Text style={styles.profileButtonText}>
+                                                Verify
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
                             </View>
                         }
 
-                        {
-                            phoneOTPSent &&
-                            <View></View>
+                        {phoneOTPSent &&
+                            <View>
+                                <Text style={{ textAlign: 'center', marginBottom: 10, color: 'black', fontSize: 14 }}>We sent you a code on</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                                    <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 14 }}>
+                                        {'+' + callingCode + phoneNumber}
+                                    </Text>
+                                    {/* <TouchableOpacity onPress={onChangePhone} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={{ color: "#000", fontSize: 14 }}>(</Text>
+                                        <Text style={{ color: "#FF4000", fontSize: 14 }}>Change</Text>
+                                        <Text style={{ color: "#000", fontSize: 14 }}>)</Text>
+                                    </TouchableOpacity> */}
+                                </View>
+
+                                <View style={{ flexDirection: "row", alignItems: 'center', justifyContent: "space-between", marginVertical: 20 }}>
+                                    {phoneOtp.map((digit, idx) => (
+                                        <TextInput
+                                            key={idx}
+                                            ref={el => (phoneInputsRef.current[idx] = el)}
+                                            style={styles.otpInput}
+                                            keyboardType="number-pad"
+                                            maxLength={1}
+                                            value={digit}
+                                            onChangeText={text => handleChange(text, idx, 'phone')}
+                                            onKeyPress={e => handleKeyPress(e, idx, 'phone')}
+                                        />
+                                    ))}
+                                    <TouchableOpacity onPress={() => pastePhoneOTP()} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                        <MaterialIcons name="content-paste" size={24} color="#FF4000" />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: "center", justifyContent: 'space-between' }}>
+                                    {secondsLeft > 0 ? (
+                                        <Text style={{ color: "#aaa" }}>Get a new code {secondsLeft}s</Text>
+                                    ) : (
+                                        <TouchableOpacity onPress={handleResendPhoneOTP}>
+                                            <Text style={{ color: "#FF4000" }}>Get a new code OTP</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
+                                        <TouchableOpacity onPress={handleVerifyPhoneOTP} style={[styles.profileButton, { marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
+                                            <Text style={styles.profileButtonText}>
+                                                Verify
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
                         }
                     </View>
                 </ScrollView>
@@ -625,4 +776,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: Platform.OS == 'ios' ? 17 : 16,
     },
+    verifiedbadge: {
+        color: '#009933',
+    },
+    otpInput: {
+        borderWidth: 1,
+        aspectRatio: 0.76,
+        flex: 1,
+        textAlign: "center",
+        fontSize: 40,
+        borderRadius: 10,
+        marginHorizontal: 5,
+    }
 });
