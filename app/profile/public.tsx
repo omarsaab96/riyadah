@@ -2,8 +2,8 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
-
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Octicons from '@expo/vector-icons/Octicons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -495,7 +495,7 @@ export default function PublicProfile() {
                                                                 source={require('../../assets/dm.png')}
                                                                 resizeMode="contain"
                                                             />
-                                                            <Text style={{color:'black'}}>Send DM</Text>
+                                                            <Text style={{ color: 'black' }}>Send DM</Text>
                                                         </View>
                                                     )
                                                 }
@@ -630,7 +630,7 @@ export default function PublicProfile() {
                                                                 source={require('../../assets/dm.png')}
                                                                 resizeMode="contain"
                                                             />
-                                                            <Text style={{color:'black'}}>Send DM</Text>
+                                                            <Text style={{ color: 'black' }}>Send DM</Text>
                                                         </View>
                                                     )
                                                 }
@@ -940,10 +940,18 @@ export default function PublicProfile() {
 
                         {/* SKILLS */}
                         {user.type == "Athlete" && (
-                            <View style={styles.profileSection}>
-                                <Text style={styles.title}>
-                                    Skills
-                                </Text>
+                            <View style={[styles.profileSection,styles.skillsSection]}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5 }}>
+                                    <Text style={styles.title}>
+                                        Skills
+                                    </Text>
+                                    {user.skillsAreVerified &&
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                            <Octicons name="verified" size={16} color="#009933" />
+                                            <Text style={{ color: "#009933" }}>Verified</Text>
+                                        </View>
+                                    }
+                                </View>
                                 <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
                                     <RadarChart
                                         data={data}
@@ -1631,6 +1639,11 @@ const styles = StyleSheet.create({
     profileSection: {
         marginBottom: 30
     },
+    skillsSection:{
+        backgroundColor:'#f2f2f2',
+        padding:10,
+        borderRadius:10
+    },
     profileProgress: {
         backgroundColor: '#222222',
         padding: 5,
@@ -1849,7 +1862,7 @@ const styles = StyleSheet.create({
     dmLink: {
         backgroundColor: "#cccccc",
         borderRadius: 8,
-        padding:5
+        padding: 5
     },
     contactLocation: {
         marginTop: 15,

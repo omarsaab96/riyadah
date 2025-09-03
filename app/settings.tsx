@@ -1,7 +1,10 @@
+import Octicons from '@expo/vector-icons/Octicons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import React from 'react';
+import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     Image,
     ScrollView,
@@ -17,11 +20,44 @@ const router = useRouter();
 
 
 export default function Profile() {
+    const [userId, setUserId] = useState(null);
+    const [user, setUser] = useState(null);
+    const [verificationLoading, setVerificationLoading] = useState(true);
+
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            setVerificationLoading(true)
+            const token = await SecureStore.getItemAsync('userToken');
+
+            console.log(token)
+            if (token) {
+                const decodedToken = jwtDecode(token);
+                console.log("DECODED: ", decodedToken)
+                setUserId(decodedToken.userId);
+
+                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    setUser(user)
+                } else {
+                    console.error('API error')
+                }
+                setVerificationLoading(false)
+            } else {
+                console.log("no token",)
+            }
+        };
+
+        fetchUser();
+    }, []);
 
     const handleLogout = async () => {
         await SecureStore.deleteItemAsync('userToken');
         router.replace('/')
-        console.log('Token deleted');
     };
 
     const handleDeactivateAccount = async () => {
@@ -32,9 +68,9 @@ export default function Profile() {
         console.log('notifications settings clicked');
     };
 
-    const handleChangePassword = async () => {
-        console.log('change password clicked');
-    };
+    const handleAccountVerification = async () => {
+        router.push('/profile/verification')
+    }
 
     const handleAccountSettings = async () => {
         console.log('account settings clicked');
@@ -56,7 +92,6 @@ export default function Profile() {
 
                 <Text style={styles.ghostText}>Settin</Text>
             </View>
-            
 
             <ScrollView>
                 <View style={styles.contentContainer}>
@@ -64,8 +99,23 @@ export default function Profile() {
                         <TouchableOpacity onPress={handleAccountSettings} style={styles.profileButton}>
                             <Text style={styles.profileButtonText}>Account</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={handleChangePassword} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Change password</Text>
+                        <TouchableOpacity onPress={handleAccountVerification} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }]}>
+                            <Text style={styles.profileButtonText}>Account Verification</Text>
+                            {verificationLoading ? (
+                                <ActivityIndicator size='small' color={'black'} />
+                            ) : (
+                                (user && user.verified && user.verified.email && user.verified.phone) ? (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                        <Octicons name="verified" size={16} color="#009933" />
+                                        <Text style={{ color: "#009933" }}>Verified</Text>
+                                    </View>
+                                ) : (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                        <Octicons name="unverified" size={16} color="#ffc400" />
+                                        <Text style={{ color: "#ffc400" }}>Pending</Text>
+                                    </View>
+                                )
+                            )}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleNotificationsSettings} style={styles.profileButton}>
                             <Text style={styles.profileButtonText}>Notifications settings</Text>
@@ -79,7 +129,6 @@ export default function Profile() {
                     </View>
                 </View>
             </ScrollView>
-            
 
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
@@ -185,16 +234,16 @@ const styles = StyleSheet.create({
         height: 24,
         tintColor: '#FF4000',
     },
-    settings:{
+    settings: {
         // backgroundColor: 'rgba(0,0,0,0.05)',
         // borderRadius:5,
         // padding:10
     },
-    profileButton:{
-        paddingVertical:10,
-        marginBottom:5
+    profileButton: {
+        paddingVertical: 10,
+        marginBottom: 5
     },
-    profileButtonText:{
+    profileButtonText: {
         fontSize: 18,
         color: '#150000',
         fontFamily: 'Bebas',

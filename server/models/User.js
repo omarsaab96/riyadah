@@ -79,6 +79,10 @@ const userSchema = new mongoose.Schema({
     speed: Number,
     defense: Number
   },
+  skillsAreVerified:{
+    type: Boolean,
+    default: false
+  },
   sport: [String],
   stats: String,
   type: String,

@@ -1,4 +1,6 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 import Octicons from '@expo/vector-icons/Octicons';
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from 'expo-router';
@@ -83,6 +85,22 @@ export default function VerifyProfile() {
 
     }, []);
 
+    // Auto-verify when email OTP is complete
+    useEffect(() => {
+        if (emailOTPSent && emailOtp.join("").length === 6) {
+            emailInputsRef.current.forEach(ref => ref?.blur());
+            handleVerifyEmailOTP();
+        }
+    }, [emailOtp]);
+
+    // Auto-verify when phone OTP is complete
+    useEffect(() => {
+        if (phoneOTPSent && phoneOtp.join("").length === 6) {
+            phoneInputsRef.current.forEach(ref => ref?.blur());
+            handleVerifyPhoneOTP();
+        }
+    }, [phoneOtp]);
+
     const isValidEmail = (email: string) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email.toLowerCase());
@@ -153,7 +171,6 @@ export default function VerifyProfile() {
         });
 
         setEmailOtp(newOtp);
-        handleVerifyEmailOTP();
 
     };
 
@@ -172,9 +189,8 @@ export default function VerifyProfile() {
         });
 
         setPhoneOtp(newOtp);
-        handleVerifyPhoneOTP();
     };
-
+    
     //OTP handling
     const handleSendEmailOTP = async () => {
         // validate email
@@ -201,7 +217,6 @@ export default function VerifyProfile() {
         const res = await response.json();
 
         if (res.result == "success") {
-            console.log(res)
             setEmailOTPSent(true)
             setError(null)
             SecureStore.setItem('emailOTPToken', res.verificationToken)
@@ -240,8 +255,6 @@ export default function VerifyProfile() {
 
         const res = await response.json();
 
-        console.log(res)
-
         if (res.result == "success") {
             setPhoneOTPSent(true)
             setError(null)
@@ -269,8 +282,6 @@ export default function VerifyProfile() {
     };
 
     const handleVerifyEmailOTP = async () => {
-        console.log(emailOtp)
-
         setVerifyingEmail(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
@@ -290,9 +301,6 @@ export default function VerifyProfile() {
 
         const res = await response.json();
 
-
-        console.log(res)
-
         if (res.result == "success") {
             setEmailOTPSent(false)
             setError(null)
@@ -303,6 +311,10 @@ export default function VerifyProfile() {
                     phone: user.verified?.phone
                 }
             });
+
+            if (user.verified.phone != null) {
+                router.replace('/settings')
+            }
         } else {
             setEmailOTPSent(true)
             console.error(res)
@@ -342,6 +354,11 @@ export default function VerifyProfile() {
                     phone: Date.now()
                 }
             });
+            setTimeout(() => {
+                if (user.verified.email != null) {
+                    router.replace('/settings')
+                }
+            }, 1000)
         } else {
             setPhoneOTPSent(true)
             console.error(res)
@@ -358,11 +375,21 @@ export default function VerifyProfile() {
         >
             <View style={styles.container}>
                 <View style={styles.pageHeader}>
-                    <Image
+                    {/* <Image
                         source={require('../../assets/logo_white.png')}
                         style={styles.logo}
                         resizeMode="contain"
-                    />
+                    /> */}
+
+                    <TouchableOpacity
+                        onPress={() => {
+                            router.back()
+                        }}
+                        style={styles.backBtn}
+                    >
+                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>Back</Text>
+                    </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>Verify account</Text>
@@ -623,10 +650,11 @@ export default function VerifyProfile() {
                                         </TouchableOpacity>
                                     )}
                                     <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
-                                        <TouchableOpacity onPress={handleVerifyPhoneOTP} style={[styles.profileButton, { marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
+                                        <TouchableOpacity onPress={handleVerifyPhoneOTP} disabled={verifyingPhone} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
                                             <Text style={styles.profileButtonText}>
-                                                Verify
+                                                {verifyingPhone ? 'Verifying' : 'Verify'}
                                             </Text>
+                                            {verifyingPhone && <ActivityIndicator size="small" color={'black'} />}
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -812,5 +840,19 @@ const styles = StyleSheet.create({
         fontSize: 40,
         borderRadius: 10,
         marginHorizontal: 5,
-    }
+    },
+    backBtn: {
+        position: 'absolute',
+        top: 60,
+        left: 10,
+        width: 200,
+        zIndex: 1,
+        flexDirection: 'row',
+        alignContent: 'center',
+    },
+    backBtnText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontFamily: 'Bebas'
+    },
 });

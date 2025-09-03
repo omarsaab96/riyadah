@@ -4,6 +4,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Octicons from '@expo/vector-icons/Octicons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -785,15 +786,6 @@ export default function Profile() {
 
     };
 
-    const isVerified = (): boolean => {
-        if (user == null || user.verified == null || user.verified.email == null || user.verified.phone == null) {
-            return false;
-        }
-        return true;
-    };
-
-
-
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -998,21 +990,6 @@ export default function Profile() {
             >
 
                 <View style={styles.contentContainer}>
-                    {userId == user._id && (!isVerified()) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleVerification}>
-                        <View style={styles.profileProgressPercentage}>
-                            <Text style={styles.profileProgressPercentageText}>!</Text>
-                        </View>
-                        <View style={styles.profileProgressTextSection}>
-                            <Text style={styles.profileProgressText}>Verify your account now</Text>
-                            <Image
-                                style={styles.profileProgressImg}
-                                source={require('../../assets/rightArrow.png')}
-                                resizeMode="contain"
-                            />
-                        </View>
-                    </TouchableOpacity>
-                    }
-
                     {userId == user._id && (getProfileProgress() < 100) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
                         <View style={styles.profileProgressPercentage}>
                             <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
@@ -1508,10 +1485,19 @@ export default function Profile() {
                     </View>}
 
                     {/* SKILLS */}
-                    {user.type == "Athlete" && <View style={styles.profileSection}>
-                        <Text style={styles.title}>
-                            Skills
-                        </Text>
+                    {user.type == "Athlete" && <View style={[styles.profileSection,styles.skillsSection]}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center',justifyContent:'space-between', gap: 5 }}>
+                            <Text style={styles.title}>
+                                Skills
+                            </Text>
+                            {user.skillsAreVerified &&
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                    <Octicons name="verified" size={16} color="#009933" />
+                                    <Text style={{color:"#009933"}}>Verified</Text>
+                                </View>
+                            }
+                        </View>
+
                         <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
                             <RadarChart
                                 data={data}
@@ -2882,6 +2868,11 @@ const styles = StyleSheet.create({
     },
     profileSection: {
         marginBottom: 30
+    },
+    skillsSection:{
+        backgroundColor:'#f2f2f2',
+        padding:10,
+        borderRadius:10
     },
     profileProgress: {
         backgroundColor: '#222222',

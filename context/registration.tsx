@@ -56,6 +56,7 @@ interface RegistrationData {
   phone: string | null;
   role: string | null;
   skills: any;
+  skillsAreVerified:boolean;
   sport: string | null;
   stats: any;
   type: string | null;
@@ -143,6 +144,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       speed: 0,
       defense: 0
     },
+    skillsAreVerified:false,
     sport: null,
     stats: null,
     type: null,
@@ -219,6 +221,7 @@ export const RegistrationProvider = ({ children }: Props) => {
         speed: 0,
         defense: 0
       },
+      skillsAreVerified:false,
       sport: null,
       stats: null,
       type: null,
