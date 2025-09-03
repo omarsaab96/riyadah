@@ -59,8 +59,8 @@ router.get("/test-smtp", async (req, res) => {
 router.post("/:id/otp", async (req, res) => {
   const { otp, verificationToken, type } = req.body;
   console.log('otp', otp)
-  consol.log('verificationToken', verificationToken)
-  consol.log('type', type)
+  console.log('verificationToken', verificationToken)
+  console.log('type', type)
 
   try {
     if (!verifyOTP(otp, verificationToken)) {
@@ -169,7 +169,6 @@ router.post("/:id", authenticateToken, async (req, res) => {
     }
   }
 });
-
 
 
 module.exports = router;

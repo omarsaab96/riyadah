@@ -88,6 +88,94 @@ export default function VerifyProfile() {
         return re.test(email.toLowerCase());
     };
 
+    const startCountdown = (duration = 60) => {
+        clearInterval(timerRef.current); // clear any existing timer
+        setSecondsLeft(duration);
+
+        timerRef.current = setInterval(() => {
+            setSecondsLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    const handleChange = (text: string, index: number, refType: 'email' | 'phone') => {
+        let newOtp = refType === 'email' ? [...emailOtp] : [...phoneOtp];
+        const currentRef = refType === 'email' ? emailInputsRef : phoneInputsRef;
+
+        newOtp[index] = text.slice(-1); // only last char
+
+        refType === 'email' ? setEmailOtp(newOtp) : setPhoneOtp(newOtp);
+
+        // Move to next input if text entered
+        if (text && index < 5) {
+            currentRef.current[index + 1]?.focus();
+        }
+    };
+
+    const handleKeyPress = (e: any, index: number, refType: 'email' | 'phone') => {
+        const currentRef = refType === 'email' ? emailInputsRef : phoneInputsRef;
+        let otp = refType === 'email' ? emailOtp : phoneOtp;
+
+        if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
+            currentRef.current[index - 1]?.focus();
+        }
+    };
+
+    const onChangeEmail = () => {
+        setEmailOtp(["", "", "", "", "", ""]);
+        emailInputsRef.current.forEach(ref => ref?.blur());
+        setEmailOTPSent(false);
+        setVerifyingEmail(false);
+    }
+
+    const onChangePhone = () => {
+        setPhoneOtp(["", "", "", "", "", ""]);
+        phoneInputsRef.current.forEach(ref => ref?.blur());
+        setPhoneOTPSent(false);
+        setVerifyingPhone(false);
+    }
+
+    const pasteEmailOTP = async () => {
+        const pasteData = (await Clipboard.getStringAsync()).trim();
+
+        if (!/^\d+$/.test(pasteData)) return; // only digits allowed
+
+        const digits = pasteData.split("").slice(0, 6); // take max 6
+        const newOtp = [...emailOtp];
+
+        digits.forEach((digit, i) => {
+            newOtp[i] = digit;
+        });
+
+        setEmailOtp(newOtp);
+        handleVerifyEmailOTP();
+
+    };
+
+    const pastePhoneOTP = async () => {
+        console.log('gettinf paste data')
+        const pasteData = (await Clipboard.getStringAsync()).trim();
+        console.log('pasteData ', pasteData)
+
+        if (!/^\d+$/.test(pasteData)) return;
+
+        const digits = pasteData.split("").slice(0, 6);
+        const newOtp = [...phoneOtp];
+
+        digits.forEach((digit, i) => {
+            newOtp[i] = digit;
+        });
+
+        setPhoneOtp(newOtp);
+        handleVerifyPhoneOTP();
+    };
+
+    //OTP handling
     const handleSendEmailOTP = async () => {
         // validate email
         // if (!isValidEmail(emailAddress)) {
@@ -168,44 +256,6 @@ export default function VerifyProfile() {
         setVerifyingPhone(false)
     }
 
-    const startCountdown = (duration = 60) => {
-        clearInterval(timerRef.current); // clear any existing timer
-        setSecondsLeft(duration);
-
-        timerRef.current = setInterval(() => {
-            setSecondsLeft(prev => {
-                if (prev <= 1) {
-                    clearInterval(timerRef.current);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-    };
-
-    const handleChange = (text: string, index: number, refType: 'email' | 'phone') => {
-        let newOtp = refType === 'email' ? [...emailOtp] : [...phoneOtp];
-        const currentRef = refType === 'email' ? emailInputsRef : phoneInputsRef;
-
-        newOtp[index] = text.slice(-1); // only last char
-
-        refType === 'email' ? setEmailOtp(newOtp) : setPhoneOtp(newOtp);
-
-        // Move to next input if text entered
-        if (text && index < 5) {
-            currentRef.current[index + 1]?.focus();
-        }
-    };
-
-    const handleKeyPress = (e: any, index: number, refType: 'email' | 'phone') => {
-        const currentRef = refType === 'email' ? emailInputsRef : phoneInputsRef;
-        let otp = refType === 'email' ? emailOtp : phoneOtp;
-
-        if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
-            currentRef.current[index - 1]?.focus();
-        }
-    };
-
     const handleResendEmailOTP = () => {
         handleSendEmailOTP()
         setEmailOtp(["", "", "", "", "", ""]);
@@ -218,56 +268,8 @@ export default function VerifyProfile() {
         phoneInputsRef.current[0]?.focus();
     };
 
-    const onChangeEmail = () => {
-        setEmailOtp(["", "", "", "", "", ""]);
-        emailInputsRef.current.forEach(ref => ref?.blur());
-        setEmailOTPSent(false);
-        setVerifyingEmail(false);
-    }
-
-    const onChangePhone = () => {
-        setPhoneOtp(["", "", "", "", "", ""]);
-        phoneInputsRef.current.forEach(ref => ref?.blur());
-        setPhoneOTPSent(false);
-        setVerifyingPhone(false);
-    }
-
-    const pasteEmailOTP = async () => {
-        const pasteData = (await Clipboard.getStringAsync()).trim();
-
-        if (!/^\d+$/.test(pasteData)) return; // only digits allowed
-
-        const digits = pasteData.split("").slice(0, 6); // take max 6
-        const newOtp = [...emailOtp];
-
-        digits.forEach((digit, i) => {
-            newOtp[i] = digit;
-        });
-
-        setEmailOtp(newOtp);
-        handleVerifyEmailOTP();
-
-    };
-
-    const pastePhoneOTP = async () => {
-        console.log('gettinf paste data')
-        const pasteData = (await Clipboard.getStringAsync()).trim();
-        console.log('pasteData ', pasteData)
-
-        if (!/^\d+$/.test(pasteData)) return;
-
-        const digits = pasteData.split("").slice(0, 6);
-        const newOtp = [...phoneOtp];
-
-        digits.forEach((digit, i) => {
-            newOtp[i] = digit;
-        });
-
-        setPhoneOtp(newOtp);
-        handleVerifyPhoneOTP();
-    };
-
     const handleVerifyEmailOTP = async () => {
+        console.log(emailOtp)
 
         setVerifyingEmail(true)
         const token = await SecureStore.getItemAsync('userToken');
