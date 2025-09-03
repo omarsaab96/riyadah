@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Team = require('../models/Team');
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const jwt = require("jsonwebtoken");
 
@@ -42,8 +43,12 @@ router.post('/login', async (req, res) => {
 // Create user
 router.post('/', async (req, res) => {
   try {
-    // console.log('Incoming body:', req.body);
-    const newUser = await User.create(req.body);
+    const { password, ...rest } = req.body;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create user with hashed password
+    const newUser = await User.create({ ...rest, password: hashedPassword });
 
     const token = jwt.sign({ userId: newUser._id }, "123456");
 
