@@ -57,7 +57,7 @@ router.get("/test-smtp", async (req, res) => {
 });
 
 router.post("/:id/otp", async (req, res) => {
-  const { otp, verificationToken } = req.body;
+  const { otp, verificationToken, type } = req.body;
 
   try {
     if (!verifyOTP(otp, verificationToken)) {
@@ -70,9 +70,16 @@ router.post("/:id/otp", async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Ensure verified object exists
-    if (!user.verified) user.verified = { email: null, phone: null };
-    user.verified.email = Date.now();
+    if(type="email"){
+      // Ensure verified object exists
+      if (!user.verified) user.verified = { email: null, phone: null };
+      user.verified.email = Date.now();
+    }
+    if(type="phone"){
+      // Ensure verified object exists
+      if (!user.verified) user.verified = { email: null, phone: null };
+      user.verified.phone = Date.now();
+    }
 
     await user.save();
 

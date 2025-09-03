@@ -151,7 +151,9 @@ export default function VerifyProfile() {
 
         const res = await response.json();
 
-        if (response.result == "success") {
+        console.log(res)
+
+        if (res.result == "success") {
             setPhoneOTPSent(true)
             setError(null)
             SecureStore.setItem('phoneOTPToken', res.verificationToken)
