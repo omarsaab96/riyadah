@@ -169,10 +169,6 @@ export default function Landing() {
 
     useEffect(() => {
         fetchUser();
-
-        if (posts.length === 0) {
-            loadPosts();
-        }
     }, []);
 
     const loadPosts = useCallback(async (isRefreshing = false) => {
@@ -769,6 +765,9 @@ export default function Landing() {
                 const user = await response.json();
                 setUser(user)
                 registerForPushNotificationsAsync(user, token);
+                if (posts.length === 0) {
+                    loadPosts();
+                }
             } else {
                 console.log(user)
                 console.error('Token API error:', response)

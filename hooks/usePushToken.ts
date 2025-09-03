@@ -24,8 +24,6 @@ export async function registerForPushNotificationsAsync(user: any, authToken: st
     // Get the token
     token = (await Notifications.getExpoPushTokenAsync()).data;
 
-    console.log("token is", token, user.expoPushToken)
-
     if (token != user.expoPushToken) {
       try {
         const response = await fetch(`https://riyadah.onrender.com/api/users/push-token`, {

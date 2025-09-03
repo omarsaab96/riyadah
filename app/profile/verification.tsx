@@ -113,6 +113,7 @@ export default function VerifyProfile() {
         const res = await response.json();
 
         if (res.result == "success") {
+            console.log(res)
             setEmailOTPSent(true)
             setError(null)
             SecureStore.setItem('emailOTPToken', res.verificationToken)
@@ -205,6 +206,67 @@ export default function VerifyProfile() {
         }
     };
 
+    const handleResendEmailOTP = () => {
+        handleSendEmailOTP()
+        setEmailOtp(["", "", "", "", "", ""]);
+        emailInputsRef.current[0]?.focus();
+    };
+
+    const handleResendPhoneOTP = () => {
+        handleSendPhoneOTP()
+        setPhoneOtp(["", "", "", "", "", ""]);
+        phoneInputsRef.current[0]?.focus();
+    };
+
+    const onChangeEmail = () => {
+        setEmailOtp(["", "", "", "", "", ""]);
+        emailInputsRef.current.forEach(ref => ref?.blur());
+        setEmailOTPSent(false);
+        setVerifyingEmail(false);
+    }
+
+    const onChangePhone = () => {
+        setPhoneOtp(["", "", "", "", "", ""]);
+        phoneInputsRef.current.forEach(ref => ref?.blur());
+        setPhoneOTPSent(false);
+        setVerifyingPhone(false);
+    }
+
+    const pasteEmailOTP = async () => {
+        const pasteData = (await Clipboard.getStringAsync()).trim();
+
+        if (!/^\d+$/.test(pasteData)) return; // only digits allowed
+
+        const digits = pasteData.split("").slice(0, 6); // take max 6
+        const newOtp = [...emailOtp];
+
+        digits.forEach((digit, i) => {
+            newOtp[i] = digit;
+        });
+
+        setEmailOtp(newOtp);
+        handleVerifyEmailOTP();
+
+    };
+
+    const pastePhoneOTP = async () => {
+        console.log('gettinf paste data')
+        const pasteData = (await Clipboard.getStringAsync()).trim();
+        console.log('pasteData ', pasteData)
+
+        if (!/^\d+$/.test(pasteData)) return;
+
+        const digits = pasteData.split("").slice(0, 6);
+        const newOtp = [...phoneOtp];
+
+        digits.forEach((digit, i) => {
+            newOtp[i] = digit;
+        });
+
+        setPhoneOtp(newOtp);
+        handleVerifyPhoneOTP();
+    };
+
     const handleVerifyEmailOTP = async () => {
 
         setVerifyingEmail(true)
@@ -226,6 +288,9 @@ export default function VerifyProfile() {
 
         const res = await response.json();
 
+
+        console.log(res)
+
         if (res.result == "success") {
             setEmailOTPSent(false)
             setError(null)
@@ -239,7 +304,7 @@ export default function VerifyProfile() {
         } else {
             setEmailOTPSent(true)
             console.error(res)
-            setError("Failed to verify email OTP");
+            setError(res.error);
         }
 
         setVerifyingEmail(false)
@@ -283,65 +348,6 @@ export default function VerifyProfile() {
 
         setVerifyingPhone(false)
     }
-
-    const handleResendEmailOTP = () => {
-        handleSendEmailOTP()
-        setEmailOtp(["", "", "", "", "", ""]);
-        emailInputsRef.current[0]?.focus();
-    };
-
-    const handleResendPhoneOTP = () => {
-        handleSendPhoneOTP()
-        setPhoneOtp(["", "", "", "", "", ""]);
-        phoneInputsRef.current[0]?.focus();
-    };
-
-    const onChangeEmail = () => {
-        setEmailOtp(["", "", "", "", "", ""]);
-        emailInputsRef.current.forEach(ref => ref?.blur());
-        setEmailOTPSent(false);
-        setVerifyingEmail(false);
-    }
-
-    const onChangePhone = () => {
-        setPhoneOtp(["", "", "", "", "", ""]);
-        phoneInputsRef.current.forEach(ref => ref?.blur());
-        setPhoneOTPSent(false);
-        setVerifyingPhone(false);
-    }
-
-    const pasteEmailOTP = async () => {
-        const pasteData = (await Clipboard.getStringAsync()).trim();
-
-        if (!/^\d+$/.test(pasteData)) return; // only digits allowed
-
-        const digits = pasteData.split("").slice(0, 6); // take max 6
-        const newOtp = [...emailOtp];
-
-        digits.forEach((digit, i) => {
-            newOtp[i] = digit;
-        });
-
-        setEmailOtp(newOtp);
-    };
-
-    const pastePhoneOTP = async () => {
-        console.log('gettinf paste data')
-        const pasteData = (await Clipboard.getStringAsync()).trim();
-        console.log('pasteData ', pasteData)
-
-        if (!/^\d+$/.test(pasteData)) return;
-
-        const digits = pasteData.split("").slice(0, 6);
-        const newOtp = [...phoneOtp];
-
-        digits.forEach((digit, i) => {
-            newOtp[i] = digit;
-        });
-
-        setPhoneOtp(newOtp);
-
-    };
 
     return (
         <KeyboardAvoidingView
@@ -563,10 +569,11 @@ export default function VerifyProfile() {
                                         </TouchableOpacity>
                                     )}
                                     <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
-                                        <TouchableOpacity onPress={handleVerifyEmailOTP} style={[styles.profileButton, { marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
+                                        <TouchableOpacity onPress={handleVerifyEmailOTP} disabled={verifyingEmail} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
                                             <Text style={styles.profileButtonText}>
-                                                Verify
+                                                {verifyingEmail ? 'Verifying' : 'Verify'}
                                             </Text>
+                                            {verifyingEmail && <ActivityIndicator size="small" color={'black'} />}
                                         </TouchableOpacity>
                                     </View>
                                 </View>
