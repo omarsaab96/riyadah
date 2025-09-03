@@ -142,7 +142,7 @@ router.post("/:id", authenticateToken, async (req, res) => {
         otp
         // "Verify your phone number",
         // `Your OTP is:\n${otp}\nThis code expires in 10 minutes.`
-      );              
+      );
 
       if (!whatsappSent) {
         return res.status(500).json({ success: false, message: "Failed to send phone OTP" });
