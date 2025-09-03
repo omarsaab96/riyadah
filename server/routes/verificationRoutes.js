@@ -147,8 +147,10 @@ router.post("/:id", authenticateToken, async (req, res) => {
       console.log(whatsappSent)
 
       if (!whatsappSent) {
+        console.log('will return error')
         return res.status(500).json({ success: false, message: "Failed to send phone OTP" });
       }
+        console.log('will continue')
 
       // send hashed token to frontend
       res.json({
