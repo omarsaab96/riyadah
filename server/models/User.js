@@ -92,8 +92,7 @@ const userSchema = new mongoose.Schema({
     date: {
       type: Date,
       default: null
-    },
-    default: null
+    }
   },
   sport: [String],
   stats: String,

@@ -60,7 +60,7 @@ interface RegistrationData {
   skillsAreVerified:{
     by: string | null;
     date: Date | null;
-  } | null;
+  };
   sport: string | null;
   stats: any;
   type: string | null;

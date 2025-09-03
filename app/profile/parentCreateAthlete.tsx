@@ -227,7 +227,6 @@ export default function ParentCreateAthlete() {
                 phone: null
             },
             personalAccount: false,
-            skillsAreVerified: null,
             accountBadge:false,
             isStaff: []
         });

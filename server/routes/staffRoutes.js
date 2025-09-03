@@ -49,7 +49,7 @@ router.post(
         req.body.userRef = user._id;
       } else {
         const newUser = new User({
-          accountBadge:false,
+          accountBadge: false,
           achievements: null,
           admin: {
             name: null,
@@ -102,7 +102,10 @@ router.post(
             speed: null,
             defense: null
           },
-          skillsAreVerified:null,
+          skillsAreVerified: {
+            by: null,
+            date: null
+          },
           sport: null,
           stats: null,
           type: null,
