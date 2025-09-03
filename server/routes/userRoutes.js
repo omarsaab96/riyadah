@@ -115,14 +115,36 @@ router.post('/checkpassword', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    console.log('hashed password=', user.password)
-    console.log('req.body=', req.body.password)
-    const match = await bcrypt.compare(req.body.password, user.password);
-        console.log('match=', match)
 
+const match = await bcrypt.compare(req.body.password.trim(), user.password);
+
+    
     if (!match) {
       return res.status(200).json({ success: false });
     }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.post('/updatePassword', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    user.password = hashedPassword
+
+    await user.save()
 
     return res.status(200).json({ success: true });
   } catch (err) {
