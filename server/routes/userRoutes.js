@@ -114,7 +114,7 @@ router.post('/checkpassword', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const match = await bcrypt.compare(req.body.password, user.password); // secure check
+    const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) {
       return res.status(200).json({ success: false });
     }
