@@ -101,7 +101,7 @@ router.post('/check', async (req, res) => {
 
 router.post('/checkpassword', authenticateToken, async (req, res) => {
   try {
-    const { userId } = req.user.userId;
+    const userId = req.user.userId;
 
     const user = await User.findById(userId).select('password');
 
