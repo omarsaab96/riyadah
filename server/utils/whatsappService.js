@@ -26,8 +26,8 @@ async function sendWhatsapp(to, code) {
         }
 
         // More explicit check for success
-        if (data.status !== 'success') {
-            throw new Error(`HTTP error! ${response.error||'Unknown error'}`);
+        if (data.status !== "success") {
+            throw new Error(`HTTP error! ${data.error||'Unknown error'}`);
         }
 
         console.log("WhatsApp sent successfully:", data);
