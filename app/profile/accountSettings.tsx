@@ -93,11 +93,9 @@ export default function AccountSettings() {
         // Add field only if it changed
         if (emailAddress != user.email) {
             updatedFields.email = emailAddress;
-            updatedFields.verified.email = null;
         }
         if ("+" + callingCode + phoneNumber != user.phone) {
             updatedFields.phone = "+" + callingCode + phoneNumber;
-            updatedFields.verified.phone = null;
         }
 
         if (Object.keys(updatedFields.verified).length === 0) {

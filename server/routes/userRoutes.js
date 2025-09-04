@@ -116,11 +116,7 @@ router.post('/checkpassword', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-    console.log(hashedPassword)
-
-    const match = await bcrypt.compare(req.body.password.trim(), user.password);
+    const match = await bcrypt.compare(req.body.password, user.password);
 
 
     if (!match) {
@@ -418,11 +414,32 @@ router.put('/:userId', authenticateToken, async (req, res) => {
   }
 
   try {
+    const updates = req.body; // incoming fields to update
+    const fieldsToUpdate = {};
+
+    // Loop through keys and decide what to do
+    for (const key of Object.keys(updates)) {
+      if (key === 'email') {
+        fieldsToUpdate[key] = updates[key];
+        fieldsToUpdate['verified.email'] = null;
+      } else if (key === 'phone') {
+        fieldsToUpdate[key] = updates[key];
+        fieldsToUpdate['verified.phone'] = null;
+      } else if (key === 'password') {
+        // Hash the new password before saving
+        const salt = await bcrypt.genSalt(10);
+        fieldsToUpdate.password = await bcrypt.hash(updates.password, salt);
+      } else {
+        // For other fields, just set them as-is
+        fieldsToUpdate[key] = updates[key];
+      }
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: req.body }, // Update only fields provided in req.body
+      { $set: fieldsToUpdate },
       { new: true, runValidators: true }
-    ).select('-password'); // Don't return the password
+    ).select('-password');
 
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 

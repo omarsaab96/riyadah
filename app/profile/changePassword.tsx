@@ -91,11 +91,9 @@ export default function ChangePassword() {
 
             const resp = await response.json();
 
-            console.log(resp)
-
             if (response.ok && resp.success) {
-                console.log("Profile updated successfully");
                 setOldPasswordVerified(true)
+                setError(null)
             } else {
                 setOldPasswordVerified(false)
                 setError('Current password is wrong')
@@ -116,12 +114,12 @@ export default function ChangePassword() {
         }
 
         if (oldPassword == newPassword) {
-            setError("You can't set the new password the same as the old one");
+            setError("New password cannot be the same as the old one");
             return;
         }
 
         if (!isValidPassword(newPassword)) {
-            setError("Invalid password");
+            setError("Password must be at least 6 characters");
             return;
         }
 
@@ -323,6 +321,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fce3e3',
         paddingHorizontal: 5,
         paddingVertical: 5,
+        paddingRight:15,
         borderRadius: 5,
         flexDirection: 'row',
         alignItems: 'flex-start'
