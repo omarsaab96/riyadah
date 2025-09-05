@@ -134,7 +134,7 @@ export default function Login() {
           secureTextEntry
         />
         <View>
-          <TouchableOpacity style={styles.forgotPassword} onPress={() => console.log('Forgot password pressed')}>
+          <TouchableOpacity style={styles.forgotPassword} onPress={() => {router.push('/profile/forgotPassword')}}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
