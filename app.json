@@ -78,10 +78,13 @@
       "expo-secure-store",
       "react-native-compressor",
       [
-        "react-native-maps",
+        "@expo/config-plugins/react-native-maps",
         {
-          "config": {
+          "ios": {
             "googleMapsApiKey": "AIzaSyDQ5HceUQFK_NhNAcKg6kCncREr7t60sP8"
+          },
+          "android": {
+            "googleMapsApiKey": "AIzaSyBJelab1iC0Cf-AS9Lenz2RzGVmdQra1hc"
           }
         }
       ]
