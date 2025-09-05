@@ -352,6 +352,13 @@ PODS:
   - FBLazyVector (0.79.5)
   - fmt (11.0.2)
   - glog (0.3.5)
+  - Google-Maps-iOS-Utils (5.0.0):
+    - GoogleMaps (~> 8.0)
+  - GoogleMaps (8.4.0):
+    - GoogleMaps/Maps (= 8.4.0)
+  - GoogleMaps/Base (8.4.0)
+  - GoogleMaps/Maps (8.4.0):
+    - GoogleMaps/Base
   - hermes-engine (0.79.5):
     - hermes-engine/Pre-built (= 0.79.5)
   - hermes-engine/Pre-built (0.79.5)
@@ -1720,6 +1727,10 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-google-maps (1.20.1):
+    - Google-Maps-iOS-Utils (= 5.0.0)
+    - GoogleMaps (= 8.4.0)
+    - React-Core
   - react-native-maps (1.20.1):
     - React-Core
   - react-native-safe-area-context (5.4.0):
@@ -2418,6 +2429,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-compressor (from `../node_modules/react-native-compressor`)
+  - react-native-google-maps (from `/Users/omarsaab/Developer/riyadah/node_modules/react-native-maps`)
   - react-native-maps (from `../node_modules/react-native-maps`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
@@ -2465,6 +2477,8 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - Google-Maps-iOS-Utils
+    - GoogleMaps
     - libavif
     - libdav1d
     - libwebp
@@ -2621,6 +2635,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-compressor:
     :path: "../node_modules/react-native-compressor"
+  react-native-google-maps:
+    :path: "/Users/omarsaab/Developer/riyadah/node_modules/react-native-maps"
   react-native-maps:
     :path: "../node_modules/react-native-maps"
   react-native-safe-area-context:
@@ -2750,6 +2766,8 @@ SPEC CHECKSUMS:
   FBLazyVector: d2a9cd223302b6c9aa4aa34c1a775e9db609eb52
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  Google-Maps-iOS-Utils: 66d6de12be1ce6d3742a54661e7a79cb317a9321
+  GoogleMaps: 8939898920281c649150e0af74aa291c60f2e77d
   hermes-engine: f03b0e06d3882d71e67e45b073bb827da1a21aae
   libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
@@ -2786,6 +2804,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 96a2f2a176268581733be182fa6eebab1c0193be
   React-microtasksnativemodule: bda561d2648e1e52bd9e5a87f8889836bdbde2e2
   react-native-compressor: 48f006c88ec3b0a3192416e258d1ec548a506448
+  react-native-google-maps: c4f5c5b2dda17e7cb2cb2b37a81f140b039b3e7e
   react-native-maps: 9febd31278b35cd21e4fad2cf6fa708993be5dab
   react-native-safe-area-context: 9d72abf6d8473da73033b597090a80b709c0b2f1
   react-native-slider: 1eb938be71e43c6fa53ad5ccd4671b3c7cb57fec
@@ -2837,6 +2856,6 @@ SPEC CHECKSUMS:
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: adb397651e1c00672c12e9495babca70777e411e
 
-PODFILE CHECKSUM: 6017aeffe9f34c2b6dcbeb1da287581bbc6f35c3
+PODFILE CHECKSUM: a69fe58446603e183ab2141d0b2d0cce55ba815b
 
 COCOAPODS: 1.16.2
