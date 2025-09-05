@@ -50,12 +50,12 @@ export default function WizardStep5() {
             return;
         }
 
-        if (!adminName && formData.type == "Club") {
+        if (!adminName && (formData.type == "Club" || formData.type == "Association")) {
             setError('Kindly fill admin name')
             return;
         }
 
-        if (!adminEmail && formData.type == "Club") {
+        if (!adminEmail && (formData.type == "Club" || formData.type == "Association")) {
             setError('Kindly fill admin email')
             return;
         }
@@ -63,6 +63,7 @@ export default function WizardStep5() {
         setLoading(true);
         setRegisterError(null);
 
+        //if any athlete previously set a parent to be this account
         if (formData.type == "Parent") {
             let children = await getRegisteredChildren();
             if (children.length > 0) {
@@ -98,7 +99,7 @@ export default function WizardStep5() {
                 image: null,
                 isStaff: [],
                 personalAccount: true,
-                accountBadge:false,
+                accountBadge: false,
                 verified: {
                     email: null,
                     phone: null
@@ -179,7 +180,7 @@ export default function WizardStep5() {
 
                 <Text style={styles.ghostText}>
                     {!loading
-                        ? (error ? 'Error' : 'About')
+                        ? (registrationError ? 'Error' : 'About')
                         : null}
                 </Text>
 
@@ -220,7 +221,7 @@ export default function WizardStep5() {
                 </View>
                 }
 
-                {formData.type == "Club" &&
+                {(formData.type == "Club" || formData.type == "Association") &&
                     <View style={styles.inputEntity}>
                         <Text style={styles.label}>Admin</Text>
                         <TextInput
@@ -243,7 +244,7 @@ export default function WizardStep5() {
                     </View>
                 }
 
-                {formData.type != "Parent" &&
+                {/* {formData.type != "Parent" && */}
                     <View style={styles.inputEntity}>
                         {(formData.type == "Club" || formData.type == "Association") ? (
                             <Text style={styles.label}>Summary</Text>
@@ -262,7 +263,7 @@ export default function WizardStep5() {
                             returnKeyType="default"
                         />
                     </View>
-                }
+                {/* } */}
             </ScrollView>}
 
             {!loading && registrationError == null && <View style={styles.fixedBottomSection}>

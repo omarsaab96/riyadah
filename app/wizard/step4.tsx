@@ -51,7 +51,6 @@ export default function WizardStep4() {
                         visible: true
                     }));
                     setFeaturedClubs(formatted);
-                    console.log(formatted)
 
                 } else {
                     console.error('Failed to fetch clubs');

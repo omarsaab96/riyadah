@@ -1,11 +1,15 @@
 RIYADAH:
     ☐ personal account
+    ✘ move gender @cancelled(25-09-05 05:39)
     ☐ coach(verify skills, attendance sheet)
     get verified badge:
         ✔ backend @started(25-09-03 18:31) @done(25-09-03 18:51) @lasted(20m57s)
         ✔ frontend @started(25-09-03 18:59) @done(25-09-03 22:10) @lasted(3h11m17s)
-    ☐ account settings
-    ☐ on update user email and password in the api, reset verified
+    ✔ account settings @done(25-09-05 04:28)
+    ✔ on update user email and password in the api, reset verified @done(25-09-05 04:28)
+    ☐ update splash screen
+    ☐ update passwords in db
+    ☐ forgot password
 
 TESTING:
     ☐ test email and phone verification on android

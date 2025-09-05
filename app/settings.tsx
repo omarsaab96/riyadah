@@ -1,3 +1,5 @@
+import Feather from '@expo/vector-icons/Feather';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -5,8 +7,10 @@ import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Dimensions,
     Image,
+    Linking,
     ScrollView,
     StyleSheet,
     Text,
@@ -23,6 +27,8 @@ export default function Profile() {
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [verificationLoading, setVerificationLoading] = useState(true);
+    const year = new Date().getFullYear();
+
 
 
     useEffect(() => {
@@ -72,7 +78,7 @@ export default function Profile() {
         router.push('/profile/verification')
     }
 
-    const handleAccountBadge = async()=>{
+    const handleAccountBadge = async () => {
         router.push('/profile/badge')
     }
 
@@ -82,6 +88,19 @@ export default function Profile() {
 
     const handleAccountSettings = async () => {
         router.push('/profile/accountSettings')
+    };
+
+    const openLink = async (url) => {
+        try {
+            const supported = await Linking.canOpenURL(url);
+            if (supported) {
+                await Linking.openURL(url);
+            } else {
+                Alert.alert("Cannot open \n" + url);
+            }
+        } catch (err) {
+            console.error("Failed to open link: ", err);
+        }
     };
 
     return (
@@ -131,18 +150,41 @@ export default function Profile() {
                                 )
                             )}
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={handleNotificationsSettings} style={styles.profileButton}>
+                        {/* <TouchableOpacity onPress={handleNotificationsSettings} style={styles.profileButton}>
                             <Text style={styles.profileButtonText}>Notifications settings</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleDeactivateAccount} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Deactivate account</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleLogout} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Logout</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                 </View>
             </ScrollView>
+
+            <View style={styles.footer}>
+                <View style={styles.settings}>
+                    <TouchableOpacity onPress={handleDeactivateAccount} style={[styles.profileButton, styles.deactivateBtn]}>
+                        <Text style={[styles.profileButtonText, styles.deactivateBtnText]}>Deactivate account</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleLogout} style={[styles.profileButton, styles.logoutBtn]}>
+                        <MaterialIcons name="logout" size={20} color="black" />
+                        <Text style={styles.profileButtonText}>Logout</Text>
+                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 15 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                            <TouchableOpacity onPress={() => openLink("https://riyadah.app/terms")} style={{flexDirection:'row',gap:2,alignItems:'center'}}>
+                                <Feather name="external-link" size={12} color="#FF4000" />
+                                <Text style={styles.footerLink}>Terms</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => openLink("https://riyadah.app/privacy")} style={{flexDirection:'row',gap:2,alignItems:'center'}}>
+                                <Feather name="external-link" size={12} color="#FF4000" />
+                                <Text style={styles.footerLink}>Privacy</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => openLink("https://riyadah.app/")} style={{flexDirection:'row',gap:2,alignItems:'center'}}>
+                                <Feather name="external-link" size={12} color="#FF4000" />
+                                <Text style={styles.footerLink}>Website</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v1.0.0</Text>
+                    </View>
+                </View>
+            </View>
 
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
@@ -252,6 +294,7 @@ const styles = StyleSheet.create({
         // backgroundColor: 'rgba(0,0,0,0.05)',
         // borderRadius:5,
         // padding:10
+        width: '100%'
     },
     profileButton: {
         paddingVertical: 10,
@@ -261,5 +304,46 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#150000',
         fontFamily: 'Bebas',
+    },
+    deactivateBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        justifyContent: 'center',
+        // backgroundColor:'#d96c6c',
+        borderRadius: 10
+    },
+    deactivateBtnText: {
+        color: '#FF4000'
+    },
+    logoutBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        justifyContent: 'center',
+        backgroundColor: '#f2f2f2',
+        borderRadius: 10,
+        marginBottom: 0
+    },
+    footer: {
+        position: 'absolute',
+        bottom: 130,
+        left: 10,
+        width: width - 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#ffffff',
+    },
+    footerLink: {
+        color: '#FF4000',
+        fontFamily: 'Manrope',
+        fontSize: 12
+    },
+    disclaimer: {
+        textAlign: 'center',
+        color: '#aaa',
+        fontFamily: 'Manrope',
+        fontSize: 14
     }
 });

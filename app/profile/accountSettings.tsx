@@ -111,10 +111,13 @@ export default function AccountSettings() {
 
                 if (response.ok && await resp.success) {
                     console.log("Email updated successfully");
-                    setSaving(false)
-                    router.replace('/settings')
+                    if ("+" + callingCode + phoneNumber == user.phone) {
+                        setSaving(false)
+                        router.replace('/settings')
+                    }
+
                 } else {
-                    setError("Failed to update email");
+                    setError(resp.message);
                     setSaving(false)
                 }
             } catch (err) {
@@ -229,7 +232,7 @@ export default function AccountSettings() {
                                 Email
                             </Text>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input,{marginBottom:5}]}
                                 placeholder="Email"
                                 placeholderTextColor="#A8A8A8"
                                 value={emailAddress}
@@ -237,6 +240,8 @@ export default function AccountSettings() {
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                             />
+                            <Text style={styles.hint}>You use this email to login</Text>
+
                         </View>
 
                         <View style={styles.entity}>
@@ -269,6 +274,8 @@ export default function AccountSettings() {
                                 />
                             </View>
                         </View>
+
+                        <Text style={styles.hint}>You'll be asked to verify your email and/or phone number if you update them</Text>
 
                         <View style={[styles.profileActions, styles.inlineActions]}>
                             <TouchableOpacity onPress={() => { handleCancel() }} style={styles.profileButton}>
@@ -354,6 +361,13 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope'
     },
     entity: {
+        marginBottom: 0
+    },
+    hint: {
+        color: 'black',
+        opacity: 0.5,
+        fontSize: 12,
+        fontFamily: 'Manrope',
         marginBottom: 20
     },
     title: {

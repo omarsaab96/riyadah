@@ -127,6 +127,7 @@ export default function Register() {
         country: countryCode,
         agreed: agreed
       });
+      setLoading(false)
       router.push('/wizard');
 
     } else {
@@ -141,8 +142,6 @@ export default function Register() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-
-
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
@@ -185,6 +184,7 @@ export default function Register() {
               <View style={styles.errorIcon}></View>
               <Text style={styles.errorText}>{error}</Text>
             </View>}
+
             <TextInput
               style={styles.input}
               placeholder="Name"
@@ -193,6 +193,7 @@ export default function Register() {
               onChangeText={setName}
               autoCapitalize="words"
             />
+
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -202,6 +203,7 @@ export default function Register() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
+
             <View style={styles.phoneContainer}>
               <View style={styles.phonePicker}>
                 <CountryPicker
@@ -228,6 +230,7 @@ export default function Register() {
                 onChangeText={setPhoneNumber}
               />
             </View>
+            
             <TextInput
               style={[styles.input, styles.passwordInput]}
               placeholder="Password"
