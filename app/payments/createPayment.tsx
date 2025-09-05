@@ -39,7 +39,7 @@ export default function AddPayment() {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchindex, setSearchindex] = useState(0);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [paymentAmount, setPaymentAmount] = useState('0 USD');
+    const [paymentAmount, setPaymentAmount] = useState('0 EGP');
     const [paymentNote, setPaymentNote] = useState('');
     const [paymentDueDate, setPaymentDueDate] = useState(new Date());
     const [pickerShow, setPickerShow] = useState(false);
@@ -415,8 +415,9 @@ export default function AddPayment() {
                                                 setPaymentAmount(`${amount} ${currency}`)
                                             }}
                                         >
+                                            
+                                            <Picker.Item label="EGP" value="EGP" />
                                             <Picker.Item label="USD" value="USD" />
-                                            <Picker.Item label="LBP" value="LBP" />
                                             <Picker.Item label="EUR" value="EUR" />
                                         </Picker>
                                     </View>

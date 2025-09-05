@@ -37,7 +37,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
         itemName: '',
         category: 'Equipment',
         quantity: '',
-        unitPrice: '0 USD',
+        unitPrice: '0 EGP',
         description: '',
     });
 
@@ -246,8 +246,8 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                                             handleChange('unitPrice', `${amount} ${currency}`);
                                         }}
                                     >
+                                        <Picker.Item label="EGP" value="EGP" />
                                         <Picker.Item label="USD" value="USD" />
-                                        <Picker.Item label="LBP" value="LBP" />
                                         <Picker.Item label="EUR" value="EUR" />
                                     </Picker>
                                 </View>

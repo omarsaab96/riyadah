@@ -433,7 +433,7 @@ const CreateEventScreen = () => {
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Start Date & Time *</Text>
-                            <TouchableOpacity
+                            {Platform.OS != 'ios' && <TouchableOpacity
                                 style={styles.dateInput}
                                 onPress={() => showPicker('start', 'date')}
                             >
@@ -442,12 +442,25 @@ const CreateEventScreen = () => {
                                 </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
                             </TouchableOpacity>
+                            }
+                            {Platform.OS == 'ios' &&
+                                <DateTimePicker
+                                    testID="dateTimePicker"
+                                    value={pickerState.tempDate}
+                                    mode='datetime'
+                                    is24Hour={false}
+                                    display='spinner'
+                                    // minimumDate={new Date()}
+                                    textColor={'#000'}
+                                    onChange={onChange}
+                                />
+                            }
                         </View>
 
                         {/* End Date & Time */}
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>End Date & Time *</Text>
-                            <TouchableOpacity
+                            {Platform.OS != 'ios' && <TouchableOpacity
                                 style={styles.dateInput}
                                 onPress={() => showPicker('end', 'date')}
                             >
@@ -455,7 +468,20 @@ const CreateEventScreen = () => {
                                     {formData.endDateTime.toLocaleString()}
                                 </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </TouchableOpacity>
+                            </TouchableOpacity>}
+
+                            {Platform.OS == 'ios' &&
+                                <DateTimePicker
+                                    testID="dateTimePicker"
+                                    value={pickerState.tempDate}
+                                    mode='datetime'
+                                    is24Hour={false}
+                                    display='spinner'
+                                    // minimumDate={new Date()}
+                                    textColor={'#000'}
+                                    onChange={onChange}
+                                />
+                            }
                         </View>
 
                         {pickerState.show && (
@@ -464,7 +490,7 @@ const CreateEventScreen = () => {
                                 value={pickerState.tempDate}
                                 mode={pickerState.mode}
                                 is24Hour={true}
-                                display="default"
+                                display={'default'}
                                 onChange={onChange}
                             />
                         )}
@@ -593,7 +619,7 @@ const CreateEventScreen = () => {
                                     </View>
                                 )}
                                 {!searching && equipmentSearch.trim().length >= 3 && searchResults.length == 0 && (
-                                    <Text style={{ fontFamily: 'Manrope',color:'black' }}>
+                                    <Text style={{ fontFamily: 'Manrope', color: 'black' }}>
                                         No results. Try another keyword
                                     </Text>
                                 )}
@@ -919,7 +945,7 @@ const styles = StyleSheet.create({
     searchResultText: {
         fontSize: 16,
         fontFamily: 'Manrope',
-        color:'black'
+        color: 'black'
     },
     searchResultSubText: {
         fontSize: 12,
@@ -936,7 +962,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Manrope',
         marginBottom: 8,
-        color:'black'
+        color: 'black'
     },
     quantityControls: {
         flexDirection: 'row',
@@ -973,7 +999,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         padding: 0,
         lineHeight: 1,
-        color:'black'
+        color: 'black'
     },
     quantityInputSmall: {
         width: 40,
@@ -984,7 +1010,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         fontSize: 14,
         lineHeight: 1,
-        color:'black'
+        color: 'black'
     },
     addSelectedButton: {
         backgroundColor: '#FF4000',
@@ -1013,13 +1039,13 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 14,
         flex: 1,
-        color:'black'
+        color: 'black'
     },
     equipmentQuantity: {
         flexDirection: 'row',
         alignItems: 'center',
         marginRight: 8,
-        color:'black'
+        color: 'black'
     },
     error: {
         marginBottom: 15,

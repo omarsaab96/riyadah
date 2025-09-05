@@ -61,7 +61,7 @@ const CreateStaffScreen = () => {
         qualifications: [],
         certifications: [],
         employmentType: 'Full-time',
-        salary: '0 USD',
+        salary: '0 EGP',
         teams: [],
         isActive: true,
     });
@@ -756,8 +756,8 @@ const CreateStaffScreen = () => {
                                                 handleChange('salary', `${amount} ${currency}`);
                                             }}
                                         >
+                                            <Picker.Item label="EGP" value="EGP" />
                                             <Picker.Item label="USD" value="USD" />
-                                            <Picker.Item label="LBP" value="LBP" />
                                             <Picker.Item label="EUR" value="EUR" />
                                         </Picker>
                                     </View>
@@ -967,7 +967,7 @@ const CreateStaffScreen = () => {
                                 <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
                                     <Text style={styles.profileButtonText}>Cancel</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
+                                <TouchableOpacity onPress={handleSubmit} disabled={saving} style={[styles.profileButton, styles.savebtn]}>
                                     <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
                                     {saving && (
                                         <ActivityIndicator

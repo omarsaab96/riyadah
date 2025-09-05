@@ -275,8 +275,11 @@ export default function EditProfile() {
 
                             {user.type != "Parent" &&
                                 <View style={styles.entity}>
-                                    <Text style={styles.title}>
+                                    <Text style={[styles.title, { marginBottom: 0 }]}>
                                         CONTACT Info
+                                    </Text>
+                                    <Text style={[{ marginBottom: 10, fontSize: 12, color: '#aaa' }]}>
+                                        Empty fields will be hidden from your profile
                                     </Text>
 
                                     {user.type == "Club" && <Text style={[styles.subtitle, styles.contactSubTitle]}>
@@ -293,14 +296,17 @@ export default function EditProfile() {
                                         returnKeyType="default"
                                     />}
 
+
+
                                     <View style={styles.contactItem}>
                                         <FontAwesome6 name="phone" size={24} color="#000" />
                                         <TextInput
-                                            style={[styles.input, styles.contactInput]}
+                                            style={[styles.input, styles.contactInput, { color: "#aaa" }]}
                                             placeholder="Phone number"
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.phone}
                                             onChangeText={(text) => updateField('contactInfo.phone', text)}
+                                            // editable={false}
                                         />
                                     </View>
 
@@ -328,12 +334,14 @@ export default function EditProfile() {
 
                                     <View style={styles.contactItem}>
                                         <FontAwesome name="instagram" size={24} color="#000" />
+                                        <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
                                         <TextInput
-                                            style={[styles.input, styles.contactInput]}
+                                            style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
                                             placeholder="Instagram username"
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.instagram}
                                             onChangeText={(text) => updateField('contactInfo.instagram', text)}
+                                            autoCapitalize='none'
                                         />
                                     </View>
 
@@ -350,8 +358,9 @@ export default function EditProfile() {
 
                                     <View style={styles.contactItem}>
                                         <FontAwesome5 name="telegram-plane" size={24} color="#000" />
+                                        <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
                                         <TextInput
-                                            style={[styles.input, styles.contactInput]}
+                                            style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
                                             placeholder="Telegram username"
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.telegram}
@@ -361,8 +370,9 @@ export default function EditProfile() {
 
                                     <View style={styles.contactItem}>
                                         <FontAwesome6 name="tiktok" size={24} color="#000" />
+                                        <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
                                         <TextInput
-                                            style={[styles.input, styles.contactInput]}
+                                            style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
                                             placeholder="Tiktok username"
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.tiktok}
