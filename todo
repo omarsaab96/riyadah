@@ -1,5 +1,4 @@
 RIYADAH:
-    ☐ personal account
     ✘ move gender @cancelled(25-09-05 05:39)
     ☐ coach(verify skills, attendance sheet)
     get verified badge:
@@ -7,9 +6,17 @@ RIYADAH:
         ✔ frontend @started(25-09-03 18:59) @done(25-09-03 22:10) @lasted(3h11m17s)
     ✔ account settings @done(25-09-05 04:28)
     ✔ on update user email and password in the api, reset verified @done(25-09-05 04:28)
-    ☐ update splash screen
-    ☐ update passwords in db
+    ✔ update passwords in db @done(25-09-05 07:34)
     ✔ forgot password @done(25-09-05 07:24)
+    ☐ personal account login flow
+    ☐ update splash screen
+    ☐ fix gooogle maps on ios @today
+    ☐ social media accounts prefixes @today
+    ☐ fix ios dropdowns height @today
+    ☐ staff disable savebutton when saving @today
+    ☐ when personal account is false we should send an email to the user with generated password
+    ☐ when personal account is false, show password: sent to email on confirmation screen
+    ☐ when personal account is false, remove errors on confirmation screen
 
 TESTING:
     ☐ test email and phone verification on android

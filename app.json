@@ -28,6 +28,9 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         }
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyDQ5HceUQFK_NhNAcKg6kCncREr7t60sP8"
       }
     },
     "android": {
@@ -73,7 +76,15 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "react-native-compressor"
+      "react-native-compressor",
+      [
+        "react-native-maps",
+        {
+          "config": {
+            "googleMapsApiKey": "AIzaSyDQ5HceUQFK_NhNAcKg6kCncREr7t60sP8"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
