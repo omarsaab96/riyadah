@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -62,6 +63,51 @@ export default function ForgotPassword() {
                 return prev - 1;
             });
         }, 1000);
+    };
+
+    // Auto-verify when email OTP is complete
+    useEffect(() => {
+        if (emailOTPSent && emailOtp.join("").length === 6) {
+            emailInputsRef.current.forEach(ref => ref?.blur());
+            handleVerifyEmailOTP();
+        }
+    }, [emailOtp]);
+
+    const handleChange = (text: string, index: number) => {
+        let newOtp = [...emailOtp]
+
+        newOtp[index] = text.slice(-1); // only last char
+
+        setEmailOtp(newOtp)
+
+        // Move to next input if text entered
+        if (text && index < 5) {
+            emailInputsRef.current[index + 1]?.focus();
+        }
+    };
+
+    const handleKeyPress = (e: any, index: number) => {
+        let otp = emailOtp
+
+        if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
+            emailInputsRef.current[index - 1]?.focus();
+        }
+    };
+
+    const pasteEmailOTP = async () => {
+        const pasteData = (await Clipboard.getStringAsync()).trim();
+
+        if (!/^\d+$/.test(pasteData)) return; // only digits allowed
+
+        const digits = pasteData.split("").slice(0, 6); // take max 6
+        const newOtp = [...emailOtp];
+
+        digits.forEach((digit, i) => {
+            newOtp[i] = digit;
+        });
+
+        setEmailOtp(newOtp);
+
     };
 
     const handleNext = async () => {
@@ -179,6 +225,9 @@ export default function ForgotPassword() {
         setSaving(true)
         const response = await fetch(`https://riyadah.onrender.com/api/users/resetPassword`, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 email: userEmail,
                 password: newPassword
@@ -189,6 +238,7 @@ export default function ForgotPassword() {
             console.log("Password updated");
             router.replace('/login');
         } else {
+            setSaving(false)
             console.error("Failed to update password");
         }
     }
@@ -312,18 +362,19 @@ export default function ForgotPassword() {
                                         </TouchableOpacity>
                                     )}
                                     <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
-                                        <TouchableOpacity onPress={handleVerifyEmailOTP} disabled={verifyingEmail} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
+                                        <TouchableOpacity onPress={handleVerifyEmailOTP} disabled={verifyingEmailOTP} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
                                             <Text style={styles.profileButtonText}>
-                                                {verifyingEmail ? 'Verifying' : 'Verify'}
+                                                {verifyingEmailOTP ? 'Verifying' : 'Verify'}
                                             </Text>
-                                            {verifyingEmail && <ActivityIndicator size="small" color={'black'} />}
+                                            {verifyingEmailOTP && <ActivityIndicator size="small" color={'black'} />}
                                         </TouchableOpacity>
                                     </View>
                                 </View>
                             </View>
                         }
 
-                        {checkedEmail && checkedEmailIsVerified && <View>
+                        {checkedEmail && checkedEmailIsVerified &&
+                        <View>
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
                                     New Password

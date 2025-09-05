@@ -21,6 +21,48 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+router.put('/hash_passwords', async (req, res) => {
+  try {
+    const excludedEmails = [
+      'omar.saab.96@gmail.com',
+      'nilesports@riyadah.app'
+    ];
+
+    // Find all users except the excluded ones
+    const users = await User.find({ email: { $nin: excludedEmails } });
+
+    if (!users.length) {
+      return res.status(200).json({ success: true, message: 'No users to update' });
+    }
+
+    const updatedUsers = [];
+
+    for (let user of users) {
+      const originalPassword = user.password; // old (likely unhashed) password
+      const hashedPassword = await bcrypt.hash(originalPassword, 10);
+
+      user.password = hashedPassword;
+      await user.save();
+
+      updatedUsers.push({
+        email: user.email,
+        before: originalPassword,
+        after: hashedPassword,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      updatedCount: updatedUsers.length,
+      updatedUsers,
+    });
+
+  } catch (err) {
+    console.error('Error updating passwords:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Login user
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
