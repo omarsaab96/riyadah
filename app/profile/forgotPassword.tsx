@@ -93,7 +93,7 @@ export default function ForgotPassword() {
                     emailInputsRef.current[0]?.focus();
                     startCountdown();
                 } else {
-                    //throw error
+                    setError('Failed to send OTP');
                 }
             } else {
                 setCheckedEmail(false)
