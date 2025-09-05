@@ -170,4 +170,47 @@ router.post("/:id", authenticateToken, async (req, res) => {
   }
 });
 
+router.post("/email", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({email});
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const otp = generateOTP();
+    const { token } = generateVerificationToken(otp);
+
+    // send test email
+    const emailSent = await sendEmail(
+      user.email,
+      "Verify your email",
+      `
+      <div style="font-family:Arial,sans-serif;padding:20px;">
+        <h2>Email Verification</h2>
+        <p>Your OTP is:</p>
+        <h3 style="color:#FF4000;">${otp}</h3>
+        <p>This code expires in <strong>10 minutes</strong>.</p>
+      </div>
+      `
+    );
+
+    if (!emailSent) {
+      return res.status(500).json({ success: false, message: "Failed to send email OTP" });
+    }
+
+    // send hashed token to frontend
+    res.json({
+      result: "success",
+      verificationToken: token,
+      message: "OTP sent to email",
+    });
+  } catch (err) {
+    console.error("Failed to send OTP to email:", err);
+    res.status(500).json({ success: false, message: "Failed to send OTP to email", error: err.message });
+  }
+
+});
+
 module.exports = router;

@@ -73,6 +73,9 @@ export default function ForgotPassword() {
         try {
             const response = await fetch(`https://riyadah.onrender.com/api/users/check/`, {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     email: userEmail
                 })
@@ -86,8 +89,6 @@ export default function ForgotPassword() {
                 const otpSent = await handleSendEmailOTP();
 
                 if (otpSent) {
-                    //start timer
-                    //input focus
                     setEmailOTPSent(true)
                     emailInputsRef.current[0]?.focus();
                     startCountdown();
@@ -108,10 +109,12 @@ export default function ForgotPassword() {
 
     const handleSendEmailOTP = async () => {
 
-        const response = await fetch(`https://riyadah.onrender.com/api/verifyEmail/`, {
+        const response = await fetch(`https://riyadah.onrender.com/api/verify/email`, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
-                type: 'email',
                 email: userEmail
             })
         });
