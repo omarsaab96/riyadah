@@ -99,11 +99,24 @@ router.post("/email", async (req, res) => {
 
 });
 
+router.post("/emailOtp", async (req, res) => {
+  const { otp, verificationToken } = req.body;
+
+  try {
+    if (!verifyOTP(otp, verificationToken)) {
+      return res.status(400).json({ error: "Invalid or expired OTP" });
+    }
+
+    res.json({ result: "success", message: "Email verified successfully" });
+  } catch (err) {
+    console.error("OTP verification error:", err);
+    res.status(500).json({ error: "Failed to verify email", details: err.message });
+  }
+
+});
+
 router.post("/:id/otp", async (req, res) => {
   const { otp, verificationToken, type } = req.body;
-  console.log('otp', otp)
-  console.log('verificationToken', verificationToken)
-  console.log('type', type)
 
   try {
     if (!verifyOTP(otp, verificationToken)) {

@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useRef, useState } from 'react';
@@ -27,6 +28,7 @@ export default function ForgotPassword() {
     const [checkedEmailIsVerified, setCheckedEmailIsVerified] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [verifyingEmailOTP, setVerifyingEmailOTP] = useState(false);
     const [emailOTPSent, setEmailOTPSent] = useState(false);
     const [emailOtp, setEmailOtp] = useState(["", "", "", "", "", ""]);
     const [secondsLeft, setSecondsLeft] = useState(0);
@@ -86,15 +88,7 @@ export default function ForgotPassword() {
             if (response.ok && !resp.success && resp.msg == "Email already exists") {
                 setCheckedEmail(true)
                 setError(null)
-                const otpSent = await handleSendEmailOTP();
-
-                if (otpSent) {
-                    setEmailOTPSent(true)
-                    emailInputsRef.current[0]?.focus();
-                    startCountdown();
-                } else {
-                    setError('Failed to send OTP');
-                }
+                handleSendEmailOTP();
             } else {
                 setCheckedEmail(false)
                 setError('No account found')
@@ -122,15 +116,52 @@ export default function ForgotPassword() {
         const res = await response.json();
 
         if (res.result == "success") {
+            setEmailOTPSent(true)
             setError(null)
             SecureStore.setItem('emailOTPToken', res.verificationToken)
-            return true;
+            emailInputsRef.current[0]?.focus();
+            startCountdown();
         } else {
+            setEmailOTPSent(false)
             console.error(res)
             setError("Failed to send email OTP");
-            return false;
         }
     }
+
+    const handleResendEmailOTP = () => {
+        handleSendEmailOTP()
+        setEmailOtp(["", "", "", "", "", ""]);
+        emailInputsRef.current[0]?.focus();
+    };
+
+    const handleVerifyEmailOTP = async () => {
+        setVerifyingEmailOTP(true)
+
+        const response = await fetch(`https://riyadah.onrender.com/api/verify/emailOtp`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                otp: emailOtp.join(""),
+                verificationToken: SecureStore.getItem("emailOTPToken"),
+            })
+        });
+
+        const res = await response.json();
+
+        if (res.result == "success") {
+            setEmailOTPSent(false)
+            setError(null)
+            setCheckedEmailIsVerified(true)
+        } else {
+            setEmailOTPSent(true)
+            console.error(res)
+            setError(res.error);
+        }
+
+        setVerifyingEmailOTP(false)
+    };
 
     const handleSave = async () => {
 
