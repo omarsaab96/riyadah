@@ -56,15 +56,18 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
+      const resp = await response.json()
       if (!response.ok) {
-        setError('Invalid email or password');
+        setError(resp.error);
+        setLoading(false);
+        return;
       }
 
-      const { user, token } = await response.json();
+      const { user, token } = resp;
 
       // Save the token securely
       await SecureStore.setItemAsync('userToken', token);
-
+      setLoading(false)
       // Navigate to profile screen
       router.replace('/landing');
     } catch (error: any) {

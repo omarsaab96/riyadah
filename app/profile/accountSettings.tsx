@@ -112,7 +112,7 @@ export default function AccountSettings() {
                 if (response.ok && await resp.success) {
                     console.log("Email updated successfully");
                     setSaving(false)
-                    router.back();
+                    router.replace('/settings')
                 } else {
                     setError("Failed to update email");
                     setSaving(false)
@@ -139,7 +139,7 @@ export default function AccountSettings() {
                 if (response.ok && await resp.success) {
                     console.log("Phone updated successfully");
                     setSaving(false)
-                    router.back();
+                    router.replace('/settings')
                 } else {
                     setSaving(false)
                     setError("Failed to update phone");

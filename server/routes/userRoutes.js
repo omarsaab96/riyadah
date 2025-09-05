@@ -28,7 +28,7 @@ router.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ email });
 
-    const match = await bcrypt.compare(req.body.password, user.password);
+    const match = await bcrypt.compare(password, user.password);
 
     if (!user || !match) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -36,7 +36,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user._id }, "123456");
 
-    res.json({ user, token });
+    return res.status(200).json({ user, token });
   } catch (err) {
     res.status(500).json({ error: 'Something went wrong' });
   }
@@ -157,13 +157,23 @@ router.post('/updatePassword', authenticateToken, async (req, res) => {
 router.post('/updateEmail', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const email = req.body.email;
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is missing' });
+    }
 
     const user = await User.findById(userId);
-
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    //check if the new email is linked to another account
+    const newEmailLinkedToOtherUser = await User.findOne({ email });
+    if (newEmailLinkedToOtherUser && newEmailLinkedToOtherUser._id.toString() !== userId) {
+      return res.status(403).json({ success: false, message: 'This email is linked to another account' });
+    }
+
     user.email = email
     user.verified.email = null;
 
@@ -179,13 +189,23 @@ router.post('/updateEmail', authenticateToken, async (req, res) => {
 router.post('/updatePhone', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const phone = req.body.phone;
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Phone is missing' });
+    }
 
     const user = await User.findById(userId);
-
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    //check if the new phone is linked to another account
+    const newPhoneLinkedToOtherUser = await User.findOne({ phone });
+    if (newPhoneLinkedToOtherUser && newPhoneLinkedToOtherUser._id.toString() !== userId) {
+      return res.status(403).json({ success: false, message: 'This phone number is linked to another account' });
+    }
+
     user.phone = phone
     user.verified.phone = null;
 
