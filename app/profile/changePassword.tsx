@@ -123,18 +123,18 @@ export default function ChangePassword() {
             return;
         }
 
+        setError(null)
         setSaving(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
-        const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
-            method: 'PUT',
+        const response = await fetch(`https://riyadah.onrender.com/api/users/updatePassword`, {
+            method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                ...user,
                 password: newPassword
             })
         });

@@ -133,6 +133,7 @@ router.post('/checkpassword', authenticateToken, async (req, res) => {
 router.post('/updatePassword', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
+    const password = req.body.password;
 
     const user = await User.findById(userId);
 
@@ -143,6 +144,50 @@ router.post('/updatePassword', authenticateToken, async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     user.password = hashedPassword
+
+    await user.save()
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.post('/updateEmail', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const email = req.body.email;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    user.email = email
+    user.verified.email = null;
+
+    await user.save()
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+router.post('/updatePhone', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const phone = req.body.phone;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    user.phone = phone
+    user.verified.phone = null;
 
     await user.save()
 
@@ -414,32 +459,11 @@ router.put('/:userId', authenticateToken, async (req, res) => {
   }
 
   try {
-    const updates = req.body; // incoming fields to update
-    const fieldsToUpdate = {};
-
-    // Loop through keys and decide what to do
-    for (const key of Object.keys(updates)) {
-      if (key === 'email') {
-        fieldsToUpdate[key] = updates[key];
-        fieldsToUpdate['verified.email'] = null;
-      } else if (key === 'phone') {
-        fieldsToUpdate[key] = updates[key];
-        fieldsToUpdate['verified.phone'] = null;
-      } else if (key === 'password') {
-        // Hash the new password before saving
-        const salt = await bcrypt.genSalt(10);
-        fieldsToUpdate.password = await bcrypt.hash(updates.password, salt);
-      } else {
-        // For other fields, just set them as-is
-        fieldsToUpdate[key] = updates[key];
-      }
-    }
-
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: fieldsToUpdate },
+      { $set: req.body }, // Update only fields provided in req.body
       { new: true, runValidators: true }
-    ).select('-password');
+    ).select('-password'); // Don't return the password
 
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 

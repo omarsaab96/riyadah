@@ -76,55 +76,80 @@ export default function AccountSettings() {
     };
 
     const handleSave = async () => {
-        // validate email
         if (!isValidEmail(emailAddress)) {
             setError("Invalid email address")
             return;
         }
-
-        //validate phone number
         if (!isValidPhoneNumber("" + phoneNumber, countryCode)) {
             setError("Invalid phone number");
             return;
         }
-
-        const updatedFields = { verified: {} };
-
-        // Add field only if it changed
-        if (emailAddress != user.email) {
-            updatedFields.email = emailAddress;
-        }
-        if ("+" + callingCode + phoneNumber != user.phone) {
-            updatedFields.phone = "+" + callingCode + phoneNumber;
-        }
-
-        if (Object.keys(updatedFields.verified).length === 0) {
+        if ((emailAddress == user.email) && ("+" + callingCode + phoneNumber == user.phone)) {
             setError('Nothing changed');
             return;
         }
-
-        setSaving(true)
         const token = await SecureStore.getItemAsync('userToken');
         if (!token || !userId) return;
 
-        const response = await fetch(`https://riyadah.onrender.com/api/users/${userId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                ...user,
-                ...updatedFields
-            })
-        });
+        setError(null);
+        setSaving(true)
 
-        if (response.ok) {
-            console.log("Profile updated successfully");
-            router.back();
-        } else {
-            console.error("Failed to update profile");
+        if (emailAddress != user.email) {
+            try {
+                const response = await fetch(`https://riyadah.onrender.com/api/users/updateEmail`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: emailAddress
+                    })
+                });
+
+                const resp = await response.json();
+
+                if (response.ok && await resp.success) {
+                    console.log("Email updated successfully");
+                    setSaving(false)
+                    router.back();
+                } else {
+                    setError("Failed to update email");
+                    setSaving(false)
+                }
+            } catch (err) {
+                setError('Something went wrong during email update')
+            }
         }
+        if ("+" + callingCode + phoneNumber != user.phone) {
+            try {
+                const response = await fetch(`https://riyadah.onrender.com/api/users/updatePhone`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: "+" + callingCode + phoneNumber
+                    })
+                });
+
+                const resp = await response.json();
+
+                if (response.ok && await resp.success) {
+                    console.log("Phone updated successfully");
+                    setSaving(false)
+                    router.back();
+                } else {
+                    setSaving(false)
+                    setError("Failed to update phone");
+                }
+            } catch (err) {
+                setError('Something went wrong during phone update')
+            }
+        }
+
+        setSaving(false)
     }
 
     return (
