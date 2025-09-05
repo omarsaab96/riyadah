@@ -76,18 +76,7 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "react-native-compressor",
-      [
-        "@expo/config-plugins/react-native-maps",
-        {
-          "ios": {
-            "googleMapsApiKey": "AIzaSyDQ5HceUQFK_NhNAcKg6kCncREr7t60sP8"
-          },
-          "android": {
-            "googleMapsApiKey": "AIzaSyBJelab1iC0Cf-AS9Lenz2RzGVmdQra1hc"
-          }
-        }
-      ]
+      "react-native-compressor"
     ],
     "experiments": {
       "typedRoutes": true
