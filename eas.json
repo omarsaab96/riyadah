@@ -9,15 +9,24 @@
       "distribution": "internal",
       "ios": {
         "simulator": true
+      },
+      "npmInstall": {
+        "legacyPeerDeps": true
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "npmInstall": {
+        "legacyPeerDeps": true
+      }
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
+      },
+      "npmInstall": {
+        "legacyPeerDeps": true
       }
     }
   },
