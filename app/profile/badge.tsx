@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -15,11 +14,9 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Purchases from 'react-native-purchases';
 
 
 const { width } = Dimensions.get('window');
-const isDev = true;
 
 
 export default function Badge() {
@@ -31,52 +28,6 @@ export default function Badge() {
     const [error, setError] = useState<string | null>(null);
     const [expanded, setExpanded] = useState<string | null>(null);
     const productId = "riyadah_badge";
-
-    useEffect(() => {
-        if (Platform.OS === "ios") {
-            Purchases.configure({ apiKey: Constants.expoConfig?.extra?.REVENUECAT_IOS });
-        } else if (Platform.OS === "android") {
-            Purchases.configure({ apiKey: Constants.expoConfig?.extra?.REVENUECAT_ANDROID });
-        }
-    }, []);
-
-    async function loadProducts() {
-        try {
-            const offerings = await Purchases.getOfferings();
-            if (offerings.current && offerings.current.availablePackages.length > 0) {
-                return offerings.current.availablePackages;
-            }
-        } catch (e) {
-            console.error("Error fetching products:", e);
-        }
-    }
-
-    async function handleBuyRiyadahBadge() {
-        try {
-            const offerings = await Purchases.getOfferings();
-            if (offerings.current?.availablePackages.length > 0) {
-                const packageToBuy = offerings.current.availablePackages[0];
-                const purchase = await Purchases.purchasePackage(packageToBuy);
-
-                // Verify with your backend
-                await fetch(`https://riyadah.onrender.com/api/users/${userId}/verifyBadge`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ receipt: purchase }),
-                });
-
-                setUser((prev: any) => ({ ...prev, accountBadge: true }));
-                console.log("✅ Purchase successful", purchase);
-            }
-        } catch (e: any) {
-            if (!e.userCancelled) {
-                console.error("❌ Purchase failed:", e);
-            }
-        }
-    }
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -107,79 +58,6 @@ export default function Badge() {
 
     const toggleFAQ = (key: string) => {
         setExpanded(expanded === key ? null : key);
-    };
-
-    const handleBuyRiyadahBadgeBAK = async () => {
-        setBuying(true);
-        setError(null);
-
-        if (isDev) {
-            // ✅ Mock purchase for development/testing
-            console.log("⚠️ Mock purchase triggered");
-
-            setTimeout(async () => {
-                try {
-                    // Simulate backend verification
-                    const token = await SecureStore.getItemAsync("userToken");
-                    await fetch(`https://riyadah.onrender.com/api/users/${userId}/verifyBadge`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({ purchaseToken: "mock_receipt_dev" }),
-                    });
-
-                    // Update local state as if purchase succeeded
-                    setUser((prev: any) => ({ ...prev, accountBadge: true }));
-                    console.log("💰 Mock purchase successful");
-                } catch (err) {
-                    console.error("❌ Mock purchase verification failed:", err);
-                    setError("Purchase verification failed. Try again.");
-                } finally {
-                    setBuying(false);
-                }
-            }, 1000); // simulate network delay
-            return;
-        }
-
-        try {
-            // ⚡ Real purchase for production
-            const result = await InAppPurchases.purchaseItemAsync(productId);
-
-            if (result.responseCode === InAppPurchases.IAPResponseCode.USER_CANCELED) {
-                console.log("🛑 User canceled the purchase");
-                setError("Purchase canceled");
-                setBuying(false);
-                return;
-            }
-
-            if (result.responseCode !== InAppPurchases.IAPResponseCode.OK) {
-                console.log("⚠️ Purchase failed:", result);
-                setError("Purchase failed. Try again.");
-                setBuying(false);
-                return;
-            }
-
-            // 👇 Success logic
-            const token = await SecureStore.getItemAsync("userToken");
-            await fetch(`https://riyadah.onrender.com/api/users/${userId}/verifyBadge`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ purchaseToken: result.transactionReceipt }),
-            });
-
-            setUser((prev: any) => ({ ...prev, accountBadge: true }));
-            console.log("💰 Purchase successful");
-            setBuying(false);
-        } catch (error) {
-            console.error("❌ Error purchasing:", error);
-            setError("Could not start purchase. Try again later.");
-            setBuying(false);
-        }
     };
 
     return (
@@ -380,8 +258,7 @@ export default function Badge() {
                                         Get verified today
                                     </Text>
                                     <Text style={styles.paragraph}>One-time purchase - only $9.99</Text>
-
-                                    {user && user._id == '68ada7e2f78b12bd8828109c' ? (<TouchableOpacity
+                                    <TouchableOpacity
                                         style={{
                                             width: width - 40,
                                             marginTop: 20,
@@ -394,36 +271,14 @@ export default function Badge() {
                                             justifyContent: 'center',
                                             gap: 5
                                         }}
-                                        onPress={() => handleBuyRiyadahBadge()}
-                                        disabled={buying}
+                                        onPress={() => console.log()}
+                                        disabled={true}
                                     >
-                                        {buying && <ActivityIndicator size='small' color={'#fff'} />}
                                         <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 20, textAlign: 'center' }}>
-                                            {buying ? 'Buying Riyadah Badge' : 'Buy Riyadah badge'}
+                                            Coming soon
                                         </Text>
                                     </TouchableOpacity>
-                                    ) : (
-                                        <TouchableOpacity
-                                            style={{
-                                                width: width - 40,
-                                                marginTop: 20,
-                                                backgroundColor: '#FF4000',
-                                                paddingVertical: 15,
-                                                paddingHorizontal: 30,
-                                                borderRadius: 10,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: 5
-                                            }}
-                                            onPress={() => console.log()}
-                                            disabled={true}
-                                        >
-                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 20, textAlign: 'center' }}>
-                                                Coming soon
-                                            </Text>
-                                        </TouchableOpacity>
-                                    )}
+
                                 </View>
                             </View>
                         )}
