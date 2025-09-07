@@ -19,11 +19,13 @@ RIYADAH:
     ☐ when personal account is false we should send an email to the user with generated password
     ☐ when personal account is false, show password: sent to email on confirmation screen
     ☐ when personal account is false, remove errors on confirmation screen
+    ☐ get directions on ios not working
+    ✔ otp numbers should be color: 'black' @done(25-09-07 10:43)
 
 TESTING:
-    ☐ test email and phone verification on android
-    ☐ test create new account with newly added fields skillsareVerified and accountBadge
-    ☐ check skills verified appearance
-    ☐ check account badge appearance
-    ☐ test purchase on real device
-    ☐ check map on real device
+    ✔ test email and phone verification on android @done(25-09-07 10:39)
+    ✔ test create new account with newly added fields skillsareVerified and accountBadge @done(25-09-07 10:43)
+    ✔ check skills verified appearance @done(25-09-07 10:35)
+    ✔ check account badge appearance @done(25-09-07 10:35)
+    ✔ test purchase on real device @done(25-09-07 10:35)
+    ✔ check map on real device @done(25-09-07 10:37)

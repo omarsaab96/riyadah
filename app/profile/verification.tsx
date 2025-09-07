@@ -840,6 +840,7 @@ const styles = StyleSheet.create({
         fontSize: 40,
         borderRadius: 10,
         marginHorizontal: 5,
+        color: 'black'
     },
     backBtn: {
         position: 'absolute',
