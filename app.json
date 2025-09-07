@@ -24,6 +24,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Allow access to your camera to take profile pictures",
         "NSPhotoLibraryUsageDescription": "Allow access to your photos to choose a profile picture",
+        "NSLocationWhenInUseUsageDescription": "Riyadah uses your location to provide location-based features such as maps and nearby services.",
         "ITSAppUsesNonExemptEncryption": false,
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
