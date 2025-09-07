@@ -15,7 +15,7 @@ RIYADAH:
     ☐ make social media contact togglable ( use hidden flag "\u200B+96170433863")
     ✔ fix ios dropdowns height @done(25-09-05 21:36)
     ✔ staff disable savebutton when saving @done(25-09-05 21:37)
-    ☐ fix date time on ios
+    ✔ fix date time on ios @done(25-09-06 00:58)
     ☐ when personal account is false we should send an email to the user with generated password
     ☐ when personal account is false, show password: sent to email on confirmation screen
     ☐ when personal account is false, remove errors on confirmation screen

@@ -60,36 +60,73 @@ const CreateEventScreen = () => {
     const [mode, setMode] = useState('date'); // 'date' or 'time'
     const [show, setShow] = useState(false);
 
+    const [iosPickerState, setIosPickerState] = useState({
+        show: false,
+        field: null, // 'start' or 'end'
+        date: new Date(),
+    });
+
     const onChange = (event, selectedDate) => {
-        if (event.type === 'dismissed') {
-            setPickerState(prev => ({ ...prev, show: false }));
-            return;
-        }
-
-        if (pickerState.mode === 'date') {
-            // Next, ask for time
-            setPickerState(prev => ({
-                ...prev,
-                mode: 'time',
-                tempDate: selectedDate,
-            }));
-        } else {
-            // Finalize datetime
-            const finalDateTime = new Date(
-                pickerState.tempDate.getFullYear(),
-                pickerState.tempDate.getMonth(),
-                pickerState.tempDate.getDate(),
-                selectedDate.getHours(),
-                selectedDate.getMinutes()
-            );
-
-            if (pickerState.field === 'start') {
-                handleChange('startDateTime', finalDateTime);
-            } else {
-                handleChange('endDateTime', finalDateTime);
+        if (Platform.OS === 'android') {
+            if (event.type === 'dismissed') {
+                setPickerState(prev => ({ ...prev, show: false }));
+                return;
             }
 
-            setPickerState(prev => ({ ...prev, show: false }));
+            if (pickerState.mode === 'date') {
+                // Next, ask for time
+                setPickerState(prev => ({
+                    ...prev,
+                    mode: 'time',
+                    tempDate: Platform.OS == 'ios' ? formatted : selectedDate,
+                }));
+            } else {
+                // Finalize datetime
+                const finalDateTime = new Date(
+                    pickerState.tempDate.getFullYear(),
+                    pickerState.tempDate.getMonth(),
+                    pickerState.tempDate.getDate(),
+                    selectedDate.getHours(),
+                    selectedDate.getMinutes()
+                );
+
+                if (pickerState.field === 'start') {
+                    handleChange('startDateTime', finalDateTime);
+                } else {
+                    handleChange('endDateTime', finalDateTime);
+                }
+
+                setPickerState(prev => ({ ...prev, show: false }));
+            }
+        }
+
+        if (Platform.OS === 'ios') {
+            // iOS handling
+            if (event.type === 'set') {
+                if (iosPickerState.field === 'start') {
+                    handleChange('startDateTime', selectedDate);
+                } else if (iosPickerState.field === 'end') {
+                    handleChange('endDateTime', selectedDate);
+                }
+            }
+            // setIosPickerState(prev => ({ ...prev, show: false }));
+        }
+    };
+
+    const showPicker = (field, mode) => {
+        if (Platform.OS === 'ios') {
+            setIosPickerState({
+                show: true,
+                field,
+                date: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
+            });
+        } else {
+            setPickerState({
+                show: true,
+                mode,
+                field,
+                tempDate: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
+            });
         }
     };
 
@@ -242,14 +279,14 @@ const CreateEventScreen = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const showPicker = (field, mode) => {
-        setPickerState({
-            show: true,
-            mode,
-            field,
-            tempDate: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
-        });
-    };
+    // const showPicker = (field, mode) => {
+    //     setPickerState({
+    //         show: true,
+    //         mode,
+    //         field,
+    //         tempDate: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
+    //     });
+    // };
 
     const handleNestedChange = (parent, name, value) => {
         setFormData(prev => ({
@@ -433,7 +470,7 @@ const CreateEventScreen = () => {
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Start Date & Time *</Text>
-                            {Platform.OS != 'ios' && <TouchableOpacity
+                            <TouchableOpacity
                                 style={styles.dateInput}
                                 onPress={() => showPicker('start', 'date')}
                             >
@@ -442,25 +479,12 @@ const CreateEventScreen = () => {
                                 </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
                             </TouchableOpacity>
-                            }
-                            {Platform.OS == 'ios' &&
-                                <DateTimePicker
-                                    testID="dateTimePicker"
-                                    value={pickerState.tempDate}
-                                    mode='datetime'
-                                    is24Hour={false}
-                                    display='spinner'
-                                    // minimumDate={new Date()}
-                                    textColor={'#000'}
-                                    onChange={onChange}
-                                />
-                            }
                         </View>
 
                         {/* End Date & Time */}
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>End Date & Time *</Text>
-                            {Platform.OS != 'ios' && <TouchableOpacity
+                            <TouchableOpacity
                                 style={styles.dateInput}
                                 onPress={() => showPicker('end', 'date')}
                             >
@@ -468,34 +492,57 @@ const CreateEventScreen = () => {
                                     {formData.endDateTime.toLocaleString()}
                                 </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </TouchableOpacity>}
+                            </TouchableOpacity>
+                        </View>
 
-                            {Platform.OS == 'ios' &&
+                        {
+                            pickerState.show && Platform.OS === 'android' && (
                                 <DateTimePicker
                                     testID="dateTimePicker"
                                     value={pickerState.tempDate}
-                                    mode='datetime'
-                                    is24Hour={false}
-                                    display='spinner'
-                                    // minimumDate={new Date()}
-                                    textColor={'#000'}
+                                    mode={pickerState.mode}
+                                    is24Hour={true}
+                                    display={'default'}
                                     onChange={onChange}
                                 />
-                            }
-                        </View>
+                            )
+                        }
 
-                        {pickerState.show && (
-                            <DateTimePicker
-                                testID="dateTimePicker"
-                                value={pickerState.tempDate}
-                                mode={pickerState.mode}
-                                is24Hour={true}
-                                display={'default'}
-                                onChange={onChange}
-                            />
+                        {iosPickerState.show && Platform.OS === 'ios' && (
+                            <View style={styles.iosPickerContainer}>
+                                <DateTimePicker
+                                    testID="dateTimePicker"
+                                    value={iosPickerState.date}
+                                    mode="datetime"
+                                    display="spinner"
+                                    onChange={onChange}
+                                    textColor="#000"
+                                />
+                                <View style={styles.iosPickerButtons}>
+                                    <TouchableOpacity
+                                        style={styles.iosPickerButton}
+                                        onPress={() => setIosPickerState(prev => ({ ...prev, show: false }))}
+                                    >
+                                        <Text style={styles.iosPickerButtonText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.iosPickerButton, styles.iosPickerButtonConfirm]}
+                                        onPress={() => {
+                                            // if (iosPickerState.field === 'start') {
+                                            //     handleChange('startDateTime', iosPickerState.date);
+                                            // } else {
+                                            //     handleChange('endDateTime', iosPickerState.date);
+                                            // }
+                                            setIosPickerState(prev => ({ ...prev, show: false }));
+                                        }}
+                                    >
+                                        <Text style={styles.iosPickerButtonText}>Confirm</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
                         )}
 
-                        <View style={styles.formGroup}>
+                        < View style={styles.formGroup}>
                             <Text style={styles.label}>Recurring event</Text>
                             <View style={styles.pickerContainer}>
                                 <Picker
@@ -745,8 +792,8 @@ const CreateEventScreen = () => {
                         </View>
                     </View>
                 </ScrollView>
-            </View>
-        </KeyboardAvoidingView>
+            </View >
+        </KeyboardAvoidingView >
     );
 };
 
@@ -1081,6 +1128,31 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 18,
         fontFamily: 'Bebas'
+    },
+    iosPickerContainer: {
+        backgroundColor: '#fff',
+        padding: 10,
+        borderTopWidth: 1,
+        borderTopColor: '#ccc',
+    },
+    iosPickerButtons: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 10,
+    },
+    iosPickerButton: {
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        marginLeft: 10,
+        borderRadius: 5,
+        backgroundColor: '#f0f0f0',
+    },
+    iosPickerButtonConfirm: {
+        backgroundColor: '#FF4000',
+    },
+    iosPickerButtonText: {
+        color: '#000',
+        fontFamily: 'Manrope',
     },
 });
 

@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as InAppPurchases from 'expo-in-app-purchases';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import Purchases from 'react-native-purchases';
 
 
 const { width } = Dimensions.get('window');
@@ -31,6 +32,51 @@ export default function Badge() {
     const [expanded, setExpanded] = useState<string | null>(null);
     const productId = "riyadah_badge";
 
+    useEffect(() => {
+        if (Platform.OS === "ios") {
+            Purchases.configure({ apiKey: Constants.expoConfig?.extra?.REVENUECAT_IOS });
+        } else if (Platform.OS === "android") {
+            Purchases.configure({ apiKey: Constants.expoConfig?.extra?.REVENUECAT_ANDROID });
+        }
+    }, []);
+
+    async function loadProducts() {
+        try {
+            const offerings = await Purchases.getOfferings();
+            if (offerings.current && offerings.current.availablePackages.length > 0) {
+                return offerings.current.availablePackages;
+            }
+        } catch (e) {
+            console.error("Error fetching products:", e);
+        }
+    }
+
+    async function handleBuyRiyadahBadge() {
+        try {
+            const offerings = await Purchases.getOfferings();
+            if (offerings.current?.availablePackages.length > 0) {
+                const packageToBuy = offerings.current.availablePackages[0];
+                const purchase = await Purchases.purchasePackage(packageToBuy);
+
+                // Verify with your backend
+                await fetch(`https://riyadah.onrender.com/api/users/${userId}/verifyBadge`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ receipt: purchase }),
+                });
+
+                setUser((prev: any) => ({ ...prev, accountBadge: true }));
+                console.log("✅ Purchase successful", purchase);
+            }
+        } catch (e: any) {
+            if (!e.userCancelled) {
+                console.error("❌ Purchase failed:", e);
+            }
+        }
+    }
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -59,54 +105,11 @@ export default function Badge() {
 
     }, []);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const initPurchases = async () => {
-            try {
-                if (isDev) {
-                    console.log("⚠️ Mock IAP mode - no real store connection");
-                    return;
-                }
-
-                const result = await InAppPurchases.connectAsync();
-                if (result.responseCode === InAppPurchases.IAPResponseCode.OK) {
-                    console.log("✅ Connected to in-app purchases");
-                    await InAppPurchases.getProductsAsync([productId]);
-                }
-            } catch (err) {
-                console.error("❌ Failed to connect to IAP:", err);
-            }
-        };
-
-        InAppPurchases.setPurchaseListener(({ responseCode, results, errorCode }) => {
-            if (isDev) {
-                console.log("⚠️ Mock purchase listener triggered", { responseCode, results, errorCode });
-                // Simulate a successful purchase in dev
-                setUser((prev: any) => ({ ...prev, accountBadge: true }));
-                setBuying(false);
-                return;
-            }
-
-            console.log({ responseCode, results, errorCode });
-            // handle real purchases here...
-        });
-
-        initPurchases();
-
-        return () => {
-            isMounted = false;
-            InAppPurchases.setPurchaseListener(null);
-            if (!isDev) InAppPurchases.disconnectAsync();
-        };
-    }, [userId]);
-
-
     const toggleFAQ = (key: string) => {
         setExpanded(expanded === key ? null : key);
     };
 
-    const handleBuyRiyadahBadge = async () => {
+    const handleBuyRiyadahBadgeBAK = async () => {
         setBuying(true);
         setError(null);
 
@@ -257,7 +260,7 @@ export default function Badge() {
                                 <Text style={[styles.pageTitle, { color: "#009933", marginTop: 10 }]}>
                                     Congratulations!
                                 </Text>
-                                <Text style={[styles.paragraph,{textAlign:'center'}]}>
+                                <Text style={[styles.paragraph, { textAlign: 'center' }]}>
                                     Your account is officially verified with Riyadah badge. This helps you stand out,
                                     gain trust, and show authenticity in our community.
                                 </Text>

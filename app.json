@@ -85,7 +85,9 @@
       "router": {},
       "eas": {
         "projectId": "6ad7cb3c-f873-489a-8120-c3e2da4bf98f"
-      }
+      },
+      "REVENUECAT_IOS": "appl_BKrhCsqwkBqSmIgcnyeAlYorukq",
+      "REVENUECAT_ANDROID": "goog_qiQzoKrtCxfqFKQwHDYltBiIUKV"
     }
   }
 }
