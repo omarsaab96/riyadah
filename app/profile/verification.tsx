@@ -190,7 +190,7 @@ export default function VerifyProfile() {
 
         setPhoneOtp(newOtp);
     };
-    
+
     //OTP handling
     const handleSendEmailOTP = async () => {
         // validate email
@@ -837,9 +837,10 @@ const styles = StyleSheet.create({
         aspectRatio: 0.76,
         flex: 1,
         textAlign: "center",
-        fontSize: 40,
+        fontSize: 35,
         borderRadius: 10,
         marginHorizontal: 5,
+        textAlignVertical: "center",
         color: 'black'
     },
     backBtn: {
