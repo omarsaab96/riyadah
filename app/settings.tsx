@@ -154,37 +154,44 @@ export default function Profile() {
                             <Text style={styles.profileButtonText}>Notifications settings</Text>
                         </TouchableOpacity> */}
                     </View>
-                </View>
-            </ScrollView>
 
-            <View style={styles.footer}>
-                <View style={styles.settings}>
-                    <TouchableOpacity onPress={handleDeactivateAccount} style={[styles.profileButton, styles.deactivateBtn]}>
-                        <Text style={[styles.profileButtonText, styles.deactivateBtnText]}>Deactivate account</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleLogout} style={[styles.profileButton, styles.logoutBtn]}>
-                        <MaterialIcons name="logout" size={20} color="black" />
-                        <Text style={styles.profileButtonText}>Logout</Text>
-                    </TouchableOpacity>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 15 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                            <TouchableOpacity onPress={() => openLink("https://riyadah.app/terms")} style={{flexDirection:'row',gap:2,alignItems:'center'}}>
-                                <Feather name="external-link" size={12} color="#FF4000" />
-                                <Text style={styles.footerLink}>Terms</Text>
+                    <View style={styles.footer}>
+                        <View style={styles.settings}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 }}>
+                                <View style={{ gap: 5 }}>
+                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/terms")} style={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+                                        <Feather name="external-link" size={12} color="#FF4000" />
+                                        <Text style={styles.footerLink}>Terms and conditions</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/privacy")} style={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+                                        <Feather name="external-link" size={12} color="#FF4000" />
+                                        <Text style={styles.footerLink}>Privacy policy</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/")} style={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+                                        <Feather name="external-link" size={12} color="#FF4000" />
+                                        <Text style={styles.footerLink}>Visit Riyadah website</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <TouchableOpacity onPress={handleDeactivateAccount} style={[styles.profileButton, styles.deactivateBtn]}>
+                                <Text style={[styles.profileButtonText, styles.deactivateBtnText]}>Deactivate account</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => openLink("https://riyadah.app/privacy")} style={{flexDirection:'row',gap:2,alignItems:'center'}}>
-                                <Feather name="external-link" size={12} color="#FF4000" />
-                                <Text style={styles.footerLink}>Privacy</Text>
+                            <TouchableOpacity onPress={handleLogout} style={[styles.profileButton, styles.logoutBtn]}>
+                                <MaterialIcons name="logout" size={20} color="black" />
+                                <Text style={[styles.profileButtonText, { fontSize: 14 }]}>Logout</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => openLink("https://riyadah.app/")} style={{flexDirection:'row',gap:2,alignItems:'center'}}>
-                                <Feather name="external-link" size={12} color="#FF4000" />
-                                <Text style={styles.footerLink}>Website</Text>
-                            </TouchableOpacity>
+
+                            <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v1.0.0</Text>
+
                         </View>
-                        <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v1.0.0</Text>
                     </View>
                 </View>
-            </View>
+
+
+            </ScrollView>
+
+
 
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
@@ -310,11 +317,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 5,
         justifyContent: 'center',
-        // backgroundColor:'#d96c6c',
+        backgroundColor: '#f2f2f2',
         borderRadius: 10
     },
     deactivateBtnText: {
-        color: '#FF4000'
+        color: '#FF4000',
+        fontSize: 14
     },
     logoutBtn: {
         flexDirection: 'row',
@@ -323,13 +331,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#f2f2f2',
         borderRadius: 10,
-        marginBottom: 0
+        marginBottom: 20
     },
     footer: {
-        position: 'absolute',
-        bottom: 130,
-        left: 10,
-        width: width - 20,
+        // position: 'absolute',
+        // bottom: 130,
+        // left: 10,
+        // width: width - 20,
+        paddingTop: 80,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',

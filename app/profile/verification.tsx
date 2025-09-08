@@ -573,16 +573,17 @@ export default function VerifyProfile() {
 
                                 <View style={{ flexDirection: "row", alignItems: 'center', justifyContent: "space-between", marginVertical: 20 }}>
                                     {emailOtp.map((digit, idx) => (
-                                        <TextInput
-                                            key={idx}
-                                            ref={el => (emailInputsRef.current[idx] = el)}
-                                            style={styles.otpInput}
-                                            keyboardType="number-pad"
-                                            maxLength={1}
-                                            value={digit}
-                                            onChangeText={text => handleChange(text, idx, 'email')}
-                                            onKeyPress={e => handleKeyPress(e, idx, 'email')}
-                                        />
+                                        <View style={styles.otpInputContainer} key={idx}>
+                                            <TextInput
+                                                ref={el => (emailInputsRef.current[idx] = el)}
+                                                style={styles.otpInput}
+                                                keyboardType="number-pad"
+                                                maxLength={1}
+                                                value={digit}
+                                                onChangeText={text => handleChange(text, idx, 'email')}
+                                                onKeyPress={e => handleKeyPress(e, idx, 'email')}
+                                            />
+                                        </View>
                                     ))}
                                     <TouchableOpacity onPress={() => pasteEmailOTP()} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                                         <MaterialIcons name="content-paste" size={24} color="#FF4000" />
@@ -832,16 +833,23 @@ const styles = StyleSheet.create({
     verifiedbadge: {
         color: '#009933',
     },
-    otpInput: {
+    otpInputContainer: {
         borderWidth: 1,
-        aspectRatio: 0.76,
-        flex: 1,
-        textAlign: "center",
-        fontSize: 35,
+        // borderColor: 'red',
+        width: 35,
+        height: 50,
         borderRadius: 10,
         marginHorizontal: 5,
-        textAlignVertical: "center",
-        color: 'black'
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignContent:'center'
+    },
+    otpInput: {
+        fontSize: 40,
+        color: 'black',
+        lineHeight: 40,
+        paddingVertical: 0,
+        includeFontPadding: false,
     },
     backBtn: {
         position: 'absolute',
