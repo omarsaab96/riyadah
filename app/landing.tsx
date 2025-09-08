@@ -30,7 +30,7 @@ import {
 
 const { width } = Dimensions.get('window');
 
-const CommentFooter = ({ footerProps, user, submittingComment, onSubmitCommentm }) => {
+const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }) => {
     const [newComment, setNewComment] = useState('');
     const [keyboardVisible, setKeyboardVisible] = useState(false);
 
