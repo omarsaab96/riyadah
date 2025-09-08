@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
     otpInputContainer: {
         borderWidth: 1,
         // borderColor: 'red',
-        width: 35,
+        width: Platform.OS=='ios' ? 40 : 35,
         height: 50,
         borderRadius: 10,
         marginHorizontal: 5,
@@ -847,9 +847,10 @@ const styles = StyleSheet.create({
     otpInput: {
         fontSize: 40,
         color: 'black',
-        lineHeight: 40,
-        paddingVertical: 0,
+        lineHeight: 45,
+        padding: 0,
         includeFontPadding: false,
+        textAlign:'center',
     },
     backBtn: {
         position: 'absolute',
