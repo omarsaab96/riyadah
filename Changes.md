@@ -1,0 +1,75 @@
+Changes
+
+1.	Add number on stats pentagon for athletes.
+2.	Add position field for sports that include positions (e.g., football, volleyball) and allow search by position.
+3.	Remove “highlights” and “stats” sections from the athlete bio.
+4.	Add visible upcoming events (training and matches) on the athlete dashboard.
+5.	Enable push notifications for schedule updates.
+6.	Fix recurring option in events (daily, weekly, monthly repetition) as it is not working.
+7.	Remove seconds from event start and end times.
+8.	Fix server error during event creation or update.
+9.	Add Google Maps link integration for event locations.
+10.	Add payments dashboard for athletes to pay.
+11.	Add admin and coach payments dashboard.
+12.	Automate monthly payment reminders via push notifications.
+13.	Add “Amount” field in financials section and make all payments in EGP
+14.	Add attendance dashboard for admins.
+15.	Add unified admin and coach dashboard (attendance + payments overview).
+16.	Link coaches directly under their club or academy.
+17.	Enable group chat feature 
+18.	Add validation for birthdate to prevent invalid entries. (35/14/2024)
+19.	Change club establishment format from day/year to month/year or only year.
+20.	Add club type selection option (Club / Academy).
+21.	Add backend capability for live testing result uploads.
+22.	Add post-session and monthly survey feature for athletes.
+23.	Add new sports: Volleyball, Swimming, and Tennis.
+
+---------------------------------------------------------
+1. Post-Workout / Session Survey (Micro-Survey)
+
+Frequency: After every training session or match.
+
+Suggested Questions:
+1.	How intense was today’s session?
+	(1 = Very Easy, 10 = Extremely Hard) → used for RPE (Rate of Perceived Exertion).
+2.	How do you feel physically right now?
+	•	Great
+	•	Tired
+	•	Exhausted
+3.	How was your focus and motivation today?
+	•	High / Moderate / Low
+4.	Any pain, soreness, or discomfort?
+	•	Yes / No → if Yes, open comment field (“Where?”)
+5.	Any comments or feedback for the coach? (Optional open text)
+
+How to use:
+•	Data feeds into the athlete’s daily readiness dashboard.
+•	Average RPE × duration = session load.
+•	Alerts if fatigue or soreness is consistently high
+
+---------------------------------------------------------
+2. Monthly Athlete Wellness & Progress Survey
+
+Frequency: Once per month (auto-triggered on 30th or end of training cycle).
+
+Suggested Questions:
+1.	How satisfied are you with your overall training this month?
+	(1–5 scale: Very dissatisfied → Very satisfied)
+2.	Do you feel your performance is improving?
+	•	Yes / Slightly / No change / Declining
+3.	How well are you recovering between sessions?
+	•	Excellent / Good / Poor / Very poor
+4.	How would you rate your sleep quality this month?
+	•	Excellent / Fair / Poor
+5.	Do you feel mentally motivated to train?
+	•	Always / Often / Sometimes / Rarely
+6.	Any injuries or pain affecting performance?
+	•	Yes / No → (if yes, describe briefly)
+7.	What is one area you want to improve next month? (open text)
+8.	Overall satisfaction with your coach/training environment?
+	(1–5 scale)
+
+How to use:
+	•	Coaches view a monthly summary per player or team.
+	•	Can auto-flag players with declining motivation or poor recovery.
+	•	Excellent for wellness tracking + communication insight.
