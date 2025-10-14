@@ -1,5 +1,6 @@
 
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
@@ -25,6 +26,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -125,16 +127,29 @@ export default function Login() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        <TextInput
-          style={[styles.input, styles.passwordInput]}
-          placeholder="Password"
-          placeholderTextColor="#A8A8A8"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
         <View>
-          <TouchableOpacity style={styles.forgotPassword} onPress={() => {router.push('/profile/forgotPassword')}}>
+          <TextInput
+            style={[styles.input, styles.passwordInput]}
+            placeholder="Password"
+            placeholderTextColor="#A8A8A8"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeIcon}
+          >
+            <MaterialIcons
+              name={showPassword ? "visibility-off" : "visibility"}
+              size={24}
+              color="#707070"
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View>
+          <TouchableOpacity style={styles.forgotPassword} onPress={() => { router.push('/profile/forgotPassword') }}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
@@ -315,5 +330,11 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontFamily: 'Bebas'
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    top: 12,
+    zIndex: 1,
   },
 });

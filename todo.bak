@@ -1,0 +1,32 @@
+RIYADAH:
+    ✘ move gender @cancelled(25-09-05 05:39)
+    ☐ coach(verify skills, attendance sheet)
+    get verified badge:
+        ✔ backend @started(25-09-03 18:31) @done(25-09-03 18:51) @lasted(20m57s)
+        ✔ frontend @started(25-09-03 18:59) @done(25-09-03 22:10) @lasted(3h11m17s)
+    ✔ account settings @done(25-09-05 04:28)
+    ✔ on update user email and password in the api, reset verified @done(25-09-05 04:28)
+    ✔ update passwords in db @done(25-09-05 07:34)
+    ✔ forgot password @done(25-09-05 07:24)
+    ☐ personal account login flow
+    ☐ update splash screen
+    ✔ fix gooogle maps on ios @done(25-09-05 19:55)
+    ✔ social media accounts prefixes @done(25-09-05 20:12)
+    ☐ make social media contact togglable ( use hidden flag "\u200B+96170433863")
+    ✔ fix ios dropdowns height @done(25-09-05 21:36)
+    ✔ staff disable savebutton when saving @done(25-09-05 21:37)
+    ✔ fix date time on ios @done(25-09-06 00:58)
+    ☐ when personal account is false we should send an email to the user with generated password
+    ☐ when personal account is false, show password: sent to email on confirmation screen
+    ☐ when personal account is false, remove errors on confirmation screen
+    ☐ get directions on ios not working
+    ✔ otp numbers should be color: 'black' @done(25-09-07 10:43)
+    ✔ comment on ios crashing @done(25-09-08 09:49)
+
+TESTING:
+    ✔ test email and phone verification on android @done(25-09-07 10:39)
+    ✔ test create new account with newly added fields skillsareVerified and accountBadge @done(25-09-07 10:43)
+    ✔ check skills verified appearance @done(25-09-07 10:35)
+    ✔ check account badge appearance @done(25-09-07 10:35)
+    ✔ test purchase on real device @done(25-09-07 10:35)
+    ✔ check map on real device @done(25-09-07 10:37)

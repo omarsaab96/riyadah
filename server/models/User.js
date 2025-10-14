@@ -95,6 +95,7 @@ const userSchema = new mongoose.Schema({
     }
   },
   sport: [String],
+  position: String,
   stats: String,
   type: String,
   verified: {

@@ -113,11 +113,11 @@ export default function Profile() {
 
     //graph data
     const data = [
-        { label: 'Attack', value: user?.skills?.attack },
-        { label: 'Defense', value: user?.skills?.defense },
-        { label: 'Speed', value: user?.skills?.speed },
-        { label: 'Stamina', value: user?.skills?.stamina },
-        { label: 'Skill', value: user?.skills?.skill }
+        { label: 'Attack', sublabel: user?.skills?.attack, value: user?.skills?.attack },
+        { label: 'Defense', sublabel: user?.skills?.defense, value: user?.skills?.defense },
+        { label: 'Speed', sublabel: user?.skills?.speed, value: user?.skills?.speed },
+        { label: 'Stamina', sublabel: user?.skills?.stamina, value: user?.skills?.stamina },
+        { label: 'Skill', sublabel: user?.skills?.skill, value: user?.skills?.skill }
     ];
 
     const headerHeight = scrollY.interpolate({
@@ -1487,15 +1487,15 @@ export default function Profile() {
                     </View>}
 
                     {/* SKILLS */}
-                    {user.type == "Athlete" && <View style={[styles.profileSection,styles.skillsSection]}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center',justifyContent:'space-between', gap: 5 }}>
+                    {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5 }}>
                             <Text style={styles.title}>
                                 Skills
                             </Text>
-                            {user.skillsAreVerified?.by!=null &&
+                            {user.skillsAreVerified?.by != null &&
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                     <Octicons name="verified" size={16} color="#009933" />
-                                    <Text style={{color:"#009933"}}>Verified</Text>
+                                    <Text style={{ color: "#009933" }}>Verified</Text>
                                 </View>
                             }
                         </View>
@@ -2871,10 +2871,10 @@ const styles = StyleSheet.create({
     profileSection: {
         marginBottom: 30
     },
-    skillsSection:{
-        backgroundColor:'#f2f2f2',
-        padding:10,
-        borderRadius:10
+    skillsSection: {
+        backgroundColor: '#f2f2f2',
+        padding: 10,
+        borderRadius: 10
     },
     profileProgress: {
         backgroundColor: '#222222',

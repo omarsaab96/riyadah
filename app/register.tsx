@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { isValidPhoneNumber } from 'libphonenumber-js';
@@ -37,6 +38,7 @@ export default function Register() {
   const [agreed, setAgreed] = useState<boolean | null>(formData.agreed || null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -230,16 +232,26 @@ export default function Register() {
                 onChangeText={setPhoneNumber}
               />
             </View>
-            
-            <TextInput
-              style={[styles.input, styles.passwordInput]}
-              placeholder="Password"
-              placeholderTextColor="#A8A8A8"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-
+            <View>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Password"
+                placeholderTextColor="#A8A8A8"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+              >
+                <MaterialIcons
+                  name={showPassword ? "visibility-off" : "visibility"}
+                  size={24}
+                  color="#707070"
+                />
+              </TouchableOpacity>
+            </View>
             <View style={styles.hintContainer}>
               <Text style={styles.hint}>Password must be at least 6 character long and include 1 capital letter and 1 symbol</Text>
             </View>
@@ -513,5 +525,11 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontFamily: 'Bebas'
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    top: 12,
+    zIndex: 1,
   },
 });
