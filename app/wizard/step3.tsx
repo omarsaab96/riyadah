@@ -33,8 +33,11 @@ export default function WizardStep3() {
         { label: 'Football', icon: require('../../assets/football.png'), visible: true },
         { label: 'Basketball', icon: require('../../assets/basketball.png'), visible: true },
         { label: 'Gymnastics', icon: require('../../assets/gymnastics.png'), visible: true },
-        { label: 'Racing', icon: require('../../assets/racing.png'), visible: true },
-        { label: 'Golf', icon: require('../../assets/golf.png'), visible: true }
+        // { label: 'Racing', icon: require('../../assets/racing.png'), visible: true },
+        // { label: 'Golf', icon: require('../../assets/golf.png'), visible: true },
+        { label: 'Volleyball', icon: require('../../assets/volleyball.png'), visible: true },
+        { label: 'Swimming', icon: require('../../assets/swimming.png'), visible: true },
+        { label: 'Tennis', icon: require('../../assets/tennis.png'), visible: true }
     ]);
 
     useEffect(() => {

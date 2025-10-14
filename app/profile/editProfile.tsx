@@ -555,6 +555,20 @@ export default function EditProfile() {
                                 </View>
                             </View>
 
+                            {/* POSITION */}
+                            {user.type == "Athlete" && user.sport.some(s => ['Football', 'Basketball', 'Volleyball'].includes(s)) == "Athlete" && <View style={styles.entity}>
+                                <Text style={styles.title}>
+                                    Position
+                                </Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Position you play eg.:Goal keeper"
+                                    placeholderTextColor="#A8A8A8"
+                                    value={user.position?.toString()}
+                                    onChangeText={(text) => updateField('position', text)}
+                                />
+                            </View>}
+
                             {/* HEIGHT */}
                             {user.type == "Athlete" && <View style={styles.entity}>
                                 <Text style={styles.title}>
@@ -584,7 +598,7 @@ export default function EditProfile() {
                             </View>}
 
                             {/* HIGHLIGHTS */}
-                            {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
+                            {/* {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
                                 <Text style={styles.title}>
                                     Highlights
                                 </Text>
@@ -598,10 +612,10 @@ export default function EditProfile() {
                                     blurOnSubmit={false}
                                     returnKeyType="default"
                                 />
-                            </View>}
+                            </View>} */}
 
                             {/* STATS */}
-                            {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
+                            {/* {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
 
                                 <Text style={styles.title}>
                                     Stats
@@ -616,7 +630,7 @@ export default function EditProfile() {
                                     blurOnSubmit={false}
                                     returnKeyType="default"
                                 />
-                            </View>}
+                            </View>} */}
 
                             {/* ACHIEVEMENTS */}
                             {user.type == "Athlete" && <View style={styles.entity}>
@@ -636,7 +650,7 @@ export default function EditProfile() {
                             </View>}
 
                             {/* EVENTS */}
-                            {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
+                            {/* {user.type != "Parent" && user.type != "Scout" && user.type != "Association" && <View style={styles.entity}>
 
                                 <Text style={styles.title}>
                                     Upcoming Events
@@ -651,7 +665,7 @@ export default function EditProfile() {
                                     blurOnSubmit={false}
                                     returnKeyType="default"
                                 />
-                            </View>}
+                            </View>} */}
 
                             {/* SKILLS */}
                             {user.type == "Athlete" && <View style={styles.entity}>

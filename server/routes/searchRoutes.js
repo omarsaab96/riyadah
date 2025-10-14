@@ -23,7 +23,7 @@ const authenticateToken = (req, res, next) => {
 
 // GET /api/search?keyword=someText
 router.get('/', authenticateToken, async (req, res) => {
-  const {keyword = '',category,userType,sport,gender,eventType,role,limit = 20,} = req.query;
+  const {keyword = '',position,category,userType,sport,gender,eventType,role,limit = 20,} = req.query;
 
   const regex = new RegExp(keyword, 'i');
   const parsedLimit = Math.min(parseInt(limit), 50);
@@ -52,10 +52,11 @@ router.get('/', authenticateToken, async (req, res) => {
       if (sport!=='All') userFilter.$and.push({ sport: { $in: [sport] } });
       if (gender!=='All') userFilter.$and.push({ gender });
       if (role) userFilter.$and.push({ role });
+      if (position) userFilter.$and.push({ position });
 
       tasks.push(
         User.find(userFilter)
-          .select('_id name email sport gender type image role')
+          .select('_id name email position sport gender type image role')
           .limit(parsedLimit)
           .then((data) => (results.users = data))
       );

@@ -59,6 +59,7 @@ export default function Profile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
+    const tabsAthlete = ['Profile', 'Schedule'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const tabsCoach = ['Profile', 'Teams'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
@@ -258,6 +259,30 @@ export default function Profile() {
     }
 
     const getSchedule = async () => {
+        if (user.type == "Athlete") {
+            try {
+                const res = await fetch(`https://riyadah.onrender.com/api/schedules/user/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const response = await res.json();
+
+                // console.log(response)
+
+                if (response.success) {
+                    setSchedule(response.data)
+                    setScheduleLoading(false);
+                } else {
+                    setSchedule(null)
+                }
+            } catch (err) {
+                console.error('Failed to fetch schedule', err);
+            }
+        }
+        
         if (user.type == "Club") {
             try {
                 const res = await fetch(`https://riyadah.onrender.com/api/schedules`, {
@@ -452,8 +477,8 @@ export default function Profile() {
             if (user.type != null) filledFields++;
             if (user.sport != null && user.sport.length >= 1) filledFields++;
             if (user.bio != null) filledFields++;
-            if (user.highlights != null) filledFields++;
-            if (user.stats != null) filledFields++;
+            // if (user.highlights != null) filledFields++;
+            // if (user.stats != null) filledFields++;
             if (user.events != null) filledFields++;
 
             progress = Math.round((filledFields / totalFields) * 100);
@@ -473,7 +498,7 @@ export default function Profile() {
             progress = Math.round((filledFields / totalFields) * 100);
 
         } else {
-            const totalFields = 20;
+            const totalFields = user.sport.some(s => ['Football', 'Basketball', 'Volleyball'].includes(s)) ? 19 : 18;
 
             if (user.name != null) filledFields++;
             if (user.email != null) filledFields++;
@@ -482,12 +507,13 @@ export default function Profile() {
             if (user.dob?.day != null && user.dob?.month != null && user.dob?.year != null) filledFields++;
             if (user.type != null) filledFields++;
             if (user.sport != null && user.sport.length >= 1) filledFields++;
+            if (user.position != null && user.sport.some(s => ['Football', 'Basketball', 'Volleyball'].includes(s))) { filledFields++; }
             if (user.gender != null) filledFields++;
             if (user.bio != null) filledFields++;
             if (user.height != null) filledFields++;
             if (user.weight != null) filledFields++;
-            if (user.highlights != null) filledFields++;
-            if (user.stats != null) filledFields++;
+            // if (user.highlights != null) filledFields++;
+            // if (user.stats != null) filledFields++;
             if (user.achievements != null) filledFields++;
             if (user.events != null) filledFields++;
             if (user.skills.attack != null) filledFields++;
@@ -899,6 +925,31 @@ export default function Profile() {
 
             </Animated.View>
 
+            {/* Tabs for Athlete */}
+            {!loading && user?.type === "Athlete" && (
+                <View style={styles.tabs}>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                    >
+                        {tabsAthlete.map((label, index) => (
+                            <TouchableOpacity
+                                key={label}
+                                style={[
+                                    styles.tab,
+                                    activeTab === label && styles.activeTab,
+                                ]}
+                                onPress={() => updateTab(label)}
+                            >
+                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
+                                    {label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            )}
+            
             {/* Tabs for clubs */}
             {!loading && user?.type === "Club" && (
                 <View style={styles.tabs}>
@@ -1424,7 +1475,7 @@ export default function Profile() {
                     </View>
 
                     {/* HIGHLIGHTS */}
-                    {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
+                    {/* {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
                         {user.type != "Parent" && <Text style={styles.title}>
                             Highlights
                         </Text>}
@@ -1437,10 +1488,10 @@ export default function Profile() {
                             <Text style={styles.paragraph}>-</Text>
                         )}
 
-                    </View>}
+                    </View>} */}
 
                     {/* STATS */}
-                    {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
+                    {/* {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
                         {user.type != "Parent" && <Text style={styles.title}>
                             Stats
                         </Text>}
@@ -1452,7 +1503,7 @@ export default function Profile() {
                         ) : (
                             <Text style={styles.paragraph}>-</Text>
                         )}
-                    </View>}
+                    </View>} */}
 
                     {/* ACHIEVEMENTS */}
                     {user.type != "Club" && user.type != "Scout" && user.type != "Association" && user.type != "Sponsor" && <View style={styles.profileSection}>

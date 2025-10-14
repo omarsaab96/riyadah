@@ -85,7 +85,7 @@ export default function WizardStep1() {
                         >
                             <Image source={icon} style={styles.icon} resizeMode="contain" />
                             <Text style={[styles.accountText, selected === label && styles.accountTextSelected]}>
-                                {label=="Association" ? 'Association/Federation' : label}
+                                {label=="Association" ? 'Association/Federation' : label=="Club" ? 'Club/Academy' : label}
                                 {/* {label} */}
                             </Text>
                         </TouchableOpacity>

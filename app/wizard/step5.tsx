@@ -104,6 +104,7 @@ export default function WizardStep5() {
                     email: null,
                     phone: null
                 },
+                position:null
             };
 
             console.log('Submitting user data:', newUserData);

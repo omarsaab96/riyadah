@@ -33,7 +33,7 @@ export default function SearchScreen() {
     const tabs = ['All', 'Athletes', 'Clubs', 'Federations', 'Coaches'];
     const roles = ['All', 'Athlete', 'Coach', 'Club', 'Association']
     const categories = ['All', 'Users', 'Teams', 'Events', 'Posts']
-    const sport = ['All', 'Football', 'Basketball', 'Tennis', 'Racing']
+    const sport = ['All', 'Football', 'Basketball', 'Tennis', 'Swimming', 'Gymnastics']
     const genders = ['All', 'Male', 'Female']
 
     const [activeTab, setActiveTab] = useState('All');
@@ -41,6 +41,7 @@ export default function SearchScreen() {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedSport, setSelectedSport] = useState('All');
     const [selectedGender, setSelectedGender] = useState('All');
+    const [position, setPosition] = useState('');
 
     useEffect(() => {
         fetchUser();
@@ -65,6 +66,7 @@ export default function SearchScreen() {
         params += `&category=${selectedCategory}`;
         params += `&sport=${selectedSport}`;
         params += `&gender=${selectedGender}`;
+        params += `&position=${position}`;
 
         if (selectedRole == 'Coach') {
             params += "&userType=Athlete&role=Coach";
@@ -215,6 +217,16 @@ export default function SearchScreen() {
             <View style={styles.filters}>
                 <Text style={styles.filterTitle} onPress={() => { setShowFilters(prev => !prev) }}>Filters</Text>
                 {showFilters && <View style={{ marginTop: 20 }} >
+                    <View style={styles.filter}>
+                        <Text style={styles.filterLabel}>Search by position</Text>
+                        <TextInput
+                            style={[styles.input, {backgroundColor:'#fff'}, Platform.OS === 'ios' && {padding: 15 }]}
+                            value={position}
+                            onChangeText={setPosition}
+                            placeholderTextColor={'#888888'}
+                            placeholder="Enter position"
+                        />
+                    </View>
                     <View style={styles.filter}>
                         <Text style={styles.filterLabel}>Search in</Text>
                         <View style={styles.tabs}>
@@ -637,7 +649,8 @@ const styles = StyleSheet.create({
     },
     tabs: {
         flexDirection: 'row',
-        gap: 5
+        gap: 5,
+        flexWrap: 'wrap'
     },
     filter: {
         marginBottom: 15

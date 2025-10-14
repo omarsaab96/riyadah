@@ -62,6 +62,7 @@ interface RegistrationData {
     date: Date | null;
   };
   sport: string | null;
+  position: string | null;
   stats: any;
   type: string | null;
   verified: {
@@ -154,6 +155,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       date:null
     },
     sport: null,
+    position:null,
     stats: null,
     type: null,
     verified: {
@@ -235,6 +237,7 @@ export const RegistrationProvider = ({ children }: Props) => {
         date:null
       },
       sport: null,
+      position:null,
       stats: null,
       type: null,
       verified: {

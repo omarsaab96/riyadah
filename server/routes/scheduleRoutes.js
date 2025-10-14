@@ -177,6 +177,59 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
+// @route   GET /api/schedules/user/:userId
+// @desc    Get all events for a specific user (based on their team membership)
+// @access  Private (Athletes, Coaches, Club admins)
+router.get('/user/:userId', authenticate, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // 1️⃣ Get user and verify existence
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // 2️⃣ Get all teams that include this user
+    // This checks if the user is a member, coach, or club owner of the team
+    const teams = await Team.find({
+      $or: [
+        { members: user._id },
+        { coaches: user._id },
+        { club: user._id }
+      ]
+    }).select('_id name sport ageGroup');
+
+    if (!teams.length) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    const teamIds = teams.map(t => t._id);
+
+    // 3️⃣ Fetch all events that belong to these teams
+    const events = await Schedule.find({
+      team: { $in: teamIds },
+      status: { $ne: 'cancelled' }
+    })
+      .populate('team', 'name sport ageGroup')
+      .populate('participants.user', 'name image')
+      .populate('coaches', 'name image')
+      .sort({ startDateTime: 1 });
+
+    res.status(200).json({
+      success: true,
+      data: events,
+      count: events.length
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
 // @route   GET /api/schedules/club/:clubId
 // @desc    Get all events for a specific club (public access)
 router.get('/club/:clubId', async (req, res) => {
