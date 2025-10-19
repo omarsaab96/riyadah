@@ -7,6 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
 
@@ -19,6 +20,7 @@ const CreateEventScreen = () => {
     const [error, setError] = useState('');
     const [teams, setTeams] = useState([]);
     const [repeat, setRepeat] = useState('No');
+    const [location, setLocation] = useState(null);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -30,6 +32,10 @@ const CreateEventScreen = () => {
         venue: {
             name: '',
             address: ''
+        },
+        location: {
+            latitude: null,
+            longitude: null
         },
         onlineLink: '',
         trainingFocus: '',
@@ -65,6 +71,23 @@ const CreateEventScreen = () => {
         field: null, // 'start' or 'end'
         date: new Date(),
     });
+
+    const formatDateTime = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const dateStr = d.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
+        const timeStr = d.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false, // set true if you want AM/PM
+        });
+        return `${dateStr} ${timeStr}`;
+    };
+
 
     const onChange = (event, selectedDate) => {
         if (Platform.OS === 'android') {
@@ -359,6 +382,8 @@ const CreateEventScreen = () => {
         router.back()
     };
 
+
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -475,7 +500,7 @@ const CreateEventScreen = () => {
                                 onPress={() => showPicker('start', 'date')}
                             >
                                 <Text style={styles.inputText}>
-                                    {formData.startDateTime.toLocaleString()}
+                                    {formatDateTime(formData.startDateTime)}
                                 </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
                             </TouchableOpacity>
@@ -489,7 +514,7 @@ const CreateEventScreen = () => {
                                 onPress={() => showPicker('end', 'date')}
                             >
                                 <Text style={styles.inputText}>
-                                    {formData.endDateTime.toLocaleString()}
+                                    {formatDateTime(formData.endDateTime)}
                                 </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
                             </TouchableOpacity>
@@ -611,6 +636,40 @@ const CreateEventScreen = () => {
                                 />
                             </View>
                         )}
+
+                        {formData.locationType !== 'Online' &&
+                            <View style={styles.map}>
+                                <MapView
+                                    provider={PROVIDER_GOOGLE}
+                                    style={styles.mapPreview}
+                                    region={{
+                                        latitude: formData.location?.latitude || 0,
+                                        longitude: formData.location?.longitude || 0,
+                                        latitudeDelta: formData.location?.latitude ? 0.01 : 50,
+                                        longitudeDelta: formData.location?.longitude ? 0.01 : 50
+                                    }}
+                                    onPress={(e) => {
+                                        const coords = e.nativeEvent.coordinate;
+                                        setLocation(coords);
+                                        handleChange('location.latitude', String(coords.latitude))
+                                        handleChange('location.longitude', String(coords.longitude))
+                                    }}
+                                >
+                                    {location && (
+                                        <Marker
+                                            coordinate={location}
+                                            draggable
+                                            onDragEnd={(e) => {
+                                                const coords = e.nativeEvent.coordinate;
+                                                setLocation(coords);
+                                                handleChange('location.latitude', String(coords.latitude))
+                                                handleChange('location.longitude', String(coords.longitude))
+                                            }}
+                                        />
+                                    )}
+                                </MapView>
+                            </View>
+                        }
 
                         {formData.eventType === 'Training' && (
                             <View style={styles.formGroup}>
@@ -1153,6 +1212,16 @@ const styles = StyleSheet.create({
     iosPickerButtonText: {
         color: '#000',
         fontFamily: 'Manrope',
+    },
+    map: {
+        borderRadius: 8,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: "#cccccc"
+    },
+    mapPreview: {
+        width: '100%',
+        height: 150,
     },
 });
 

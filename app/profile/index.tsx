@@ -78,6 +78,7 @@ export default function Profile() {
     const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth()); // 0-11
     const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
     const [calendarDays, setCalendarDays] = useState([]);
+
     const generateCalendarDays = (year, month, events = []) => {
         const startOfMonth = new Date(year, month, 1);
         const endOfMonth = new Date(year, month + 1, 0);
@@ -94,7 +95,7 @@ export default function Profile() {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const hasEvent = events.some(e => {
                 const eventDate = new Date(e.startDateTime);
-                const eventStr = eventDate.toISOString().split('T')[0];
+                const eventStr = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
                 return eventStr === dateStr;
             });
 
@@ -273,7 +274,12 @@ export default function Profile() {
                 // console.log(response)
 
                 if (response.success) {
-                    setSchedule(response.data)
+                    const now = new Date();
+                    const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    const expanded = expandRecurringEvents(response.data, rangeStart, rangeEnd);
+
+                    setSchedule(expanded)
                     setScheduleLoading(false);
                 } else {
                     setSchedule(null)
@@ -282,7 +288,7 @@ export default function Profile() {
                 console.error('Failed to fetch schedule', err);
             }
         }
-        
+
         if (user.type == "Club") {
             try {
                 const res = await fetch(`https://riyadah.onrender.com/api/schedules`, {
@@ -297,7 +303,12 @@ export default function Profile() {
                 // console.log(response)
 
                 if (response.success) {
-                    setSchedule(response.data)
+                    const now = new Date();
+                    const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const rangeEnd = new Date(now.getFullYear() + 1, now.getMonth() + 1, 0);
+                    const expanded = expandRecurringEvents(response.data, rangeStart, rangeEnd);
+
+                    setSchedule(expanded)
                     setScheduleLoading(false);
                 } else {
                     setSchedule(null)
@@ -813,6 +824,53 @@ export default function Profile() {
 
     };
 
+    const expandRecurringEvents = (events, rangeStart, rangeEnd) => {
+        const expanded = [];
+        for (const e of events) {
+            if (e.repeats === 'No') {
+                expanded.push(e);
+                continue;
+            }
+            const start = new Date(e.startDateTime);
+            const end = new Date(e.endDateTime);
+            let currentStart = new Date(start);
+            let currentEnd = new Date(end);
+
+            while (currentStart <= rangeEnd) {
+                if (currentStart >= rangeStart && currentStart <= rangeEnd) {
+                    expanded.push({
+                        ...e,
+                        _id: `${e._id}_${currentStart.toISOString()}`,
+                        startDateTime: new Date(currentStart),
+                        endDateTime: new Date(currentEnd),
+                    });
+                }
+
+                switch (e.repeats) {
+                    case 'Daily':
+                        currentStart.setDate(currentStart.getDate() + 1);
+                        currentEnd.setDate(currentEnd.getDate() + 1);
+                        break;
+                    case 'Weekly':
+                        currentStart.setDate(currentStart.getDate() + 7);
+                        currentEnd.setDate(currentEnd.getDate() + 7);
+                        break;
+                    case 'Monthly':
+                        currentStart.setMonth(currentStart.getMonth() + 1);
+                        currentEnd.setMonth(currentEnd.getMonth() + 1);
+                        break;
+                    case 'Yearly':
+                        currentStart.setFullYear(currentStart.getFullYear() + 1);
+                        currentEnd.setFullYear(currentEnd.getFullYear() + 1);
+                        break;
+                }
+            }
+        }
+
+        console.log(JSON.stringify(expanded, null, 2));
+        return expanded;
+    };
+
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -949,7 +1007,7 @@ export default function Profile() {
                     </ScrollView>
                 </View>
             )}
-            
+
             {/* Tabs for clubs */}
             {!loading && user?.type === "Club" && (
                 <View style={styles.tabs}>
@@ -2019,8 +2077,8 @@ export default function Profile() {
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>Club Schedule</Text>
-                                {userId == user._id && (
+                                {user.type != "Athlete" && <Text style={styles.sectionTitle}>Club Schedule</Text>}
+                                {userId == user._id && user.type == "Club" && (
                                     <TouchableOpacity
                                         style={styles.addButton}
                                         onPress={() => router.push('/schedule/createEvent')}
@@ -2192,7 +2250,7 @@ export default function Profile() {
                                                         <Text style={styles.noEventsText}>No events for this day.</Text>
                                                     )}
 
-                                                    <View style={{ marginTop: 30 }}>
+                                                    {/* <View style={{ marginTop: 30 }}>
                                                         <Text style={styles.subSectionTitle}>Upcoming Events</Text>
                                                         {schedule.filter(event => new Date(event.startDateTime) > new Date()).length > 0 ? (
                                                             schedule
@@ -2240,7 +2298,7 @@ export default function Profile() {
                                                         ) : (
                                                             <Text style={styles.noEventsText}>No upcoming events.</Text>
                                                         )}
-                                                    </View>
+                                                    </View> */}
                                                 </View>
                                             </>
                                         );
@@ -2249,12 +2307,12 @@ export default function Profile() {
                             ) : (
                                 <View style={styles.emptyState}>
                                     <Text style={styles.emptyStateTitle}>No Scheduled Events</Text>
-                                    <Text style={styles.emptyStateText}>
+                                    {user.type == "Club" && <Text style={styles.emptyStateText}>
                                         {userId === user._id
                                             ? "Add your first event to get started"
                                             : "This club hasn't scheduled any events yet"}
-                                    </Text>
-                                    {userId === user._id && (
+                                    </Text>}
+                                    {userId === user._id && user.type == "Club" && (
                                         <TouchableOpacity
                                             style={styles.emptyStateButton}
                                             onPress={() => router.push('/schedule/createEvent')}

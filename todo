@@ -2,22 +2,22 @@ Changes:
 ✔ 1.	Add number on stats pentagon for athletes. @done(25-10-14 20:35)
 ✔ 2.	Add position field for sports that include positions (e.g., football, volleyball) and allow search by position. @done(25-10-14 22:33)
 ✔ 3.	Remove “highlights” and “stats” sections from the athlete bio. @done(25-10-14 22:32)
-☐ 4.	Add visible upcoming events (training and matches) on the athlete dashboard.
-☐ 5.	Enable push notifications for schedule updates.
-☐ 6.	Fix recurring option in events (daily, weekly, monthly repetition) as it is not working.
-☐ 7.	Remove seconds from event start and end times.
-☐ 8.	Fix server error during event creation or update.
-☐ 9.	Add Google Maps link integration for event locations.
-☐ 10.	Add payments dashboard for athletes to pay.
+✔ 4.	Add visible upcoming events (training and matches) on the athlete dashboard. @done(25-10-14 23:35)
+☐ 5.	Enable push notifications for schedule updates.@today
+✔ 6.	Fix recurring option in events (daily, weekly, monthly repetition) as it is not working. @done(25-10-15 10:19)
+✔ 7.	Remove seconds from event start and end times. @done(25-10-14 23:46)
+✔ 8.	Fix server error during event creation or update. @done(25-10-14 23:46)
+☐ 9.	Add Google Maps link integration for event locations.@today
+☐ 10.	Add payments dashboard for athletes to pay. @today
 ☐ 11.	Add admin and coach payments dashboard.
-☐ 12.	Automate monthly payment reminders via push notifications.
-☐ 13.	Add “Amount” field in financials section and make all payments in EGP
+☐ 12.	Automate monthly payment reminders via push notifications. @on_the_1st_of_everymonth_an_internal_notification_will_be_sent
+✔ 13.	Add “Amount” field in financials section and make all payments in EGP @done(25-10-15 10:45)
 ☐ 14.	Add attendance dashboard for admins.
 ☐ 15.	Add unified admin and coach dashboard (attendance + payments overview).
 ☐ 16.	Link coaches directly under their club or academy.
-☐ 17.	Enable group chat feature
-☐ 18.	Add validation for birthdate to prevent invalid entries. (35/14/2024)
-☐ 19.	Change club establishment format from day/year to month/year or only year.
+✘ 17.	Enable group chat feature @afterMVP @cancelled(25-10-15 10:46)
+☐ 18.	Add validation for birthdate to prevent invalid entries. (35/14/2024) @today
+☐ 19.	Change club establishment format from day/year to month/year or only year. @today
 ✔ 20.	Add club type selection option (Club / Academy). @done(25-10-14 22:43)
 ☐ 21.	Add backend capability for live testing result uploads.
 ☐ 22.	Add post-session and monthly survey feature for athletes.

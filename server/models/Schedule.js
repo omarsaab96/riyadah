@@ -29,6 +29,10 @@ const scheduleSchema = new Schema({
     },
     repeatEndDate: Date,
     locationType: String,
+    location: {
+      latitude: String,
+      longitude: String
+    },
     venue: String,
     onlineLink: String,
     team: {

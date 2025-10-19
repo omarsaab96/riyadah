@@ -1,4 +1,3 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -128,7 +127,7 @@ export default function AddPayment() {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
             const url = `https://riyadah.onrender.com/api/users/byclub/${userId}?keyword=${encodeURIComponent(text)}`;
-            // console.log('Search URL:', url); // 👈 Log the URL being called
+            console.log('Search URL:', url);
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -139,7 +138,7 @@ export default function AddPayment() {
 
             const data = await response.json();
 
-            // console.log('API Response:', data); // 👈 Log the full response
+            console.log('API Response:', data);
 
             if (data.success) {
                 setSearchResults(data.data);
@@ -391,15 +390,15 @@ export default function AddPayment() {
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Amount (USD)</Text>
+                                <Text style={styles.label}>Amount</Text>
 
                                 <View style={{ flexDirection: 'row', columnGap: 10 }}>
                                     <TextInput
                                         style={[styles.input, { flex: 1 }]}
-                                        placeholder="e.g. 50.00"
+                                        placeholder="e.g. 50"
                                         placeholderTextColor={"#888"}
                                         keyboardType="numeric"
-                                        value={paymentAmount.split(' ')[0] || '0'}
+                                        value={paymentAmount.split(' ')[0]=='0'?'':''}
                                         onChangeText={(text) => {
                                             const amount = text.trim();
                                             const currency = paymentAmount.split(' ')[1] || 'USD';
@@ -417,8 +416,8 @@ export default function AddPayment() {
                                         >
                                             
                                             <Picker.Item label="EGP" value="EGP" />
-                                            <Picker.Item label="USD" value="USD" />
-                                            <Picker.Item label="EUR" value="EUR" />
+                                            {/* <Picker.Item label="USD" value="USD" />
+                                            <Picker.Item label="EUR" value="EUR" /> */}
                                         </Picker>
                                     </View>
                                 </View>
