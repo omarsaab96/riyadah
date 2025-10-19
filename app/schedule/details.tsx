@@ -6,12 +6,15 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
 
 const { width } = Dimensions.get('window');
 
@@ -118,6 +121,50 @@ export default function StaffDetailsScreen() {
           <Text style={styles.contactText}>{event.endDateTime}</Text>
         </View>
 
+        {event.location?.latitude != null && event.location?.longitude != null && (
+          <View style={styles.section}>
+            <View style={styles.map}>
+              <MapView
+                provider={PROVIDER_GOOGLE}
+
+                style={styles.mapPreview}
+                initialRegion={{
+                  latitude: parseFloat(event.location.latitude || 0),
+                  longitude: parseFloat(event.location.longitude || 0),
+                  latitudeDelta: event.location.latitude ? 0.01 : 50,
+                  longitudeDelta: event.location.longitude ? 0.01 : 50
+                }}
+              >
+                <Marker
+                  coordinate={{
+                    latitude: parseFloat(event.location.latitude || 0),
+                    longitude: parseFloat(event.location.longitude || 0),
+                  }}
+                />
+              </MapView>
+            </View>
+            <TouchableOpacity
+              style={styles.locationLink}
+              onPress={async () => {
+                const { latitude, longitude } = event.location;
+                const googleMapsURL = `comgooglemaps://?center=${latitude},${longitude}&q=${latitude},${longitude}`;
+                const browserURL = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
+                try {
+                  const supported = await Linking.canOpenURL(googleMapsURL);
+                  if (supported) {
+                    await Linking.openURL(googleMapsURL);
+                  } else {
+                    await Linking.openURL(browserURL);
+                  }
+                } catch (error) {
+                  console.error(error);
+                }
+              }}>
+              <Text style={styles.locationLinkText}>Get Directions</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
       </ScrollView >
       }
@@ -198,7 +245,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     fontSize: 18,
     fontFamily: 'Bebas',
-    color:'black'
+    color: 'black'
   },
   contactButton: {
     flexDirection: "row",
@@ -208,7 +255,7 @@ const styles = StyleSheet.create({
   contactText: {
     fontFamily: 'Manrope',
     fontSize: 16,
-    color:'black'
+    color: 'black'
   },
   teamItem: {
     backgroundColor: "#f2f2f2",
@@ -267,5 +314,26 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: -5,
     opacity: 0.2
+  },
+  map: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: "#cccccc"
+  },
+  mapPreview: {
+    width: '100%',
+    height: 150,
+  },
+  locationLink: {
+    backgroundColor: '#cccccc',
+    borderRadius: 8,
+    paddingVertical: 5
+  },
+  locationLinkText: {
+    color: '#000',
+    fontFamily: 'Bebas',
+    fontSize: 20,
+    textAlign: 'center'
   },
 });
