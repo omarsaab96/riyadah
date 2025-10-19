@@ -10,7 +10,7 @@ export default function WizardStep2() {
     const router = useRouter();
     const { formData, updateFormData } = useRegistration();
 
-    const [day, setDay] = useState<string | null>(formData.dob?.day || null);
+    const [day, setDay] = useState<string | null>((formData.type == "Club" || formData.type == "Association") ? '01' : formData.dob?.day || null);
     const [month, setMonth] = useState<string | null>(formData.dob?.month || null);
     const [year, setYear] = useState<string | null>(formData.dob?.year || null);
     const [showParentEmail, setShowParentEmail] = useState(false);
@@ -40,57 +40,120 @@ export default function WizardStep2() {
     }, []);
 
     useEffect(() => {
+        // Clear previous error each run
         setError(null);
-        const isComplete = day?.length === 2 && month?.length === 2 && year?.length === 4;
-        if (!isComplete) return;
 
-        const dob = `${year?.padStart(4, '0')}-${month?.padStart(2, '0')}-${day?.padStart(2, '0')}`;
+        const hasAnyInput = !!(day?.length || month?.length || year?.length);
+
+        // If user started typing DOB, require each piece
+        if (hasAnyInput) {
+            if (!month?.length) {
+                setShowParentEmail(false);
+                setError('Month is required');
+                return;
+            }
+            if (!day?.length) {
+                setShowParentEmail(false);
+                setError('Day is required');
+                return;
+            }
+            if (!year?.length) {
+                setShowParentEmail(false);
+                setError('Year is required');
+                return;
+            }
+        } else {
+            // Nothing entered at all—don’t validate yet
+            return;
+        }
+
+        // Now we know we have all 3 parts; enforce exact lengths
+        const isComplete = (day.length > 0 && day.length <= 2) && (month.length > 0 && month.length <= 2) && year.length === 4;
+        if (!isComplete) {
+            setShowParentEmail(false);
+            setError('Please enter a valid date');
+            return;
+        }
+
+        const dayNum = parseInt(day, 10);
+        const monthNum = parseInt(month, 10);
+        const yearNum = parseInt(year, 10);
+
+        // Guard against NaN
+        if (Number.isNaN(dayNum) || Number.isNaN(monthNum) || Number.isNaN(yearNum)) {
+            setShowParentEmail(false);
+            setError('Please enter only numbers for day, month, and year');
+            return;
+        }
+
+        // Validate month
+        if (monthNum < 1 || monthNum > 12) {
+            setShowParentEmail(false);
+            setError('Month must be between 01 and 12');
+            return;
+        }
+
+        // Max days in month (handles leap years)
+        const getDaysInMonth = (m, y) => new Date(y, m, 0).getDate(); // m is 1–12
+        const maxDay = getDaysInMonth(monthNum, yearNum);
+
+        // Validate day
+        if (dayNum < 1 || dayNum > maxDay) {
+            setShowParentEmail(false);
+            setError(`Day must be between 01 and ${maxDay} for the selected month`);
+            return;
+        }
+
+        const dob = `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
         const dobDate = new Date(dob);
         const today = new Date();
 
         // Basic validity checks
         if (isNaN(dobDate.getTime())) {
+            setShowParentEmail(false);
             setError('Please enter a valid date');
             return;
         }
 
         if (dobDate > today) {
+            setShowParentEmail(false);
             setError('Date cannot be in the future');
             return;
         }
 
         const age = calculateAge(dob);
 
-        if (age < 18 && formData.type == "Parent") {
+        if (age < 18 && formData.type === "Parent") {
             setShowParentEmail(false);
             setError('Parents cannot be under 18');
             return;
         }
 
-        if (age < 18 && formData.type == "Scout") {
+        if (age < 18 && formData.type === "Scout") {
             setShowParentEmail(false);
             setError('Scout cannot be under 18');
             return;
         }
 
-        if (age < 18 && formData.type == "Sponsor") {
+        if (age < 18 && formData.type === "Sponsor") {
             setShowParentEmail(false);
             setError('Sponsor cannot be under 18');
             return;
         }
 
-        if (age > 18 && formData.type == "Parent") {
+        if (age > 18 && formData.type === "Parent") {
             setShowParentEmail(false);
             setError(null);
             return;
         }
 
-        if (age < 18 && formData.type == "Athlete") {
+        if (age < 18 && formData.type === "Athlete") {
             setShowParentEmail(true);
         } else {
             setShowParentEmail(false);
         }
-    }, [day, month, year]);
+    }, [day, month, year, formData.type]); // include formData.type so logic updates when role changes
+
 
     const calculateAge = (dob: string) => {
         const birthDate = new Date(dob);
@@ -239,7 +302,7 @@ export default function WizardStep2() {
                     <Text style={styles.errorText}>{error}</Text>
                 </View>}
                 <View style={styles.dobRow}>
-                    <TextInput
+                    {formData.type != "Club" && formData.type != "Association" && <TextInput
                         ref={dayRef}
                         style={styles.dobInput}
                         placeholder="DD"
@@ -254,8 +317,10 @@ export default function WizardStep2() {
                             }
                         }}
                         returnKeyType="next"
-                    />
-                    <Text style={styles.dobSeperator}>/</Text>
+                    />}
+                    {formData.type != "Club" && formData.type != "Association" &&
+                        <Text style={styles.dobSeperator}>/</Text>
+                    }
                     <TextInput
                         style={styles.dobInput}
                         placeholder="MM"
@@ -304,8 +369,12 @@ export default function WizardStep2() {
             </View>
 
             <View style={styles.fixedBottomSection}>
-                <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
-                    <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
+                <TouchableOpacity style={[
+                    styles.fullButtonRow,
+                    error != null && { opacity: 0.6 }
+                ]} onPress={handleNext} disabled={error != null}>
+                    <Image source={require('../../assets/buttonBefore_black.png')}
+                        style={styles.sideRect} />
                     <View style={styles.loginButton}>
                         <Text style={styles.loginText}>next</Text>
                     </View>

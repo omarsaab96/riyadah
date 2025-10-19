@@ -831,7 +831,8 @@ export default function PublicProfile() {
                                 </Text>
                                 {(user.dob?.day && user.dob?.month && user.dob?.year) ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>
+                                        {(user.type == "Club" || user.type == "Association") && <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.year}</Text>}
+                                        {(user.type != "Club" && user.type != "Association") && <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>}
                                     </View>
                                 ) : (
                                     <View>

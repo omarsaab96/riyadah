@@ -16,8 +16,8 @@ Changes:
 ☐ 15.	Add unified admin and coach dashboard (attendance + payments overview).
 ☐ 16.	Link coaches directly under their club or academy.
 ✘ 17.	Enable group chat feature @afterMVP @cancelled(25-10-15 10:46)
-☐ 18.	Add validation for birthdate to prevent invalid entries. (35/14/2024) @today
-☐ 19.	Change club establishment format from day/year to month/year or only year. @today
+✔ 18.	Add validation for birthdate to prevent invalid entries. (35/14/2024) @done(25-10-20 01:53)
+☐ 19.	Change club establishment format from day/year to month/year or only year. @today @check
 ✔ 20.	Add club type selection option (Club / Academy). @done(25-10-14 22:43)
 ☐ 21.	Add backend capability for live testing result uploads.
 ☐ 22.	Add post-session and monthly survey feature for athletes.
