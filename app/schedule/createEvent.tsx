@@ -638,36 +638,39 @@ const CreateEventScreen = () => {
                         )}
 
                         {formData.locationType !== 'Online' &&
-                            <View style={styles.map}>
-                                <MapView
-                                    provider={PROVIDER_GOOGLE}
-                                    style={styles.mapPreview}
-                                    region={{
-                                        latitude: formData.location?.latitude || 0,
-                                        longitude: formData.location?.longitude || 0,
-                                        latitudeDelta: formData.location?.latitude ? 0.01 : 50,
-                                        longitudeDelta: formData.location?.longitude ? 0.01 : 50
-                                    }}
-                                    onPress={(e) => {
-                                        const coords = e.nativeEvent.coordinate;
-                                        setLocation(coords);
-                                        handleChange('location.latitude', String(coords.latitude))
-                                        handleChange('location.longitude', String(coords.longitude))
-                                    }}
-                                >
-                                    {location && (
-                                        <Marker
-                                            coordinate={location}
-                                            draggable
-                                            onDragEnd={(e) => {
-                                                const coords = e.nativeEvent.coordinate;
-                                                setLocation(coords);
-                                                handleChange('location.latitude', String(coords.latitude))
-                                                handleChange('location.longitude', String(coords.longitude))
-                                            }}
-                                        />
-                                    )}
-                                </MapView>
+                            <View>
+                                <Text style={styles.label}>Venue Location</Text>
+                                <View style={styles.map}>
+                                    <MapView
+                                        provider={PROVIDER_GOOGLE}
+                                        style={styles.mapPreview}
+                                        region={{
+                                            latitude: formData.location?.latitude || 0,
+                                            longitude: formData.location?.longitude || 0,
+                                            latitudeDelta: formData.location?.latitude ? 0.01 : 50,
+                                            longitudeDelta: formData.location?.longitude ? 0.01 : 50
+                                        }}
+                                        onPress={(e) => {
+                                            const coords = e.nativeEvent.coordinate;
+                                            setLocation(coords);
+                                            handleChange('location.latitude', String(coords.latitude))
+                                            handleChange('location.longitude', String(coords.longitude))
+                                        }}
+                                    >
+                                        {location && (
+                                            <Marker
+                                                coordinate={location}
+                                                draggable
+                                                onDragEnd={(e) => {
+                                                    const coords = e.nativeEvent.coordinate;
+                                                    setLocation(coords);
+                                                    handleChange('location.latitude', String(coords.latitude))
+                                                    handleChange('location.longitude', String(coords.longitude))
+                                                }}
+                                            />
+                                        )}
+                                    </MapView>
+                                </View>
                             </View>
                         }
 
@@ -1217,7 +1220,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         overflow: 'hidden',
         borderWidth: 1,
-        borderColor: "#cccccc"
+        borderColor: "#cccccc",
+        marginBottom: 20
     },
     mapPreview: {
         width: '100%',

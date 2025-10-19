@@ -123,6 +123,8 @@ export default function StaffDetailsScreen() {
 
         {event.location?.latitude != null && event.location?.longitude != null && (
           <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Location</Text>
+
             <View style={styles.map}>
               <MapView
                 provider={PROVIDER_GOOGLE}
