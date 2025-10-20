@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FAFAFA'
     },
     logo: {
-        width: 195,
-        height: 45,
+        width: 180,
+        height: 40,
         position: 'absolute',
         top: Platform.OS == "ios" ? 60 : 40,
         left: 20,
