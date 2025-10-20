@@ -20,7 +20,7 @@ Changes:
 ✔ 19.	Change club establishment format from day/year to month/year or only year. @done(25-10-20 04:17)
 ✔ 20.	Add club type selection option (Club / Academy). @done(25-10-14 22:43)
 ☐ 21.	Add backend capability for live testing result uploads. @NOTCLEAR
-☐ 22.	Add post-session and monthly survey feature for athletes. @NOTCLEAR
+✔ 22.	Add post-session and monthly survey feature for athletes. @done(25-10-20 10:13)
 ✔ 23.	Add new sports: Volleyball, Swimming, and Tennis. @done(25-10-14 21:15)
 
 ---------------------------------------------------------
