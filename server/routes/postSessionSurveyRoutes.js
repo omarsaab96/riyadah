@@ -21,7 +21,7 @@ const authenticateToken = (req, res, next) => {
 //create post session survey
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { intensity, physicalFeeling, focusLevel, discomfort, notes } = req.body;
+    const { intensity, physicalFeeling, discomfortDetails, focusLevel, discomfort, notes } = req.body;
     const userId = req.user.userId;
 
     const newSurvey = new PostSessionSurvey({
@@ -30,6 +30,7 @@ router.post('/', authenticateToken, async (req, res) => {
       physicalFeeling,
       focusLevel,
       discomfort,
+      discomfortDetails,
       notes
     });
     await newSurvey.save();

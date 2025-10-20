@@ -12,6 +12,7 @@ const postSessionSurvey = () => {
     const [physicalFeeling, setPhysicalFeeling] = useState<String | null>(null);
     const [focusLevel, setFocusLevel] = useState<String | null>(null);
     const [discomfort, setDiscomfort] = useState<String | null>(null);
+    const [discomfortDetails, setDiscomfortDetails] = useState<String | null>(null);
     const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -20,12 +21,13 @@ const postSessionSurvey = () => {
     const [error, setError] = useState('');
 
 
-    const handleSubmit = async() => {
+    const handleSubmit = async () => {
         const feedbackData = {
             intensity,
             physicalFeeling,
             focusLevel,
             discomfort,
+            discomfortDetails,
             notes,
         };
 
@@ -67,7 +69,7 @@ const postSessionSurvey = () => {
             }, 1000);
 
         } catch (err) {
-            Alert.alert('Error', 'Failed to submit attendance.');
+            Alert.alert('Error', 'Failed to submit post session survey.');
         } finally {
             setSaving(false);
         }
@@ -165,7 +167,7 @@ const postSessionSurvey = () => {
                         </View>
 
                         <Text style={styles.label}>Any pain, soreness, or discomfort?</Text>
-                        <View style={styles.radioGroup}>
+                        <View style={[styles.radioGroup, discomfort == 'Yes' && { marginBottom: 0 }]}>
                             {['Yes', 'No'].map((option) => (
                                 <TouchableOpacity
                                     key={option}
@@ -179,6 +181,12 @@ const postSessionSurvey = () => {
                                 </TouchableOpacity>
                             ))}
                         </View>
+                        {discomfort == 'Yes' && <TextInput style={styles.input}
+                            placeholder="Please provide details"
+                            placeholderTextColor="#A8A8A8"
+                            value={discomfortDetails || ""}
+                            onChangeText={setDiscomfortDetails}
+                        />}
 
                         <Text style={[styles.label, { marginBottom: 10 }]}>Any comments or feedback for the coach?</Text>
                         <TextInput style={styles.textarea}
@@ -387,6 +395,15 @@ const styles = StyleSheet.create({
         marginVertical: 8,
         marginBottom: 30,
         gap: 30
+    },
+    input: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10,
+        marginTop: 10
     },
     radioButtonContainer: {
         flexDirection: 'row',

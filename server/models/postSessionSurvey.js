@@ -10,6 +10,7 @@ const postSessionSurveySchema = new mongoose.Schema({
   physicalFeeling: String,
   focusLevel: String,
   discomfort: String,
+  discomfortDetails: String,
   notes: String,
 }, { timestamps: true });
 

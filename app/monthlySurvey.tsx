@@ -1,5 +1,6 @@
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 const { width } = Dimensions.get('window');
@@ -21,9 +22,10 @@ const monthlySurvey = () => {
     const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [timer, setTimer] = useState(5);
+    const [error, setError] = useState('');
 
 
-    const handleSubmit = () => {
+    const handleSubmit = async() => {
         const feedbackData = {
             injuries,
             injuryDetails,
@@ -37,11 +39,33 @@ const monthlySurvey = () => {
             notes,
         };
 
+        setSaving(true);
+        console.log('Feedback submitted:', feedbackData);
+
         try {
-            setSaving(true);
-            console.log('Feedback submitted:', feedbackData);
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setError('User not authenticated');
+                setSaving(false);
+                return;
+            }
+
+            const response = await fetch('https://riyadah.onrender.com/api/monthlySurvey', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(feedbackData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to submit survey');
+                setSaving(false);
+                return;
+            }
             setSubmitted(true)
-            setNotes('');
 
             setInterval(() => {
                 setTimer(prev => {
@@ -53,7 +77,7 @@ const monthlySurvey = () => {
             }, 1000);
 
         } catch (err) {
-            Alert.alert('Error', 'Failed to submit attendance.');
+            Alert.alert('Error', 'Failed to submit monthly survey.');
         } finally {
             setSaving(false);
         }
@@ -183,7 +207,7 @@ const monthlySurvey = () => {
                         </View>
 
                         <Text style={styles.label}>Any injuries or pain affecting performance?</Text>
-                        <View style={[styles.radioGroup, injuries=='Yes' &&{ marginBottom: 0 }]}>
+                        <View style={[styles.radioGroup, injuries == 'Yes' && { marginBottom: 0 }]}>
                             {['Yes', 'No'].map((option) => (
                                 <TouchableOpacity
                                     key={option}
@@ -197,8 +221,8 @@ const monthlySurvey = () => {
                                 </TouchableOpacity>
                             ))}
                         </View>
-                        {injuries=='Yes' && <TextInput style={styles.input}
-                            placeholder="Please provide details if any."
+                        {injuries == 'Yes' && <TextInput style={styles.input}
+                            placeholder="Please provide details"
                             placeholderTextColor="#A8A8A8"
                             value={injuryDetails || ""}
                             onChangeText={setInjuryDetails}
@@ -378,7 +402,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         color: 'black',
         borderRadius: 10,
-        marginTop:10
+        marginTop: 10
     },
     fixedBottomSection: {
         position: 'absolute',
