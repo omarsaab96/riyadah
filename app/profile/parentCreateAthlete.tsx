@@ -31,13 +31,13 @@ const sportTypes = [
     { label: 'Golf', icon: require('../../assets/golf.png') },
 ];
 
-const featuredClubs = [
-    { label: 'FC Barcelona', icon: require('../../assets/fcb.png') },
-    { label: 'Manchester United', icon: require('../../assets/manun.png') },
-    { label: 'Juventus FC', icon: require('../../assets/juvi.png') },
-    { label: 'Bayern Munich', icon: require('../../assets/bayern.png') },
-    { label: 'Paris Saint-Germain (PSG)', icon: require('../../assets/psg.png') },
-];
+// const featuredClubs = [
+//     { label: 'FC Barcelona', icon: require('../../assets/fcb.png') },
+//     { label: 'Manchester United', icon: require('../../assets/manun.png') },
+//     { label: 'Juventus FC', icon: require('../../assets/juvi.png') },
+//     { label: 'Bayern Munich', icon: require('../../assets/bayern.png') },
+//     { label: 'Paris Saint-Germain (PSG)', icon: require('../../assets/psg.png') },
+// ];
 
 const genders = [
     { label: 'Male', icon: require('../../assets/male.png') },
