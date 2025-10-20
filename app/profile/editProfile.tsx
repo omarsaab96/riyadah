@@ -523,7 +523,7 @@ export default function EditProfile() {
                                     {(user.type == "Club" || user.type == "Association") ? 'Establishment date' : 'Date of Birth'}
                                 </Text>
                                 <View style={styles.dobRow}>
-                                    <TextInput
+                                    {user.type != "Club" && user.type != "Association" && <TextInput
                                         style={[styles.dobInput, Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="DD"
                                         placeholderTextColor="#aaa"
@@ -531,8 +531,8 @@ export default function EditProfile() {
                                         maxLength={2}
                                         value={user.dob.day}
                                         onChangeText={(text) => updateField('dob.day', text)}
-                                    />
-                                    <Text style={styles.dobSeperator}>/</Text>
+                                    />}
+                                    {user.type != "Club" && user.type != "Association" && <Text style={styles.dobSeperator}>/</Text>}
                                     <TextInput
                                         style={[styles.dobInput, Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="MM"
