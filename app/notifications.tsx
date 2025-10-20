@@ -297,7 +297,6 @@ const styles = StyleSheet.create({
         top: 20,
         left: 20,
         zIndex: 1,
-        borderWidth:1
     },
     headerTextBlock: {
         position: 'absolute',

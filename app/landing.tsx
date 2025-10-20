@@ -1946,11 +1946,12 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
+        tintColor: '#111111',
     },
     activeIcon: {
         width: 24,
         height: 24,
-        tintColor: '#FF4000',
+        // tintColor: '#FF4000',
     },
     createPostContainer: {
         backgroundColor: '#ffffff',
