@@ -1,61 +1,47 @@
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 const { width } = Dimensions.get('window');
 
-const postSessionSurvey = () => {
+const monthlySurvey = () => {
     const router = useRouter();
-
-    const [intensity, setIntensity] = useState(5);
-    const [physicalFeeling, setPhysicalFeeling] = useState<String | null>(null);
-    const [focusLevel, setFocusLevel] = useState<String | null>(null);
-    const [discomfort, setDiscomfort] = useState<String | null>(null);
+    const [injuries, setInjuries] = useState<String | null>(null);
+    const [injuryDetails, setInjuryDetails] = useState<String | null>(null);
+    const [coachTrainingSatisfaction, setCoachTrainingSatisfaction] = useState(5);
+    const [areaOfImprovement, setAreaOfImprovement] = useState<String | null>(null);
+    const [satisfaction, setSatisfaction] = useState(5);
+    const [performance, setPerformance] = useState<String | null>(null);
+    const [recovery, setRecovery] = useState<String | null>(null);
+    const [sleep, setSleep] = useState<String | null>(null);
+    const [mentally, setMentally] = useState<String | null>(null);
     const [notes, setNotes] = useState('');
+
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [timer, setTimer] = useState(5);
-    const [error, setError] = useState('');
 
 
-    const handleSubmit = async() => {
+    const handleSubmit = () => {
         const feedbackData = {
-            intensity,
-            physicalFeeling,
-            focusLevel,
-            discomfort,
+            injuries,
+            injuryDetails,
+            coachTrainingSatisfaction,
+            areaOfImprovement,
+            satisfaction,
+            performance,
+            recovery,
+            sleep,
+            mentally,
             notes,
         };
 
-        setSaving(true);
-        console.log('Feedback submitted:', feedbackData);
         try {
-            const token = await SecureStore.getItemAsync('userToken');
-            if (!token) {
-                setError('User not authenticated');
-                setSaving(false);
-                return;
-            }
-
-            const response = await fetch('https://riyadah.onrender.com/api/PostSessionSurvey', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify(feedbackData)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to submit survey');
-                setSaving(false);
-                return;
-            }
-
+            setSaving(true);
+            console.log('Feedback submitted:', feedbackData);
             setSubmitted(true)
+            setNotes('');
 
             setInterval(() => {
                 setTimer(prev => {
@@ -90,7 +76,7 @@ const postSessionSurvey = () => {
                 />
 
                 <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Post-Session Feedback</Text>
+                    <Text style={styles.pageTitle}>Monthly Athlete Wellness & Progress Survey</Text>
                     {/* {!loading && <Text style={styles.pageDesc}>Event name</Text>} */}
 
                     {loading &&
@@ -113,79 +99,135 @@ const postSessionSurvey = () => {
             >
                 <ScrollView>
                     <View style={styles.contentContainer}>
-                        <Text style={styles.label}>How intense was today's session?</Text>
-                        <Text style={styles.hint}>0 = Very Easy, 10 = Extremely Hard</Text>
+                        <Text style={styles.label}>How satisfied are you with your overall training this month?</Text>
+                        <Text style={styles.hint}>0 = Very dissatisfied, 10 = Very satisfied</Text>
                         <View style={styles.rangeSliderContainer}>
                             <Slider
                                 style={styles.rangeSlider}
                                 minimumValue={0}
                                 maximumValue={10}
                                 step={1}
-                                value={intensity}
-                                onValueChange={setIntensity}
+                                value={satisfaction}
+                                onValueChange={setSatisfaction}
                                 minimumTrackTintColor="#FF4000"
                                 maximumTrackTintColor="#111111"
                                 thumbTintColor="#FF4000"
                             />
                             <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                {intensity || 0}
+                                {satisfaction || 0}
                             </Text>
                         </View>
 
-                        <Text style={styles.label}>How do you feel physically right now?</Text>
+                        <Text style={styles.label}>Do you feel your performance is improving?</Text>
                         <View style={styles.radioGroup}>
-                            {['Great', 'Tired', 'Exhausted'].map((option) => (
+                            {['Declining', 'No change', 'Slightly', 'Yes'].map((option) => (
                                 <TouchableOpacity
                                     key={option}
                                     style={styles.radioButtonContainer}
-                                    onPress={() => setPhysicalFeeling(option)}
+                                    onPress={() => setPerformance(option)}
                                 >
                                     <View style={styles.outerCircle}>
-                                        {physicalFeeling === option && <View style={styles.innerCircle} />}
+                                        {performance === option && <View style={styles.innerCircle} />}
                                     </View>
                                     <Text style={styles.optionText}>{option}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <Text style={styles.label}>How was your focus and motivation today?</Text>
+                        <Text style={styles.label}>How well are you recovering between sessions?</Text>
                         <View style={styles.radioGroup}>
-                            {['Low', 'Moderate', 'High'].map((option) => (
+                            {['Very poor', 'Poor', 'Good', 'Excellent'].map((option) => (
                                 <TouchableOpacity
                                     key={option}
                                     style={styles.radioButtonContainer}
-                                    onPress={() => setFocusLevel(option)}
+                                    onPress={() => setRecovery(option)}
                                 >
                                     <View style={styles.outerCircle}>
-                                        {focusLevel === option && <View style={styles.innerCircle} />}
+                                        {recovery === option && <View style={styles.innerCircle} />}
                                     </View>
                                     <Text style={styles.optionText}>{option}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <Text style={styles.label}>Any pain, soreness, or discomfort?</Text>
+                        <Text style={styles.label}>How would you rate your sleep quality this month?</Text>
                         <View style={styles.radioGroup}>
+                            {['Poor', 'Fair', 'Excellent'].map((option) => (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={styles.radioButtonContainer}
+                                    onPress={() => setSleep(option)}
+                                >
+                                    <View style={styles.outerCircle}>
+                                        {sleep === option && <View style={styles.innerCircle} />}
+                                    </View>
+                                    <Text style={styles.optionText}>{option}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <Text style={styles.label}>Do you feel mentally motivated to train?</Text>
+                        <View style={styles.radioGroup}>
+                            {['Rarely', 'Sometimes', 'Often', 'Always'].map((option) => (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={styles.radioButtonContainer}
+                                    onPress={() => setMentally(option)}
+                                >
+                                    <View style={styles.outerCircle}>
+                                        {mentally === option && <View style={styles.innerCircle} />}
+                                    </View>
+                                    <Text style={styles.optionText}>{option}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <Text style={styles.label}>Any injuries or pain affecting performance?</Text>
+                        <View style={[styles.radioGroup, injuries=='Yes' &&{ marginBottom: 0 }]}>
                             {['Yes', 'No'].map((option) => (
                                 <TouchableOpacity
                                     key={option}
                                     style={styles.radioButtonContainer}
-                                    onPress={() => setDiscomfort(option)}
+                                    onPress={() => setInjuries(option)}
                                 >
                                     <View style={styles.outerCircle}>
-                                        {discomfort === option && <View style={styles.innerCircle} />}
+                                        {injuries === option && <View style={styles.innerCircle} />}
                                     </View>
                                     <Text style={styles.optionText}>{option}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
+                        {injuries=='Yes' && <TextInput style={styles.input}
+                            placeholder="Please provide details if any."
+                            placeholderTextColor="#A8A8A8"
+                            value={injuryDetails || ""}
+                            onChangeText={setInjuryDetails}
+                        />}
+                        <Text style={styles.label}>Overall satisfaction with your coach/training environment?</Text>
+                        <Text style={styles.hint}>0 = Very dissatisfied, 10 = Very satisfied</Text>
+                        <View style={styles.rangeSliderContainer}>
+                            <Slider
+                                style={styles.rangeSlider}
+                                minimumValue={0}
+                                maximumValue={10}
+                                step={1}
+                                value={coachTrainingSatisfaction}
+                                onValueChange={setCoachTrainingSatisfaction}
+                                minimumTrackTintColor="#FF4000"
+                                maximumTrackTintColor="#111111"
+                                thumbTintColor="#FF4000"
+                            />
+                            <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                {coachTrainingSatisfaction || 0}
+                            </Text>
+                        </View>
 
-                        <Text style={[styles.label, { marginBottom: 10 }]}>Any comments or feedback for the coach?</Text>
+                        <Text style={[styles.label, { marginBottom: 10 }]}>What is one area you want to improve next month?</Text>
                         <TextInput style={styles.textarea}
                             placeholder="Any comments, injuries, etc."
                             placeholderTextColor="#A8A8A8"
-                            value={notes || ""}
-                            onChangeText={setNotes}
+                            value={areaOfImprovement || ""}
+                            onChangeText={setAreaOfImprovement}
                             multiline={true}
                             blurOnSubmit={false}
                             returnKeyType="default"
@@ -247,7 +289,7 @@ const postSessionSurvey = () => {
     );
 };
 
-export default postSessionSurvey;
+export default monthlySurvey;
 
 const styles = StyleSheet.create({
     container: {
@@ -329,6 +371,15 @@ const styles = StyleSheet.create({
         height: 100,
         textAlignVertical: 'top',
     },
+    input: {
+        fontSize: 14,
+        padding: 15,
+        backgroundColor: '#F4F4F4',
+        marginBottom: 16,
+        color: 'black',
+        borderRadius: 10,
+        marginTop:10
+    },
     fixedBottomSection: {
         position: 'absolute',
         bottom: 60,
@@ -383,10 +434,10 @@ const styles = StyleSheet.create({
         color: '#888'
     },
     radioGroup: {
-        flexDirection: 'row',
-        marginVertical: 8,
+        // flexDirection: 'row',
+        marginTop: 10,
         marginBottom: 30,
-        gap: 30
+        gap: 8
     },
     radioButtonContainer: {
         flexDirection: 'row',

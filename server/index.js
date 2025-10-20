@@ -15,6 +15,7 @@ const postRoutes = require('./routes/postRoutes')
 const searchRoutes = require('./routes/searchRoutes')
 const chatRouter = require('./routes/chatRoutes');
 const verificationRoutes = require("./routes/verificationRoutes");
+const postSessionSurveyRoutes = require("./routes/postSessionSurveyRoutes");
 const Chat = require("./models/Chat");
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/financials', paymentRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/chats', chatRouter);
 app.use('/api/verify', verificationRoutes);
+app.use('/api/postSessionSurvey', postSessionSurveyRoutes);
 
 app.use('/api/search', searchRoutes);
 app.use('/api/notifications', notificationsRoutes);

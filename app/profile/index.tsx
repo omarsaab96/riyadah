@@ -1077,7 +1077,10 @@ export default function Profile() {
 
             {true && <View>
                 <TouchableOpacity onPress={() => { router.push("/postSessionSurvey") }}>
-                    <Text>Form</Text>
+                    <Text>post session</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { router.push("/monthlySurvey") }}>
+                    <Text>monthly</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
