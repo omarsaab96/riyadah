@@ -9,18 +9,18 @@ Changes:
 ✔ 8.	Fix server error during event creation or update. @done(25-10-14 23:46)
 ✔ 9.	Add Google Maps link integration for event locations. @done(25-10-19 20:03)
 ✘ 10.	Add payments dashboard for athletes to pay. @needPaymentGateway
-☐ 11.	Add admin and coach payments dashboard. @low
-☐ 12.	Automate monthly payment reminders via push notifications. @low @on_the_1st_of_everymonth_a_notification_will_be_sent
+☐ 11.	Add admin and coach payments dashboard. @NOTCLEAR
+☐ 12.	Automate monthly payment reminders via push notifications. @on_the_1st_of_everymonth_a_notification_will_be_sent
 ✔ 13.	Add “Amount” field in financials section and make all payments in EGP @done(25-10-15 10:45)
-☐ 14.	Add attendance dashboard for admins. @low
-☐ 15.	Add unified admin and coach dashboard (attendance + payments overview). @low
-☐ 16.	Link coaches directly under their club or academy. @low
+☐ 14.	Add attendance dashboard for admins. @NOTCLEAR
+☐ 15.	Add unified admin and coach dashboard (attendance + payments overview). @NOTCLEAR
+☐ 16.	Link coaches directly under their club or academy. @NOTCLEAR
 ✘ 17.	Enable group chat feature @afterMVP
 ✔ 18.	Add validation for birthdate to prevent invalid entries. (35/14/2024) @done(25-10-20 01:53)
 ✔ 19.	Change club establishment format from day/year to month/year or only year. @done(25-10-20 04:17)
 ✔ 20.	Add club type selection option (Club / Academy). @done(25-10-14 22:43)
-☐ 21.	Add backend capability for live testing result uploads. @low
-☐ 22.	Add post-session and monthly survey feature for athletes. @low
+☐ 21.	Add backend capability for live testing result uploads. @NOTCLEAR
+☐ 22.	Add post-session and monthly survey feature for athletes. @NOTCLEAR
 ✔ 23.	Add new sports: Volleyball, Swimming, and Tennis. @done(25-10-14 21:15)
 
 ---------------------------------------------------------
