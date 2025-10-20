@@ -1,30 +1,31 @@
 import Slider from '@react-native-community/slider';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 const { width } = Dimensions.get('window');
 
-const FeedbackForm = () => {
+const postSessionSurvey = () => {
     const router = useRouter();
 
-    const [soreness, setSoreness] = useState(5);
-    const [mentalHealth, setMentalHealth] = useState(5);
-    const [physicalHealth, setPhysicalHealth] = useState(5);
+    const [intensity, setIntensity] = useState(5);
+    const [physicalFeeling, setPhysicalFeeling] = useState<String | null>(null);
+    const [focusLevel, setFocusLevel] = useState<String | null>(null);
+    const [discomfort, setDiscomfort] = useState<String | null>(null);
     const [notes, setNotes] = useState('');
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [timer, setTimer] = useState(2);
+    const [timer, setTimer] = useState(5);
 
 
     const handleSubmit = () => {
         const feedbackData = {
-            soreness,
-            mentalHealth,
-            physicalHealth,
+            intensity,
+            physicalFeeling,
+            focusLevel,
+            discomfort,
             notes,
         };
-
 
         try {
             setSaving(true);
@@ -66,7 +67,7 @@ const FeedbackForm = () => {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Post-Session Feedback</Text>
-                    {!loading && <Text style={styles.pageDesc}>Event name</Text>}
+                    {/* {!loading && <Text style={styles.pageDesc}>Event name</Text>} */}
 
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -88,61 +89,74 @@ const FeedbackForm = () => {
             >
                 <ScrollView>
                     <View style={styles.contentContainer}>
-                        <Text style={styles.label}>How sore are you?</Text>
+                        <Text style={styles.label}>How intense was today's session?</Text>
+                        <Text style={styles.hint}>0 = Very Easy, 10 = Extremely Hard</Text>
                         <View style={styles.rangeSliderContainer}>
                             <Slider
                                 style={styles.rangeSlider}
                                 minimumValue={0}
                                 maximumValue={10}
                                 step={1}
-                                value={soreness}
-                                onValueChange={setSoreness}
+                                value={intensity}
+                                onValueChange={setIntensity}
                                 minimumTrackTintColor="#FF4000"
                                 maximumTrackTintColor="#111111"
                                 thumbTintColor="#FF4000"
                             />
                             <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                {soreness || 0}%
+                                {intensity || 0}
                             </Text>
                         </View>
 
-                        <Text style={styles.label}>How is your mental health?</Text>
-                        <View style={styles.rangeSliderContainer}>
-                            <Slider
-                                style={styles.rangeSlider}
-                                minimumValue={0}
-                                maximumValue={10}
-                                step={1}
-                                value={mentalHealth}
-                                onValueChange={setMentalHealth}
-                                minimumTrackTintColor="#FF4000"
-                                maximumTrackTintColor="#111111"
-                                thumbTintColor="#FF4000"
-                            />
-                            <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                {mentalHealth || 0}%
-                            </Text>
+                        <Text style={styles.label}>How do you feel physically right now?</Text>
+                        <View style={styles.radioGroup}>
+                            {['Great', 'Tired', 'Exhausted'].map((option) => (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={styles.radioButtonContainer}
+                                    onPress={() => setPhysicalFeeling(option)}
+                                >
+                                    <View style={styles.outerCircle}>
+                                        {physicalFeeling === option && <View style={styles.innerCircle} />}
+                                    </View>
+                                    <Text style={styles.optionText}>{option}</Text>
+                                </TouchableOpacity>
+                            ))}
                         </View>
 
-                        <Text style={styles.label}>How is your physical health?</Text>
-                        <View style={styles.rangeSliderContainer}>
-                            <Slider
-                                style={styles.rangeSlider}
-                                minimumValue={0}
-                                maximumValue={10}
-                                step={1}
-                                value={physicalHealth}
-                                onValueChange={setPhysicalHealth}
-                                minimumTrackTintColor="#FF4000"
-                                maximumTrackTintColor="#111111"
-                                thumbTintColor="#FF4000"
-                            />
-                            <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                {physicalHealth || 0}%
-                            </Text>
+                        <Text style={styles.label}>How was your focus and motivation today?</Text>
+                        <View style={styles.radioGroup}>
+                            {['Low', 'Moderate', 'High'].map((option) => (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={styles.radioButtonContainer}
+                                    onPress={() => setFocusLevel(option)}
+                                >
+                                    <View style={styles.outerCircle}>
+                                        {focusLevel === option && <View style={styles.innerCircle} />}
+                                    </View>
+                                    <Text style={styles.optionText}>{option}</Text>
+                                </TouchableOpacity>
+                            ))}
                         </View>
 
-                        <Text style={styles.label}>Additional Notes</Text>
+                        <Text style={styles.label}>Any pain, soreness, or discomfort?</Text>
+                        <View style={styles.radioGroup}>
+                            {['Yes', 'No'].map((option) => (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={styles.radioButtonContainer}
+                                    onPress={() => setDiscomfort(option)}
+                                >
+                                    <View style={styles.outerCircle}>
+                                        {discomfort === option && <View style={styles.innerCircle} />}
+                                    </View>
+                                    <Text style={styles.optionText}>{option}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <Text style={[styles.label,{marginBottom:10}]}>Any comments or feedback for the coach?</Text>
                         <TextInput style={styles.textarea}
                             placeholder="Any comments, injuries, etc."
                             placeholderTextColor="#A8A8A8"
@@ -209,7 +223,7 @@ const FeedbackForm = () => {
     );
 };
 
-export default FeedbackForm;
+export default postSessionSurvey;
 
 const styles = StyleSheet.create({
     container: {
@@ -260,7 +274,7 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: "Bebas",
         fontSize: 20,
-        marginBottom: 10
+        // marginBottom: 10
     },
     rangeContainer: {
 
@@ -339,9 +353,38 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     hint: {
-        marginBottom: 20,
+        marginBottom: 5,
         fontFamily: 'Manrope',
         fontSize: 14,
-        color: '#000000'
+        color: '#888'
+    },
+    radioGroup: {
+        flexDirection: 'row',
+        marginVertical: 8,
+        marginBottom: 30,
+        gap:30
+    },
+    radioButtonContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    outerCircle: {
+        height: 22,
+        width: 22,
+        borderRadius: 11,
+        borderWidth: 2,
+        borderColor: '#FF4400',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 6,
+    },
+    innerCircle: {
+        height: 12,
+        width: 12,
+        borderRadius: 6,
+        backgroundColor: '#FF4400',
+    },
+    optionText: {
+        fontSize: 15,
     },
 });
