@@ -59,7 +59,7 @@ export default function Profile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
-    const tabsAthlete = ['Profile', 'Schedule'];
+    const tabsAthlete = ['Profile', 'Schedule','Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const tabsCoach = ['Profile', 'Teams'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
@@ -381,6 +381,30 @@ export default function Profile() {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
                 const res = await fetch(`https://riyadah.onrender.com/api/financials/club/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    const unpaid = data.data.filter(p => !p.paid);
+                    const paid = data.data.filter(p => p.paid);
+                    setUnpaidPayments(unpaid);
+                    setPaidPayments(paid);
+                } else {
+                    console.error(data.message);
+                }
+            } catch (err) {
+                console.error('Failed to fetch inventory', err);
+                setInventory([]);
+            } finally {
+                setFinancialsLoading(false)
+            }
+        };
+
+        if (user?.type === "Athlete") {
+            try {
+                const token = await SecureStore.getItemAsync('userToken');
+                const res = await fetch(`https://riyadah.onrender.com/api/financials/athlete/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -1075,7 +1099,7 @@ export default function Profile() {
                 </View>
             )}
 
-            {true && <View>
+            {false && <View>
                 <TouchableOpacity onPress={() => { router.push("/postSessionSurvey") }}>
                     <Text>post session</Text>
                 </TouchableOpacity>
@@ -2942,7 +2966,6 @@ const TeamCard = ({ userId, user, team, deleteTeam, cancelDeleteTeam, loadingDel
         </TouchableOpacity>
     )
 };
-
 
 const styles = StyleSheet.create({
     container: {

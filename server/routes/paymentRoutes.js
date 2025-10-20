@@ -57,7 +57,19 @@ router.post('/', authenticateToken, async (req, res) => {
 router.get('/club/:clubId', authenticateToken, async (req, res) => {
   try {
     const payments = await Payment.find({ club: req.params.clubId })
-      .populate('user', 'name email image')
+      .populate('user', '_id name email image')
+
+    res.status(200).json({ success: true, data: payments });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.get('/athlete/:athleteId', authenticateToken, async (req, res) => {
+  try {
+    const payments = await Payment.find({ user: req.params.athleteId })
+      .populate('user', '_id name email image')
+      .populate('club', '_id name image');
 
     res.status(200).json({ success: true, data: payments });
   } catch (err) {
