@@ -36,7 +36,7 @@ export default function WizardStep5() {
         if (!formData.email) return [];
 
         try {
-            const res = await fetch(`https://riyadah.onrender.com/api/users/find-children?parentEmail=${formData.email}`);
+            const res = await fetch(`http://193.187.132.170:5000/api/users/find-children?parentEmail=${formData.email}`);
             const data = await res.json();
             return data;
         } catch (err) {
@@ -109,7 +109,7 @@ export default function WizardStep5() {
 
             console.log('Submitting user data:', newUserData);
 
-            const response = await fetch('https://riyadah.onrender.com/api/users', {
+            const response = await fetch('http://193.187.132.170:5000/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

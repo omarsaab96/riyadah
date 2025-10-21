@@ -60,7 +60,7 @@ export default function Messages() {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) return;
 
-            const socket = io('https://riyadah.onrender.com/chat-list', {
+            const socket = io('http://193.187.132.170:5000/chat-list', {
                 auth: { token },
                 transports: ["websocket"]
             });
@@ -149,7 +149,7 @@ export default function Messages() {
     const fetchParticipants = async () => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch('https://riyadah.onrender.com/api/chats/participants', {
+            const res = await fetch('http://193.187.132.170:5000/api/chats/participants', {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -176,7 +176,7 @@ export default function Messages() {
         setLoading(true);
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/chats?page=${page}&limit=${pageLimit}`, {
+            const res = await fetch(`http://193.187.132.170:5000/api/chats?page=${page}&limit=${pageLimit}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -203,7 +203,7 @@ export default function Messages() {
         setPage(1);
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/chats?page=1&limit=${pageLimit}`, {
+            const res = await fetch(`http://193.187.132.170:5000/api/chats?page=1&limit=${pageLimit}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -242,7 +242,7 @@ export default function Messages() {
     const handleConfirmDeleteChat = async (chatId: string) => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/chats/delete/${chatId}`, {
+            const res = await fetch(`http://193.187.132.170:5000/api/chats/delete/${chatId}`, {
                 method: 'delete',
                 headers: {
                     'Content-Type': 'application/json',
@@ -392,7 +392,7 @@ export default function Messages() {
         const token = await SecureStore.getItemAsync('userToken');
 
         try {
-            const res = await fetch('https://riyadah.onrender.com/api/chats/create', {
+            const res = await fetch('http://193.187.132.170:5000/api/chats/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

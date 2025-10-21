@@ -22,7 +22,7 @@ const AttendanceSheet = () => {
 
         const fetchTeamMembers = async () => {
             try {
-                const response = await fetch(`https://riyadah.onrender.com/api/teams/${teamId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/teams/${teamId}`, {
                     method: 'Get',
                     headers: {
                         'Content-Type': 'application/json'

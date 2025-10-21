@@ -35,7 +35,7 @@ const CreatePostScreen = () => {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -106,7 +106,7 @@ const CreatePostScreen = () => {
 
             // Send the post to your backend
             const token = await SecureStore.getItemAsync('userToken');
-            const response = await fetch('https://riyadah.onrender.com/api/posts', {
+            const response = await fetch('http://193.187.132.170:5000/api/posts', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

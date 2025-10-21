@@ -41,7 +41,7 @@ export default function AccountSettings() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -96,7 +96,7 @@ export default function AccountSettings() {
 
         if (emailAddress != user.email) {
             try {
-                const response = await fetch(`https://riyadah.onrender.com/api/users/updateEmail`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/updateEmail`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -126,7 +126,7 @@ export default function AccountSettings() {
         }
         if ("+" + callingCode + phoneNumber != user.phone) {
             try {
-                const response = await fetch(`https://riyadah.onrender.com/api/users/updatePhone`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/updatePhone`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,

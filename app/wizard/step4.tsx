@@ -37,8 +37,8 @@ export default function WizardStep4() {
             try {
                 const url =
                     formData.type == 'Association'
-                        ? `https://riyadah.onrender.com/api/users/clubs?sport=${encodeURIComponent(formData.sport[0])}`
-                        : `https://riyadah.onrender.com/api/users/clubs`;
+                        ? `http://193.187.132.170:5000/api/users/clubs?sport=${encodeURIComponent(formData.sport[0])}`
+                        : `http://193.187.132.170:5000/api/users/clubs`;
 
                 const res = await fetch(url);
                 const json = await res.json();

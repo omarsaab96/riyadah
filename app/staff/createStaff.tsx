@@ -71,7 +71,7 @@ const CreateStaffScreen = () => {
             try {
                 setLoading(true);
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch('https://riyadah.onrender.com/api/teams', {
+                const response = await fetch('http://193.187.132.170:5000/api/teams', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -102,7 +102,7 @@ const CreateStaffScreen = () => {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -205,7 +205,7 @@ const CreateStaffScreen = () => {
             setSaving(true);
             const token = await SecureStore.getItemAsync('userToken');
 
-            const response = await fetch('https://riyadah.onrender.com/api/staff', {
+            const response = await fetch('http://193.187.132.170:5000/api/staff', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -278,7 +278,7 @@ const CreateStaffScreen = () => {
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const response = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${text}`, {
+            const response = await fetch(`http://193.187.132.170:5000/api/users/search?keyword=${text}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 }
@@ -357,7 +357,7 @@ const CreateStaffScreen = () => {
 
     const checkAvailability = async (email: string) => {
         try {
-            const response = await fetch('https://riyadah.onrender.com/api/users/check', {
+            const response = await fetch('http://193.187.132.170:5000/api/users/check', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

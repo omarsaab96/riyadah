@@ -4,16 +4,16 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  Linking,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    Linking,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 const { width } = Dimensions.get('window');
@@ -30,7 +30,7 @@ export default function StaffDetailsScreen() {
       try {
         const token = await SecureStore.getItemAsync("userToken");
         const response = await fetch(
-          `https://riyadah.onrender.com/api/staff/${id}`,
+          `http://193.187.132.170:5000/api/staff/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

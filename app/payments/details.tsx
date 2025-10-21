@@ -37,7 +37,7 @@ export default function PaymentDetails() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -61,7 +61,7 @@ export default function PaymentDetails() {
                     return;
                 }
 
-                const res = await fetch(`https://riyadah.onrender.com/api/financials/${id}`, {
+                const res = await fetch(`http://193.187.132.170:5000/api/financials/${id}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -90,7 +90,7 @@ export default function PaymentDetails() {
     const settlePayment = async () => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`https://riyadah.onrender.com/api/financials/${payment._id}/pay`, {
+            const res = await fetch(`http://193.187.132.170:5000/api/financials/${payment._id}/pay`, {
                 method: 'PUT',
                 headers: {
                     Authorization: `Bearer ${token}`,

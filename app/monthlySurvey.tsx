@@ -50,7 +50,7 @@ const monthlySurvey = () => {
                 return;
             }
 
-            const response = await fetch('https://riyadah.onrender.com/api/monthlySurvey', {
+            const response = await fetch('http://193.187.132.170:5000/api/monthlySurvey', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

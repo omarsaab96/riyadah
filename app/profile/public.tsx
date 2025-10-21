@@ -109,14 +109,14 @@ export default function PublicProfile() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${id}`);
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${id}`);
 
                 if (response.ok) {
                     const userData = await response.json();
                     setUser(userData);
 
                     if (userData.role == "Coach") {
-                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${userData._id}`);
+                        const coachteams = await fetch(`http://193.187.132.170:5000/api/teams/byCoach/${userData._id}`);
 
                         if (coachteams.ok) {
                             const coachdata = await coachteams.json();
@@ -147,7 +147,7 @@ export default function PublicProfile() {
     const getAdminInfo = async () => {
         if (user.type == "Club" && user.admin?.email) {
             try {
-                const res = await fetch(`https://riyadah.onrender.com/api/users/findAdmin?email=${user.admin.email}`, {
+                const res = await fetch(`http://193.187.132.170:5000/api/users/findAdmin?email=${user.admin.email}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -168,7 +168,7 @@ export default function PublicProfile() {
         if (user.type == "Club") {
             const token = await SecureStore.getItemAsync('userToken');
             try {
-                const res = await fetch(`https://riyadah.onrender.com/api/teams/club/${user._id}`, {
+                const res = await fetch(`http://193.187.132.170:5000/api/teams/club/${user._id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ export default function PublicProfile() {
                 }
 
                 const token = await SecureStore.getItemAsync("token");
-                const res = await fetch(`https://riyadah.onrender.com/api/schedules/club/${user._id}?${params.toString()}`);
+                const res = await fetch(`http://193.187.132.170:5000/api/schedules/club/${user._id}?${params.toString()}`);
 
                 const response = await res.json();
 
@@ -221,7 +221,7 @@ export default function PublicProfile() {
     const getStaff = async () => {
         if (user.type == "Club") {
             try {
-                const response = await fetch(`https://riyadah.onrender.com/api/staff/byClub/${user._id}`);
+                const response = await fetch(`http://193.187.132.170:5000/api/staff/byClub/${user._id}`);
                 const data = await response.json();
 
                 if (response.ok) {
@@ -238,7 +238,7 @@ export default function PublicProfile() {
     const getInventory = async () => {
         if (user?.type === "Club") {
             try {
-                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub/${user._id}`);
+                const response = await fetch(`http://193.187.132.170:5000/api/inventory/byClub/${user._id}`);
                 const data = await response.json();
 
                 if (response.ok) {
@@ -308,7 +308,7 @@ export default function PublicProfile() {
         const token = await SecureStore.getItemAsync('userToken');
 
         try {
-            const res = await fetch('https://riyadah.onrender.com/api/chats/create', {
+            const res = await fetch('http://193.187.132.170:5000/api/chats/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

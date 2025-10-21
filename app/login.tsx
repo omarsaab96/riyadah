@@ -5,14 +5,14 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Dimensions,
+    Image,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 
@@ -50,7 +50,7 @@ export default function Login() {
     };
 
     try {
-      const response = await fetch('https://riyadah.onrender.com/api/users/login', {
+      const response = await fetch('http://193.187.132.170:5000/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

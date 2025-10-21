@@ -168,7 +168,7 @@ const CreateEventScreen = () => {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -191,7 +191,7 @@ const CreateEventScreen = () => {
         const fetchTeams = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch('https://riyadah.onrender.com/api/teams', {
+                const response = await fetch('http://193.187.132.170:5000/api/teams', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -213,7 +213,7 @@ const CreateEventScreen = () => {
         const fetchInventory = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`https://riyadah.onrender.com/api/inventory/byClub/${userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/inventory/byClub/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -351,7 +351,7 @@ const CreateEventScreen = () => {
             if (formData.eventType !== 'Match') delete requestBody.opponent;
             if (formData.eventType !== 'Training') delete requestBody.trainingFocus;
 
-            const response = await fetch('https://riyadah.onrender.com/api/schedules', {
+            const response = await fetch('http://193.187.132.170:5000/api/schedules', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

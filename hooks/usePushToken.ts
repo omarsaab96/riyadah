@@ -26,7 +26,7 @@ export async function registerForPushNotificationsAsync(user: any, authToken: st
 
     if (token != user.expoPushToken) {
       try {
-        const response = await fetch(`https://riyadah.onrender.com/api/users/push-token`, {
+        const response = await fetch(`http://193.187.132.170:5000/api/users/push-token`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

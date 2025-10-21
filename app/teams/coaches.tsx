@@ -64,7 +64,7 @@ export default function Coaches() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -73,7 +73,7 @@ export default function Coaches() {
                     setUser(user)
 
                     if (user.role == "Coach") {
-                        const coachteams = await fetch(`https://riyadah.onrender.com/api/teams/byCoach/${user._id}`);
+                        const coachteams = await fetch(`http://193.187.132.170:5000/api/teams/byCoach/${user._id}`);
 
                         if (coachteams.ok) {
                             const coachdata = await coachteams.json();
@@ -97,7 +97,7 @@ export default function Coaches() {
     useEffect(() => {
         const fetchTeam = async () => {
             try {
-                const response = await fetch(`https://riyadah.onrender.com/api/teams/${id}`);
+                const response = await fetch(`http://193.187.132.170:5000/api/teams/${id}`);
 
                 if (response.ok) {
                     const userData = await response.json();
@@ -140,7 +140,7 @@ export default function Coaches() {
     const searchCoaches = async (name: string) => {
         try {
             setSearching(true);
-            const res = await fetch(`https://riyadah.onrender.com/api/users/search?keyword=${name}&role=Coach`);
+            const res = await fetch(`http://193.187.132.170:5000/api/users/search?keyword=${name}&role=Coach`);
 
             if (res.ok) {
                 const data = await res.json();
@@ -175,7 +175,7 @@ export default function Coaches() {
                 return;
             }
 
-            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/coaches`, {
+            const res = await fetch(`http://193.187.132.170:5000/api/teams/${team._id}/coaches`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -212,7 +212,7 @@ export default function Coaches() {
                 throw new Error('Authentication token missing');
             }
 
-            const res = await fetch(`https://riyadah.onrender.com/api/teams/${team._id}/remove-coaches`, {
+            const res = await fetch(`http://193.187.132.170:5000/api/teams/${team._id}/remove-coaches`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

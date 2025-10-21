@@ -77,7 +77,7 @@ export default function ParentCreateAthlete() {
 
     const checkAvailability = async (email: string, phone?: string) => {
         try {
-            const response = await fetch('https://riyadah.onrender.com/api/users/check', {
+            const response = await fetch('http://193.187.132.170:5000/api/users/check', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ export default function ParentCreateAthlete() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`https://riyadah.onrender.com/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -236,7 +236,7 @@ export default function ParentCreateAthlete() {
 
             console.log('Submitting user data:', newUserData);
 
-            const response = await fetch('https://riyadah.onrender.com/api/users', {
+            const response = await fetch('http://193.187.132.170:5000/api/users', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
