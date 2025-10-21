@@ -23,6 +23,20 @@ Changes:
 ✔ 22.	Add post-session and monthly survey feature for athletes. @done(25-10-20 10:13)
 ✔ 23.	Add new sports: Volleyball, Swimming, and Tennis. @done(25-10-14 21:15)
 
+
+Payments :
+	should have balance and available balance
+	should have history
+
+attendance:
+	should show on coach and admin
+
+schedule:
+	check training flow (start, end, notifications, attendance, surveys)
+
+Version check:
+	should check version on load and force update if needed
+
 ---------------------------------------------------------
 *1. Post-Workout / Session Survey (Micro-Survey)*:
 

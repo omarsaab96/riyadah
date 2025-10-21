@@ -2617,7 +2617,9 @@ export default function Profile() {
                         ) : (
                             <View>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>Club Financials</Text>
+                                    <Text style={styles.sectionTitle}>
+                                        {user.type=='Club'&& 'Club'}{user.type=='Athlete'&& 'Athlete'} Financials
+                                    </Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.addButton}

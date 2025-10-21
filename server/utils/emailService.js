@@ -1,6 +1,8 @@
 // emailService.js
 const nodemailer = require("nodemailer");
+const dotenv = require('dotenv');
 
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
   host: "smtp.hostinger.com",
@@ -32,7 +34,5 @@ async function sendEmail(to, subject, html) {
     return false;
   }
 }
-
-
 
 module.exports = { sendEmail };
