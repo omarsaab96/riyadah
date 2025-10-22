@@ -28,7 +28,7 @@ const CreateEventScreen = () => {
         team: '',
         date: new Date(),
         startTime: new Date(new Date().getTime() * 60 * 60 * 1000),
-        endtime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
         locationType: 'venue',
         venue: {
             name: '',
@@ -360,6 +360,8 @@ const CreateEventScreen = () => {
             if (formData.eventType !== 'Match') delete requestBody.opponent;
             if (formData.eventType !== 'Training') delete requestBody.trainingFocus;
 
+            console.log(requestBody)
+
             const response = await fetch('http://193.187.132.170:5000/api/schedules', {
                 method: 'POST',
                 headers: {
@@ -371,7 +373,7 @@ const CreateEventScreen = () => {
 
             const data = await response.json();
 
-            // console.log("Response data: ", data)
+            console.warn("Response data: ", data)
 
             if (response.ok) {
                 router.replace({

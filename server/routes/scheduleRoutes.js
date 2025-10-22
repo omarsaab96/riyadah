@@ -279,7 +279,7 @@ router.post(
         check('eventType', 'Invalid event type').isIn([
             'Training', 'Match', 'Meeting', 'Tournament', 'Other'
         ]),
-        check('repeats', 'Invalid repeat value').isIn(['No', 'daily', 'weekly', 'monthly'])
+        check('repeats', 'Invalid repeat value').isIn(['No', 'Daily', 'Weekly', 'Monthly'])
     ]),
     async (req, res) => {
         try {
