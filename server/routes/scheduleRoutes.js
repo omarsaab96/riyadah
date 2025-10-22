@@ -182,53 +182,53 @@ router.get('/', authenticate, async (req, res) => {
 // @desc    Get all events for a specific user (based on their team membership)
 // @access  Private (Athletes, Coaches, Club admins)
 router.get('/user/:userId', authenticate, async (req, res) => {
-  try {
-    const { userId } = req.params;
+    try {
+        const { userId } = req.params;
 
-    // 1️⃣ Get user and verify existence
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+        // 1️⃣ Get user and verify existence
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // 2️⃣ Get all teams that include this user
+        // This checks if the user is a member, coach, or club owner of the team
+        const teams = await Team.find({
+            $or: [
+                { members: user._id },
+                { coaches: user._id },
+                { club: user._id }
+            ]
+        }).select('_id name sport ageGroup');
+
+        if (!teams.length) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const teamIds = teams.map(t => t._id);
+
+        // 3️⃣ Fetch all events that belong to these teams
+        const events = await Schedule.find({
+            team: { $in: teamIds },
+            status: { $ne: 'cancelled' }
+        })
+            .populate('team', 'name sport ageGroup')
+            .populate('participants.user', 'name image')
+            .populate('coaches', 'name image')
+            .sort({ startDateTime: 1 });
+
+        res.status(200).json({
+            success: true,
+            data: events,
+            count: events.length
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
     }
-
-    // 2️⃣ Get all teams that include this user
-    // This checks if the user is a member, coach, or club owner of the team
-    const teams = await Team.find({
-      $or: [
-        { members: user._id },
-        { coaches: user._id },
-        { club: user._id }
-      ]
-    }).select('_id name sport ageGroup');
-
-    if (!teams.length) {
-      return res.status(200).json({ success: true, data: [] });
-    }
-
-    const teamIds = teams.map(t => t._id);
-
-    // 3️⃣ Fetch all events that belong to these teams
-    const events = await Schedule.find({
-      team: { $in: teamIds },
-      status: { $ne: 'cancelled' }
-    })
-      .populate('team', 'name sport ageGroup')
-      .populate('participants.user', 'name image')
-      .populate('coaches', 'name image')
-      .sort({ startDateTime: 1 });
-
-    res.status(200).json({
-      success: true,
-      data: events,
-      count: events.length
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
 });
 
 // @route   GET /api/schedules/club/:clubId
@@ -263,9 +263,10 @@ router.get('/club/:clubId', async (req, res) => {
 });
 
 // @route   POST /api/schedules
-// @desc    Create a new event
+// @desc    Create a new event (with recurrence if applicable)
 // @access  Private (Club admins/coaches)
-router.post('/',
+router.post(
+    '/',
     authenticate,
     authorize(['admin', 'coach']),
     checkTeamMembership,
@@ -277,11 +278,12 @@ router.post('/',
         check('team', 'Team ID is required').isMongoId(),
         check('eventType', 'Invalid event type').isIn([
             'Training', 'Match', 'Meeting', 'Tournament', 'Other'
-        ])
+        ]),
+        check('repeats', 'Invalid repeat value').isIn(['No', 'daily', 'weekly', 'monthly'])
     ]),
     async (req, res) => {
         try {
-            const { title, description, date, startTime, endTime, eventType, team, ...rest } = req.body;
+            const { title, description, date, startTime, endTime, eventType, team, repeats, ...rest } = req.body;
 
             if (new Date(endTime) <= new Date(startTime)) {
                 return res.status(400).json({
@@ -290,40 +292,80 @@ router.post('/',
                 });
             }
 
-            const newEvent = new Schedule({
-                title,
-                description,
-                date,
-                startTime,
-                endTime,
-                eventType,
-                team,
-                club: req.user._id,
-                createdBy: req.user._id,
-                ...rest
-            });
+            // Helper: Add recurrence logic
+            const createdEvents = [];
+            const baseDate = new Date(date);
+            const oneYearLater = new Date(baseDate);
+            oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
 
-            await newEvent.save();
-            const populatedEvent = await Schedule.findById(newEvent._id)
+            // Function to clone a date with an offset (days/weeks/months)
+            const addDays = (date, days) => {
+                const newDate = new Date(date);
+                newDate.setDate(newDate.getDate() + days);
+                return newDate;
+            };
+            const addWeeks = (date, weeks) => addDays(date, weeks * 7);
+            const addMonths = (date, months) => {
+                const newDate = new Date(date);
+                const day = newDate.getDate();
+                newDate.setMonth(newDate.getMonth() + months);
+
+                // ⚠️ Prevent invalid monthly recurrence (28,29,30,31)
+                const lastDayOfMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate();
+                if (day > lastDayOfMonth) {
+                    throw new Error('Monthly recurrence cannot start on 28th, 29th, 30th, or 31st.');
+                }
+                return newDate;
+            };
+
+            let currentDate = new Date(baseDate);
+
+            while (currentDate <= oneYearLater) {
+                const start = new Date(startTime);
+                const end = new Date(endTime);
+
+                // Adjust time component for the new date
+                start.setFullYear(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+                end.setFullYear(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+                const newEvent = new Schedule({
+                    title,
+                    description,
+                    date: currentDate,
+                    startTime: start,
+                    endTime: end,
+                    eventType,
+                    team,
+                    club: req.user._id,
+                    createdBy: req.user._id,
+                    repeats,
+                    ...rest
+                });
+
+                await newEvent.save();
+                createdEvents.push(newEvent);
+
+                if (repeats === 'daily') currentDate = addDays(currentDate, 1);
+                else if (repeats === 'weekly') currentDate = addWeeks(currentDate, 1);
+                else if (repeats === 'monthly') currentDate = addMonths(currentDate, 1);
+                else break; // No repeat
+            }
+
+            const populatedEvent = await Schedule.findById(createdEvents[0]._id)
                 .populate('team', 'name sport ageGroup members coaches club')
                 .populate('createdBy', 'name type');
 
-            console.log(populatedEvent.team.coaches)
-
-            // Notification logic
+            // 🔔 Notification logic (for first event only)
             const creatorType = populatedEvent.createdBy.type;
             const teamData = populatedEvent.team;
 
             let usersToNotify = [];
-
-            if (creatorType == 'Coach') {
-                // Notify team members and the club
+            if (creatorType === 'Coach') {
                 usersToNotify = await User.find({
                     _id: { $in: [...teamData.members, teamData.club] },
                     expoPushToken: { $exists: true, $ne: null }
                 });
-            } else if (creatorType == 'Club') {
-                // Notify team members and coaches
+            } else if (creatorType === 'Club') {
                 usersToNotify = await User.find({
                     _id: { $in: [...teamData.members, ...teamData.coaches] },
                     expoPushToken: { $exists: true, $ne: null }
@@ -333,35 +375,37 @@ router.post('/',
             const notificationTitle = `📅 New Event`;
             const notificationBody = `You have a new ${eventType} scheduled for ${formatDate(date)} at ${formatTime(startTime)}.`;
 
-            console.log("usersToNotify= ", usersToNotify)
-            console.log("notificationBody= ", notificationBody)
-
-            // Send notifications one by one (can be optimized with batching)
             for (const user of usersToNotify) {
                 try {
-                    await sendNotification(
-                        user,
-                        notificationTitle,
-                        notificationBody,
-                        { eventId: newEvent._id.toString() });
+                    await sendNotification(user, notificationTitle, notificationBody, {
+                        eventId: populatedEvent._id.toString()
+                    });
                 } catch (err) {
                     console.error(`Failed to send notification to user ${user._id}:`, err.message);
                 }
             }
 
-            res.status(201).json({ success: true, data: populatedEvent });
+            res.status(201).json({
+                success: true,
+                message: repeats !== 'No'
+                    ? `Event created and scheduled with ${repeats} recurrence for 1 year`
+                    : 'Event created successfully',
+                data: createdEvents
+            });
+
         } catch (err) {
             console.error(err);
-            res.status(500).json({ success: false, message: 'Server error' });
+            res.status(500).json({ success: false, message: err.message || 'Server error' });
         }
     }
 );
+
 
 // @route   GET /api/schedules/:id
 // @desc    get a specific event
 router.get('/:id', async (req, res) => {
     try {
-        const eventId= req.params.id;
+        const eventId = req.params.id;
 
         const event = await Schedule.findById(eventId);
 
@@ -518,12 +562,17 @@ function formatDate(dateInput) {
 function formatTime(dateInput) {
     const date = new Date(dateInput);
 
-    const pad = (num) => num.toString().padStart(2, '0');
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
 
-    const hours = pad(date.getHours());
-    const minutes = pad(date.getMinutes());
+    // Convert 24h → 12h (and make 0 → 12)
+    hours = hours % 12;
+    hours = hours ? hours : 12;
 
-    return `${hours}:${minutes}`;
+    const formatted = `${hours}:${minutes} ${ampm}`;
+    return formatted;
 }
+
 
 module.exports = router;

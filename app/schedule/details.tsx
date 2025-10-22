@@ -59,6 +59,29 @@ export default function StaffDetailsScreen() {
     }
   }, [id]);
 
+  const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const dateStr = d.toLocaleDateString('en-GB', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    return `${dateStr}`;
+  };
+
+  const formatTime = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+
+    const timeStr = d.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true, // set true if you want AM/PM
+    });
+    return ` ${timeStr}`;
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.pageHeader}>
@@ -114,15 +137,15 @@ export default function StaffDetailsScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Date</Text>
-          <Text style={styles.contactText}>{event.date}</Text>
+          <Text style={styles.contactText}>{formatDate(event.date)}</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>from</Text>
-          <Text style={styles.contactText}>{event.startTime}</Text>
+          <Text style={styles.contactText}>{formatTime(event.startTime)}</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>till</Text>
-          <Text style={styles.contactText}>{event.endtime}</Text>
+          <Text style={styles.contactText}>{formatTime(event.endTime)}</Text>
         </View>
 
         {event.location?.latitude != null && event.location?.longitude != null && (

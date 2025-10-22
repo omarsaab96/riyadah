@@ -67,7 +67,7 @@ export default function PublicProfile() {
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const hasEvent = events.some(e => {
-                const eventDate = new Date(e.startDateTime);
+                const eventDate = new Date(e.date);
                 const eventStr = eventDate.toISOString().split('T')[0];
                 return eventStr === dateStr;
             });
@@ -1061,13 +1061,13 @@ export default function PublicProfile() {
                                     {(() => {
                                         const eventDatesSet = new Set(
                                             schedule.map((event) => {
-                                                const d = new Date(event.startDateTime);
+                                                const d = new Date(event.date);
                                                 return d.toISOString().split('T')[0]; // "YYYY-MM-DD"
                                             })
                                         );
 
                                         const selectedDayEvents = schedule.filter((event) => {
-                                            const d = new Date(event.startDateTime);
+                                            const d = new Date(event.date);
                                             return (
                                                 d.getFullYear() === selectedDate.getFullYear() &&
                                                 d.getMonth() === selectedDate.getMonth() &&
@@ -1154,8 +1154,7 @@ export default function PublicProfile() {
 
                                                                     {item.hasEvent && (
                                                                         <View style={[
-                                                                            styles.eventDot,
-                                                                            isSelected && styles.selectedEventDot
+                                                                            styles.eventDot
                                                                         ]} />
                                                                     )}
                                                                 </TouchableOpacity>
@@ -1177,7 +1176,11 @@ export default function PublicProfile() {
                                                                 <TouchableOpacity
                                                                     key={event._id}
                                                                     style={styles.eventCard}
-                                                                    onPress={() => router.push(`/schedule/${event._id}`)}
+                                                                    onPress={() => router.push({
+                                                                        pathname: '/schedule/details',
+                                                                        params: { id: event._id }
+                                                                    })
+                                                                    }
                                                                 >
                                                                     <View style={styles.eventDate}>
                                                                         <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
@@ -1217,12 +1220,12 @@ export default function PublicProfile() {
                                                         <Text style={styles.noEventsText}>No events for this day.</Text>
                                                     )}
 
-                                                    <View style={{ marginTop: 30 }}>
+                                                    {/* <View style={{ marginTop: 30 }}>
                                                         <Text style={styles.subSectionTitle}>Upcoming Events</Text>
-                                                        {schedule.filter(event => new Date(event.startDateTime) > new Date()).length > 0 ? (
+                                                        {schedule.filter(event => new Date(event.date) > new Date()).length > 0 ? (
                                                             schedule
-                                                                .filter(event => new Date(event.startDateTime) > new Date())
-                                                                .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime)) // optional: sort chronologically
+                                                                .filter(event => new Date(event.date) > new Date())
+                                                                .sort((a, b) => new Date(a.date) - new Date(b.date)) // optional: sort chronologically
                                                                 .map((event) => {
                                                                     const eventDate = new Date(event.date);
                                                                     const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1262,7 +1265,7 @@ export default function PublicProfile() {
                                                         ) : (
                                                             <Text style={styles.noEventsText}>No upcoming events.</Text>
                                                         )}
-                                                    </View>
+                                                    </View> */}
                                                 </View>
                                             </>
                                         );
@@ -2137,7 +2140,7 @@ const styles = StyleSheet.create({
     },
     currentDay: {
         borderRadius: 20,
-        // backgroundColor: '#dddddd'
+        backgroundColor: '#dddddd'
     },
     selectedDay: {
         backgroundColor: '#FF4000',
@@ -2161,9 +2164,6 @@ const styles = StyleSheet.create({
         borderRadius: 3,
         backgroundColor: '#FF4000',
         bottom: 2,
-    },
-    selectedEventDot: {
-        backgroundColor: '#ffffff'
     },
     eventCard: {
         flexDirection: 'row',

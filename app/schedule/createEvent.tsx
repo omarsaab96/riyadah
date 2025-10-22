@@ -351,7 +351,7 @@ const CreateEventScreen = () => {
                 endTime: pickedEndTime.toISOString(),
                 team: formData.team,
                 repeats: repeat,
-                status:'scheduled'
+                status: 'scheduled'
             };
 
             // Clean up empty fields
@@ -371,7 +371,7 @@ const CreateEventScreen = () => {
 
             const data = await response.json();
 
-            console.log("Response data: ", data)
+            // console.log("Response data: ", data)
 
             if (response.ok) {
                 router.replace({
@@ -452,16 +452,75 @@ const CreateEventScreen = () => {
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Description</Text>
-                            <TextInput
-                                style={[styles.input]}
-                                placeholder="Enter description"
-                                placeholderTextColor={"#888"}
-                                multiline
-                                value={formData.description}
-                                onChangeText={(text) => handleChange('description', text)}
-                            />
+                            <Text style={styles.label}>Date*</Text>
+                            <TouchableOpacity
+                                style={styles.dateInput}
+                                onPress={() => setShowDatePicker(true)}
+                            >
+                                <Text style={styles.inputText}>
+                                    {formatDate(pickedDate)}
+                                </Text>
+                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
+                            </TouchableOpacity>
                         </View>
+
+                        {/* Event Time start-end */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                            <View style={[styles.formGroup, { flex: 1 }]}>
+                                <Text style={styles.label}>From*</Text>
+                                <TouchableOpacity
+                                    style={styles.dateInput}
+                                    onPress={() => setShowStartTimePicker(true)}
+                                >
+                                    <Text style={styles.inputText}>
+                                        {formatTime(pickedStartTime)}
+                                    </Text>
+                                    <FontAwesome5 name="clock" size={18} color="#666" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={[styles.formGroup, { flex: 1 }]}>
+                                <Text style={styles.label}>Till*</Text>
+                                <TouchableOpacity
+                                    style={styles.dateInput}
+                                    onPress={() => setShowEndTimePicker(true)}
+                                >
+                                    <Text style={styles.inputText}>
+                                        {formatTime(pickedEndTime)}
+                                    </Text>
+                                    <FontAwesome5 name="clock" size={18} color="#666" />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* //show datetime picker */}
+                        {showDatePicker && <DateTimePicker
+                            value={pickedDate}
+                            mode="date"
+                            is24Hour={true}
+                            display={'default'}
+                            onChange={setEventDate}
+                        />}
+
+                        {showStartTimePicker && (
+                            <DateTimePicker
+                                value={pickedStartTime}
+                                mode="time"
+                                is24Hour={false}
+                                display={'spinner'}
+                                onChange={setEventStartTime}
+                            />
+                        )}
+
+                        {showEndTimePicker && (
+                            <DateTimePicker
+                                value={pickedEndTime}
+                                mode="time"
+                                is24Hour={false}
+                                display={'spinner'}
+                                onChange={setEventEndTime}
+                            />
+                        )}
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Event Type *</Text>
@@ -499,78 +558,20 @@ const CreateEventScreen = () => {
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Date*</Text>
-                            <TouchableOpacity
-                                style={styles.dateInput}
-                                onPress={() => setShowDatePicker(true)}
-                            >
-                                <Text style={styles.inputText}>
-                                    {formatDate(pickedDate)}
-                                </Text>
-                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Event Time start-end */}
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
-                            <View style={[styles.formGroup, { flex: 1 }]}>
-                                <Text style={styles.label}>From*</Text>
-                                <TouchableOpacity
-                                    style={styles.dateInput}
-                                    onPress={() => setShowStartTimePicker(true)}
-                                >
-                                    <Text style={styles.inputText}>
-                                        {formatTime(pickedStartTime)}
-                                    </Text>
-                                    <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                                </TouchableOpacity>
-                            </View>
-
-                            <View style={[styles.formGroup, { flex: 1 }]}>
-                                <Text style={styles.label}>Till*</Text>
-                                <TouchableOpacity
-                                    style={styles.dateInput}
-                                    onPress={() => setShowEndTimePicker(true)}
-                                >
-                                    <Text style={styles.inputText}>
-                                        {formatTime(pickedEndTime)}
-                                    </Text>
-                                    <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        {/* //show datetime picker */}
-                        {showDatePicker && <DateTimePicker
-                            value={pickedDate}
-                            mode="date"
-                            is24Hour={true}
-                            display={'default'}
-                            onChange={setEventDate}
-                        />}
-
-                        {showStartTimePicker && (
-                            <DateTimePicker
-                                value={pickedStartTime}
-                                mode="time"
-                                is24Hour={false}
-                                display={'spinner'}
-                                onChange={setEventStartTime}
+                            <Text style={styles.label}>Description</Text>
+                            <TextInput
+                                style={[styles.input]}
+                                placeholder="Enter description"
+                                placeholderTextColor={"#888"}
+                                multiline
+                                value={formData.description}
+                                onChangeText={(text) => handleChange('description', text)}
                             />
-                        )}
-
-                        {showEndTimePicker && (
-                            <DateTimePicker
-                                value={pickedEndTime}
-                                mode="time"
-                                is24Hour={false}
-                                display={'spinner'}
-                                onChange={setEventEndTime}
-                            />
-                        )}
+                        </View>
 
                         < View style={styles.formGroup}>
-                            <Text style={styles.label}>Recurring event</Text>
+                            <Text style={[styles.label,{marginBottom:0}]}>Recurring event</Text>
+                            <Text style={styles.hint}>Recurrence will expire automatically after one year.</Text>
                             <View style={styles.pickerContainer}>
                                 <Picker
                                     selectedValue={'No'}
@@ -997,7 +998,12 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         color: 'black'
     },
-
+    hint: {
+        fontFamily: 'Manrope',
+        fontSize: 13,
+        marginBottom: 5,
+        color: '#666'
+    },
     input: {
         fontSize: 14,
         padding: 15,

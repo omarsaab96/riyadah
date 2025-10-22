@@ -94,7 +94,7 @@ export default function Profile() {
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const hasEvent = events.some(e => {
-                const eventDate = new Date(e.startDateTime);
+                const eventDate = new Date(e.date);
                 const eventStr = eventDate.toISOString().split('T')[0];
                 return eventStr === dateStr;
             });
@@ -295,7 +295,7 @@ export default function Profile() {
                 });
                 const response = await res.json();
 
-                // console.log(response)
+                console.log(response)
 
                 if (response.success) {
                     setSchedule(response.data)
@@ -2065,13 +2065,13 @@ export default function Profile() {
                                     {(() => {
                                         const eventDatesSet = new Set(
                                             schedule.map((event) => {
-                                                const d = new Date(event.startDateTime);
+                                                const d = new Date(event.date);
                                                 return d.toISOString().split('T')[0]; // "YYYY-MM-DD"
                                             })
                                         );
 
                                         const selectedDayEvents = schedule.filter((event) => {
-                                            const d = new Date(event.startDateTime);
+                                            const d = new Date(event.date);
                                             return (
                                                 d.getFullYear() === selectedDate.getFullYear() &&
                                                 d.getMonth() === selectedDate.getMonth() &&
