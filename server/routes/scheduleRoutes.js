@@ -331,9 +331,10 @@ router.post('/',
             }
 
             const notificationTitle = `📅 New Event`;
-            const notificationBody = `You have a new ${eventType} scheduled for ${formatDateTime(startDateTime)}.`;
+            const notificationBody = `You have a new ${eventType} scheduled for ${formatDate(date)} at ${formatTime(startTime)}.`;
 
             console.log("usersToNotify= ", usersToNotify)
+            console.log("notificationBody= ", notificationBody)
 
             // Send notifications one by one (can be optimized with batching)
             for (const user of usersToNotify) {
@@ -502,7 +503,7 @@ router.get('/team/:teamId',
 );
 
 
-function formatDateTime(dateInput) {
+function formatDate(dateInput) {
     const date = new Date(dateInput);
 
     const pad = (num) => num.toString().padStart(2, '0');
@@ -511,10 +512,18 @@ function formatDateTime(dateInput) {
     const month = pad(date.getMonth() + 1); // Months are zero-based
     const year = date.getFullYear();
 
+    return `${day}/${month}/${year}`;
+}
+
+function formatTime(dateInput) {
+    const date = new Date(dateInput);
+
+    const pad = (num) => num.toString().padStart(2, '0');
+
     const hours = pad(date.getHours());
     const minutes = pad(date.getMinutes());
 
-    return `${day}/${month}/${year} at ${hours}:${minutes}`;
+    return `${hours}:${minutes}`;
 }
 
 module.exports = router;
