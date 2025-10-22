@@ -10,15 +10,15 @@ const scheduleSchema = new Schema({
         enum: ['Training', 'Match', 'Meeting', 'Tournament'],
         default: 'training'
     },
-    startDateTime: Date,
-    endDateTime: {
+    date: Date,
+    startTime: Date,
+    endTime: {
         type: Date,
-        required: [true, 'End date/time is required'],
         validate: {
             validator: function (value) {
-                return value > this.startDateTime;
+                return value > this.startTime;
             },
-            message: 'End date must be after start date'
+            message: 'End time must be after start time'
         }
     },
     isAllDay: Boolean,
@@ -30,8 +30,8 @@ const scheduleSchema = new Schema({
     repeatEndDate: Date,
     locationType: String,
     location: {
-      latitude: String,
-      longitude: String
+        latitude: String,
+        longitude: String
     },
     venue: String,
     onlineLink: String,
@@ -97,6 +97,11 @@ const scheduleSchema = new Schema({
             responseDate: Date,
         }
     ],
+    status: {
+        type: String,
+        enum: ['scheduled', 'cancelled', 'completed'],
+        default: 'scheduled',
+    },
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
@@ -104,13 +109,13 @@ const scheduleSchema = new Schema({
 });
 
 // Indexes for faster querying
-scheduleSchema.index({ team: 1, startDateTime: 1 });
-scheduleSchema.index({ club: 1, startDateTime: 1 });
-scheduleSchema.index({ 'participants.user': 1, startDateTime: 1 });
+scheduleSchema.index({ team: 1, startTime: 1 });
+scheduleSchema.index({ club: 1, startTime: 1 });
+scheduleSchema.index({ 'participants.user': 1, startTime: 1 });
 
 // Virtual for duration (not stored in DB)
 scheduleSchema.virtual('duration').get(function () {
-    return (this.endDateTime - this.startDateTime) / (1000 * 60 * 60); // in hours
+    return (this.endTime - this.startTime) / (1000 * 60 * 60); // in hours
 });
 
 // Pre-save hook to validate dates
@@ -123,11 +128,12 @@ scheduleSchema.virtual('duration').get(function () {
 // });
 
 // Static method to get events in date range
-scheduleSchema.statics.getEventsInRange = async function (clubId, startDate, endDate) {
+scheduleSchema.statics.getEventsInRange = async function (clubId, date, startTime, endTime) {
     return this.find({
         club: clubId,
-        startDateTime: { $gte: startDate },
-        endDateTime: { $lte: endDate },
+        date: { $eq: date },
+        startTime: { $gte: startTime },
+        endtime: { $lte: endTime },
         status: { $ne: 'cancelled' }
     }).populate('team participants.user coaches');
 };

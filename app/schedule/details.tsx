@@ -3,15 +3,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Linking,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
@@ -113,12 +113,16 @@ export default function StaffDetailsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>start</Text>
-          <Text style={styles.contactText}>{event.startDateTime}</Text>
+          <Text style={styles.sectionTitle}>Date</Text>
+          <Text style={styles.contactText}>{event.date}</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>end</Text>
-          <Text style={styles.contactText}>{event.endDateTime}</Text>
+          <Text style={styles.sectionTitle}>from</Text>
+          <Text style={styles.contactText}>{event.startTime}</Text>
+        </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>till</Text>
+          <Text style={styles.contactText}>{event.endtime}</Text>
         </View>
 
         {event.location?.latitude != null && event.location?.longitude != null && (

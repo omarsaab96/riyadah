@@ -59,7 +59,7 @@ export default function Profile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
-    const tabsAthlete = ['Profile', 'Schedule','Financials'];
+    const tabsAthlete = ['Profile', 'Schedule', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const tabsCoach = ['Profile', 'Teams'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
@@ -95,7 +95,7 @@ export default function Profile() {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const hasEvent = events.some(e => {
                 const eventDate = new Date(e.startDateTime);
-                const eventStr = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
+                const eventStr = eventDate.toISOString().split('T')[0];
                 return eventStr === dateStr;
             });
 
@@ -274,12 +274,7 @@ export default function Profile() {
                 // console.log(response)
 
                 if (response.success) {
-                    const now = new Date();
-                    const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                    const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                    const expanded = expandRecurringEvents(response.data, rangeStart, rangeEnd);
-
-                    setSchedule(expanded)
+                    setSchedule(response.data)
                     setScheduleLoading(false);
                 } else {
                     setSchedule(null)
@@ -303,12 +298,7 @@ export default function Profile() {
                 // console.log(response)
 
                 if (response.success) {
-                    const now = new Date();
-                    const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1);
-                    const rangeEnd = new Date(now.getFullYear() + 1, now.getMonth() + 1, 0);
-                    const expanded = expandRecurringEvents(response.data, rangeStart, rangeEnd);
-
-                    setSchedule(expanded)
+                    setSchedule(response.data)
                     setScheduleLoading(false);
                 } else {
                     setSchedule(null)
@@ -846,53 +836,6 @@ export default function Profile() {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    };
-
-    const expandRecurringEvents = (events, rangeStart, rangeEnd) => {
-        const expanded = [];
-        for (const e of events) {
-            if (e.repeats === 'No') {
-                expanded.push(e);
-                continue;
-            }
-            const start = new Date(e.startDateTime);
-            const end = new Date(e.endDateTime);
-            let currentStart = new Date(start);
-            let currentEnd = new Date(end);
-
-            while (currentStart <= rangeEnd) {
-                if (currentStart >= rangeStart && currentStart <= rangeEnd) {
-                    expanded.push({
-                        ...e,
-                        _id: `${e._id}_${currentStart.toISOString()}`,
-                        startDateTime: new Date(currentStart),
-                        endDateTime: new Date(currentEnd),
-                    });
-                }
-
-                switch (e.repeats) {
-                    case 'Daily':
-                        currentStart.setDate(currentStart.getDate() + 1);
-                        currentEnd.setDate(currentEnd.getDate() + 1);
-                        break;
-                    case 'Weekly':
-                        currentStart.setDate(currentStart.getDate() + 7);
-                        currentEnd.setDate(currentEnd.getDate() + 7);
-                        break;
-                    case 'Monthly':
-                        currentStart.setMonth(currentStart.getMonth() + 1);
-                        currentEnd.setMonth(currentEnd.getMonth() + 1);
-                        break;
-                    case 'Yearly':
-                        currentStart.setFullYear(currentStart.getFullYear() + 1);
-                        currentEnd.setFullYear(currentEnd.getFullYear() + 1);
-                        break;
-                }
-            }
-        }
-
-        console.log(JSON.stringify(expanded, null, 2));
-        return expanded;
     };
 
     return (
@@ -1521,8 +1464,8 @@ export default function Profile() {
                             </Text>
                             {(user.dob.day && user.dob.month && user.dob.year) ? (
                                 <View>
-                                    {(user.type == "Club" || user.type == "Association") &&  <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.year}</Text>}
-                                    {(user.type!="Club" && user.type!="Association") &&  <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>}
+                                    {(user.type == "Club" || user.type == "Association") && <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.year}</Text>}
+                                    {(user.type != "Club" && user.type != "Association") && <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>}
                                 </View>
                             ) : (
                                 <View>
@@ -2226,9 +2169,10 @@ export default function Profile() {
                                                     <Text style={styles.subSectionTitle}>Events of the day - {selectedDate.getDate()} {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}</Text>
                                                     {selectedDayEvents.length > 0 ? (
                                                         selectedDayEvents.map((event) => {
-                                                            const eventDate = new Date(event.startDateTime);
-                                                            const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                                            const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                            const eventDate = new Date(event.date);
+                                                            const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                            const endTime = new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 
                                                             return (
                                                                 <TouchableOpacity
@@ -2285,9 +2229,10 @@ export default function Profile() {
                                                                 .filter(event => new Date(event.startDateTime) > new Date())
                                                                 .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime)) // optional: sort chronologically
                                                                 .map((event) => {
-                                                                    const eventDate = new Date(event.startDateTime);
-                                                                    const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                                                    const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                                    const eventDate = new Date(event.date);
+                                                                    const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                                    const endTime = new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 
                                                                     return (
                                                                         <TouchableOpacity
@@ -2618,7 +2563,7 @@ export default function Profile() {
                             <View>
                                 <View style={styles.sectionHeader}>
                                     <Text style={styles.sectionTitle}>
-                                        {user.type=='Club'&& 'Club'}{user.type=='Athlete'&& 'Athlete'} Financials
+                                        {user.type == 'Club' && 'Club'}{user.type == 'Athlete' && 'Athlete'} Financials
                                     </Text>
                                     {userId == user._id && (
                                         <TouchableOpacity

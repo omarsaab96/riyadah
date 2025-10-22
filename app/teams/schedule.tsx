@@ -201,9 +201,9 @@ export default function Schedule() {
 
                                 {schedule && schedule.length > 0 ? (
                                     schedule.map((event) => {
-                                        const eventDate = new Date(event.startDateTime);
-                                        const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                        const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        const eventDate = new Date(event.date);
+                                        const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        const endTime = new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                                         return (
                                             <TouchableOpacity

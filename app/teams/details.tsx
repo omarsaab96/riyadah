@@ -175,11 +175,11 @@ export default function TeamDetails() {
                     <View style={styles.headerTextBlock}>
                         {loading && <Text style={styles.pageTitle}>Team details</Text>}
 
-                        {!loading && user && team && team.club != userId &&
+                        {!loading && user && team && user._id !== team.club._id &&
                             <Text style={styles.pageTitle}>{team?.name}</Text>
                         }
 
-                        {!loading && user && team && team.club == userId &&
+                        {!loading && user && team && user._id === team.club._id &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: 200, zIndex: 1 }}>
                                 <TextInput
                                     style={[
@@ -514,9 +514,9 @@ export default function TeamDetails() {
 
                                 {schedule && schedule.length > 0 ? (
                                     schedule.map((event) => {
-                                        const eventDate = new Date(event.startDateTime);
-                                        const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                        const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        const eventDate = new Date(event.date);
+                                        const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        const endTime = new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                                         return (
                                             <TouchableOpacity

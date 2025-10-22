@@ -1168,9 +1168,10 @@ export default function PublicProfile() {
                                                     <Text style={styles.subSectionTitle}>Events of the day - {selectedDate.getDate()} {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}</Text>
                                                     {selectedDayEvents.length > 0 ? (
                                                         selectedDayEvents.map((event) => {
-                                                            const eventDate = new Date(event.startDateTime);
-                                                            const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                                            const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                            const eventDate = new Date(event.date);
+                                                            const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                            const endTime = new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 
                                                             return (
                                                                 <TouchableOpacity
@@ -1223,9 +1224,9 @@ export default function PublicProfile() {
                                                                 .filter(event => new Date(event.startDateTime) > new Date())
                                                                 .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime)) // optional: sort chronologically
                                                                 .map((event) => {
-                                                                    const eventDate = new Date(event.startDateTime);
-                                                                    const formattedTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                                                    const endTime = new Date(event.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                                    const eventDate = new Date(event.date);
+                                                                    const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                                    const endTime = new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                                                                     return (
                                                                         <TouchableOpacity

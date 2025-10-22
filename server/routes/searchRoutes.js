@@ -84,7 +84,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
       tasks.push(
         Schedule.find(scheduleFilter)
-          .select('title description eventType startDateTime endDateTime venue createdBy')
+          .select('title description eventType date startTime endTime venue location createdBy')
           .limit(parsedLimit)
           .then((data) => (results.events = data))
       );

@@ -26,8 +26,9 @@ const CreateEventScreen = () => {
         description: '',
         eventType: 'Training',
         team: '',
-        startDateTime: new Date(),
-        endDateTime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
+        date: new Date(),
+        startTime: new Date(new Date().getTime() * 60 * 60 * 1000),
+        endtime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
         locationType: 'venue',
         venue: {
             name: '',
@@ -44,16 +45,19 @@ const CreateEventScreen = () => {
             name: '',
             logo: ''
         },
+        status: 'scheduled',
         isHomeGame: false,
         requiredEquipment: [] as Array<{ itemId: string, name: string, quantity: number }>
     });
 
-    const [pickerState, setPickerState] = useState({
-        show: false,
-        mode: 'date', // 'date' or 'time'
-        field: null, // 'start' or 'end'
-        tempDate: new Date(),
-    });
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [pickedDate, setPickedDate] = useState(new Date());
+
+    const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+    const [pickedStartTime, setPickedStartTime] = useState(new Date());
+
+    const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [pickedEndTime, setPickedEndTime] = useState(new Date());
 
     const [searching, setSearching] = useState(false);
     const [equipmentSearch, setEquipmentSearch] = useState('');
@@ -62,101 +66,109 @@ const CreateEventScreen = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
 
-    const [date, setDate] = useState(new Date());
-    const [mode, setMode] = useState('date'); // 'date' or 'time'
-    const [show, setShow] = useState(false);
-
-    const [iosPickerState, setIosPickerState] = useState({
-        show: false,
-        field: null, // 'start' or 'end'
-        date: new Date(),
-    });
-
-    const formatDateTime = (date) => {
+    const formatDate = (date) => {
         if (!date) return '';
         const d = new Date(date);
-        const dateStr = d.toLocaleDateString(undefined, {
+        const dateStr = d.toLocaleDateString('en-GB', {
             year: 'numeric',
-            month: 'short',
+            month: 'long',
             day: 'numeric',
         });
+        return `${dateStr}`;
+    };
+
+    const formatTime = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+
         const timeStr = d.toLocaleTimeString(undefined, {
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false, // set true if you want AM/PM
+            hour12: true, // set true if you want AM/PM
         });
-        return `${dateStr} ${timeStr}`;
+        return ` ${timeStr}`;
     };
 
-
-    const onChange = (event, selectedDate) => {
+    const setEventDate = (event, selectedDate) => {
         if (Platform.OS === 'android') {
             if (event.type === 'dismissed') {
-                setPickerState(prev => ({ ...prev, show: false }));
+                setShowDatePicker(false);
                 return;
             }
 
-            if (pickerState.mode === 'date') {
-                // Next, ask for time
-                setPickerState(prev => ({
-                    ...prev,
-                    mode: 'time',
-                    tempDate: Platform.OS == 'ios' ? formatted : selectedDate,
-                }));
-            } else {
-                // Finalize datetime
-                const finalDateTime = new Date(
-                    pickerState.tempDate.getFullYear(),
-                    pickerState.tempDate.getMonth(),
-                    pickerState.tempDate.getDate(),
-                    selectedDate.getHours(),
-                    selectedDate.getMinutes()
-                );
+            setPickedDate(selectedDate)
+            setShowDatePicker(false);
 
-                if (pickerState.field === 'start') {
-                    handleChange('startDateTime', finalDateTime);
-                } else {
-                    handleChange('endDateTime', finalDateTime);
-                }
-
-                setPickerState(prev => ({ ...prev, show: false }));
-            }
+            // Finalize datetime
+            // const finalDateTime = new Date(
+            //     pickerState.tempDate.getFullYear(),
+            //     pickerState.tempDate.getMonth(),
+            //     pickerState.tempDate.getDate(),
+            //     selectedDate.getHours(),
+            //     selectedDate.getMinutes()
+            // );
         }
 
         if (Platform.OS === 'ios') {
-            // iOS handling
             if (event.type === 'set') {
-                if (iosPickerState.field === 'start') {
-                    handleChange('startDateTime', selectedDate);
-                } else if (iosPickerState.field === 'end') {
-                    handleChange('endDateTime', selectedDate);
-                }
+                setPickedDate(selectedDate)
             }
-            // setIosPickerState(prev => ({ ...prev, show: false }));
         }
-    };
+    }
 
-    const showPicker = (field, mode) => {
+    const setEventStartTime = (event, selectedDate) => {
+        if (Platform.OS === 'android') {
+            if (event.type === 'dismissed') {
+                setShowStartTimePicker(false);
+                return;
+            }
+
+            setPickedStartTime(selectedDate)
+            setShowStartTimePicker(false);
+
+            // Finalize datetime
+            // const finalDateTime = new Date(
+            //     pickerState.tempDate.getFullYear(),
+            //     pickerState.tempDate.getMonth(),
+            //     pickerState.tempDate.getDate(),
+            //     selectedDate.getHours(),
+            //     selectedDate.getMinutes()
+            // );
+        }
+
         if (Platform.OS === 'ios') {
-            setIosPickerState({
-                show: true,
-                field,
-                date: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
-            });
-        } else {
-            setPickerState({
-                show: true,
-                mode,
-                field,
-                tempDate: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
-            });
+            if (event.type === 'set') {
+                setPickedStartTime(selectedDate)
+            }
         }
-    };
+    }
 
-    const showMode = (currentMode) => {
-        setShow(true);
-        setMode(currentMode);
-    };
+    const setEventEndTime = (event, selectedDate) => {
+        if (Platform.OS === 'android') {
+            if (event.type === 'dismissed') {
+                setShowEndTimePicker(false);
+                return;
+            }
+
+            setPickedEndTime(selectedDate)
+            setShowEndTimePicker(false);
+
+            // Finalize datetime
+            // const finalDateTime = new Date(
+            //     pickerState.tempDate.getFullYear(),
+            //     pickerState.tempDate.getMonth(),
+            //     pickerState.tempDate.getDate(),
+            //     selectedDate.getHours(),
+            //     selectedDate.getMinutes()
+            // );
+        }
+
+        if (Platform.OS === 'ios') {
+            if (event.type === 'set') {
+                setPickedEndTime(selectedDate)
+            }
+        }
+    }
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -302,15 +314,6 @@ const CreateEventScreen = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // const showPicker = (field, mode) => {
-    //     setPickerState({
-    //         show: true,
-    //         mode,
-    //         field,
-    //         tempDate: formData[field === 'start' ? 'startDateTime' : 'endDateTime'],
-    //     });
-    // };
-
     const handleNestedChange = (parent, name, value) => {
         setFormData(prev => ({
             ...prev,
@@ -321,13 +324,17 @@ const CreateEventScreen = () => {
         }));
     };
 
+    const handleCancel = async () => {
+        router.back()
+    };
+
     const handleSubmit = async () => {
         if (!formData.title || !formData.team) {
             Alert.alert('Error', 'Please fill in all required fields');
             return;
         }
 
-        if (formData.endDateTime <= formData.startDateTime) {
+        if (pickedEndTime <= pickedStartTime) {
             Alert.alert('Error', 'End time must be after start time');
             return;
         }
@@ -339,10 +346,12 @@ const CreateEventScreen = () => {
             // Prepare the request body
             const requestBody = {
                 ...formData,
-                startDateTime: formData.startDateTime.toISOString(),
-                endDateTime: formData.endDateTime.toISOString(),
+                date: pickedDate.toISOString(),
+                startTime: pickedStartTime.toISOString(),
+                endTime: pickedEndTime.toISOString(),
                 team: formData.team,
-                repeats: repeat
+                repeats: repeat,
+                status:'scheduled'
             };
 
             // Clean up empty fields
@@ -377,12 +386,6 @@ const CreateEventScreen = () => {
             setSaving(false);
         }
     };
-
-    const handleCancel = async () => {
-        router.back()
-    };
-
-
 
     return (
         <KeyboardAvoidingView
@@ -494,77 +497,74 @@ const CreateEventScreen = () => {
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Start Date & Time *</Text>
+                            <Text style={styles.label}>Date*</Text>
                             <TouchableOpacity
                                 style={styles.dateInput}
-                                onPress={() => showPicker('start', 'date')}
+                                onPress={() => setShowDatePicker(true)}
                             >
                                 <Text style={styles.inputText}>
-                                    {formatDateTime(formData.startDateTime)}
+                                    {formatDate(pickedDate)}
                                 </Text>
                                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
                             </TouchableOpacity>
                         </View>
 
-                        {/* End Date & Time */}
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>End Date & Time *</Text>
-                            <TouchableOpacity
-                                style={styles.dateInput}
-                                onPress={() => showPicker('end', 'date')}
-                            >
-                                <Text style={styles.inputText}>
-                                    {formatDateTime(formData.endDateTime)}
-                                </Text>
-                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </TouchableOpacity>
-                        </View>
-
-                        {
-                            pickerState.show && Platform.OS === 'android' && (
-                                <DateTimePicker
-                                    testID="dateTimePicker"
-                                    value={pickerState.tempDate}
-                                    mode={pickerState.mode}
-                                    is24Hour={true}
-                                    display={'default'}
-                                    onChange={onChange}
-                                />
-                            )
-                        }
-
-                        {iosPickerState.show && Platform.OS === 'ios' && (
-                            <View style={styles.iosPickerContainer}>
-                                <DateTimePicker
-                                    testID="dateTimePicker"
-                                    value={iosPickerState.date}
-                                    mode="datetime"
-                                    display="spinner"
-                                    onChange={onChange}
-                                    textColor="#000"
-                                />
-                                <View style={styles.iosPickerButtons}>
-                                    <TouchableOpacity
-                                        style={styles.iosPickerButton}
-                                        onPress={() => setIosPickerState(prev => ({ ...prev, show: false }))}
-                                    >
-                                        <Text style={styles.iosPickerButtonText}>Cancel</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[styles.iosPickerButton, styles.iosPickerButtonConfirm]}
-                                        onPress={() => {
-                                            // if (iosPickerState.field === 'start') {
-                                            //     handleChange('startDateTime', iosPickerState.date);
-                                            // } else {
-                                            //     handleChange('endDateTime', iosPickerState.date);
-                                            // }
-                                            setIosPickerState(prev => ({ ...prev, show: false }));
-                                        }}
-                                    >
-                                        <Text style={styles.iosPickerButtonText}>Confirm</Text>
-                                    </TouchableOpacity>
-                                </View>
+                        {/* Event Time start-end */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                            <View style={[styles.formGroup, { flex: 1 }]}>
+                                <Text style={styles.label}>From*</Text>
+                                <TouchableOpacity
+                                    style={styles.dateInput}
+                                    onPress={() => setShowStartTimePicker(true)}
+                                >
+                                    <Text style={styles.inputText}>
+                                        {formatTime(pickedStartTime)}
+                                    </Text>
+                                    <FontAwesome5 name="calendar-alt" size={18} color="#666" />
+                                </TouchableOpacity>
                             </View>
+
+                            <View style={[styles.formGroup, { flex: 1 }]}>
+                                <Text style={styles.label}>Till*</Text>
+                                <TouchableOpacity
+                                    style={styles.dateInput}
+                                    onPress={() => setShowEndTimePicker(true)}
+                                >
+                                    <Text style={styles.inputText}>
+                                        {formatTime(pickedEndTime)}
+                                    </Text>
+                                    <FontAwesome5 name="calendar-alt" size={18} color="#666" />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* //show datetime picker */}
+                        {showDatePicker && <DateTimePicker
+                            value={pickedDate}
+                            mode="date"
+                            is24Hour={true}
+                            display={'default'}
+                            onChange={setEventDate}
+                        />}
+
+                        {showStartTimePicker && (
+                            <DateTimePicker
+                                value={pickedStartTime}
+                                mode="time"
+                                is24Hour={false}
+                                display={'spinner'}
+                                onChange={setEventStartTime}
+                            />
+                        )}
+
+                        {showEndTimePicker && (
+                            <DateTimePicker
+                                value={pickedEndTime}
+                                mode="time"
+                                is24Hour={false}
+                                display={'spinner'}
+                                onChange={setEventEndTime}
+                            />
                         )}
 
                         < View style={styles.formGroup}>

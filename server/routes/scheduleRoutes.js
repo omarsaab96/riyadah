@@ -151,17 +151,18 @@ const validate = (validations) => {
 // @desc    Get all events for a club with filters (private access)
 router.get('/', authenticate, async (req, res) => {
     try {
-        const { team, startDate, endDate, eventType } = req.query;
+        const { team, date, startTime, endTime, eventType } = req.query;
         const filters = {
             club: req.user._id,
-            status: { $ne: 'cancelled' }
+            // status: { $ne: 'cancelled' }
         };
 
         if (team) filters.team = team;
         if (eventType) filters.eventType = eventType;
-        if (startDate && endDate) {
-            filters.startDateTime = { $gte: new Date(startDate) };
-            filters.endDateTime = { $lte: new Date(endDate) };
+        if (date && startTime && endTime) {
+            filters.date = { $eq: new Date(date) };
+            filters.startTime = { $gte: new Date(startTime) };
+            filters.endTime = { $lte: new Date(endTime) };
         }
 
         const events = await Schedule.find(filters)
@@ -234,7 +235,7 @@ router.get('/user/:userId', authenticate, async (req, res) => {
 // @desc    Get all events for a specific club (public access)
 router.get('/club/:clubId', async (req, res) => {
     try {
-        const { team, startDate, endDate, eventType } = req.query;
+        const { team, date, startTime, endTime, eventType } = req.query;
         const filters = {
             club: req.params.clubId,
             status: { $ne: 'cancelled' }
@@ -242,9 +243,10 @@ router.get('/club/:clubId', async (req, res) => {
 
         if (team) filters.team = team;
         if (eventType) filters.eventType = eventType;
-        if (startDate && endDate) {
-            filters.startDateTime = { $gte: new Date(startDate) };
-            filters.endDateTime = { $lte: new Date(endDate) };
+        if (date && startTime && endTime) {
+            filters.date = { $eq: new Date(date) };
+            filters.startTime = { $gte: new Date(startTime) };
+            filters.endTime = { $lte: new Date(endTime) };
         }
 
         const events = await Schedule.find(filters)
@@ -269,8 +271,9 @@ router.post('/',
     checkTeamMembership,
     validate([
         check('title', 'Title is required').not().isEmpty(),
-        check('startDateTime', 'Valid start date required').isISO8601(),
-        check('endDateTime', 'Valid end date required').isISO8601(),
+        check('date', 'Valid date required').isISO8601(),
+        check('startTime', 'Valid start time required').isISO8601(),
+        check('endTime', 'Valid end time required').isISO8601(),
         check('team', 'Team ID is required').isMongoId(),
         check('eventType', 'Invalid event type').isIn([
             'Training', 'Match', 'Meeting', 'Tournament', 'Other'
@@ -278,20 +281,21 @@ router.post('/',
     ]),
     async (req, res) => {
         try {
-            const { title, description, startDateTime, endDateTime, eventType, team, ...rest } = req.body;
+            const { title, description, date, startTime, endTime, eventType, team, ...rest } = req.body;
 
-            if (new Date(endDateTime) <= new Date(startDateTime)) {
+            if (new Date(endTime) <= new Date(startTime)) {
                 return res.status(400).json({
                     success: false,
-                    message: 'End date must be after start date'
+                    message: 'End time must be after start time'
                 });
             }
 
             const newEvent = new Schedule({
                 title,
                 description,
-                startDateTime,
-                endDateTime,
+                date,
+                startTime,
+                endTime,
                 eventType,
                 team,
                 club: req.user._id,
@@ -473,20 +477,21 @@ router.get('/team/:teamId',
     authenticate,
     async (req, res) => {
         try {
-            const { startDate, endDate } = req.query;
+            const { date, startTime, endTime } = req.query;
             const filters = {
                 team: req.params.teamId,
                 status: { $ne: 'cancelled' }
             };
 
-            if (startDate && endDate) {
-                filters.startDateTime = { $gte: new Date(startDate) };
-                filters.endDateTime = { $lte: new Date(endDate) };
+            if (date && startTime && endTime) {
+                filters.date = { $eq: new Date(date) };
+                filters.startTime = { $gte: new Date(startTime) };
+                filters.endTime = { $lte: new Date(endTime) };
             }
 
             const events = await Schedule.find(filters)
                 .populate('team', 'name sport')
-                .sort({ startDateTime: 1 });
+                .sort({ date: 1 });
 
             res.json({ success: true, data: events });
         } catch (err) {
