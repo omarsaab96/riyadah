@@ -102,6 +102,8 @@ const scheduleSchema = new Schema({
         enum: ['scheduled', 'cancelled', 'completed'],
         default: 'scheduled',
     },
+    seriesId: { type: String, index: true },
+    occurrenceIndex: { type: Number },
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
@@ -109,9 +111,10 @@ const scheduleSchema = new Schema({
 });
 
 // Indexes for faster querying
-scheduleSchema.index({ team: 1, startTime: 1 });
-scheduleSchema.index({ club: 1, startTime: 1 });
-scheduleSchema.index({ 'participants.user': 1, startTime: 1 });
+scheduleSchema.index({ team: 1, date: 1 });
+scheduleSchema.index({ club: 1, date: 1 });
+scheduleSchema.index({ 'participants.user': 1, date: 1 });
+ScheduleSchema.index({ seriesId: 1, occurrenceIndex: 1 }, { unique: true, sparse: true });
 
 // Virtual for duration (not stored in DB)
 scheduleSchema.virtual('duration').get(function () {

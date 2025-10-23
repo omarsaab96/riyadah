@@ -360,7 +360,7 @@ const CreateEventScreen = () => {
             if (formData.eventType !== 'Match') delete requestBody.opponent;
             if (formData.eventType !== 'Training') delete requestBody.trainingFocus;
 
-            console.log(requestBody)
+            // console.log(requestBody)
 
             const response = await fetch('http://193.187.132.170:5000/api/schedules', {
                 method: 'POST',
@@ -373,7 +373,7 @@ const CreateEventScreen = () => {
 
             const data = await response.json();
 
-            console.warn("Response data: ", data)
+            // console.warn("Response data: ", data)
 
             if (response.ok) {
                 router.replace({

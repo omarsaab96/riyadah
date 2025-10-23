@@ -44,6 +44,8 @@ const authenticate = async (req, res, next) => {
         });
     }
 };
+const Job = require('../models/Job');
+const crypto = require('crypto');
 
 // Middleware: Role-Based Authorization
 const authorize = (roles = []) => {
@@ -286,111 +288,65 @@ router.post(
             const { title, description, date, startTime, endTime, eventType, team, repeats, ...rest } = req.body;
 
             if (new Date(endTime) <= new Date(startTime)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'End time must be after start time'
-                });
+                return res.status(400).json({ success: false, message: 'End time must be after start time' });
             }
 
-            // Helper: Add recurrence logic
-            const createdEvents = [];
-            const baseDate = new Date(date);
-            const oneYearLater = new Date(baseDate);
-            oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
-
-            // Function to clone a date with an offset (days/weeks/months)
-            const addDays = (date, days) => {
-                const newDate = new Date(date);
-                newDate.setDate(newDate.getDate() + days);
-                return newDate;
-            };
-            const addWeeks = (date, weeks) => addDays(date, weeks * 7);
-            const addMonths = (date, months) => {
-                const newDate = new Date(date);
-                const day = newDate.getDate();
-                newDate.setMonth(newDate.getMonth() + months);
-
-                // ⚠️ Prevent invalid monthly recurrence (28,29,30,31)
-                const lastDayOfMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate();
-                if (day > lastDayOfMonth) {
-                    throw new Error('Monthly recurrence cannot start on 28th, 29th, 30th, or 31st.');
+            // Monthly guard: only allow day 1..27 (reject 28-31)
+            if (repeats === 'Monthly') {
+                const dayNum = new Date(date).getUTCDate(); // or local, but be consistent
+                if (dayNum >= 28) {
+                    return res.status(400).json({ success: false, message: 'Monthly recurrence cannot start on 28th–31st' });
                 }
-                return newDate;
-            };
-
-            let currentDate = new Date(baseDate);
-
-            while (currentDate <= oneYearLater) {
-                const start = new Date(startTime);
-                const end = new Date(endTime);
-
-                // Adjust time component for the new date
-                start.setFullYear(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-                end.setFullYear(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-
-                const newEvent = new Schedule({
-                    title,
-                    description,
-                    date: currentDate,
-                    startTime: start,
-                    endTime: end,
-                    eventType,
-                    team,
-                    club: req.user._id,
-                    createdBy: req.user._id,
-                    repeats,
-                    ...rest
-                });
-
-                await newEvent.save();
-                createdEvents.push(newEvent);
-
-                if (repeats === 'Daily') currentDate = addDays(currentDate, 1);
-                else if (repeats === 'Weekly') currentDate = addWeeks(currentDate, 1);
-                else if (repeats === 'Monthly') currentDate = addMonths(currentDate, 1);
-                else break; // No repeat
             }
 
-            const populatedEvent = await Schedule.findById(createdEvents[0]._id)
-                .populate('team', 'name sport ageGroup members coaches club')
-                .populate('createdBy', 'name type');
+            // Create a stable seriesId for idempotency
+            const seriesId = repeats === 'No'
+                ? undefined
+                : `series_${crypto.randomBytes(8).toString('hex')}`;
 
-            // 🔔 Notification logic (for first event only)
-            const creatorType = populatedEvent.createdBy.type;
-            const teamData = populatedEvent.team;
+            // Create the FIRST event only
+            const first = new Schedule({
+                title, description,
+                date, startTime, endTime,
+                eventType, team,
+                club: req.user._id,
+                createdBy: req.user._id,
+                repeats,
+                seriesId,
+                occurrenceIndex: seriesId ? 0 : undefined,
+                ...rest
+            });
+            await first.save();
 
-            let usersToNotify = [];
-            if (creatorType === 'Coach') {
-                usersToNotify = await User.find({
-                    _id: { $in: [...teamData.members, teamData.club] },
-                    expoPushToken: { $exists: true, $ne: null }
-                });
-            } else if (creatorType === 'Club') {
-                usersToNotify = await User.find({
-                    _id: { $in: [...teamData.members, ...teamData.coaches] },
-                    expoPushToken: { $exists: true, $ne: null }
-                });
-            }
-
-            const notificationTitle = `📅 New Event`;
-            const notificationBody = `You have a new ${eventType} scheduled for ${formatDate(date)} at ${formatTime(startTime)}.`;
-
-            for (const user of usersToNotify) {
-                try {
-                    await sendNotification(user, notificationTitle, notificationBody, {
-                        eventId: populatedEvent._id.toString()
-                    });
-                } catch (err) {
-                    console.error(`Failed to send notification to user ${user._id}:`, err.message);
+            // Enqueue notifications for first occurrence
+            await Job.create({
+                type: 'notify',
+                payload: {
+                    eventId: first._id.toString(),
+                    createdBy: req.user._id.toString()
                 }
+            });
+
+            // If repeating, enqueue expansion (create the rest of the year)
+            if (seriesId) {
+                await Job.create({
+                    type: 'expand-series',
+                    payload: {
+                        seriesId,
+                        baseEventId: first._id.toString(),
+                        repeats, // 'Daily' | 'Weekly' | 'Monthly'
+                        // expand until exactly one year after base date
+                        until: new Date(new Date(date).setFullYear(new Date(date).getFullYear() + 1)).toISOString()
+                    }
+                });
             }
 
             res.status(201).json({
                 success: true,
                 message: repeats !== 'No'
-                    ? `Event created and scheduled with ${repeats} recurrence for 1 year`
+                    ? `Event created; recurrence enqueued for expansion`
                     : 'Event created successfully',
-                data: createdEvents
+                data: first
             });
 
         } catch (err) {
