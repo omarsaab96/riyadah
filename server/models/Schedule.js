@@ -33,7 +33,10 @@ const scheduleSchema = new Schema({
         latitude: String,
         longitude: String
     },
-    venue: String,
+    venue: {
+        name: { type: String, default: '' },
+        address: { type: String, default: '' },
+    },
     onlineLink: String,
     team: {
         type: mongoose.Schema.Types.ObjectId,

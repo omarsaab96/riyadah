@@ -48,7 +48,8 @@ export default function EditEventScreen() {
     },
     status: 'scheduled',
     isHomeGame: false,
-    requiredEquipment: [] as Array<{ itemId: string, name: string, quantity: number }>
+    requiredEquipment: [] as Array<{ itemId: string, name: string, quantity: number }>,
+    seriesId:null
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -203,7 +204,8 @@ export default function EditEventScreen() {
           opponent: e.opponent || { name: '', logo: '' },
           status: e.status || 'scheduled',
           isHomeGame: e.isHomeGame || false,
-          requiredEquipment: e.requiredEquipment || []
+          requiredEquipment: e.requiredEquipment || [],
+          seriesId: e.seriesId
         });
 
         setPickedDate(new Date(e.date));
@@ -439,7 +441,7 @@ export default function EditEventScreen() {
         endTime: pickedEndTime.toISOString(),
         repeats: repeat,
         status: 'scheduled',
-        editScope: scope
+        editScope: scope,
       };
 
       // Clean up empty fields
@@ -461,7 +463,7 @@ export default function EditEventScreen() {
 
       const data = await response.json();
 
-      // console.warn("Response data: ", data)
+      console.warn("Response data: ", data)
 
       if (response.ok) {
         router.replace({
