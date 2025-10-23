@@ -9,11 +9,11 @@ Changes:
 ✔ 8.	Fix server error during event creation or update. @done(25-10-14 23:46)
 ✔ 9.	Add Google Maps link integration for event locations. @done(25-10-19 20:03)
 ✘ 10.	Add payments dashboard for athletes to pay. @needPaymentGateway
-☐ 11.	Add admin and coach payments dashboard. @NOTCLEAR
+☐ 11.	Add admin payments dashboard.
 ✔ 12.	Automate monthly payment reminders via push notifications. @on_the_1st_of_everymonth_a_notification_will_be_sent @done(25-10-20 23:04)
 ✔ 13.	Add “Amount” field in financials section and make all payments in EGP @done(25-10-20 23:18)
-☐ 14.	Add attendance dashboard for admins. @NOTCLEAR
-☐ 15.	Add unified admin and coach dashboard (attendance + payments overview). @NOTCLEAR
+☐ 14.	Add attendance dashboard for admins and coaches. 
+✔ 15.	Add unified admin and coach dashboard (attendance + payments overview). @done(25-10-24 01:50)
 ✔ 16.	Link coaches directly under their club or academy. @done(25-10-20 23:17)
 ✘ 17.	Enable group chat feature @afterMVP
 ✔ 18.	Add validation for birthdate to prevent invalid entries. (35/14/2024) @done(25-10-20 01:53)
@@ -32,6 +32,8 @@ attendance:
 	should show on coach and admin
 
 schedule:
+	edit event date and time on repeatig events
+	cancel event one or repeating
 	check training flow (start, end, notifications, attendance, surveys)
 
 Version check:
