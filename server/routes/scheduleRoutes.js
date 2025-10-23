@@ -345,9 +345,9 @@ router.post(
                 await newEvent.save();
                 createdEvents.push(newEvent);
 
-                if (repeats === 'daily') currentDate = addDays(currentDate, 1);
-                else if (repeats === 'weekly') currentDate = addWeeks(currentDate, 1);
-                else if (repeats === 'monthly') currentDate = addMonths(currentDate, 1);
+                if (repeats === 'Daily') currentDate = addDays(currentDate, 1);
+                else if (repeats === 'Weekly') currentDate = addWeeks(currentDate, 1);
+                else if (repeats === 'Monthly') currentDate = addMonths(currentDate, 1);
                 else break; // No repeat
             }
 
