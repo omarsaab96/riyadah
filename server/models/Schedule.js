@@ -114,7 +114,7 @@ const scheduleSchema = new Schema({
 scheduleSchema.index({ team: 1, date: 1 });
 scheduleSchema.index({ club: 1, date: 1 });
 scheduleSchema.index({ 'participants.user': 1, date: 1 });
-ScheduleSchema.index({ seriesId: 1, occurrenceIndex: 1 }, { unique: true, sparse: true });
+scheduleSchema.index({ seriesId: 1, occurrenceIndex: 1 }, { unique: true, sparse: true });
 
 // Virtual for duration (not stored in DB)
 scheduleSchema.virtual('duration').get(function () {
