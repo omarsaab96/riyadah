@@ -438,7 +438,8 @@ export default function EditEventScreen() {
         startTime: pickedStartTime.toISOString(),
         endTime: pickedEndTime.toISOString(),
         repeats: repeat,
-        status: 'scheduled'
+        status: 'scheduled',
+        editScope: scope
       };
 
       // Clean up empty fields

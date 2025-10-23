@@ -1,6 +1,9 @@
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -24,6 +27,7 @@ export default function StaffDetailsScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState<any>(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -53,6 +57,19 @@ export default function StaffDetailsScreen() {
         setLoading(false);
       }
     };
+
+    const fetchUser = async () => {
+      const token = await SecureStore.getItemAsync('userToken');
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        console.log("DECODED: ", decodedToken)
+        setUserId(decodedToken.userId);
+      } else {
+        console.log("no token",)
+      }
+    };
+
+    fetchUser();
 
     if (id) {
       fetchEvent();
@@ -124,15 +141,26 @@ export default function StaffDetailsScreen() {
       </View>}
 
       {event && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
+        {userId == event.createdBy &&
+          <View style={[styles.section, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
 
-        <TouchableOpacity onPress={() => {
-          router.push({
-            pathname: '/schedule/edit',
-            params: { id: event._id }
-          })
-        }}>
-          <Text>Edit</Text>
-        </TouchableOpacity>
+            {event.status == 'scheduled' && <View style={{ flex: 1 }}>
+              <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#009933' }]}>
+                <FontAwesome name="check" size={14} color="#009933" />&nbsp;{event.status}
+              </Text>
+            </View>}
+
+            <TouchableOpacity style={styles.editToggle}
+              onPress={() => router.push({
+                pathname: '/schedule/edit',
+                params: { id: event._id }
+              })}
+            >
+              <Entypo name="edit" size={16} color="#FF4000" />
+              <Text style={styles.editToggleText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+        }
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Title</Text>
@@ -373,5 +401,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Bebas',
     fontSize: 20,
     textAlign: 'center'
+  },
+  editToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  },
+  editToggleText: {
+    color: 'black',
+    fontFamily: 'Bebas',
+    fontSize: 18
   },
 });

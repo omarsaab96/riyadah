@@ -420,14 +420,20 @@ router.put('/:id',
             if (editScope === 'all') {
                 const seriesId = req.event.seriesId;
 
+                // Keep recurrence timing intact
+                const disallowedKeys = ['date', 'startTime', 'endTime', 'occurrenceIndex'];
+                const safeUpdates = Object.keys(updates)
+                    .filter(key => !disallowedKeys.includes(key))
+                    .reduce((acc, key) => ({ ...acc, [key]: updates[key] }), {});
+
                 const updated = await Schedule.updateMany(
                     { seriesId },
-                    { $set: updates }
+                    { $set: safeUpdates }
                 );
 
                 return res.json({
                     success: true,
-                    message: `Updated ${updated.modifiedCount} occurrences in this series.`,
+                    message: `Updated ${updated.modifiedCount} occurrences in this series (dates preserved).`,
                 });
             }
 
