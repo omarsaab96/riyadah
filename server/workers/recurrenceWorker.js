@@ -4,7 +4,7 @@ const Job = require('../models/Job');
 const Schedule = require('../models/Schedule');
 // load env & connect
 require('dotenv').config();
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect('mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0');
 
 const TICK_MS = 3000;   // poll every 3s
 const BATCH_LIMIT = 1;  // number of jobs per tick (keep simple)
