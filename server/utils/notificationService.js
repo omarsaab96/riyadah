@@ -30,7 +30,7 @@ async function sendNotification(user, title, body, data = {}, save = true) {
     const notification = new Notification({
       userId: user._id,
       message: body,
-      type: 'info',
+      type: data.type || 'info',
       read: false,
       ticket: tickets,
       date: new Date(),
