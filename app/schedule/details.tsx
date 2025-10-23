@@ -125,6 +125,15 @@ export default function StaffDetailsScreen() {
 
       {event && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
 
+        <TouchableOpacity onPress={() => {
+          router.push({
+            pathname: '/schedule/edit',
+            params: { id: event._id }
+          })
+        }}>
+          <Text>Edit</Text>
+        </TouchableOpacity>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Title</Text>
           <Text style={styles.contactText}>{event.title}</Text>

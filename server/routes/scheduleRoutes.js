@@ -378,7 +378,7 @@ router.get('/:id', async (req, res) => {
 );
 
 // @route   PUT /api/schedules/:id
-// @desc    Update an event
+// @desc    Update an event or all recurring occurrences
 // @access  Private (Club admins/coaches)
 router.put('/:id',
     authenticate,
@@ -386,6 +386,16 @@ router.put('/:id',
     checkEventOwnership,
     async (req, res) => {
         try {
+            const { editScope } = req.body;
+            const updates = { ...req.body };
+
+            // 🧱 Prevent changing restricted fields
+            delete updates._id;
+            delete updates.club;
+            delete updates.createdBy;
+            delete updates.seriesId; // seriesId is fixed
+
+            // 🧩 If event is completed, prevent edits
             if (req.event.status === 'completed') {
                 return res.status(400).json({
                     success: false,
@@ -393,26 +403,44 @@ router.put('/:id',
                 });
             }
 
-            const updates = req.body;
-            Object.keys(updates).forEach(key => {
-                if (key !== '_id' && key !== 'club' && key !== 'createdBy') {
-                    req.event[key] = updates[key];
-                }
-            });
+            // 🧠 CASE 1 — Update only this single event
+            if (!editScope || editScope === 'single' || !req.event.seriesId) {
+                Object.assign(req.event, updates);
+                await req.event.save();
 
-            await req.event.save();
-            const populatedEvent = await Schedule.findById(req.event._id)
-                .populate('team', 'name sport ageGroup')
-                .populate('participants.user', 'name image')
-                .populate('coaches', 'name image');
+                const populatedEvent = await Schedule.findById(req.event._id)
+                    .populate('team', 'name sport ageGroup')
+                    .populate('participants.user', 'name image')
+                    .populate('coaches', 'name image');
 
-            res.json({ success: true, data: populatedEvent });
+                return res.json({ success: true, data: populatedEvent });
+            }
+
+            // 🧠 CASE 2 — Update all events in this series
+            if (editScope === 'all') {
+                const seriesId = req.event.seriesId;
+
+                const updated = await Schedule.updateMany(
+                    { seriesId },
+                    { $set: updates }
+                );
+
+                return res.json({
+                    success: true,
+                    message: `Updated ${updated.modifiedCount} occurrences in this series.`,
+                });
+            }
+
+            // Default fallback (shouldn’t hit here)
+            return res.status(400).json({ success: false, message: 'Invalid edit scope' });
+
         } catch (err) {
-            console.error(err);
+            console.error('Error updating event:', err);
             res.status(500).json({ success: false, message: 'Server error' });
         }
     }
 );
+
 
 // @route   DELETE /api/schedules/:id
 // @desc    Cancel an event
