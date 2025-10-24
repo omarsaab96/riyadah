@@ -52,4 +52,33 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
+router.put('/', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { amount = 0 } = req.body;
+
+        let wallet = await Wallet.findOne({ user: userId });
+
+        if (!wallet) {
+            wallet = await Wallet.create({
+                user: userId,
+                balance: amount,
+                availableBalance: amount,
+                currency: 'EGP'
+            });
+            return res.status(201).json({ success: true, data: wallet });
+        }
+
+        // ✅ Update existing wallet
+        wallet.balance += amount;
+        wallet.availableBalance += amount;
+        await wallet.save();
+
+        return res.status(200).json({ success: true, data: wallet });
+    } catch (err) {
+        console.error('Error updating wallet:', err);
+        return res.status(400).json({ success: false, message: err.message });
+    }
+});
+
 module.exports = router;
