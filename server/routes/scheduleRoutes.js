@@ -420,16 +420,26 @@ router.put('/:id',
             if (editScope === 'all') {
                 const seriesId = req.event.seriesId;
 
-                // Keep recurrence timing intact
-                const disallowedKeys = ['date', 'startTime', 'endTime', 'occurrenceIndex'];
+                // Allow time updates but keep each event’s date fixed
+                const disallowedKeys = ['date', 'occurrenceIndex'];
                 const safeUpdates = Object.keys(updates)
                     .filter(key => !disallowedKeys.includes(key))
                     .reduce((acc, key) => ({ ...acc, [key]: updates[key] }), {});
 
-                const updated = await Schedule.updateMany(
-                    { seriesId },
-                    { $set: safeUpdates }
-                );
+                const seriesEvents = await Schedule.find({ seriesId });
+                // Update each event individually (preserve date, change time)
+                for (const ev of seriesEvents) {
+                    // preserve original date
+                    const originalDate = ev.date;
+
+                    // apply updates (like startTime, endTime, etc.)
+                    Object.assign(ev, safeUpdates);
+
+                    // reapply same date to ensure day doesn’t shift
+                    ev.date = originalDate;
+
+                    await ev.save();
+                }
 
                 return res.json({
                     success: true,
