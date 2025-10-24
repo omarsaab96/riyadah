@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Payment = require('../models/Payment');
+const Wallet = require('../models/Wallet');
 const jwt = require("jsonwebtoken");
 
 
@@ -55,6 +56,17 @@ router.get('/:id', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { payer, beneficiary, type, amount, currency, note,status } = req.body;
+
+    //check if balance of payer has sufficient funds
+    const wallet = await Wallet.findOne({ user: payer });
+    
+    if (!wallet || wallet.availableBalance < amount) {
+      return res.status(400).json({ success: false, message: 'Insufficient funds' });
+    }else{
+      //deduct amount from payer wallet
+      wallet.availableBalance -= amount;
+      await wallet.save();
+    }
 
     const payment = await Payment.create({
       payer,
