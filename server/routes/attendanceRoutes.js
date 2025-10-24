@@ -196,4 +196,4 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
