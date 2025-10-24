@@ -19,6 +19,23 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+router.get('/user', authenticateToken, async (req, res) => {
+  try {
+    const payments = await Payment.find({
+      $or: [
+        { payer: req.user.userId },
+        { beneficiary: req.user.userId }
+      ]
+    })
+      .populate('payer', '_id name email image')
+      .populate('beneficiary', '_id name email image');
+
+    res.status(200).json({ success: true, data: payments });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const payment = await Payment.findById(req.params.id)
@@ -52,23 +69,6 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(201).json({ success: true, data: payment });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
-  }
-});
-
-router.get('/user', authenticateToken, async (req, res) => {
-  try {
-    const payments = await Payment.find({
-      $or: [
-        { payer: req.user.userId },
-        { beneficiary: req.user.userId }
-      ]
-    })
-      .populate('payer', '_id name email image')
-      .populate('beneficiary', '_id name email image');
-
-    res.status(200).json({ success: true, data: payments });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
   }
 });
 
