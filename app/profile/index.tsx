@@ -389,10 +389,11 @@ export default function Profile() {
     };
 
     const getFinancials = async () => {
-        console.log(userId)
+        
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`http://193.187.132.170:5000/api/financials/user/${userId}`, {
+            console.log(userId)
+            const res = await fetch(`http://193.187.132.170:5000/api/financials/user`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -404,7 +405,7 @@ export default function Profile() {
             }
         } catch (err) {
             console.error('Failed to fetch payments', err);
-            setInventory([]);
+            setPayments([]);
         } finally {
             setFinancialsLoading(false)
         }
@@ -2616,19 +2617,19 @@ export default function Profile() {
                                                     })}>
                                                     <View style={styles.inventoryHeader}>
                                                         <View style={styles.inventoryInfo}>
-                                                            <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                            <Text style={styles.inventoryName}>{item.beneficiary.name}</Text>
                                                             <Text style={styles.inventoryCategory}>{item.type}</Text>
                                                         </View>
                                                         <View style={styles.inventoryStats}>
-                                                            <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                            <Text style={styles.inventoryStatValue}>{item.amount}{item.currency}</Text>
                                                             <Text style={styles.inventoryStatLabel}>Amount</Text>
                                                         </View>
                                                     </View>
 
                                                     <View style={styles.inventoryDetails}>
                                                         <View style={styles.inventoryDetailRow}>
-                                                            <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                            <Text style={styles.inventoryDetailValue}>{formatDate(item.dueDate)}</Text>
+                                                            <Text style={styles.inventoryDetailLabel}>status:</Text>
+                                                            <Text style={styles.inventoryDetailValue}>{item.status}</Text>
                                                         </View>
                                                     </View>
                                                 </TouchableOpacity>

@@ -38,12 +38,13 @@ export default function AddPayment() {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchindex, setSearchindex] = useState(0);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [paymentAmount, setPaymentAmount] = useState('0 EGP');
+    const [paymentAmount, setPaymentAmount] = useState(null);
+    const [paymentCurrency, setPaymentCurrency] = useState('EGP');
     const [paymentNote, setPaymentNote] = useState('');
     const [paymentDueDate, setPaymentDueDate] = useState(new Date());
     const [pickerShow, setPickerShow] = useState(false);
     const [isPaid, setIsPaid] = useState(false);
-    const [paymentType, setPaymentType] = useState(null);
+    const [paymentType, setPaymentType] = useState('Club registration fees');
     const [paymentTypeOther, setPaymentTypeOther] = useState('');
 
     useEffect(() => {
@@ -180,7 +181,7 @@ export default function AddPayment() {
             beneficiary: selectedUser._id,
             payer: userId,
             amount: paymentAmount,
-            currency:'EGP',
+            currency:paymentCurrency,
             type: paymentType == "Other" ? paymentTypeOther : paymentType,
             note: paymentNote,
             status: 'pending'
@@ -398,21 +399,15 @@ export default function AddPayment() {
                                         placeholder="e.g. 50"
                                         placeholderTextColor={"#888"}
                                         keyboardType="numeric"
-                                        value={paymentAmount.split(' ')[0] == '0' ? '' : ''}
-                                        onChangeText={(text) => {
-                                            const amount = text.trim();
-                                            const currency = paymentAmount.split(' ')[1] || 'USD';
-                                            setPaymentAmount(`${amount} ${currency}`)
-                                        }}
+                                        value={paymentAmount}
+                                        onChangeText={setPaymentAmount}
                                     />
                                     <View style={[styles.pickerContainer, { flex: 1 }]}>
                                         <Picker
                                             style={styles.picker}
-                                            selectedValue={paymentAmount.split(' ')[1] || 'USD'}
-                                            onValueChange={(currency) => {
-                                                const amount = paymentAmount?.split(' ')[0] || '0';
-                                                setPaymentAmount(`${amount} ${currency}`)
-                                            }}
+                                            selectedValue={paymentCurrency}
+                                            onValueChange={setPaymentCurrency}
+                                            enabled={false}
                                         >
 
                                             <Picker.Item label="EGP" value="EGP" />
@@ -429,6 +424,7 @@ export default function AddPayment() {
                                     <Picker
                                         style={styles.picker}
                                         onValueChange={setPaymentType}
+                                        selectedValue={paymentType}
                                     >
                                         <Picker.Item label="Club registration fees" value="Club registration fees" />
                                         <Picker.Item label="Monthly subscription fees" value="Monthly subscription fees" />

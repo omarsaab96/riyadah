@@ -55,11 +55,11 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-router.get('/user/:userId', authenticateToken, async (req, res) => {
+router.get('/user', authenticateToken, async (req, res) => {
   try {
     const payments = await Payment.find({
       $or: [
-        { payer: userId },
+        { payer: req.user.id },
         { beneficiary: userId }
       ]
     })
