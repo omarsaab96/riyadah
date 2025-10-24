@@ -874,7 +874,7 @@ export default function Profile() {
                     {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
                     {!loading && <Text style={styles.pageDesc}>
-                        {user?.type} {user.role ? `/ ${user.role}` : ''}
+                        {user.role ? `${user.role}` : `${user?.type}`}
                     </Text>}
 
                     {loading &&
