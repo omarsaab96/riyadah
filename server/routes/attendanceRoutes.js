@@ -53,7 +53,7 @@ router.get('/byEvent/:eventId', async (req, res) => {
     res.json({
       success: true,
       data: {
-        name: team.name,
+        team: team._id,
         members: team.members,
         isExisting: false
       }

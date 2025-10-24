@@ -27,7 +27,7 @@ const AttendanceSheet = () => {
                     }
                 });
 
-                console.warn('Response status:', response);
+                // console.warn('Response status:', response);
 
                 const data = await response.json();
 
@@ -81,6 +81,8 @@ const AttendanceSheet = () => {
             teamId: team,
             eventId: eventId
         };
+
+        console.log('Submitting attendance with body:', body);
 
         try {
             setSaving(true);
