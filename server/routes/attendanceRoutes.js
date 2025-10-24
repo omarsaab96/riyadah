@@ -1,9 +1,8 @@
 // routes/attendance.js
-import express from 'express';
-import Attendance from '../models/Attendance.js';
-import Event from '../models/Event.js';
-import Team from '../models/Team.js';
-
+const express = require("express");
+const Attendance = require("../models/Attendance");
+const Event = require("../models/Schedule");
+const Team = require("../models/Team");
 const router = express.Router();
 
 // Get attendance for a specific event
