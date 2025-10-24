@@ -389,7 +389,7 @@ export default function Profile() {
     };
 
     const getFinancials = async () => {
-        
+
         try {
             const token = await SecureStore.getItemAsync('userToken');
             console.log(userId)
@@ -2617,7 +2617,23 @@ export default function Profile() {
                                                     })}>
                                                     <View style={styles.inventoryHeader}>
                                                         <View style={styles.inventoryInfo}>
-                                                            <Text style={styles.inventoryName}>{item.beneficiary.name}</Text>
+                                                            {userId == item.payer._id ? (
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                    <MaterialIcons name="arrow-circle-up" size={20} color="#FF4400" />
+                                                                    <Text style={styles.inventoryName}>
+                                                                        {item.beneficiary.name}
+                                                                    </Text>
+                                                                </View>
+                                                            ) : (
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                    <MaterialIcons name="arrow-circle-down" size={20} color="#009933" />
+                                                                    <Text style={styles.inventoryName}>
+                                                                        {item.payer.name}
+                                                                    </Text>
+                                                                </View>
+                                                            )}
+
+
                                                             <Text style={styles.inventoryCategory}>{item.type}</Text>
                                                         </View>
                                                         <View style={styles.inventoryStats}>
@@ -2628,8 +2644,14 @@ export default function Profile() {
 
                                                     <View style={styles.inventoryDetails}>
                                                         <View style={styles.inventoryDetailRow}>
-                                                            <Text style={styles.inventoryDetailLabel}>status:</Text>
-                                                            <Text style={styles.inventoryDetailValue}>{item.status}</Text>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                <Text style={styles.inventoryDetailLabel}>date:</Text>
+                                                                <Text style={styles.inventoryDetailValue}>{formatDate(item.createdAt)}</Text>
+                                                            </View>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                {/* <Text style={styles.inventoryDetailLabel}>status:</Text> */}
+                                                                <Text style={[styles.inventoryDetailValue, { textTransform: 'capitalize' }]}>{item.status}</Text>
+                                                            </View>
                                                         </View>
                                                     </View>
                                                 </TouchableOpacity>
