@@ -59,8 +59,8 @@ router.get('/user', authenticateToken, async (req, res) => {
   try {
     const payments = await Payment.find({
       $or: [
-        { payer: req.user.id },
-        { beneficiary: userId }
+        { payer: req.user.userId },
+        { beneficiary: req.user.userId }
       ]
     })
       .populate('payer', '_id name email image')
