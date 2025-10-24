@@ -24,6 +24,13 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
         const user = req.user.userId;
         const wallet = await Wallet.findOne({ user }).populate('user', '_id name email image');
+        if (!wallet) {
+            const wallet = await Wallet.create({
+                user, balance: 0, availableBalance: 0, currency: 'EGP'
+            });
+            res.status(200).json({ success: true, data: wallet });
+            return;
+        }
         res.status(200).json({ success: true, data: wallet });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

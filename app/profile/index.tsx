@@ -44,6 +44,7 @@ export default function Profile() {
     const [inventory, setInventory] = useState([]);
     const [clubs, setClubs] = useState([]);
     const [payments, setPayments] = useState([]);
+    const [wallet, setWallet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [teamsLoading, setTeamsLoading] = useState(true);
     const [scheduleLoading, setScheduleLoading] = useState(true);
@@ -406,6 +407,23 @@ export default function Profile() {
         } catch (err) {
             console.error('Failed to fetch payments', err);
             setPayments([]);
+        }
+
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`http://193.187.132.170:5000/api/wallet/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setWallet(data.data);
+            } else {
+                console.error(data.message);
+            }
+        } catch (err) {
+            console.error('Failed to fetch payments', err);
+            setWallet(null);
         } finally {
             setFinancialsLoading(false)
         }
@@ -2570,16 +2588,16 @@ export default function Profile() {
                         ) : (
                             <View>
                                 <View style={styles.balanceSection}>
-                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    {wallet!=null && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.balanceTitle}>Balance</Text>
-                                            <Text style={styles.balanceAmount}>EGP 2.12</Text>
+                                            <Text style={styles.balanceAmount}>{wallet.currency}{wallet.balance}</Text>
                                         </View>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.balanceTitle}>Available Balance</Text>
-                                            <Text style={styles.balanceAmount}>EGP 2.12</Text>
+                                            <Text style={styles.balanceAmount}>{wallet.currency}{wallet.availableBalance}</Text>
                                         </View>
-                                    </View>
+                                    </View>}
 
                                     <View style={styles.balanceActions}>
                                         <TouchableOpacity
