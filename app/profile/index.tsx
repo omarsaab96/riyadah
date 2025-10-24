@@ -61,7 +61,7 @@ export default function Profile() {
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAthlete = ['Profile', 'Schedule', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
-    const tabsCoach = ['Profile', 'Teams'];
+    const tabsCoach = ['Profile', 'Teams', 'Schedule'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -111,7 +111,6 @@ export default function Profile() {
             setCalendarDays(updatedDays);
         }
     }, [calendarMonth, calendarYear, schedule]);
-
 
     //graph data
     const data = [
@@ -260,7 +259,7 @@ export default function Profile() {
     }
 
     const getSchedule = async () => {
-        if (user.type == "Athlete") {
+        if (user.type == "Athlete" && user.role != "Coach") {
             try {
                 const res = await fetch(`http://193.187.132.170:5000/api/schedules/user/${userId}`, {
                     method: 'GET',
@@ -296,6 +295,30 @@ export default function Profile() {
                 const response = await res.json();
 
                 console.log(response)
+
+                if (response.success) {
+                    setSchedule(response.data)
+                    setScheduleLoading(false);
+                } else {
+                    setSchedule(null)
+                }
+            } catch (err) {
+                console.error('Failed to fetch schedule', err);
+            }
+        }
+
+        if (user.type == "Athlete" && user.role == "Coach") {
+            try {
+                const res = await fetch(`http://193.187.132.170:5000/api/schedules/user/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const response = await res.json();
+
+                // console.log(response)
 
                 if (response.success) {
                     setSchedule(response.data)
@@ -951,7 +974,7 @@ export default function Profile() {
             </Animated.View>
 
             {/* Tabs for Athlete */}
-            {!loading && user?.type === "Athlete" && (
+            {!loading && user?.type === "Athlete" && user.role != "Coach" && (
                 <View style={styles.tabs}>
                     <ScrollView
                         horizontal
@@ -2049,7 +2072,8 @@ export default function Profile() {
                             {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
                                 {user.type != "Athlete" && <Text style={styles.sectionTitle}>Club Schedule</Text>}
-                                {userId == user._id && user.type == "Club" && (
+                                {user.type == "Athlete" && user.role == "Coach" && <Text style={styles.sectionTitle}>Your teams Schedule</Text>}
+                                {userId == user._id && (user.type == "Club" || (user.type="Athlete"&&user.role=="Coach")) && (
                                     <TouchableOpacity
                                         style={styles.addButton}
                                         onPress={() => router.push('/schedule/createEvent')}
@@ -2191,7 +2215,7 @@ export default function Profile() {
                                                                         </Text>
                                                                     </View>
                                                                     <View style={styles.eventDetails}>
-                                                                        <Text style={styles.eventTitle}>{event.title}</Text>
+                                                                        <Text style={styles.eventTitle}>{event.status == "cancelled" && 'Cancelled'} - {event.title}</Text>
                                                                         <Text style={styles.eventTime}>
                                                                             {formattedTime} - {endTime}
                                                                         </Text>
@@ -2286,6 +2310,19 @@ export default function Profile() {
                                             : "This club hasn't scheduled any events yet"}
                                     </Text>}
                                     {userId === user._id && user.type == "Club" && (
+                                        <TouchableOpacity
+                                            style={styles.emptyStateButton}
+                                            onPress={() => router.push('/schedule/createEvent')}
+                                        >
+                                            <Text style={styles.emptyStateButtonText}>Create Event</Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    {user.type == "Athlete" && user.role == "Coach" && <Text style={styles.emptyStateText}>
+                                        Your club hasn't scheduled any events yet
+                                    </Text>}
+
+                                    {user.type == "Athlete" && user.role == "Coach" && (
                                         <TouchableOpacity
                                             style={styles.emptyStateButton}
                                             onPress={() => router.push('/schedule/createEvent')}

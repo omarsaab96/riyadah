@@ -270,7 +270,7 @@ router.get('/club/:clubId', async (req, res) => {
 router.post(
     '/',
     authenticate,
-    authorize(['admin', 'coach']),
+    authorize(['admin', 'Coach']),
     checkTeamMembership,
     validate([
         check('title', 'Title is required').not().isEmpty(),

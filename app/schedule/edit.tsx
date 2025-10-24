@@ -36,8 +36,8 @@ export default function EditEventScreen() {
       address: ''
     },
     location: {
-      latitude: null,
-      longitude: null
+      latitude: "",
+      longitude: ""
     },
     onlineLink: '',
     trainingFocus: '',
@@ -197,7 +197,7 @@ export default function EditEventScreen() {
           endTime: new Date(e.endTime),
           locationType: e.locationType || 'Venue',
           venue: e.venue || { name: '', address: '' },
-          location: e.location || { latitude: null, longitude: null },
+          location: e.location || { latitude: "", longitude: "" },
           onlineLink: e.onlineLink || '',
           trainingFocus: e.trainingFocus || '',
           repeats: e.repeats || 'No',
@@ -444,6 +444,13 @@ export default function EditEventScreen() {
         editScope: scope,
       };
 
+      if (formData.location?.latitude && formData.location?.longitude) {
+        requestBody.location = {
+          latitude: parseFloat(formData.location.latitude),
+          longitude: parseFloat(formData.location.longitude),
+        };
+      }
+
       // Clean up empty fields
       if (formData.locationType !== 'Online') delete requestBody.onlineLink;
       if (formData.locationType !== 'Venue') delete requestBody.venue;
@@ -663,7 +670,7 @@ export default function EditEventScreen() {
               />
             </View>
 
-            < View style={styles.formGroup}>
+            {/* < View style={styles.formGroup}>
               <Text style={[styles.label, { marginBottom: 0 }]}>Recurring event</Text>
               <Text style={styles.hint}>Recurrence will expire automatically after one year.</Text>
               <View style={styles.pickerContainer}>
@@ -676,10 +683,10 @@ export default function EditEventScreen() {
                   <Picker.Item label="Daily" value="Daily" />
                   <Picker.Item label="Weekly" value="Weekly" />
                   <Picker.Item label="Monthly" value="Monthly" />
-                  {/* <Picker.Item label="Yearly" value="Yearly" /> */}
+                  <Picker.Item label="Yearly" value="Yearly" />
                 </Picker>
               </View>
-            </View>
+            </View> */}
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Location Type</Text>
@@ -742,10 +749,10 @@ export default function EditEventScreen() {
                     provider={PROVIDER_GOOGLE}
                     style={styles.mapPreview}
                     region={{
-                      latitude: formData.location?.latitude || 0,
-                      longitude: formData.location?.longitude || 0,
-                      latitudeDelta: formData.location?.latitude ? 0.01 : 50,
-                      longitudeDelta: formData.location?.longitude ? 0.01 : 50
+                      latitude: parseFloat(formData.location?.latitude) || 0,
+                      longitude: parseFloat(formData.location?.longitude) || 0,
+                      latitudeDelta: parseFloat(formData.location?.latitude) ? 0.01 : 50,
+                      longitudeDelta: parseFloat(formData.location?.longitude) ? 0.01 : 50
                     }}
                     onPress={(e) => {
                       const coords = e.nativeEvent.coordinate;

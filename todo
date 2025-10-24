@@ -32,8 +32,8 @@ attendance:
 	should show on coach and admin
 
 schedule:
-	edit event date and time on repeatig events
-	cancel event one or repeating
+	✔ edit event date and time on repeatig events @done(25-10-24 09:54)
+	✔ cancel event one or repeating @done(25-10-24 10:37)
 	check training flow (start, end, notifications, attendance, surveys)
 
 Version check:

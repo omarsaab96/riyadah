@@ -1,6 +1,7 @@
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from 'jwt-decode';
@@ -18,7 +19,6 @@ import {
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-
 const { width } = Dimensions.get('window');
 
 export default function StaffDetailsScreen() {
@@ -26,6 +26,7 @@ export default function StaffDetailsScreen() {
   const id = params.id;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(true);
   const [event, setEvent] = useState<any>(null);
   const [userId, setUserId] = useState(null);
 
@@ -99,6 +100,75 @@ export default function StaffDetailsScreen() {
     return ` ${timeStr}`;
   };
 
+  const handleCancelEvent = () => {
+    if (event.repeats !== 'No' && id) {
+      return Alert.alert(
+        'Recurring Event',
+        'Do you want to cancel only this occurrence or all future occurrences?',
+        [
+          {
+            text: 'This event only',
+            onPress: () => confirmCancel('single'),
+          },
+          {
+            text: 'All occurrences',
+            onPress: () => confirmCancel('all'),
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+    }
+
+    confirmCancel('single');
+  };
+
+  const confirmCancel = (scope) => {
+    Alert.alert(
+      'Confirm Cancellation',
+      scope === 'all'
+        ? 'Are you sure you want to cancel all future occurrences?'
+        : 'Are you sure you want to cancel this event?',
+      [
+        { text: 'No', style: 'cancel' },
+        { text: 'Yes, cancel', onPress: () => submitEventUpdate(scope) },
+      ]
+    );
+  };
+
+  const submitEventUpdate = async (scope = 'single') => {
+    try {
+      setSaving(true);
+      const token = await SecureStore.getItemAsync('userToken');
+
+      const requestBody = {
+        status: 'cancelled',
+        editScope: scope,
+      };
+
+      const response = await fetch(`http://193.187.132.170:5000/api/schedules/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.replace({ pathname: '/profile', params: { tab: 'Schedule' } });
+      } else {
+        throw new Error(data.message || 'Failed to cancel event');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
   return (
     <View style={styles.container}>
       <View style={styles.pageHeader}>
@@ -144,21 +214,39 @@ export default function StaffDetailsScreen() {
         {userId == event.createdBy &&
           <View style={[styles.section, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
 
-            {event.status == 'scheduled' && <View style={{ flex: 1 }}>
+            {event.status == 'scheduled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <FontAwesome name="check" size={14} color="#009933" />
               <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#009933' }]}>
-                <FontAwesome name="check" size={14} color="#009933" />&nbsp;{event.status}
+                {event.status}
               </Text>
             </View>}
 
-            <TouchableOpacity style={styles.editToggle}
-              onPress={() => router.push({
-                pathname: '/schedule/edit',
-                params: { id: event._id }
-              })}
-            >
-              <Entypo name="edit" size={16} color="#FF4000" />
-              <Text style={styles.editToggleText}>Edit</Text>
-            </TouchableOpacity>
+            {event.status == 'cancelled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <MaterialIcons name="cancel" size={16} color="#FF4400" />
+              <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#FF4400' }]}>
+                {event.status}
+              </Text>
+            </View>}
+
+            {userId == event.createdBy && <View style={{ flexDirection: 'row', gap: 20 }}>
+              {event.status == 'scheduled' && <TouchableOpacity style={styles.editToggle}
+                onPress={() => handleCancelEvent()}
+              >
+                <MaterialIcons name="cancel" size={16} color="#FF4000" />
+                <Text style={styles.editToggleText}>Cancel event</Text>
+              </TouchableOpacity>}
+
+              <TouchableOpacity style={styles.editToggle}
+                onPress={() => router.push({
+                  pathname: '/schedule/edit',
+                  params: { id: event._id }
+                })}
+              >
+                <Entypo name="edit" size={16} color="#FF4000" />
+                <Text style={styles.editToggleText}>Edit</Text>
+              </TouchableOpacity>
+            </View>}
+
           </View>
         }
 
