@@ -1,5 +1,5 @@
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
@@ -140,7 +140,7 @@ export default function AddPayment() {
                 const data = await response.json();
 
                 console.log('API Response:', data);
-                setSearchResults(data.data);
+                setSearchResults(data);
             } else {
                 Alert.alert('Error', 'Failed to search users');
                 setSearchResults([]);
@@ -177,12 +177,13 @@ export default function AddPayment() {
         setError('');
 
         const paymentObject = {
-            user: selectedUser._id,
-            club: userId,
+            beneficiary: selectedUser._id,
+            payer: userId,
             amount: paymentAmount,
+            currency:'EGP',
             type: paymentType == "Other" ? paymentTypeOther : paymentType,
             note: paymentNote,
-            dueDate: isPaid ? null : paymentDueDate,
+            status: 'pending'
         };
 
         try {
@@ -437,7 +438,7 @@ export default function AddPayment() {
                                 </View>
                                 {paymentType == "Other" && <View style={styles.inputContainer}>
                                     <TextInput
-                                        style={styles.input}
+                                        style={[styles.input,{marginBottom:0}]}
                                         placeholderTextColor={"#888"}
                                         value={paymentTypeOther}
                                         onChangeText={setPaymentTypeOther}
@@ -459,7 +460,7 @@ export default function AddPayment() {
                                 />
                             </View>
 
-                            <View style={styles.inputContainer}>
+                            {/* <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Paid?</Text>
 
                                 <View style={styles.statusContainer}>
@@ -492,9 +493,9 @@ export default function AddPayment() {
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
-                            </View>
+                            </View> */}
 
-                            {!isPaid && <View style={styles.inputContainer}>
+                            {/* {!isPaid && <View style={styles.inputContainer}>
                                 <Text style={styles.label}>Due Date</Text>
 
                                 <TouchableOpacity
@@ -510,7 +511,7 @@ export default function AddPayment() {
                                     </Text>
                                     <FontAwesome5 name="calendar-alt" size={18} color="#666" />
                                 </TouchableOpacity>
-                            </View>}
+                            </View>} */}
 
                             {pickerShow && (
                                 <DateTimePicker
@@ -528,7 +529,7 @@ export default function AddPayment() {
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
                                     <Text style={styles.profileButtonText}>
-                                        {saving ? 'Saving' : 'save'}
+                                        {saving ? 'Paying' : 'pay'}
                                     </Text>
                                     {saving && (
                                         <ActivityIndicator

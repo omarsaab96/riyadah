@@ -37,15 +37,16 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { user, club, type, amount, dueDate, note } = req.body;
+    const { payer, beneficiary, type, amount, currency, note,status } = req.body;
 
     const payment = await Payment.create({
-      user,
-      club,
+      payer,
+      beneficiary,
       amount,
-      dueDate,
+      currency,
+      type,
       note,
-      paid: false
+      status
     });
 
     res.status(201).json({ success: true, data: payment });
