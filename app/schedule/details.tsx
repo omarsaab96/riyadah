@@ -211,54 +211,51 @@ export default function StaffDetailsScreen() {
       </View>}
 
       {event && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
-        {userId == event.createdBy &&
-          <View style={[styles.section]}>
+        <View style={[styles.section]}>
+          {userId == event.createdBy && <View style={{ flexDirection: 'row', gap: 20, marginBottom: 30 }}>
+            {event.status == 'scheduled' && <TouchableOpacity style={styles.editToggle}
+              onPress={() => handleCancelEvent()}
+            >
+              <MaterialIcons name="cancel" size={16} color="#FF4000" />
+              <Text style={styles.editToggleText}>Cancel event</Text>
+            </TouchableOpacity>}
 
-            {userId == event.createdBy && <View style={{ flexDirection: 'row', gap: 20, marginBottom:30 }}>
-              {event.status == 'scheduled' && <TouchableOpacity style={styles.editToggle}
-                onPress={() => handleCancelEvent()}
-              >
-                <MaterialIcons name="cancel" size={16} color="#FF4000" />
-                <Text style={styles.editToggleText}>Cancel event</Text>
-              </TouchableOpacity>}
+            <TouchableOpacity style={styles.editToggle}
+              onPress={() => router.push({
+                pathname: '/schedule/edit',
+                params: { id: event._id }
+              })}
+            >
+              <Entypo name="edit" size={16} color="#FF4000" />
+              <Text style={styles.editToggleText}>Edit</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity style={styles.editToggle}
-                onPress={() => router.push({
-                  pathname: '/schedule/edit',
-                  params: { id: event._id }
-                })}
-              >
-                <Entypo name="edit" size={16} color="#FF4000" />
-                <Text style={styles.editToggleText}>Edit</Text>
-              </TouchableOpacity>
+            <TouchableOpacity style={styles.editToggle}
+              onPress={() => router.push({
+                pathname: '/attendanceSheet',
+                params: { eventId: event._id }
+              })}
+            >
+              <FontAwesome name="users" size={16} color="#FF4000" />
+              <Text style={styles.editToggleText}>Manage attendance</Text>
+            </TouchableOpacity>
+          </View>}
 
-              <TouchableOpacity style={styles.editToggle}
-                onPress={() => router.push({
-                  pathname: '/attendanceSheet',
-                  params: { eventId: event._id }
-                })}
-              >
-                <FontAwesome name="users" size={16} color="#FF4000" />
-                <Text style={styles.editToggleText}>Manage attendance</Text>
-              </TouchableOpacity>
-            </View>}
+          {event.status == 'scheduled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <FontAwesome name="check" size={14} color="#009933" />
+            <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#009933' }]}>
+              {event.status}
+            </Text>
+          </View>}
 
-            {event.status == 'scheduled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <FontAwesome name="check" size={14} color="#009933" />
-              <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#009933' }]}>
-                {event.status}
-              </Text>
-            </View>}
+          {event.status == 'cancelled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <MaterialIcons name="cancel" size={16} color="#FF4400" />
+            <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#FF4400' }]}>
+              {event.status}
+            </Text>
+          </View>}
+        </View>
 
-            {event.status == 'cancelled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <MaterialIcons name="cancel" size={16} color="#FF4400" />
-              <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#FF4400' }]}>
-                {event.status}
-              </Text>
-            </View>}
-
-          </View>
-        }
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Title</Text>

@@ -29,7 +29,7 @@ Payments :
 	should have history
 
 attendance:
-	should show on coach and admin
+	✔ should show on coach and admin @done(25-10-24 12:41)
 
 schedule:
 	✔ edit event date and time on repeatig events @done(25-10-24 09:54)

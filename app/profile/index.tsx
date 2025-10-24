@@ -43,8 +43,7 @@ export default function Profile() {
     const [staff, setStaff] = useState([]);
     const [inventory, setInventory] = useState([]);
     const [clubs, setClubs] = useState([]);
-    const [paidPayments, setPaidPayments] = useState([]);
-    const [unpaidPayments, setUnpaidPayments] = useState([]);
+    const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [teamsLoading, setTeamsLoading] = useState(true);
     const [scheduleLoading, setScheduleLoading] = useState(true);
@@ -390,53 +389,24 @@ export default function Profile() {
     };
 
     const getFinancials = async () => {
-        if (user?.type === "Club") {
-            try {
-                const token = await SecureStore.getItemAsync('userToken');
-                const res = await fetch(`http://193.187.132.170:5000/api/financials/club/${userId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`http://193.187.132.170:5000/api/financials/user/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-                const data = await res.json();
-                if (res.ok) {
-                    const unpaid = data.data.filter(p => !p.paid);
-                    const paid = data.data.filter(p => p.paid);
-                    setUnpaidPayments(unpaid);
-                    setPaidPayments(paid);
-                } else {
-                    console.error(data.message);
-                }
-            } catch (err) {
-                console.error('Failed to fetch inventory', err);
-                setInventory([]);
-            } finally {
-                setFinancialsLoading(false)
+            const data = await res.json();
+            if (res.ok) {
+                setPayments(data.data);
+            } else {
+                console.error(data.message);
             }
-        };
-
-        if (user?.type === "Athlete") {
-            try {
-                const token = await SecureStore.getItemAsync('userToken');
-                const res = await fetch(`http://193.187.132.170:5000/api/financials/athlete/${userId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                const data = await res.json();
-                if (res.ok) {
-                    const unpaid = data.data.filter(p => !p.paid);
-                    const paid = data.data.filter(p => p.paid);
-                    setUnpaidPayments(unpaid);
-                    setPaidPayments(paid);
-                } else {
-                    console.error(data.message);
-                }
-            } catch (err) {
-                console.error('Failed to fetch inventory', err);
-                setInventory([]);
-            } finally {
-                setFinancialsLoading(false)
-            }
-        };
+        } catch (err) {
+            console.error('Failed to fetch payments', err);
+            setInventory([]);
+        } finally {
+            setFinancialsLoading(false)
+        }
     }
 
     const getClubs = async () => {
@@ -1082,7 +1052,6 @@ export default function Profile() {
                     <Text>Attendance</Text>
                 </TouchableOpacity>
             </View>}
-
 
             {/* profileTab */}
             {!loading && user && activeTab == "Profile" && <Animated.ScrollView
@@ -2073,7 +2042,7 @@ export default function Profile() {
                             <View style={styles.sectionHeader}>
                                 {user.type != "Athlete" && <Text style={styles.sectionTitle}>Club Schedule</Text>}
                                 {user.type == "Athlete" && user.role == "Coach" && <Text style={styles.sectionTitle}>Your teams Schedule</Text>}
-                                {userId == user._id && (user.type == "Club" || (user.type="Athlete"&&user.role=="Coach")) && (
+                                {userId == user._id && (user.type == "Club" || (user.type = "Athlete" && user.role == "Coach")) && (
                                     <TouchableOpacity
                                         style={styles.addButton}
                                         onPress={() => router.push('/schedule/createEvent')}
@@ -2598,135 +2567,79 @@ export default function Profile() {
                             </View>
                         ) : (
                             <View>
-                                <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>
-                                        {user.type == 'Club' && 'Club'}{user.type == 'Athlete' && 'Athlete'} Financials
-                                    </Text>
-                                    {userId == user._id && (
+                                <View style={styles.balanceSection}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.balanceTitle}>Balance</Text>
+                                            <Text style={styles.balanceAmount}>EGP 2.12</Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.balanceTitle}>Available Balance</Text>
+                                            <Text style={styles.balanceAmount}>EGP 2.12</Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.balanceActions}>
                                         <TouchableOpacity
-                                            style={styles.addButton}
-                                            onPress={() => router.push('/payments/createPayment')}
+                                            style={styles.balanceButton}
+                                            onPress={() => router.push('/payments/topUp')}
                                         >
-                                            <Text style={styles.addButtonText}>+ Add Payment</Text>
+                                            <Text style={styles.balanceButtonText}>Top Up</Text>
                                         </TouchableOpacity>
-                                    )}
+                                        <TouchableOpacity
+                                            style={styles.balanceButton}
+                                            onPress={() => router.push('/payments/payments')}
+                                        >
+                                            <Text style={styles.balanceButtonText}>Make Payment</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
 
-                                {(unpaidPayments && unpaidPayments.length > 0) || (paidPayments && paidPayments.length > 0) ? (
+                                <View style={styles.sectionHeader}>
+                                    <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
+                                        History
+                                    </Text>
+                                </View>
+
+                                {(payments && payments.length > 0) ? (
                                     <View>
-                                        <View style={styles.sectionTabs}>
-                                            <TouchableOpacity style={[
-                                                styles.sectionTab,
-                                                activePaymentTab == "pending" && styles.sectionTabActive
-                                            ]}
-                                                onPress={() => { setActivePaymentTab('pending') }}
-                                            >
-                                                <Text style={styles.sectionTabText}>{unpaidPayments.length} Pending</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity style={[
-                                                styles.sectionTab,
-                                                activePaymentTab == "paid" && styles.sectionTabActive
-                                            ]}
-                                                onPress={() => { setActivePaymentTab('paid') }}
-                                            >
-                                                <Text style={styles.sectionTabText}>{paidPayments.length} Paid</Text>
-                                            </TouchableOpacity>
+                                        {/* <Text style={[styles.title, { marginBottom: 10 }]}>Pending payments</Text> */}
+                                        <View>
+                                            {payments.map((item) => (
+                                                <TouchableOpacity
+                                                    key={item._id}
+                                                    style={styles.inventoryCard}
+                                                    onPress={() => router.push({
+                                                        pathname: '/payments/details',
+                                                        params: { id: item._id },
+                                                    })}>
+                                                    <View style={styles.inventoryHeader}>
+                                                        <View style={styles.inventoryInfo}>
+                                                            <Text style={styles.inventoryName}>{item.user.name}</Text>
+                                                            <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                        </View>
+                                                        <View style={styles.inventoryStats}>
+                                                            <Text style={styles.inventoryStatValue}>{item.amount}</Text>
+                                                            <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                        </View>
+                                                    </View>
+
+                                                    <View style={styles.inventoryDetails}>
+                                                        <View style={styles.inventoryDetailRow}>
+                                                            <Text style={styles.inventoryDetailLabel}>Due date:</Text>
+                                                            <Text style={styles.inventoryDetailValue}>{formatDate(item.dueDate)}</Text>
+                                                        </View>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            ))}
                                         </View>
 
-                                        {activePaymentTab == "pending" &&
-                                            <>
-                                                {/* <Text style={[styles.title, { marginBottom: 10 }]}>Pending payments</Text> */}
-                                                {unpaidPayments && unpaidPayments.length > 0 ? (
-                                                    <View>
-                                                        {unpaidPayments.map((item) => (
-                                                            <TouchableOpacity
-                                                                key={item._id}
-                                                                style={styles.inventoryCard}
-                                                                onPress={() => router.push({
-                                                                    pathname: '/payments/details',
-                                                                    params: { id: item._id },
-                                                                })}>
-                                                                <View style={styles.inventoryHeader}>
-                                                                    <View style={styles.inventoryInfo}>
-                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
-                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
-                                                                    </View>
-                                                                    <View style={styles.inventoryStats}>
-                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
-                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
-                                                                    </View>
-                                                                </View>
-
-                                                                <View style={styles.inventoryDetails}>
-                                                                    <View style={styles.inventoryDetailRow}>
-                                                                        <Text style={styles.inventoryDetailLabel}>Due date:</Text>
-                                                                        <Text style={styles.inventoryDetailValue}>{formatDate(item.dueDate)}</Text>
-                                                                    </View>
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </View>
-                                                ) : (
-                                                    <Text>No pending payments</Text>
-                                                )}
-                                            </>
-                                        }
-
-                                        {activePaymentTab == "paid" &&
-                                            <>
-                                                {/* <Text style={[styles.title, { marginBottom: 10 }]}>Paid payments</Text> */}
-                                                {paidPayments && paidPayments.length > 0 ? (
-                                                    <View>
-                                                        {paidPayments.map((item) => (
-                                                            <TouchableOpacity
-                                                                key={item._id}
-                                                                style={styles.inventoryCard}
-                                                                onPress={() => router.push({
-                                                                    pathname: '/payments/details',
-                                                                    params: { id: item._id },
-                                                                })}>
-                                                                <View style={styles.inventoryHeader}>
-                                                                    <View style={styles.inventoryInfo}>
-                                                                        <Text style={styles.inventoryName}>{item.user.name}</Text>
-                                                                        <Text style={styles.inventoryCategory}>{item.type}</Text>
-                                                                    </View>
-                                                                    <View style={styles.inventoryStats}>
-                                                                        <Text style={styles.inventoryStatValue}>{item.amount}</Text>
-                                                                        <Text style={styles.inventoryStatLabel}>Amount</Text>
-                                                                    </View>
-                                                                </View>
-
-                                                                <View style={styles.inventoryDetails}>
-                                                                    <View style={styles.inventoryDetailRow}>
-                                                                        <Text style={styles.inventoryDetailLabel}>Paid on</Text>
-                                                                        <Text style={styles.inventoryDetailValue}>{formatDate(item.paidDate)}</Text>
-                                                                    </View>
-                                                                </View>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </View>
-                                                ) : (
-                                                    <Text>No paid payments</Text>
-                                                )}
-                                            </>
-                                        }
                                     </View>
                                 ) : (
-                                    <View style={styles.emptyState}>
-                                        <Text style={styles.emptyStateTitle}>No payments</Text>
-                                        <Text style={styles.emptyStateText}>
-                                            {userId == user._id
-                                                ? "Add your first payment to get started"
-                                                : "This club hasn't added any payments yet"}
+                                    <View style={[styles.emptyState, { paddingVertical: 0, alignItems: 'flex-start' }]}>
+                                        <Text style={[styles.emptyStateText,]}>
+                                            Nothing to show
                                         </Text>
-                                        {userId == user._id && (
-                                            <TouchableOpacity
-                                                style={styles.emptyStateButton}
-                                                onPress={() => router.push('/payments/createPayment')}
-                                            >
-                                                <Text style={styles.emptyStateButtonText}>Add Payment</Text>
-                                            </TouchableOpacity>
-                                        )}
                                     </View>
                                 )}
                             </View>
@@ -3884,5 +3797,41 @@ const styles = StyleSheet.create({
     calArrow: {
         width: 20,
         height: 20
+    },
+    balanceSection: {
+        marginBottom: 30,
+    },
+    balanceText: {
+        fontFamily: 'Manrope',
+        fontSize: 16,
+        color: 'black',
+        marginBottom: 5,
+    },
+    balanceAmount: {
+        fontFamily: 'Bebas',
+        fontSize: 28,
+        color: '#FF4000',
+        marginBottom: 25,
+    },
+    balanceTitle: {
+        fontFamily: 'Bebas',
+        fontSize: 20,
+        color: '#111111',
+    },
+    balanceActions: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    balanceButton: {
+        flex: 1,
+        backgroundColor: '#FF4000',
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    balanceButtonText: {
+        color: 'white',
+        fontFamily: 'Bebas',
+        fontSize: 16,
     }
 });

@@ -27,9 +27,9 @@ const AttendanceSheet = () => {
                     }
                 });
 
-                // console.warn('Response status:', response);
 
                 const data = await response.json();
+                console.warn('Response status:', data);
 
                 if (data.success) {
                     setTeam(data.data.team);
@@ -69,10 +69,6 @@ const AttendanceSheet = () => {
         fetchTeamMembers();
     }, [eventId]);
 
-    useEffect(() => {
-            // router.back();
-    }, [submitted]);
-
     const handleSubmit = async () => {
         const attendedAthletes = Object.keys(presentAthletes).filter(id => presentAthletes[id]);
 
@@ -99,6 +95,10 @@ const AttendanceSheet = () => {
 
             if (data.success) {
                 setSubmitted(true);
+                setTimeout(() => {
+                    router.back();
+                }, 1000);
+            
             } else {
                 Alert.alert('Error', data.message || 'Failed to submit attendance');
             }
@@ -122,7 +122,7 @@ const AttendanceSheet = () => {
 
                 <View style={styles.headerTextBlock}>
                     <Text style={styles.pageTitle}>Attendance sheet</Text>
-                    {!loading && <Text style={styles.pageDesc}>{team}</Text>}
+                    {!loading && <Text style={styles.pageDesc}>{team.name || ""}</Text>}
 
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>

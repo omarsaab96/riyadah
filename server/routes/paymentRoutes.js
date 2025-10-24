@@ -54,10 +54,16 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-router.get('/club/:clubId', authenticateToken, async (req, res) => {
+router.get('/user/:userId', authenticateToken, async (req, res) => {
   try {
-    const payments = await Payment.find({ club: req.params.clubId })
-      .populate('user', '_id name email image')
+    const payments = await Payment.find({
+      $or: [
+        { payer: userId },
+        { beneficiary: userId }
+      ]
+    })
+      .populate('payer', '_id name email image')
+      .populate('beneficiary', '_id name email image');
 
     res.status(200).json({ success: true, data: payments });
   } catch (err) {
