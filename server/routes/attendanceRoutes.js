@@ -22,7 +22,7 @@ router.get('/byEvent/:eventId', async (req, res) => {
         success: true,
         data: {
           _id: attendance._id,
-          name: attendance.team.name,
+          team: attendance.team,
           members: [...attendance.present, ...attendance.absent],
           present: attendance.present,
           absent: attendance.absent,

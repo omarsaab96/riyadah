@@ -235,7 +235,7 @@ export default function StaffDetailsScreen() {
               <TouchableOpacity style={styles.editToggle}
                 onPress={() => router.push({
                   pathname: '/attendanceSheet',
-                  params: { event: event }
+                  params: { eventId: event._id }
                 })}
               >
                 <FontAwesome name="users" size={16} color="#FF4000" />
