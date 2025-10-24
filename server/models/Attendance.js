@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+// models/Attendance.js
+const mongoose = require('mongoose');
 
 const attendanceSchema = new mongoose.Schema({
   team: {
@@ -32,4 +33,4 @@ attendanceSchema.index({ team: 1, event: 1 }, { unique: true });
 
 const Attendance = mongoose.model('Attendance', attendanceSchema);
 
-export default Attendance;
+module.exports = Attendance;
