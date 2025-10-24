@@ -420,31 +420,33 @@ router.put('/:id',
             if (editScope === 'all') {
                 const seriesId = req.event.seriesId;
 
-                // Allow time updates but keep each event’s date fixed
+                // Allow time and metadata updates, but keep each event’s original date
                 const disallowedKeys = ['date', 'occurrenceIndex'];
                 const safeUpdates = Object.keys(updates)
                     .filter(key => !disallowedKeys.includes(key))
                     .reduce((acc, key) => ({ ...acc, [key]: updates[key] }), {});
 
                 const seriesEvents = await Schedule.find({ seriesId });
-                // Update each event individually (preserve date, change time)
+                let modifiedCount = 0;
+
                 for (const ev of seriesEvents) {
-                    // preserve original date
                     const originalDate = ev.date;
 
-                    // apply updates (like startTime, endTime, etc.)
+                    // Apply updates
                     Object.assign(ev, safeUpdates);
 
-                    // reapply same date to ensure day doesn’t shift
+                    // Reapply the same date to ensure the day doesn’t shift
                     ev.date = originalDate;
 
                     await ev.save();
+                    modifiedCount++;
                 }
 
                 return res.json({
                     success: true,
-                    message: `Updated ${updated.modifiedCount} occurrences in this series (dates preserved).`,
+                    message: `Updated ${modifiedCount} occurrences in this series (dates preserved).`
                 });
+
             }
 
             // Default fallback (shouldn’t hit here)

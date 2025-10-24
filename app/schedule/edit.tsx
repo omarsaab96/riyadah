@@ -49,7 +49,7 @@ export default function EditEventScreen() {
     status: 'scheduled',
     isHomeGame: false,
     requiredEquipment: [] as Array<{ itemId: string, name: string, quantity: number }>,
-    seriesId:null
+    seriesId: null
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -549,8 +549,9 @@ export default function EditEventScreen() {
               <TouchableOpacity
                 style={styles.dateInput}
                 onPress={() => setShowDatePicker(true)}
+                disabled={true}
               >
-                <Text style={styles.inputText}>
+                <Text style={[styles.inputText, { opacity: 0.5 }]}>
                   {formatDate(pickedDate)}
                 </Text>
                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
@@ -749,8 +750,8 @@ export default function EditEventScreen() {
                     onPress={(e) => {
                       const coords = e.nativeEvent.coordinate;
                       setLocation(coords);
-                      handleChange('location.latitude', String(coords.latitude))
-                      handleChange('location.longitude', String(coords.longitude))
+                      handleNestedChange('location', 'latitude', coords.latitude);
+                      handleNestedChange('location', 'longitude', coords.longitude);
                     }}
                   >
                     {location && (
@@ -760,8 +761,8 @@ export default function EditEventScreen() {
                         onDragEnd={(e) => {
                           const coords = e.nativeEvent.coordinate;
                           setLocation(coords);
-                          handleChange('location.latitude', String(coords.latitude))
-                          handleChange('location.longitude', String(coords.longitude))
+                          handleNestedChange('location', 'latitude', coords.latitude);
+                          handleNestedChange('location', 'longitude', coords.longitude);
                         }}
                       />
                     )}
