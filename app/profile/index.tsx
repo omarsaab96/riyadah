@@ -389,6 +389,7 @@ export default function Profile() {
     };
 
     const getFinancials = async () => {
+        console.log(userId)
         try {
             const token = await SecureStore.getItemAsync('userToken');
             const res = await fetch(`http://193.187.132.170:5000/api/financials/user/${userId}`, {
@@ -2588,7 +2589,7 @@ export default function Profile() {
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={styles.balanceButton}
-                                            onPress={() => router.push('/payments/payments')}
+                                            onPress={() => router.push('/payments/createPayment')}
                                         >
                                             <Text style={styles.balanceButtonText}>Make Payment</Text>
                                         </TouchableOpacity>

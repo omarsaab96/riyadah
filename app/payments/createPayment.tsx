@@ -126,7 +126,7 @@ export default function AddPayment() {
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const url = `http://193.187.132.170:5000/api/users/byclub/${userId}?keyword=${encodeURIComponent(text)}`;
+            const url = `http://193.187.132.170:5000/api/users/search?keyword=${encodeURIComponent(text)}`;
             console.log('Search URL:', url);
 
             const response = await fetch(url, {
@@ -136,11 +136,10 @@ export default function AddPayment() {
                 }
             });
 
-            const data = await response.json();
+            if (response.ok) {
+                const data = await response.json();
 
-            console.log('API Response:', data);
-
-            if (data.success) {
+                console.log('API Response:', data);
                 setSearchResults(data.data);
             } else {
                 Alert.alert('Error', 'Failed to search users');
@@ -292,7 +291,7 @@ export default function AddPayment() {
                         </View>}
 
                         {!selectedUser && <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Athlete or coach</Text>
+                            <Text style={styles.label}>Select beneficiary</Text>
                             <View style={styles.formGroup}>
                                 <View style={styles.searchContainer}>
                                     <View style={{
@@ -398,7 +397,7 @@ export default function AddPayment() {
                                         placeholder="e.g. 50"
                                         placeholderTextColor={"#888"}
                                         keyboardType="numeric"
-                                        value={paymentAmount.split(' ')[0]=='0'?'':''}
+                                        value={paymentAmount.split(' ')[0] == '0' ? '' : ''}
                                         onChangeText={(text) => {
                                             const amount = text.trim();
                                             const currency = paymentAmount.split(' ')[1] || 'USD';
@@ -414,7 +413,7 @@ export default function AddPayment() {
                                                 setPaymentAmount(`${amount} ${currency}`)
                                             }}
                                         >
-                                            
+
                                             <Picker.Item label="EGP" value="EGP" />
                                             {/* <Picker.Item label="USD" value="USD" />
                                             <Picker.Item label="EUR" value="EUR" /> */}
@@ -579,7 +578,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
-        color:'black'
+        color: 'black'
     },
     saveButton: {
         backgroundColor: '#FF4000',
@@ -695,7 +694,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontSize: 14,
         fontWeight: 'bold',
-        color:'black'
+        color: 'black'
     },
     userEmail: {
         fontFamily: 'Manrope',
@@ -736,7 +735,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Manrope',
         fontWeight: 'bold',
         fontSize: 16,
-        color:'black'
+        color: 'black'
     },
     selectedUserEmail: {
         fontFamily: 'Manrope',
@@ -783,7 +782,7 @@ const styles = StyleSheet.create({
     statusButtonText: {
         fontFamily: 'Manrope',
         fontWeight: 'bold',
-        color:'black'
+        color: 'black'
     },
     activeStatusButtonText: {
         color: '#fff',
