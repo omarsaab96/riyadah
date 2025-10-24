@@ -2215,7 +2215,7 @@ export default function Profile() {
                                                                         </Text>
                                                                     </View>
                                                                     <View style={styles.eventDetails}>
-                                                                        <Text style={styles.eventTitle}>{event.status == "cancelled" && 'Cancelled'} - {event.title}</Text>
+                                                                        <Text style={styles.eventTitle}>{event.status == "cancelled" && 'Cancelled - '}{event.title}</Text>
                                                                         <Text style={styles.eventTime}>
                                                                             {formattedTime} - {endTime}
                                                                         </Text>

@@ -382,7 +382,7 @@ router.get('/:id', async (req, res) => {
 // @access  Private (Club admins/coaches)
 router.put('/:id',
     authenticate,
-    authorize(['admin', 'coach']),
+    authorize(['admin', 'Coach']),
     checkEventOwnership,
     async (req, res) => {
         try {
