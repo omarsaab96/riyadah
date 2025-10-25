@@ -41,22 +41,22 @@ const processPendingPayments = async () => {
             if (!payerWallet || payerWallet.availableBalance < payment.amount) {
                 console.warn(`[paymentAuditor] No wallet or insufficient funds.`);
                 payment.status = 'declined';
-                await payment.save({ session });
+                await payment.save();
                 continue;
             }
 
             // Deduct from payer
             payerWallet.balance -= payment.amount;
-            await payerWallet.save({ session });
+            await payerWallet.save();
 
             // Add to beneficiary
             beneficiaryWallet.availableBalance += payment.amount;
-            await beneficiaryWallet.save({ session });
+            await beneficiaryWallet.save();
 
             // Mark payment completed
             payment.status = 'completed';
             payment.completedAt = new Date();
-            await payment.save({ session });
+            await payment.save();
 
             const payerUser = await User.findOne({ _id: payment.payer }).select('name');
             const beneficiaryUser = await User.findOne({ _id: payment.beneficiary }).select('_id expoPushToken');
@@ -71,13 +71,10 @@ const processPendingPayments = async () => {
             console.log(`[paymentAuditor] Marked completed.`);
         }
 
-        await session.commitTransaction();
         console.log('[paymentAuditor] All pending payments processed successfully.');
     } catch (err) {
         console.error('[paymentAuditor] Worker error:', err);
-        await session.abortTransaction();
     } finally {
-        session.endSession();
         isProcessing = false;
     }
 };
