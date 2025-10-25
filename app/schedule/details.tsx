@@ -212,7 +212,7 @@ export default function StaffDetailsScreen() {
 
       {event && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
         <View style={[styles.section]}>
-          {userId == event.createdBy && <View style={{ flexDirection: 'row', gap: 20, marginBottom: 30 }}>
+          {(userId == event.createdBy || userId == event.club) && <View style={{ flexDirection: 'row', gap: 20, marginBottom: 30 }}>
             {event.status == 'scheduled' && <TouchableOpacity style={styles.editToggle}
               onPress={() => handleCancelEvent()}
             >

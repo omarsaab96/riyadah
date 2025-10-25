@@ -16,7 +16,7 @@ export default function EditEventScreen() {
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [teams, setTeams] = useState([]);
@@ -253,7 +253,7 @@ export default function EditEventScreen() {
         }
         setLoading(false)
       } else {
-        console.log("no token",)
+        console.log("no token")
       }
     };
 
@@ -539,7 +539,7 @@ export default function EditEventScreen() {
             <Text style={styles.errorText}>{error}</Text>
           </View>}
 
-          <View style={styles.contentContainer}>
+          {!loading &&<View style={styles.contentContainer}>
             <View style={styles.formGroup}>
               <Text style={styles.label}>Event Title *</Text>
               <TextInput
@@ -956,7 +956,7 @@ export default function EditEventScreen() {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
+          </View>}
         </ScrollView>
       </View >
     </KeyboardAvoidingView >
