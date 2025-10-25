@@ -9,7 +9,7 @@ import User from '../models/User.js';
 import Wallet from '../models/Wallet.js';
 import { sendNotification } from '../utils/notificationService.js';
 
-await mongoose.connect('mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0');
+await mongoose.connect(process.env.MONGO_URI);
 let isProcessing = false;
 
 const processPendingPayments = async () => {

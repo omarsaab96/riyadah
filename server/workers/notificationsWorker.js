@@ -15,8 +15,7 @@ const TICK_MS = 1000;
 const MAX_ATTEMPTS = 5;
 const CONCURRENCY = 20;
 
-mongoose
-  .connect('mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

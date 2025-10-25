@@ -10,9 +10,7 @@ const Team = require('../models/Team');
 const User = require('../models/User');
 const { sendNotification } = require('../utils/notificationService');
 
-const MONGO_URI =
-  process.env.MONGO_URI ||
-  'mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI =process.env.MONGO_URI;
 
 const TICK_MS = 60 * 1000; // every minute
 let isProcessing = false;

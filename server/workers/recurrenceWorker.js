@@ -8,7 +8,7 @@ const Job = require('../models/Job');
 const Schedule = require('../models/Schedule');
 require('dotenv').config();
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect(process.env.MONGO_URI);
 
 // === CONFIG ===
 const TICK_MS = 3000;       // run every 3 seconds
