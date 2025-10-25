@@ -19,9 +19,11 @@ npm install
 
 echo "***** Restarting PM2 process..."
 pm2 restart riyadah || pm2 start index.js --name riyadah
-pm2 restart recur-worker || pm2 start workers/recurrenceWorker.js --name recur-worker
-pm2 restart notif-worker || pm2 start workers/notificationsWorker.js --name notif-worker
-pm2 restart payment-worker || pm2 start workers/paymentWorker.js --name payment-worker
+pm2 restart eventExpander || pm2 start workers/recurrenceWorker.js --name eventExpander
+pm2 restart eventNotifier || pm2 start workers/notificationsWorker.js --name eventNotifier
+pm2 restart paymentAuditor || pm2 start workers/paymentWorker.js --name paymentAuditor
+pm2 restart monthlyReminder || pm2 start workers/monthlyReminderWorker.js --name monthlyReminder
+pm2 restart thirtyMinutesEventReminder || pm2 start workers/thirtyMinutesEventReminder.js --name thirtyMinutesEventReminder
 
 
 echo "***** Saving PM2 process list..."

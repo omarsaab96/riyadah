@@ -1,4 +1,7 @@
 // workers/notificationsWorker.js
+// This worker will process notification jobs from the Job collection
+// and send notifications to users about new events once created.
+
 require('dotenv').config({ path: __dirname + '/../.env' });
 
 const mongoose = require('mongoose');
@@ -7,8 +10,8 @@ const User = require('../models/User');
 const Schedule = require('../models/Schedule');
 require('../models/Team');
 const { sendNotification } = require('../utils/notificationService');
-
-const TICK_MS = 3000;
+let isProcessing = false;
+const TICK_MS = 1000;
 const MAX_ATTEMPTS = 5;
 const CONCURRENCY = 20;
 
@@ -17,9 +20,9 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('✅ [notif-worker] MongoDB connected'))
+  .then(() => console.log('[eventNotifier] MongoDB connected'))
   .catch((err) => {
-    console.error('❌ [notif-worker] MongoDB connection error:', err.message);
+    console.error('[eventNotifier] MongoDB connection error:', err.message);
     process.exit(1);
   });
 
@@ -58,7 +61,7 @@ async function notify(job) {
     await Promise.allSettled(
       slice.map((u) =>
         sendNotification(u, title, body, data).catch((e) =>
-          console.error('push error', u._id.toString(), e.message)
+          console.error('[eventNotifier] push error', u._id.toString(), e.message)
         )
       )
     );
@@ -80,22 +83,34 @@ function formatTime(d) {
 }
 
 async function tick() {
+  if (isProcessing) {
+    console.log('⏳ [notif-worker] Still processing, skipping tick...');
+    return;
+  }
+
+  isProcessing = true;
+
   const job = await Job.findOneAndUpdate(
     { status: 'queued', type: 'notify', runAt: { $lte: new Date() } },
     { $set: { status: 'running' }, $inc: { attempts: 1 } },
     { sort: { runAt: 1 } }
   );
 
-  if (!job) return;
+  if (!job) {
+    isProcessing = false;
+    return;
+  }
 
   try {
+    console.log(`[eventNotifier] Processing notify job ${job._id}`);
+
     await notify(job);
     await Job.updateOne(
       { _id: job._id },
       { $set: { status: 'done', lastError: null } }
     );
   } catch (err) {
-    console.error('notify error:', err.message);
+    console.error('[eventNotifier] notify error:', err.message);
     const update = {
       $set: {
         status:
@@ -111,4 +126,4 @@ async function tick() {
 
 setInterval(tick, TICK_MS);
 
-console.log('🚀 [notif-worker] Notification worker started...');
+console.log('[eventNotifier] Notification worker started...');
