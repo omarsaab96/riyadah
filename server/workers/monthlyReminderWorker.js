@@ -15,7 +15,7 @@ const BATCH_SIZE = 200;        // number of users to notify each tick
 let isProcessing = false;
 let currentMonthKey = null; // "2025-10" etc.
 
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('[MonthlyReminder] MongoDB connected'))
   .catch((err) => {
     console.error('[MonthlyReminder] MongoDB connection error:', err.message);
