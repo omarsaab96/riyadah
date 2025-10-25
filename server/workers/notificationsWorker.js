@@ -15,10 +15,7 @@ const TICK_MS = 1000;
 const MAX_ATTEMPTS = 5;
 const CONCURRENCY = 20;
 
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('[eventNotifier] MongoDB connected'))
   .catch((err) => {
     console.error('[eventNotifier] MongoDB connection error:', err.message);
