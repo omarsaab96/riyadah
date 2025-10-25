@@ -21,6 +21,8 @@ echo "***** Restarting PM2 process..."
 pm2 restart riyadah || pm2 start index.js --name riyadah
 pm2 restart recur-worker || pm2 start workers/recurrenceWorker.js --name recur-worker
 pm2 restart notif-worker || pm2 start workers/notificationsWorker.js --name notif-worker
+pm2 restart payment-worker || pm2 start workers/paymentWorker.js --name payment-worker
+
 
 echo "***** Saving PM2 process list..."
 pm2 save

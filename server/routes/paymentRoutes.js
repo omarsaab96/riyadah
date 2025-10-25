@@ -94,7 +94,6 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Add to beneficiary
     beneficiaryWallet.balance += amount;
-    beneficiaryWallet.availableBalance += amount;
     await beneficiaryWallet.save({ session });
 
     // Create payment record (only if both saves succeeded)

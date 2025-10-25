@@ -6,9 +6,10 @@ const paymentSchema = new mongoose.Schema({
   beneficiary: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String, default: 'transaction' },
   amount: { type: Number, required: true },
-  currency: { type: String, default:'EGP' },
+  currency: { type: String, default: 'EGP' },
   note: String,
   status: { type: String, enum: ['pending', 'completed', 'declined'], default: 'pending' },
+  completedAt: { type: Date, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Payment', paymentSchema);
