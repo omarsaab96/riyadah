@@ -9,7 +9,7 @@ import User from '../models/User.js';
 import Wallet from '../models/Wallet.js';
 import { sendNotification } from '../utils/notificationService.js';
 
-await mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI);
 let isProcessing = false;
 
 const processPendingPayments = async () => {
