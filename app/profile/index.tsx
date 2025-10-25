@@ -422,7 +422,7 @@ export default function Profile() {
                 console.error(data.message);
             }
         } catch (err) {
-            console.error('Failed to fetch payments', err);
+            console.error('Failed to fetch wallet', err);
             setWallet(null);
         } finally {
             setFinancialsLoading(false)
@@ -850,6 +850,32 @@ export default function Profile() {
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     };
+    const handleTopUp = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            const res = await fetch(`http://193.187.132.170:5000/api/wallet/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ amount: 5000 })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setWallet(data.data);
+            } else {
+                console.error('Wallet update failed:', data.message);
+            }
+        } catch (err) {
+            console.error('Failed to update wallet:', err);
+            setWallet(null);
+        } finally {
+            setFinancialsLoading(false);
+        }
+    };
+
 
     return (
         <View style={styles.container}>
@@ -2588,7 +2614,7 @@ export default function Profile() {
                         ) : (
                             <View>
                                 <View style={styles.balanceSection}>
-                                    {wallet!=null && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    {wallet != null && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.balanceTitle}>Balance</Text>
                                             <Text style={styles.balanceAmount}>{wallet.currency}{wallet.balance}</Text>
@@ -2602,7 +2628,7 @@ export default function Profile() {
                                     <View style={styles.balanceActions}>
                                         <TouchableOpacity
                                             style={styles.balanceButton}
-                                            onPress={() => router.push('/payments/topUp')}
+                                            onPress={() => handleTopUp()}
                                         >
                                             <Text style={styles.balanceButtonText}>Top Up</Text>
                                         </TouchableOpacity>
@@ -2655,7 +2681,9 @@ export default function Profile() {
                                                             <Text style={styles.inventoryCategory}>{item.type}</Text>
                                                         </View>
                                                         <View style={styles.inventoryStats}>
-                                                            <Text style={styles.inventoryStatValue}>{item.amount}{item.currency}</Text>
+                                                            <Text style={styles.inventoryStatValue}>
+                                                                {userId == item.payer._id && '-'}{item.amount}{item.currency}
+                                                            </Text>
                                                             <Text style={styles.inventoryStatLabel}>Amount</Text>
                                                         </View>
                                                     </View>

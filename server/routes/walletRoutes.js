@@ -20,6 +20,7 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+//get user's wallet
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const user = req.user.userId;
@@ -37,6 +38,7 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
+//create a new wallet
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const user = req.user.userId;
@@ -52,6 +54,7 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 });
 
+//topup a wallet
 router.put('/', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.userId;

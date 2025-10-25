@@ -21,6 +21,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 router.get('/user', authenticateToken, async (req, res) => {
+  console.log(req.user.userId)
   try {
     const payments = await Payment.find({
       $or: [
@@ -81,18 +82,6 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(201).json({ success: true, data: payment });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
-  }
-});
-
-router.get('/athlete/:athleteId', authenticateToken, async (req, res) => {
-  try {
-    const payments = await Payment.find({ user: req.params.athleteId })
-      .populate('user', '_id name email image')
-      .populate('club', '_id name image');
-
-    res.status(200).json({ success: true, data: payments });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
   }
 });
 
