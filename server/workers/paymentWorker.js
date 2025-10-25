@@ -1,6 +1,7 @@
 // workers/paymentWorker.js
 import mongoose from 'mongoose';
 import Payment from '../models/Payment.js';
+import User from '../models/User.js';
 import Wallet from '../models/Wallet.js';
 import { sendNotification } from '../utils/notificationService.js';
 
@@ -43,8 +44,8 @@ const processPendingPayments = async () => {
             payment.completedAt = new Date();
             await payment.save({ session });
 
-            const payerUser = await UserActivation.findOne({ _id: payment.payer }).session(session).select('name');
-            const beneficiaryUser = await UserActivation.findOne({ _id: payment.beneficiary }).session(session).select('_id expoPushToken');
+            const payerUser = await User.findOne({ _id: payment.payer }).session(session).select('name');
+            const beneficiaryUser = await User.findOne({ _id: payment.beneficiary }).session(session).select('_id expoPushToken');
 
             // Notify beneficiary
             await sendNotification(
