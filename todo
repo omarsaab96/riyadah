@@ -39,6 +39,9 @@ schedule:
 frontend:
 	☐ change icons
 
+notifications:
+	☐ data with deeplink
+
 test:
 	☐ test everything
 

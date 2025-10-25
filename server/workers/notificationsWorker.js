@@ -11,7 +11,7 @@ const Schedule = require('../models/Schedule');
 require('../models/Team');
 const { sendNotification } = require('../utils/notificationService');
 let isProcessing = false;
-const TICK_MS = 1000;
+const TICK_MS = 5000;
 const MAX_ATTEMPTS = 5;
 const CONCURRENCY = 20;
 
@@ -86,37 +86,40 @@ async function tick() {
 
   isProcessing = true;
 
-  const job = await Job.findOneAndUpdate(
-    { status: 'queued', type: 'notify', runAt: { $lte: new Date() } },
-    { $set: { status: 'running' }, $inc: { attempts: 1 } },
-    { sort: { runAt: 1 } }
-  );
-
-  if (!job) {
-    isProcessing = false;
-    return;
-  }
-
   try {
-    console.log(`[eventNotifier] Processing notify job ${job._id}`);
+    const job = await Job.findOneAndUpdate(
+      { status: 'queued', type: 'notify', runAt: { $lte: new Date() } },
+      { $set: { status: 'running' }, $inc: { attempts: 1 } },
+      { sort: { runAt: 1 } }
+    );
 
-    await notify(job);
+    if (!job) return;
+
+    console.log(`[eventNotifier] Processing notify job ${job._id}`);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s
+    await notify(job, { signal: controller.signal }).catch(e => console.error(e));
+    clearTimeout(timeout);
+
     await Job.updateOne(
       { _id: job._id },
       { $set: { status: 'done', lastError: null } }
     );
   } catch (err) {
-    console.error('[eventNotifier] notify error:', err.message);
-    const update = {
-      $set: {
-        status:
-          job.attempts >= MAX_ATTEMPTS ? 'failed' : 'queued',
-        lastError: err.message,
-      },
-    };
-    if (job.attempts < MAX_ATTEMPTS)
-      update.$set.runAt = new Date(Date.now() + 30_000);
-    await Job.updateOne({ _id: job._id }, update);
+    console.error('[eventNotifier] notify error:', err);
+    if (job) {
+      const update = {
+        $set: {
+          status: job.attempts >= MAX_ATTEMPTS ? 'failed' : 'queued',
+          lastError: err.message,
+        },
+      };
+      if (job.attempts < MAX_ATTEMPTS)
+        update.$set.runAt = new Date(Date.now() + 30_000);
+      await Job.updateOne({ _id: job._id }, update);
+    }
+  } finally {
+    isProcessing = false;
   }
 }
 
