@@ -21,7 +21,6 @@ const authenticateToken = (req, res, next) => {
 };
 
 router.get('/user', authenticateToken, async (req, res) => {
-  console.log(req.user.userId)
   try {
     const payments = await Payment.find({
       $or: [
@@ -41,8 +40,8 @@ router.get('/user', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const payment = await Payment.findById(req.params.id)
-      .populate('user', 'name email image gender')  // Optional: Populate user info
-      .populate('club', 'name email sport');       // Optional: Populate club info
+      .populate('payer', '_id name email image gender type')  // Optional: Populate user info
+      .populate('beneficiary', '_id name email image gender type');       // Optional: Populate club info
 
     if (!payment) {
       return res.status(404).json({ success: false, message: 'Payment not found' });

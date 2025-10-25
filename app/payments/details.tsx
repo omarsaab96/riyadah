@@ -25,7 +25,7 @@ export default function PaymentDetails() {
     const [payment, setPayment] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
-    const { id } = useLocalSearchParams();
+    const { paymentid } = useLocalSearchParams();
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -61,7 +61,7 @@ export default function PaymentDetails() {
                     return;
                 }
 
-                const res = await fetch(`http://193.187.132.170:5000/api/financials/${id}`, {
+                const res = await fetch(`http://193.187.132.170:5000/api/financials/${paymentid}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -69,6 +69,7 @@ export default function PaymentDetails() {
                 });
 
                 const data = await res.json();
+                console.warn(data)
 
                 if (res.ok) {
                     setPayment(data.data);
@@ -85,7 +86,7 @@ export default function PaymentDetails() {
 
         fetchPayment();
         fetchUser();
-    }, [id]);
+    }, [paymentid]);
 
     const settlePayment = async () => {
         try {
@@ -171,21 +172,26 @@ export default function PaymentDetails() {
                                 <View style={{ marginBottom: 30 }}>
                                     <View style={[styles.row, { alignItems: 'center' }]}>
                                         <Text style={styles.title}>Status</Text>
-                                        <Text style={[styles.value, { padding: 5, color: 'white', borderRadius: 5, backgroundColor: payment.paid ? '#009933' : '#FF4000' }]}>
-                                            {payment.paid ? `Paid on ${new Date(payment.paidDate).toLocaleDateString()}` : 'Pending'}
+                                        <Text style={[styles.value, {
+                                            padding: 5,
+                                            color: 'white',
+                                            borderRadius: 5,
+                                            backgroundColor: payment.paid ? '#009933' : '#FF4000'
+                                        }]}>
+                                            {payment.status == 'completed' ? `Paid on ${new Date(payment.createdAt).toLocaleDateString()}` : 'Pending'}
                                         </Text>
                                     </View>
 
-                                    {!payment.paid && <View style={styles.row}>
+                                    {/* {!payment.paid && <View style={styles.row}>
                                         <Text style={styles.title}>Due Date</Text>
                                         <Text style={styles.value}>
                                             {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : 'N/A'}
                                         </Text>
-                                    </View>}
+                                    </View>} */}
 
                                     <View style={styles.row}>
                                         <Text style={styles.title}>Amount</Text>
-                                        <Text style={styles.value}>${payment.amount}</Text>
+                                        <Text style={styles.value}>{payment.amount} {payment.currency}</Text>
                                     </View>
                                 </View>
 
@@ -197,25 +203,25 @@ export default function PaymentDetails() {
                                         </View>
                                     )}
 
-                                    {payment.user && (
+                                    {payment.payer && (
                                         <View style={{ marginVertical: 20 }}>
-                                            <Text style={[styles.title, { marginBottom: 10 }]}>payable</Text>
+                                            <Text style={[styles.title, { marginBottom: 10 }]}>Payer</Text>
                                             <View>
                                                 <TouchableOpacity
                                                     style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
                                                     onPress={() => router.push({
                                                         pathname: '/profile/public',
-                                                        params: { id: payment.user._id },
+                                                        params: { id: payment.payer._id },
                                                     })}>
                                                     <View style={{ backgroundColor: '#FF4000', borderRadius: 30, width: 60, height: 60, overflow: 'hidden', marginRight: 20 }}>
 
-                                                        {payment.user.image ? (
+                                                        {payment.payer.image ? (
                                                             <Image
-                                                                source={{ uri: payment.user.image }}
+                                                                source={{ uri: payment.payer.image }}
                                                                 style={{ width: '100%', aspectRatio: 1 }}
                                                             />
                                                         ) : (
-                                                            payment.user.gender == "Male" ? (
+                                                            payment.payer.gender == "Male" ? (
                                                                 <Image
                                                                     style={{
                                                                         height: '100%',
@@ -249,7 +255,7 @@ export default function PaymentDetails() {
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
-                                                            {payment.user.name}
+                                                            {payment.payer.name}
                                                         </Text>
 
                                                         <Text
@@ -257,7 +263,7 @@ export default function PaymentDetails() {
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
-                                                            {payment.user.email}
+                                                            {payment.payer.email}
                                                         </Text>
 
 
@@ -268,12 +274,7 @@ export default function PaymentDetails() {
                                         </View>
                                     )}
 
-                                    {/* <View style={{ marginBottom: 30 }}>
-                                        <Text style={styles.title}>Club</Text>
-                                        <Text style={styles.value}>{payment.club?.name}</Text>
-                                    </View> */}
-
-                                    {payment.club && (
+                                    {payment.beneficiary && (
                                         <View style={{ marginVertical: 20 }}>
                                             <Text style={[styles.title, { marginBottom: 10 }]}>Recipient</Text>
                                             <View>
@@ -281,26 +282,45 @@ export default function PaymentDetails() {
                                                     style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
                                                     onPress={() => router.push({
                                                         pathname: '/profile/public',
-                                                        params: { id: payment.club._id },
+                                                        params: { id: payment.beneficiary._id },
                                                     })}>
-                                                    <View style={{ backgroundColor: '#FF4000', borderRadius: 30, width: 60, height: 60, overflow: 'hidden', marginRight: 20 }}>
-                                                        {payment.club.image ? (
+                                                    <View style={{
+                                                        backgroundColor: '#FF4000',
+                                                        borderRadius: 30,
+                                                        width: 60,
+                                                        height: 60,
+                                                        overflow: 'hidden',
+                                                        marginRight: 20
+                                                    }}>
+                                                        {payment.beneficiary.image ? (
                                                             <Image
-                                                                source={{ uri: payment.club.image }}
+                                                                source={{ uri: payment.beneficiary.image }}
                                                                 style={{ width: '100%', aspectRatio: 1 }}
-                                                                resizeMode="cover"
                                                             />
                                                         ) : (
-                                                            <Image
-                                                                source={require('../../assets/clublogo.png')}
-                                                                style={{
-                                                                    height: '100%',
-                                                                    width: undefined,
-                                                                    aspectRatio: 1,
-                                                                    resizeMode: 'contain',
-                                                                }}
-                                                                resizeMode="cover"
-                                                            />
+                                                            payment.beneficiary.gender == "Male" ? (
+                                                                <Image
+                                                                    style={{
+                                                                        height: '100%',
+                                                                        width: undefined,
+                                                                        aspectRatio: 1,
+                                                                        resizeMode: 'contain',
+                                                                    }}
+                                                                    source={require('../../assets/avatar.png')}
+                                                                    resizeMode="contain"
+                                                                />
+                                                            ) : (
+                                                                <Image
+                                                                    style={{
+                                                                        height: '100%',
+                                                                        width: undefined,
+                                                                        aspectRatio: 1,
+                                                                        resizeMode: 'contain',
+                                                                    }}
+                                                                    source={require('../../assets/avatarF.png')}
+                                                                    resizeMode="contain"
+                                                                />
+                                                            )
                                                         )}
                                                     </View>
 
@@ -311,7 +331,7 @@ export default function PaymentDetails() {
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
-                                                            {payment.club.name}
+                                                            {payment.beneficiary.name}
                                                         </Text>
 
                                                         <Text
@@ -319,7 +339,7 @@ export default function PaymentDetails() {
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
-                                                            {payment.club.sport.toString().replaceAll(',', ', ')}
+                                                            {payment.beneficiary.sport.toString().replaceAll(',', ', ')}
                                                         </Text>
 
 
@@ -335,7 +355,7 @@ export default function PaymentDetails() {
                     </View>
                 </ScrollView >
 
-                {payment && !payment.paid && (
+                {/* {payment && !payment.paid && (
                     <View style={styles.fixedBottomSection}>
                         <TouchableOpacity style={styles.fullButtonRow} onPress={settlePayment}>
                             <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
@@ -345,7 +365,7 @@ export default function PaymentDetails() {
                             <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                         </TouchableOpacity>
                     </View>
-                )}
+                )} */}
 
             </View >
         </KeyboardAvoidingView >

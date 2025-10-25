@@ -390,13 +390,14 @@ export default function Profile() {
     };
 
     const getFinancials = async () => {
-
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            console.log(userId)
+            // console.log(userId)
             const res = await fetch(`http://193.187.132.170:5000/api/financials/user`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+
+            // console.log(res)
 
             const data = await res.json();
             if (res.ok) {
@@ -847,9 +848,21 @@ export default function Profile() {
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+        const day = date.getDate().toString().padStart(2, '0'); // 01–31
+        const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+        const year = date.getFullYear();
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // convert 0–23 to 12-hour format
+        const hourStr = hours.toString().padStart(2, '0');
+
+        return `${day} ${month} ${year} ${hourStr}:${minutes} ${ampm}`;
     };
+
+
     const handleTopUp = async () => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
@@ -2657,7 +2670,7 @@ export default function Profile() {
                                                     style={styles.inventoryCard}
                                                     onPress={() => router.push({
                                                         pathname: '/payments/details',
-                                                        params: { id: item._id },
+                                                        params: { paymentid: item._id },
                                                     })}>
                                                     <View style={styles.inventoryHeader}>
                                                         <View style={styles.inventoryInfo}>
@@ -2682,7 +2695,7 @@ export default function Profile() {
                                                         </View>
                                                         <View style={styles.inventoryStats}>
                                                             <Text style={styles.inventoryStatValue}>
-                                                                {userId == item.payer._id && '-'}{item.amount}{item.currency}
+                                                                {userId == item.payer._id ? '-' : '+'}{item.amount} {item.currency}
                                                             </Text>
                                                             <Text style={styles.inventoryStatLabel}>Amount</Text>
                                                         </View>
