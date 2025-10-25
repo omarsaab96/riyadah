@@ -2,12 +2,13 @@
 // This worker will process pending payments in the Payment collection
 // and update user wallets accordingly.
 // It runs every minute to ensure timely processing of payments.
-
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import Payment from '../models/Payment.js';
 import User from '../models/User.js';
 import Wallet from '../models/Wallet.js';
 import { sendNotification } from '../utils/notificationService.js';
+dotenv.config();
 
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
