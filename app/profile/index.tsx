@@ -2762,6 +2762,97 @@ export default function Profile() {
     );
 }
 
+const TeamCard = ({ team }) => {
+    const router = useRouter();
+
+    return (
+        <TouchableOpacity
+            key={team._id}
+            style={styles.teamCard}
+            onPress={() => router.push({
+                pathname: '/teams/details',
+                params: { id: team._id },
+            })}
+        >
+            <View style={styles.teamHeader}>
+                {team.image ? (
+                    <Image
+                        source={{ uri: team.image }}
+                        style={styles.teamLogo}
+                        resizeMode="contain"
+                    />
+                ) : (
+                    <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
+                        <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
+                    </View>
+                )}
+                <View style={styles.teamInfo}>
+                    <Text style={styles.teamName}>{team.name}</Text>
+                    <Text style={styles.teamSport}>{team.sport}</Text>
+                </View>
+                <View style={styles.teamStats}>
+                    <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
+                    <Text style={styles.teamStatLabel}>Members</Text>
+                </View>
+            </View>
+
+            {team.coaches.length > 0 && (
+                <View style={styles.coachSection}>
+                    <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
+
+                    <View style={styles.coachInfoDiv}>
+                        {team.coaches.map((coach, index) => (
+                            <TouchableOpacity
+                                onPress={() => router.push({
+                                    pathname: '/profile/public',
+                                    params: { id: coach._id },
+                                })}
+                                key={index} style={styles.coachInfo}>
+                                {coach.image ? (
+                                    <Image
+                                        source={{ uri: coach.image }}
+                                        style={styles.coachAvatar}
+                                    />
+                                ) : (
+                                    <Image
+                                        source={require('../../assets/avatar.png')}
+                                        style={styles.coachAvatar}
+                                        resizeMode="contain"
+                                    />
+                                )}
+                                <Text style={styles.coachName}>{coach.name}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View >
+            )}
+
+            {/* <View style={styles.teamActions}>
+                <TouchableOpacity
+                    style={styles.teamActionButton}
+                    onPress={() => router.push({
+                        pathname: '/teams/members',
+                        params: { id: team._id },
+                    })}
+                >
+                    <FontAwesome5 name="users" size={18} color="#FF4000" />
+                    <Text style={styles.teamActionText}>Members</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.teamActionButton}
+                    onPress={() => router.push({
+                        pathname: '/teams/schedule',
+                        params: { id: team._id },
+                    })}
+                >
+                    <FontAwesome5 name="calendar-alt" size={18} color="#FF4000" />
+                    <Text style={styles.teamActionText}>Schedule</Text>
+                </TouchableOpacity>
+            </View> */}
+        </TouchableOpacity>
+    )
+};
 
 const styles = StyleSheet.create({
     container: {
