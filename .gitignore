@@ -84,3 +84,4 @@ riyadah-17700-5153a95f2924.json
 # @end expo-cli
 
 server/cronjobs/logs/*.log
+server/.env
