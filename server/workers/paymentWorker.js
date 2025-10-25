@@ -14,7 +14,7 @@ let isProcessing = false;
 
 const processPendingPayments = async () => {
     if (isProcessing) {
-        console.log('⚠️ Skipping run — still processing previous batch');
+        console.log('[paymentAuditor] Skipping run — still processing previous batch');
         return;
     }
 
@@ -25,18 +25,18 @@ const processPendingPayments = async () => {
     try {
         const pendingPayments = await Payment.find({ status: 'pending' }).session(session);
         if (pendingPayments.length === 0) {
-            console.log('✅ No pending payments.');
+            console.log('[paymentAuditor] No pending payments.');
             return;
         }
 
         for (const payment of pendingPayments) {
-            console.log(`🔄 Processing payment ${payment._id}...`);
+            console.log(`[paymentAuditor] Processing payment ${payment._id}...`);
 
             const payerWallet = await Wallet.findOne({ user: payment.payer }).session(session);
             const beneficiaryWallet = await Wallet.findOne({ user: payment.beneficiary }).session(session);
 
             if (!payerWallet || payerWallet.availableBalance < payment.amount) {
-                console.warn(`[FAIL] No wallet or insufficient funds.`);
+                console.warn(`[paymentAuditor] No wallet or insufficient funds.`);
                 payment.status = 'declined';
                 await payment.save({ session });
                 continue;
@@ -65,13 +65,13 @@ const processPendingPayments = async () => {
                 `${payerUser.name} sent you ${payment.amount} ${payment.currency}.`
             );
 
-            console.log(`[OK] Marked completed.`);
+            console.log(`[paymentAuditor] Marked completed.`);
         }
 
         await session.commitTransaction();
-        console.log('[DONE] All pending payments processed successfully.');
+        console.log('[paymentAuditor] All pending payments processed successfully.');
     } catch (err) {
-        console.error('❌ Worker error:', err);
+        console.error('[paymentAuditor] Worker error:', err);
         await session.abortTransaction();
     } finally {
         session.endSession();
@@ -81,3 +81,4 @@ const processPendingPayments = async () => {
 
 // Run every 1min (for testing)
 setInterval(processPendingPayments, 60000);
+console.log('[paymentAuditor] Worker started — checking every 1 min...');
