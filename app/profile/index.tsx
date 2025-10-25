@@ -61,7 +61,7 @@ export default function Profile() {
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAthlete = ['Profile', 'Schedule', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
-    const tabsCoach = ['Profile', 'Teams', 'Schedule','Financials'];
+    const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -308,6 +308,7 @@ export default function Profile() {
         }
 
         if (user.type == "Athlete" && user.role == "Coach") {
+
             try {
                 const res = await fetch(`http://193.187.132.170:5000/api/schedules/user/${userId}`, {
                     method: 'GET',
@@ -862,7 +863,6 @@ export default function Profile() {
         return `${day} ${month} ${year} ${hourStr}:${minutes} ${ampm}`;
     };
 
-
     const handleTopUp = async () => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
@@ -889,7 +889,6 @@ export default function Profile() {
         }
     };
 
-
     return (
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
@@ -903,7 +902,7 @@ export default function Profile() {
                     {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
                     {!loading && <Text style={styles.pageDesc}>
-                        {user.role ? `${user.role}` : `${user?.type}`}
+                        {user.role != null ? user.role : user.type}
                     </Text>}
 
                     {loading &&
@@ -1003,7 +1002,7 @@ export default function Profile() {
             </Animated.View>
 
             {/* Tabs for Athlete */}
-            {!loading && user?.type === "Athlete" && user.role != "Coach" && (
+            {!loading && user && (user.type == "Athlete" && user.role != "Coach") && (
                 <View style={styles.tabs}>
                     <ScrollView
                         horizontal
