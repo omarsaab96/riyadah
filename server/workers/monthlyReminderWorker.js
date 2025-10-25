@@ -1,6 +1,6 @@
 // workers/paymentReminderWorker.js
-//This worker will notify all users with type Athlete with role not coach and are not independent
-//to pay their monthly club subscription fee on the 1st of each month.
+// Sends monthly payment reminders to athletes on the 1st of each month
+// after 10am, in batches every 5 minutes.
 
 require('dotenv').config({ path: __dirname + '/../.env' });
 const mongoose = require('mongoose');
@@ -9,45 +9,62 @@ const { sendNotification } = require('../utils/notificationService');
 
 const MONGO_URI =
   process.env.MONGO_URI ||
-  'mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0';
+  'mongodb+srv://...yourconnection...';
 
-const TICK_MS = 3600 * 1000; // check every 1h (safe interval)
+const TICK_MS = 5 * 60 * 1000; // check every 5 min
+const BATCH_SIZE = 200;        // number of users to notify each tick
+
 let isProcessing = false;
-let lastRunKey = null; // YYYY-MM for once-per-month check
+let currentMonthKey = null; // "2025-10" etc.
 
-mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('[MonthlyReminder] MongoDB connected'))
   .catch((err) => {
     console.error('[MonthlyReminder] MongoDB connection error:', err.message);
     process.exit(1);
   });
 
+// keep a small in-memory progress set for the current month
+let notifiedIds = new Set();
+
 async function sendPaymentReminders() {
   const now = new Date();
+  const day = now.getDate();
+  const hour = now.getHours();
+
+  // Only on the 1st of each month between 10–14h
+  if (day !== 1 || hour < 10) return;
+
   const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  if (lastRunKey === ym) return; // already ran this month
-  if (now.getDate() !== 1) return; // only on the 1st
 
-  console.log(`[MonthlyReminder] Starting monthly payment reminders...`);
-  lastRunKey = ym;
+  if (currentMonthKey !== ym) {
+    currentMonthKey = ym;
+    notifiedIds.clear();
+    console.log(`[MonthlyReminder] Starting monthly reminders for ${ym}`);
+  }
 
-  const athletes = await User.find({
+  // Query only users not yet notified this month (in memory filter)
+  const filter = {
     type: 'Athlete',
     role: { $ne: 'Coach' },
     clubs: { $exists: true, $not: { $size: 0 } },
     expoPushToken: { $ne: null },
-  })
+    _id: { $nin: Array.from(notifiedIds) },
+  };
+
+  const athletes = await User.find(filter)
     .select('_id name expoPushToken clubs')
+    .limit(BATCH_SIZE)
     .lean();
 
   if (!athletes.length) {
-    console.log('✅ No athletes found.');
+    console.log(`[MonthlyReminder] All athletes processed for ${ym}.`);
     return;
   }
 
-  let successCount = 0;
+  console.log(`[MonthlyReminder] Sending ${athletes.length} reminders (batch)...`);
 
+  let successCount = 0;
   for (const athlete of athletes) {
     try {
       await sendNotification(
@@ -58,12 +75,13 @@ async function sendPaymentReminders() {
         true
       );
       successCount++;
+      notifiedIds.add(athlete._id.toString());
     } catch (err) {
       console.error(`[MonthlyReminder] Failed to notify ${athlete._id}:`, err.message);
     }
   }
 
-  console.log(`[MonthlyReminder] Sent ${successCount}/${athletes.length} payment reminders.`);
+  console.log(`[MonthlyReminder] Sent ${successCount}/${athletes.length} in this batch.`);
 }
 
 async function tick() {
@@ -82,4 +100,4 @@ async function tick() {
 }
 
 setInterval(() => tick(), TICK_MS);
-console.log('[MonthlyReminder] Monthly payment reminder worker started...');
+console.log('[MonthlyReminder] Worker started — checking every 5 min...');
