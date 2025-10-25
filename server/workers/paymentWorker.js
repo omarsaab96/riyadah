@@ -67,5 +67,5 @@ const processPendingPayments = async () => {
     }
 };
 
-// Run every 10 seconds (for testing)
-setInterval(processPendingPayments, 10000);
+// Run every 1min (for testing)
+setInterval(processPendingPayments, 60000);
