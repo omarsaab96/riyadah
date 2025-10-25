@@ -8,8 +8,8 @@ Changes:
 ✔ 7.	Remove seconds from event start and end times. @done(25-10-14 23:46)
 ✔ 8.	Fix server error during event creation or update. @done(25-10-14 23:46)
 ✔ 9.	Add Google Maps link integration for event locations. @done(25-10-19 20:03)
-✘ 10.	Add payments dashboard for athletes to pay. @needPaymentGateway
-☐ 11.	Add admin payments dashboard.
+✔ 10.	Add payments dashboard for athletes to pay. @done(25-10-25 12:30)
+✔ 11.	Add admin payments dashboard. @done(25-10-25 12:31)
 ✔ 12.	Automate monthly payment reminders via push notifications. @on_the_1st_of_everymonth_a_notification_will_be_sent @done(25-10-20 23:04)
 ✔ 13.	Add “Amount” field in financials section and make all payments in EGP @done(25-10-20 23:18)
 ☐ 14.	Add attendance dashboard for admins and coaches. 
@@ -25,8 +25,8 @@ Changes:
 
 
 Payments :
-	should have balance and available balance
-	should have history
+	✔ should have balance and available balance @done(25-10-25 12:31)
+	✔ should have history @done(25-10-25 12:31)
 
 attendance:
 	✔ should show on coach and admin @done(25-10-24 12:41)

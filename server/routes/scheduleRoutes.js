@@ -304,13 +304,15 @@ router.post(
                 ? undefined
                 : `series_${crypto.randomBytes(8).toString('hex')}`;
 
+            const creator = await User.findById(req.user._id).select('_id type role isStaff');
+
             // Create the FIRST event only
             const first = new Schedule({
                 title, description,
                 date, startTime, endTime,
                 eventType, team,
-                club: req.user._id,
-                createdBy: req.user._id,
+                club: creator.type=="Club"? req.user._id : creator.isStaff[0],
+                createdBy: creator._id,
                 repeats,
                 seriesId,
                 occurrenceIndex: seriesId ? 0 : undefined,

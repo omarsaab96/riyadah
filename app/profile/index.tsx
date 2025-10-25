@@ -61,7 +61,7 @@ export default function Profile() {
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAthlete = ['Profile', 'Schedule', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
-    const tabsCoach = ['Profile', 'Teams', 'Schedule'];
+    const tabsCoach = ['Profile', 'Teams', 'Schedule','Financials'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -285,7 +285,7 @@ export default function Profile() {
 
         if (user.type == "Club") {
             try {
-                const res = await fetch(`http://193.187.132.170:5000/api/schedules`, {
+                const res = await fetch(`http://193.187.132.170:5000/api/schedules/club/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
@@ -294,7 +294,7 @@ export default function Profile() {
                 });
                 const response = await res.json();
 
-                console.log(response)
+                // console.log(response)
 
                 if (response.success) {
                     setSchedule(response.data)
@@ -2763,196 +2763,6 @@ export default function Profile() {
     );
 }
 
-const TeamCard = ({ userId, user, team, deleteTeam, cancelDeleteTeam, loadingDelete, handleDeleteTeam, getAnimatedValue }) => {
-    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-    const router = useRouter();
-
-    const animVal = getAnimatedValue(team._id);
-
-    const animatedStyle = {
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'absolute',
-        right: animVal.interpolate({
-            inputRange: [0, 1],
-            outputRange: [60, 0],
-        }),
-        bottom: animVal.interpolate({
-            inputRange: [0, 1],
-            outputRange: [30, 0],
-        }),
-        backgroundColor: 'rgba(0,0,0,1)',
-        borderRadius: 12,
-        width: animVal.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, dimensions.width],
-        }),
-        height: animVal.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, dimensions.height],
-        }),
-        opacity: animVal.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 1],
-        })
-    };
-
-    return (
-        <TouchableOpacity
-            key={team._id}
-            onLayout={(event) => {
-                const { width, height } = event.nativeEvent.layout;
-                setDimensions({ width, height });
-            }}
-            style={styles.teamCard}
-            onPress={() => router.push({
-                pathname: '/teams/details',
-                params: { id: team._id },
-            })}
-        >
-            <View style={styles.teamHeader}>
-                {team.image ? (
-                    <Image
-                        source={{ uri: team.image }}
-                        style={styles.teamLogo}
-                        resizeMode="contain"
-                    />
-                ) : (
-                    <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
-                        <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
-                    </View>
-                )}
-                <View style={styles.teamInfo}>
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamSport}>{team.sport}</Text>
-                </View>
-                <View style={styles.teamStats}>
-                    <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
-                    <Text style={styles.teamStatLabel}>Members</Text>
-                </View>
-            </View>
-
-            {team.coaches.length > 0 && (
-                <View style={styles.coachSection}>
-                    <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
-
-                    <View style={styles.coachInfoDiv}>
-                        {team.coaches.map((coach, index) => (
-                            <TouchableOpacity
-                                onPress={() => router.push({
-                                    pathname: '/profile/public',
-                                    params: { id: coach._id },
-                                })}
-                                key={index} style={styles.coachInfo}>
-                                {coach.image ? (
-                                    <Image
-                                        source={{ uri: coach.image }}
-                                        style={styles.coachAvatar}
-                                    />
-                                ) : (
-                                    <Image
-                                        source={require('../../assets/avatar.png')}
-                                        style={styles.coachAvatar}
-                                        resizeMode="contain"
-                                    />
-                                )}
-                                <Text style={styles.coachName}>{coach.name}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </View >
-            )}
-
-            <View style={styles.teamActions}>
-                <TouchableOpacity
-                    style={styles.teamActionButton}
-                    onPress={() => router.push({
-                        pathname: '/teams/members',
-                        params: { id: team._id },
-                    })}
-                >
-                    <FontAwesome5 name="users" size={18} color="#FF4000" />
-                    <Text style={styles.teamActionText}>Members</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.teamActionButton}
-                    onPress={() => router.push({
-                        pathname: '/teams/schedule',
-                        params: { id: team._id },
-                    })}
-                >
-                    <FontAwesome5 name="calendar-alt" size={18} color="#FF4000" />
-                    <Text style={styles.teamActionText}>Schedule</Text>
-                </TouchableOpacity>
-
-                {userId == user._id && user.type == "Club" && <TouchableOpacity
-                    style={styles.teamActionButton}
-                    onPress={() => deleteTeam(team._id)}
-                >
-                    <MaterialCommunityIcons name="delete" size={18} color="#FF4000" />
-                    <Text style={styles.teamActionText}>Delete</Text>
-                </TouchableOpacity>}
-            </View>
-
-            <Animated.View style={animatedStyle}>
-                <View style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                    {loadingDelete.includes(team._id) ? (
-                        <ActivityIndicator size="small" color={'#FF4000'} style={{ transform: [{ scale: 1.5 }] }} />
-                    ) : (
-                        <Animated.View style={{
-                            opacity: animVal.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 1],
-                            }),
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <Text style={{ color: '#FF4000', fontFamily: 'Bebas', fontSize: 22, marginBottom: 30 }}>
-                                Sure?
-                            </Text>
-                            <View style={{ flexDirection: 'row', gap: 10 }}>
-                                <TouchableOpacity onPress={() => handleDeleteTeam(team._id)}>
-                                    <Text
-                                        style={{
-                                            fontFamily: 'Bebas',
-                                            fontSize: 22,
-                                            color: '#000',
-                                            paddingHorizontal: 5,
-                                            backgroundColor: '#6ef99dff',
-                                            borderRadius: 5,
-                                        }}
-                                    >
-                                        Yes
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        cancelDeleteTeam(team._id);
-                                    }}
-                                >
-                                    <Text
-                                        style={{
-                                            fontFamily: 'Bebas',
-                                            fontSize: 22,
-                                            color: '#000',
-                                            paddingHorizontal: 8,
-                                            backgroundColor: '#f97d7dff',
-                                            borderRadius: 5,
-                                        }}
-                                    >
-                                        No
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </Animated.View>
-                    )}
-                </View>
-            </Animated.View>
-        </TouchableOpacity>
-    )
-};
 
 const styles = StyleSheet.create({
     container: {
