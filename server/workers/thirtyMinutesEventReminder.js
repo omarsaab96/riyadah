@@ -26,8 +26,6 @@ async function sendEventReminders() {
   const now = new Date();
   const next30Min = new Date(now.getTime() + 30 * 60 * 1000);
 
-  console.log(`[30MinutesEventsReminder] Checking events starting within 30 min...`);
-
   const events = await Schedule.find({
     status: 'scheduled',
     startTime: { $gte: now, $lte: next30Min },
