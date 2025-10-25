@@ -38,7 +38,7 @@ export default function AddPayment() {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchindex, setSearchindex] = useState(0);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [paymentAmount, setPaymentAmount] = useState(null);
+    const [paymentAmount, setPaymentAmount] = useState<Number|null>(null);
     const [paymentCurrency, setPaymentCurrency] = useState('EGP');
     const [paymentNote, setPaymentNote] = useState('');
     const [paymentDueDate, setPaymentDueDate] = useState(new Date());
@@ -180,7 +180,7 @@ export default function AddPayment() {
         const paymentObject = {
             beneficiary: selectedUser._id,
             payer: userId,
-            amount: paymentAmount,
+            amount: parseInt(paymentAmount),
             currency:paymentCurrency,
             type: paymentType == "Other" ? paymentTypeOther : paymentType,
             note: paymentNote,
@@ -400,7 +400,7 @@ export default function AddPayment() {
                                         placeholderTextColor={"#888"}
                                         keyboardType="numeric"
                                         value={paymentAmount}
-                                        onChangeText={setPaymentAmount}
+                                        onChangeText={(text)=>{setPaymentAmount(parseInt(text))}}
                                     />
                                     <View style={[styles.pickerContainer, { flex: 1 }]}>
                                         <Picker

@@ -29,7 +29,8 @@ router.get('/user', authenticateToken, async (req, res) => {
       ]
     })
       .populate('payer', '_id name email image')
-      .populate('beneficiary', '_id name email image');
+      .populate('beneficiary', '_id name email image')
+      .sort({ createdAt: -1 }); // 👈 correct syntax
 
     res.status(200).json({ success: true, data: payments });
   } catch (err) {
