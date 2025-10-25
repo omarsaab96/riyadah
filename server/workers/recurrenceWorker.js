@@ -87,7 +87,7 @@ async function expandSeries(job) {
 // === TICK ===
 async function tick() {
   if (isProcessing) {
-    console.log('⏳ Worker busy, skipping this tick...');
+    console.log('[eventExpander] Worker busy, skipping this tick...');
     return;
   }
 
@@ -105,13 +105,13 @@ async function tick() {
       return;
     }
 
-    console.log(`⚙️ Expanding recurrence for job ${job._id}`);
+    console.log(`[eventExpander] Expanding recurrence for job ${job._id}`);
     await expandSeries(job);
 
     await Job.updateOne({ _id: job._id }, { $set: { status: 'done', lastError: null } });
-    console.log(`✅ Job ${job._id} done`);
+    console.log(`Job ${job._id} done`);
   } catch (err) {
-    console.error('❌ expand-series error:', err.message);
+    console.error('[eventExpander] expand-series error:', err.message);
   } finally {
     isProcessing = false;
   }
@@ -119,3 +119,5 @@ async function tick() {
 
 // === MAIN LOOP ===
 setInterval(() => tick(), TICK_MS);
+
+console.log('[eventExpander] Recurrence Worker started — checking every 3 seconds...');
