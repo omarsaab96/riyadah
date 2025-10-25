@@ -3,11 +3,11 @@
 // and update user wallets accordingly.
 // It runs every minute to ensure timely processing of payments.
 
-const mongoose = require('mongoose');
-const Payment = require('../models/Payment');
-const User = require('../models/User');
-const Wallet = require('../models/Wallet');
-const { sendNotification } = require('../utils/notificationService');
+import mongoose from 'mongoose';
+import Payment from '../models/Payment.js';
+import User from '../models/User.js';
+import Wallet from '../models/Wallet.js';
+import { sendNotification } from '../utils/notificationService.js';
 
 await mongoose.connect('mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0');
 let isProcessing = false;
