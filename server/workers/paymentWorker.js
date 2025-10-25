@@ -6,8 +6,15 @@ import Wallet from '../models/Wallet.js';
 import { sendNotification } from '../utils/notificationService.js';
 
 await mongoose.connect('mongodb+srv://omarsaab96:heBNAngdPP6paAHk@cluster0.goljzz8.mongodb.net/riyadahDB?retryWrites=true&w=majority&appName=Cluster0');
+let isProcessing = false;
 
 const processPendingPayments = async () => {
+    if (isProcessing) {
+        console.log('⚠️ Skipping run — still processing previous batch');
+        return;
+    }
+
+    isProcessing = true;
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -64,6 +71,7 @@ const processPendingPayments = async () => {
         await session.abortTransaction();
     } finally {
         session.endSession();
+        isProcessing = false; 
     }
 };
 
