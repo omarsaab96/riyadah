@@ -10,13 +10,12 @@ const Team = require('../models/Team');
 const User = require('../models/User');
 const { sendNotification } = require('../utils/notificationService');
 
-const MONGO_URI =process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI;
 
 const TICK_MS = 60 * 1000; // every minute
 let isProcessing = false;
 
-mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('[30MinutesEventsReminder] MongoDB connected'))
   .catch((err) => {
     console.error('[30MinutesEventsReminder] MongoDB connection error:', err.message);

@@ -10,10 +10,8 @@ import Wallet from '../models/Wallet.js';
 import { sendNotification } from '../utils/notificationService.js';
 dotenv.config();
 
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log('[paymentAuditor] Connected to MongoDB'))
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('[paymentAuditor] Connected to MongoDB'))
     .catch(err => console.error('[paymentAuditor] MongoDB connection error:', err));
 
 let isProcessing = false;
