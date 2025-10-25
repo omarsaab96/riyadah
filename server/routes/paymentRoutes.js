@@ -54,35 +54,68 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 router.post('/', authenticateToken, async (req, res) => {
-  try {
-    const { payer, beneficiary, type, amount, currency, note,status } = req.body;
+  const session = await Wallet.startSession(); // Start a Mongoose session
+  session.startTransaction();
 
-    //check if balance of payer has sufficient funds
-    const wallet = await Wallet.findOne({ user: payer });
-    
-    if (!wallet || wallet.availableBalance < amount) {
-      return res.status(400).json({ success: false, message: 'Insufficient funds' });
-    }else{
-      //deduct amount from payer wallet
-      wallet.availableBalance -= amount;
-      await wallet.save();
+  try {
+    const { payer, beneficiary, type, amount, currency, note, status } = req.body;
+
+    // Find or create wallets inside the session
+    let payerWallet = await Wallet.findOne({ user: payer }).session(session);
+    let beneficiaryWallet = await Wallet.findOne({ user: beneficiary }).session(session);
+
+    if (!payerWallet) {
+      payerWallet = await Wallet.create(
+        [{ user: payer, balance: 0, availableBalance: 0, currency: 'EGP' }],
+        { session }
+      );
+      payerWallet = payerWallet[0];
     }
 
-    const payment = await Payment.create({
-      payer,
-      beneficiary,
-      amount,
-      currency,
-      type,
-      note,
-      status
-    });
+    if (!beneficiaryWallet) {
+      beneficiaryWallet = await Wallet.create(
+        [{ user: beneficiary, balance: 0, availableBalance: 0, currency: 'EGP' }],
+        { session }
+      );
+      beneficiaryWallet = beneficiaryWallet[0];
+    }
 
-    res.status(201).json({ success: true, data: payment });
+    // Check sufficient funds
+    if (payerWallet.availableBalance < amount) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ success: false, message: 'Insufficient funds' });
+    }
+
+    // Deduct from payer
+    payerWallet.availableBalance -= amount;
+    await payerWallet.save({ session });
+
+    // Add to beneficiary
+    beneficiaryWallet.balance += amount;
+    beneficiaryWallet.availableBalance += amount;
+    await beneficiaryWallet.save({ session });
+
+    // Create payment record (only if both saves succeeded)
+    const payment = await Payment.create(
+      [{ payer, beneficiary, amount, currency, type, note, status }],
+      { session }
+    );
+
+    // ✅ Commit transaction if all succeeded
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(201).json({ success: true, data: payment[0] });
   } catch (err) {
+    // ❌ Rollback changes if anything fails
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Transaction failed:', err);
     res.status(400).json({ success: false, message: err.message });
   }
 });
+
 
 router.put('/:id/pay', authenticateToken, async (req, res) => {
   try {

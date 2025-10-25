@@ -2630,11 +2630,11 @@ export default function Profile() {
                                     {wallet != null && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.balanceTitle}>Balance</Text>
-                                            <Text style={styles.balanceAmount}>{wallet.currency}{wallet.balance}</Text>
+                                            <Text style={styles.balanceAmount}>{wallet.currency} {wallet.balance}</Text>
                                         </View>
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.balanceTitle}>Available Balance</Text>
-                                            <Text style={styles.balanceAmount}>{wallet.currency}{wallet.availableBalance}</Text>
+                                            <Text style={styles.balanceAmount}>{wallet.currency} {wallet.availableBalance}</Text>
                                         </View>
                                     </View>}
 
@@ -2704,12 +2704,19 @@ export default function Profile() {
                                                     <View style={styles.inventoryDetails}>
                                                         <View style={styles.inventoryDetailRow}>
                                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                <Text style={styles.inventoryDetailLabel}>date:</Text>
+                                                                <Octicons name="calendar" size={16} color="black" />
                                                                 <Text style={styles.inventoryDetailValue}>{formatDate(item.createdAt)}</Text>
                                                             </View>
-                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                {/* <Text style={styles.inventoryDetailLabel}>status:</Text> */}
-                                                                <Text style={[styles.inventoryDetailValue, { textTransform: 'capitalize' }]}>{item.status}</Text>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
+                                                                {item.status == 'pending' && <Octicons name="unverified" size={16} color="#ffc400" />}
+                                                                {item.status == 'completed' && <Octicons name="verified" size={16} color="#009933" />}
+                                                                {item.status == 'declined' && <Octicons name="x-circle" size={16} color="#FF4000" />}
+                                                                <Text style={[styles.inventoryDetailValue, {
+                                                                    textTransform: 'capitalize',
+                                                                    color: item.status == 'completed' ? '#009933' : item.status == 'pending' ? '#ffc400' : '#FF4000'
+                                                                }]}>
+                                                                    {item.status}
+                                                                </Text>
                                                             </View>
                                                         </View>
                                                     </View>

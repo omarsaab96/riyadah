@@ -1,4 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Octicons from '@expo/vector-icons/Octicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -114,6 +116,23 @@ export default function PaymentDetails() {
         }
     }
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+
+        const day = date.getDate().toString().padStart(2, '0'); // 01–31
+        const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+        const year = date.getFullYear();
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // convert 0–23 to 12-hour format
+        const hourStr = hours.toString().padStart(2, '0');
+
+        return `${day} ${month} ${year} ${hourStr}:${minutes} ${ampm}`;
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -170,103 +189,122 @@ export default function PaymentDetails() {
                         {payment && (
                             <View>
                                 <View style={{ marginBottom: 30 }}>
-                                    <View style={[styles.row, { alignItems: 'center' }]}>
-                                        <Text style={styles.title}>Status</Text>
-                                        <Text style={[styles.value, {
-                                            padding: 5,
-                                            color: 'white',
-                                            borderRadius: 5,
-                                            backgroundColor: payment.paid ? '#009933' : '#FF4000'
-                                        }]}>
-                                            {payment.status == 'completed' ? `Paid on ${new Date(payment.createdAt).toLocaleDateString()}` : 'Pending'}
-                                        </Text>
-                                    </View>
-
-                                    {/* {!payment.paid && <View style={styles.row}>
-                                        <Text style={styles.title}>Due Date</Text>
-                                        <Text style={styles.value}>
-                                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : 'N/A'}
-                                        </Text>
-                                    </View>} */}
-
                                     <View style={styles.row}>
                                         <Text style={styles.title}>Amount</Text>
                                         <Text style={styles.value}>{payment.amount} {payment.currency}</Text>
                                     </View>
+
+                                    <View style={styles.row}>
+                                        <Text style={styles.title}>Type</Text>
+                                        <Text style={styles.value}>{payment.type}</Text>
+                                    </View>
+
+                                    <View style={styles.row}>
+                                        <Text style={styles.title}>Date</Text>
+                                        <Text style={styles.value}>{formatDate(payment.createdAt)}</Text>
+                                    </View>
+
+                                    <View style={styles.row}>
+                                        <Text style={styles.title}>Note</Text>
+                                        <Text style={styles.value}>{payment.note ? payment.note : '-'}</Text>
+                                    </View>
+
+                                    <View style={[styles.row, { alignItems: 'center', marginBottom: 30 }]}>
+                                        <Text style={styles.title}>Status</Text>
+                                        <View style={{flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                            {payment.status == 'pending' && <Octicons name="unverified" size={16} color="#ffc400" />}
+                                            {payment.status == 'completed' && <Octicons name="verified" size={16} color="#009933" />}
+                                            {payment.status == 'declined' && <Octicons name="x-circle" size={16} color="#FF4000" />}
+                                            <Text style={[styles.value, {
+                                                textTransform: 'capitalize',
+                                                color: payment.status == 'completed' ? '#009933' : payment.status == 'pending' ? '#ffc400' : '#FF4000'
+                                            }]}>
+                                                {payment.status}
+                                            </Text>
+                                        </View>
+                                    </View>
                                 </View>
 
-                                <View>
-                                    {payment.note && (
-                                        <View style={{ marginBottom: 30 }}>
-                                            <Text style={styles.title}>Note</Text>
-                                            <Text style={styles.value}>{payment.note}</Text>
-                                        </View>
-                                    )}
-
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     {payment.payer && (
-                                        <View style={{ marginVertical: 20 }}>
+                                        <View style={{ width: '40%' }}>
                                             <Text style={[styles.title, { marginBottom: 10 }]}>Payer</Text>
                                             <View>
                                                 <TouchableOpacity
-                                                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                                    style={{ alignItems: 'center', backgroundColor: '#eeeeee', padding: 10, borderRadius: 8 }}
                                                     onPress={() => router.push({
                                                         pathname: '/profile/public',
                                                         params: { id: payment.payer._id },
                                                     })}>
-                                                    <View style={{ backgroundColor: '#FF4000', borderRadius: 30, width: 60, height: 60, overflow: 'hidden', marginRight: 20 }}>
 
+                                                    <View style={{ backgroundColor: '#FF4000', borderRadius: 30, width: 60, height: 60, overflow: 'hidden', marginBottom: 10 }}>
                                                         {payment.payer.image ? (
                                                             <Image
                                                                 source={{ uri: payment.payer.image }}
                                                                 style={{ width: '100%', aspectRatio: 1 }}
                                                             />
                                                         ) : (
-                                                            payment.payer.gender == "Male" ? (
-                                                                <Image
-                                                                    style={{
-                                                                        height: '100%',
-                                                                        width: undefined,
-                                                                        aspectRatio: 1,
-                                                                        resizeMode: 'contain',
-                                                                    }}
-                                                                    source={require('../../assets/avatar.png')}
-                                                                    resizeMode="contain"
-                                                                />
-                                                            ) : (
-                                                                <Image
-                                                                    style={{
-                                                                        height: '100%',
-                                                                        width: undefined,
-                                                                        aspectRatio: 1,
-                                                                        resizeMode: 'contain',
-                                                                    }}
-                                                                    source={require('../../assets/avatarF.png')}
-                                                                    resizeMode="contain"
-                                                                />
-                                                            )
+                                                            <>
+                                                                {payment.payer.type !== 'Club' && payment.payer.gender === 'Male' && (
+                                                                    <Image
+                                                                        style={{
+                                                                            height: '100%',
+                                                                            width: undefined,
+                                                                            aspectRatio: 1,
+                                                                            resizeMode: 'contain',
+                                                                        }}
+                                                                        source={require('../../assets/avatar.png')}
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                )}
+
+                                                                {payment.payer.type !== 'Club' && payment.payer.gender === 'Female' && (
+                                                                    <Image
+                                                                        style={{
+                                                                            height: '100%',
+                                                                            width: undefined,
+                                                                            aspectRatio: 1,
+                                                                            resizeMode: 'contain',
+                                                                        }}
+                                                                        source={require('../../assets/avatarF.png')}
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                )}
+
+                                                                {payment.payer.type == 'Club' && (
+                                                                    <Image
+                                                                        style={{
+                                                                            height: '100%',
+                                                                            width: undefined,
+                                                                            aspectRatio: 1,
+                                                                            resizeMode: 'contain',
+                                                                        }}
+                                                                        source={require('../../assets/club.png')}
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                )}
+                                                            </>
                                                         )}
+
                                                     </View>
 
 
-                                                    <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
-
+                                                    <View style={{ flex: 1, width: '100%' }}>
                                                         <Text
-                                                            style={[styles.paragraph, { fontWeight: 'bold' }]}
+                                                            style={[styles.paragraph, { fontWeight: 'bold', textAlign: 'center' }]}
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
                                                             {payment.payer.name}
                                                         </Text>
 
-                                                        <Text
-                                                            style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
-                                                            numberOfLines={1}
-                                                            ellipsizeMode="tail"
-                                                        >
-                                                            {payment.payer.email}
-                                                        </Text>
-
-
+                                                        {/* <Text
+                                                                style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
+                                                                numberOfLines={1}
+                                                                ellipsizeMode="tail"
+                                                            >
+                                                                {payment.payer.email}
+                                                            </Text> */}
                                                     </View>
                                                 </TouchableOpacity>
                                             </View>
@@ -274,73 +312,88 @@ export default function PaymentDetails() {
                                         </View>
                                     )}
 
+                                    <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 30 }}>
+                                        <MaterialIcons name="arrow-forward" size={36} color="#FF4000" />
+                                    </View>
+
                                     {payment.beneficiary && (
-                                        <View style={{ marginVertical: 20 }}>
-                                            <Text style={[styles.title, { marginBottom: 10 }]}>Recipient</Text>
+                                        <View style={{ width: '40%' }}>
+                                            <Text style={[styles.title, { marginBottom: 10 }]}>beneficiary</Text>
                                             <View>
                                                 <TouchableOpacity
-                                                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                                    style={{ alignItems: 'center', backgroundColor: '#eeeeee', padding: 10, borderRadius: 8 }}
                                                     onPress={() => router.push({
                                                         pathname: '/profile/public',
                                                         params: { id: payment.beneficiary._id },
                                                     })}>
-                                                    <View style={{
-                                                        backgroundColor: '#FF4000',
-                                                        borderRadius: 30,
-                                                        width: 60,
-                                                        height: 60,
-                                                        overflow: 'hidden',
-                                                        marginRight: 20
-                                                    }}>
+
+                                                    <View style={{ backgroundColor: '#FF4000', borderRadius: 30, width: 60, height: 60, overflow: 'hidden', marginBottom: 10 }}>
                                                         {payment.beneficiary.image ? (
                                                             <Image
                                                                 source={{ uri: payment.beneficiary.image }}
                                                                 style={{ width: '100%', aspectRatio: 1 }}
                                                             />
                                                         ) : (
-                                                            payment.beneficiary.gender == "Male" ? (
-                                                                <Image
-                                                                    style={{
-                                                                        height: '100%',
-                                                                        width: undefined,
-                                                                        aspectRatio: 1,
-                                                                        resizeMode: 'contain',
-                                                                    }}
-                                                                    source={require('../../assets/avatar.png')}
-                                                                    resizeMode="contain"
-                                                                />
-                                                            ) : (
-                                                                <Image
-                                                                    style={{
-                                                                        height: '100%',
-                                                                        width: undefined,
-                                                                        aspectRatio: 1,
-                                                                        resizeMode: 'contain',
-                                                                    }}
-                                                                    source={require('../../assets/avatarF.png')}
-                                                                    resizeMode="contain"
-                                                                />
-                                                            )
+                                                            <>
+                                                                {payment.beneficiary.type !== 'Club' && payment.beneficiary.gender === 'Male' && (
+                                                                    <Image
+                                                                        style={{
+                                                                            height: '100%',
+                                                                            width: undefined,
+                                                                            aspectRatio: 1,
+                                                                            resizeMode: 'contain',
+                                                                        }}
+                                                                        source={require('../../assets/avatar.png')}
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                )}
+
+                                                                {payment.beneficiary.type !== 'Club' && payment.beneficiary.gender === 'Female' && (
+                                                                    <Image
+                                                                        style={{
+                                                                            height: '100%',
+                                                                            width: undefined,
+                                                                            aspectRatio: 1,
+                                                                            resizeMode: 'contain',
+                                                                        }}
+                                                                        source={require('../../assets/avatarF.png')}
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                )}
+
+                                                                {payment.beneficiary.type == 'Club' && (
+                                                                    <Image
+                                                                        style={{
+                                                                            height: '100%',
+                                                                            width: undefined,
+                                                                            aspectRatio: 1,
+                                                                            resizeMode: 'contain',
+                                                                        }}
+                                                                        source={require('../../assets/club.png')}
+                                                                        resizeMode="contain"
+                                                                    />
+                                                                )}
+                                                            </>
                                                         )}
+
                                                     </View>
 
-                                                    <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
-
+                                                    <View style={{ flex: 1, width: '100%' }}>
                                                         <Text
-                                                            style={[styles.paragraph, { fontWeight: 'bold' }]}
+                                                            style={[styles.paragraph, { fontWeight: 'bold', textAlign: 'center' }]}
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
                                                             {payment.beneficiary.name}
                                                         </Text>
 
-                                                        <Text
+                                                        {/* <Text
                                                             style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
                                                             numberOfLines={1}
                                                             ellipsizeMode="tail"
                                                         >
                                                             {payment.beneficiary.sport.toString().replaceAll(',', ', ')}
-                                                        </Text>
+                                                        </Text> */}
 
 
                                                     </View>
