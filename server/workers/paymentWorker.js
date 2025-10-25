@@ -24,11 +24,9 @@ const processPendingPayments = async () => {
     }
 
     isProcessing = true;
-    const session = await mongoose.startSession();
-    session.startTransaction();
 
     try {
-        const pendingPayments = await Payment.find({ status: 'pending' }).session(session);
+        const pendingPayments = await Payment.find({ status: 'pending' });
         if (pendingPayments.length === 0) {
             console.log('[paymentAuditor] No pending payments.');
             return;
@@ -37,8 +35,8 @@ const processPendingPayments = async () => {
         for (const payment of pendingPayments) {
             console.log(`[paymentAuditor] Processing payment ${payment._id}...`);
 
-            const payerWallet = await Wallet.findOne({ user: payment.payer }).session(session);
-            const beneficiaryWallet = await Wallet.findOne({ user: payment.beneficiary }).session(session);
+            const payerWallet = await Wallet.findOne({ user: payment.payer });
+            const beneficiaryWallet = await Wallet.findOne({ user: payment.beneficiary });
 
             if (!payerWallet || payerWallet.availableBalance < payment.amount) {
                 console.warn(`[paymentAuditor] No wallet or insufficient funds.`);
@@ -60,8 +58,8 @@ const processPendingPayments = async () => {
             payment.completedAt = new Date();
             await payment.save({ session });
 
-            const payerUser = await User.findOne({ _id: payment.payer }).session(session).select('name');
-            const beneficiaryUser = await User.findOne({ _id: payment.beneficiary }).session(session).select('_id expoPushToken');
+            const payerUser = await User.findOne({ _id: payment.payer }).select('name');
+            const beneficiaryUser = await User.findOne({ _id: payment.beneficiary }).select('_id expoPushToken');
 
             // Notify beneficiary
             await sendNotification(
