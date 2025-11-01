@@ -55,28 +55,23 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 router.post('/', authenticateToken, async (req, res) => {
-  const session = await Wallet.startSession(); // Start a Mongoose session
-  session.startTransaction();
-
   try {
     const { payer, beneficiary, type, amount, currency, note, status } = req.body;
 
     // Find or create wallets inside the session
-    let payerWallet = await Wallet.findOne({ user: payer }).session(session);
-    let beneficiaryWallet = await Wallet.findOne({ user: beneficiary }).session(session);
+    let payerWallet = await Wallet.findOne({ user: payer });
+    let beneficiaryWallet = await Wallet.findOne({ user: beneficiary });
 
     if (!payerWallet) {
       payerWallet = await Wallet.create(
-        [{ user: payer, balance: 0, availableBalance: 0, currency: 'EGP' }],
-        { session }
+        { user: payer, balance: 0, availableBalance: 0, currency: 'EGP' }
       );
       payerWallet = payerWallet[0];
     }
 
     if (!beneficiaryWallet) {
       beneficiaryWallet = await Wallet.create(
-        [{ user: beneficiary, balance: 0, availableBalance: 0, currency: 'EGP' }],
-        { session }
+        { user: beneficiary, balance: 0, availableBalance: 0, currency: 'EGP' }
       );
       beneficiaryWallet = beneficiaryWallet[0];
     }
@@ -90,27 +85,20 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Deduct from payer
     payerWallet.availableBalance -= amount;
-    await payerWallet.save({ session });
+    await payerWallet.save();
 
     // Add to beneficiary
     beneficiaryWallet.balance += amount;
-    await beneficiaryWallet.save({ session });
+    await beneficiaryWallet.save();
 
     // Create payment record (only if both saves succeeded)
     const payment = await Payment.create(
-      [{ payer, beneficiary, amount, currency, type, note, status }],
-      { session }
+      { payer, beneficiary, amount, currency, type, note, status },
+      
     );
-
-    // ✅ Commit transaction if all succeeded
-    await session.commitTransaction();
-    session.endSession();
 
     res.status(201).json({ success: true, data: payment[0] });
   } catch (err) {
-    // ❌ Rollback changes if anything fails
-    await session.abortTransaction();
-    session.endSession();
     console.error('Transaction failed:', err);
     res.status(400).json({ success: false, message: err.message });
   }
