@@ -50,7 +50,7 @@ export default function Home() {
 
             <View style={styles.fixedBottomSection}>
                 <View style={styles.textBlock}>
-                    <Text style={styles.headline}>UNLEASH YOUR GAME</Text>
+                    <Text style={styles.headline}>SET GOALS,{'\n'}CRUSH THEM,{'\n'}REPEAT.</Text>
                     <Text style={styles.subtext}>
                         Connect, compete, and thrive with athletes & fans in your city and beyond.
                     </Text>
@@ -59,19 +59,19 @@ export default function Home() {
                 {/* Buttons */}
                 <View style={styles.buttonsContainer}>
                     <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.push('/login')}>
-                        <Image source={require('../assets/buttonBefore.png')} style={styles.sideRect} />
+                        {/* <Image source={require('../assets/buttonBefore.png')} style={styles.sideRect} /> */}
                         <View style={styles.loginButton}>
                             <Text style={styles.loginText}>LOGIN</Text>
                         </View>
-                        <Image source={require('../assets/buttonAfter.png')} style={styles.sideRectAfter} />
+                        {/* <Image source={require('../assets/buttonAfter.png')} style={styles.sideRectAfter} /> */}
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.push('/register')}>
-                        <Image source={require('../assets/buttonBeforeLight.png')} style={styles.sideRect} />
+                        {/* <Image source={require('../assets/buttonBeforeLight.png')} style={styles.sideRect} /> */}
                         <View style={styles.createAccountButton}>
                             <Text style={styles.createAccountText}>CREATE ACCOUNT</Text>
                         </View>
-                        <Image source={require('../assets/buttonAfterLight.png')} style={styles.sideRectAfter} />
+                        {/* <Image source={require('../assets/buttonAfterLight.png')} style={styles.sideRectAfter} /> */}
                     </TouchableOpacity>
                 </View>
             </View>
@@ -120,15 +120,15 @@ const styles = StyleSheet.create({
         marginBottom: 20
     },
     headline: {
-        fontSize: 64,
-        fontFamily: 'Bebas',
-        lineHeight: 64,
-        color: '#150000',
+        fontSize: 50,
+        fontFamily: 'Qatar',
+        lineHeight: 54,
+        color: '#111111',
     },
     subtext: {
-        fontSize: 16,
-        color: '#150000',
-        fontFamily: 'Manrope',
+        fontSize: 18,
+        color: '#111111',
+        fontFamily: 'Acumin',
         marginTop: 8,
     },
     buttonsContainer: {
@@ -158,27 +158,29 @@ const styles = StyleSheet.create({
     },
     loginButton: {
         flex: 1,
-        backgroundColor: '#FF4000',
+        backgroundColor: '#FF4400',
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius:15,
     },
     loginText: {
-        fontSize: 20,
+        fontSize: 18,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     createAccountButton: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.05)',
+        backgroundColor: '#1a491e',
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius:15,
     },
     createAccountText: {
-        fontSize: 20,
-        color: '#150000',
-        fontFamily: 'Bebas',
+        fontSize: 18,
+        color: '#fff',
+        fontFamily: 'Qatar',
     },
 });
 

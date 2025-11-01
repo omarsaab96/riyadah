@@ -474,10 +474,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     savebtn: {
         flexDirection: 'row'
@@ -488,7 +488,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -502,13 +503,13 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     header: {
         flexDirection: 'row',
@@ -519,7 +520,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#eee',
     },
     headerTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#111',
     },
@@ -547,7 +548,7 @@ const styles = StyleSheet.create({
     },
     imageUploadText: {
         marginTop: 10,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#FF4000',
     },
@@ -559,7 +560,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     label: {
-        fontFamily: "Bebas",
+        fontFamily: "Qatar",
         fontSize: 20,
         marginBottom: 10,
         color: 'black'
@@ -581,7 +582,7 @@ const styles = StyleSheet.create({
     },
     picker: {
         width: '100%',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
         color: 'black'
@@ -595,13 +596,13 @@ const styles = StyleSheet.create({
     },
     submitButtonText: {
         color: '#fff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -626,7 +627,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     uploadBox: {
         // marginBottom: 30,
@@ -639,7 +640,7 @@ const styles = StyleSheet.create({
         marginBottom: 5
     },
     uploadHint: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         marginBottom: 10,
         color: '#111111'
     },
@@ -663,11 +664,11 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
 });

@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
-    Image,
     KeyboardAvoidingView, Platform,
     ScrollView,
     StyleSheet,
@@ -185,9 +184,9 @@ export default function ChangePassword() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Passwo</Text>
+                    <Text style={styles.ghostText}>Pass</Text>
 
-                    {user && !loading && <View style={styles.profileImage}>
+                    {/* {user && !loading && <View style={styles.profileImage}>
                         {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
                             source={require('../../assets/clublogo.png')}
                             style={styles.profileImageAvatar}
@@ -208,7 +207,7 @@ export default function ChangePassword() {
                             style={styles.profileImageAvatar}
                             resizeMode="contain"
                         />}
-                    </View>}
+                    </View>} */}
                 </View>
 
                 {user && !loading && <ScrollView>
@@ -336,7 +335,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -344,7 +343,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -358,24 +358,24 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     entity: {
         marginBottom: 20
     },
     title: {
-        fontFamily: "Bebas",
-        fontSize: 22,
+        fontFamily: "Qatar",
+        fontSize: 16,
         color: 'black'
     },
     subtitle: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         // fontWeight: 600,
         width: '100%',
@@ -383,14 +383,14 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     paragraph: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         color: 'black'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -430,10 +430,10 @@ const styles = StyleSheet.create({
     savebtn: {
         flexDirection: 'row'
     },
-    profileButtonText: {
+    profileButtonText: {textTransform:'uppercase',
         fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     input: {
         fontSize: 14,
@@ -492,16 +492,16 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     statNumber: {
         fontSize: 44,
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         color: '#FF4000',
         textAlign: 'center',
         flex: 1

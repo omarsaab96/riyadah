@@ -282,7 +282,7 @@ export default function AddPayment() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Payment</Text>
+                    <Text style={styles.ghostText}>Payme</Text>
                 </View>
 
                 <ScrollView>
@@ -352,11 +352,11 @@ export default function AddPayment() {
 
                                 {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && keyword.trim().length >= 3 && (
                                     <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
-                                        <Text style={{ fontFamily: 'Manrope', fontWeight: 'bold' }}>
+                                        <Text style={{ fontFamily: 'Acumin', fontWeight: 'bold' }}>
                                             No results.
                                         </Text>
 
-                                        <Text style={{ fontFamily: 'Manrope', marginBottom: 10 }}>
+                                        <Text style={{ fontFamily: 'Acumin', marginBottom: 10 }}>
                                             Looks like the user you are looking for does not have an account on Riyadah.
                                         </Text>
                                     </View>
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
     },
     picker: {
         width: '100%',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
         color: 'black'
@@ -594,7 +594,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -608,13 +609,13 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     header: {
         flexDirection: 'row',
@@ -625,14 +626,15 @@ const styles = StyleSheet.create({
         borderBottomColor: '#eee',
     },
     headerTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#111',
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,
+        textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -657,7 +659,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     contentContainer: {
         padding: 20,
@@ -688,13 +690,13 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     userName: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         fontWeight: 'bold',
         color: 'black'
     },
     userEmail: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#666',
         fontSize: 14,
     },
@@ -713,9 +715,9 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start'
     },
     addStaffAccountBtnText: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     selectedUserContainer: {
         flexDirection: 'row',
@@ -729,13 +731,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     selectedUserName: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
         fontSize: 16,
         color: 'black'
     },
     selectedUserEmail: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#666',
         fontSize: 14,
     },
@@ -777,7 +779,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#111',
     },
     statusButtonText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
         color: 'black'
     },
@@ -806,10 +808,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     savebtn: {
         flexDirection: 'row'
@@ -821,11 +823,11 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
 });

@@ -158,13 +158,13 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     color: '#ffffff',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 30,
   },
   pageDesc: {
     color: '#ffffff',
     fontSize: 16,
-    fontFamily: 'Manrope'
+    fontFamily: 'Acumin'
   },
   centered: {
     flex: 1,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 4,
     fontSize: 18,
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     color: 'black'
   },
   contactButton: {
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   contactText: {
     // color: "#FF4000",
-    fontFamily: 'Manrope',
+    fontFamily: 'Acumin',
     fontSize: 16,
     color: 'black'
   },
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
-    fontFamily: 'Bebas'
+    fontFamily: 'Qatar'
   },
   profileImage: {
     position: 'absolute',
@@ -277,8 +277,8 @@ const styles = StyleSheet.create({
   },
   ghostText: {
     color: '#ffffff',
-    fontSize: 128,
-    fontFamily: 'Bebas',
+    fontSize:100,textTransform:'uppercase',
+    fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,

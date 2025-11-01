@@ -502,11 +502,11 @@ const CreateStaffScreen = () => {
                                         ))}
                                     </View>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginTop: 10, fontWeight: 'bold', color: 'black' }}>
+                                    <Text style={{ fontFamily: 'Acumin', marginTop: 10, fontWeight: 'bold', color: 'black' }}>
                                         Can't find the account you are looking for?
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10, color: 'black' }}>
+                                    <Text style={{ fontFamily: 'Acumin', marginBottom: 10, color: 'black' }}>
                                         Don't worry you can still create a new staff by clicking on the button below.
                                     </Text>
 
@@ -522,15 +522,15 @@ const CreateStaffScreen = () => {
 
                             {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && keyword.trim().length >= 3 && (
                                 <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
-                                    <Text style={{ fontFamily: 'Manrope', fontWeight: 'bold', color: 'black' }}>
+                                    <Text style={{ fontFamily: 'Acumin', fontWeight: 'bold', color: 'black' }}>
                                         No results.
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10, color: 'black' }}>
+                                    <Text style={{ fontFamily: 'Acumin', marginBottom: 10, color: 'black' }}>
                                         Looks like the staff you are looking for does not have an account on Riyadah.
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Manrope', marginBottom: 10, color: 'black' }}>
+                                    <Text style={{ fontFamily: 'Acumin', marginBottom: 10, color: 'black' }}>
                                         Don't worry you can still create a new staff by clicking on the button below.
                                     </Text>
 
@@ -1055,7 +1055,8 @@ const styles = StyleSheet.create({
         height: 270,
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -1069,18 +1070,18 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -1109,13 +1110,13 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     formGroup: {
         marginBottom: 10,
     },
     sectionTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 22,
         color: '#111',
         marginBottom: 15,
@@ -1130,7 +1131,7 @@ const styles = StyleSheet.create({
         right: 10,
     },
     label: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18,
         color: '#111',
         marginBottom: 8,
@@ -1150,7 +1151,7 @@ const styles = StyleSheet.create({
     },
     picker: {
         width: '100%',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         borderWidth: 0,
         backgroundColor: '#F4F4F4',
         color: 'black'
@@ -1181,7 +1182,7 @@ const styles = StyleSheet.create({
     },
     addItemButtonText: {
         color: '#fff',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
     },
     itemsList: {
@@ -1200,7 +1201,7 @@ const styles = StyleSheet.create({
     },
     itemText: {
         marginRight: 8,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color:'black'
     },
     teamItem: {
@@ -1213,12 +1214,12 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     teamName: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: 'black'
     },
     noTeamsText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#666',
         fontStyle: 'italic',
     },
@@ -1241,7 +1242,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#111',
     },
     statusButtonText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
         color: 'black'
     },
@@ -1268,7 +1269,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     cancelButtonText: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18,
         color: '#111',
     },
@@ -1280,7 +1281,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     submitButtonText: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18,
         color: '#fff',
     },
@@ -1304,10 +1305,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     savebtn: {
         flexDirection: 'row'
@@ -1320,9 +1321,9 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start'
     },
     addStaffAccountBtnText: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     textarea: {
         fontSize: 14,
@@ -1371,7 +1372,7 @@ const styles = StyleSheet.create({
         marginBottom: 5
     },
     uploadHint: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         marginBottom: 10,
         color: '#111111'
     },
@@ -1409,13 +1410,13 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     userName: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         fontWeight: 'bold',
         color: 'black'
     },
     userEmail: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#666',
         fontSize: 14,
     },
@@ -1435,13 +1436,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     selectedUserName: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
         fontSize: 16,
         color: 'black'
     },
     selectedUserEmail: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#666',
         fontSize: 14,
     },
@@ -1456,20 +1457,20 @@ const styles = StyleSheet.create({
         backgroundColor: "#FF4000"
     },
     confirmationTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         marginBottom: 5,
         color: 'black'
     },
     confirmationSubTitle: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: 'black'
     },
     hint: {
         color: '#525252',
         fontSize: 12,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -1490,7 +1491,7 @@ const styles = StyleSheet.create({
     loginText: {
         fontSize: 20,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     sideRect: {
         height: 48,
@@ -1511,7 +1512,7 @@ const styles = StyleSheet.create({
     createAccountText: {
         fontSize: 20,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     }, backBtn: {
         position: 'absolute',
         top: 60,
@@ -1519,12 +1520,12 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
 });
 

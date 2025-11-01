@@ -433,7 +433,7 @@ export default function Messages() {
                         ListHeaderComponent={
                             <View style={styles.header}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
-                                    <Image source={require('../assets/logo_white.png')} style={styles.logo} resizeMode="contain" />
+                                    <Image source={require('../assets/logo_orangeBlack.png')} style={styles.logo} resizeMode="contain" />
                                     <View style={styles.headerActions}>
                                         <TouchableOpacity
                                             onPress={handleCreateNewChat}
@@ -677,14 +677,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     pageTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
         color: 'black'
     },
     logo: {
-        width: 120,
-        height: 30,
-        tintColor: '#111111',
+        width: 120 ,
+        height:30,
+        // tintColor: '#111111',
     },
     loadingContainer: {
         flex: 1,
@@ -706,10 +706,10 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: 'rgba(0,0,0,0.05)',
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     dmBtnImg: {
         width: 25,
@@ -745,7 +745,8 @@ const styles = StyleSheet.create({
     },
     icon: {
         width: 24,
-        height: 24,
+        height: 24,        
+        tintColor: '#111111',
     },
     activeIcon: {
         width: 24,
@@ -802,9 +803,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
     },
     createPostButtonText: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     chatContainer: {
         backgroundColor: '#ffffff',
@@ -841,7 +842,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         borderRadius: 10,
         fontWeight: 'bold',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: 'black',
         lineHeight: Platform.OS == "ios" ? 18: 16,
@@ -881,7 +882,7 @@ const styles = StyleSheet.create({
         marginBottom: 0,
     },
     chatActionText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#888888'
     },
@@ -917,7 +918,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginBottom: 10,
         color: '#050505',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     postImage: {
         width: '100%',
@@ -1065,7 +1066,7 @@ const styles = StyleSheet.create({
     },
     commentModalTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily:'Qatar',
         color: '#333',
     },
     commentModalClose: {
@@ -1228,7 +1229,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 5,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     postButton: {
         backgroundColor: '#000000',
@@ -1244,18 +1245,18 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '600',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     postSecBtnText: {
         color: '#000',
         fontWeight: '600',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     postText: {
         fontSize: 16,
         lineHeight: 22,
         color: '#050505',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
 });

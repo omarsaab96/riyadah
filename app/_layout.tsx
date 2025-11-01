@@ -53,6 +53,8 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     'Bebas': require('../assets/fonts/BebasNeue-Regular.ttf'),
     'Manrope': require('../assets/fonts/Manrope.ttf'),
+    'Acumin': require('../assets/fonts/Acumin.ttf'),
+    'Qatar': require('../assets/fonts/Qatar.ttf'),
     // SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 

@@ -1,5 +1,4 @@
 import Feather from '@expo/vector-icons/Feather';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -178,8 +177,8 @@ export default function Profile() {
                                 <Text style={[styles.profileButtonText, styles.deactivateBtnText]}>Deactivate account</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleLogout} style={[styles.profileButton, styles.logoutBtn]}>
-                                <MaterialIcons name="logout" size={20} color="black" />
-                                <Text style={[styles.profileButtonText, { fontSize: 14 }]}>Logout</Text>
+                                {/* <MaterialIcons name="logout" size={20} color="black" /> */}
+                                <Text style={[styles.profileButtonText, { fontSize: 14, width:'100%', textAlign:'center' }]}>Logout</Text>
                             </TouchableOpacity>
 
                             <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v1.0.0</Text>
@@ -233,7 +232,9 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
+        height:40,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -247,22 +248,23 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize: 100,
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        opacity: 0.2,
+        textTransform:'uppercase'
     },
     navBar: {
         position: 'absolute',
@@ -291,6 +293,7 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
+        tintColor:'#111111'
     },
     activeIcon: {
         width: 24,
@@ -304,13 +307,13 @@ const styles = StyleSheet.create({
         width: '100%'
     },
     profileButton: {
-        paddingVertical: 10,
-        marginBottom: 5
+        paddingVertical: 5,
     },
     profileButtonText: {
-        fontSize: 18,
+        textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     deactivateBtn: {
         flexDirection: 'row',
@@ -318,11 +321,14 @@ const styles = StyleSheet.create({
         gap: 5,
         justifyContent: 'center',
         backgroundColor: '#f2f2f2',
-        borderRadius: 10
+        borderRadius: 10,
+        marginBottom:10
     },
     deactivateBtnText: {
         color: '#FF4000',
-        fontSize: 14
+        fontSize: 14,
+        width:'100%',
+        textAlign:'center'
     },
     logoutBtn: {
         flexDirection: 'row',
@@ -346,13 +352,13 @@ const styles = StyleSheet.create({
     },
     footerLink: {
         color: '#FF4000',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 12
     },
     disclaimer: {
         textAlign: 'center',
         color: '#aaa',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14
     }
 });

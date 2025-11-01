@@ -175,7 +175,7 @@ export default function PaymentDetails() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Payment</Text>
+                    <Text style={styles.ghostText}>Payme</Text>
                 </View>
 
                 <ScrollView >
@@ -228,7 +228,7 @@ export default function PaymentDetails() {
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     {payment.payer && (
                                         <View style={{ width: '40%' }}>
-                                            <Text style={[styles.title, { marginBottom: 10 }]}>Payer</Text>
+                                            <Text style={[styles.title, { marginBottom: 0 }]}>Payer</Text>
                                             <View>
                                                 <TouchableOpacity
                                                     style={{ alignItems: 'center', backgroundColor: '#eeeeee', padding: 10, borderRadius: 8 }}
@@ -318,7 +318,7 @@ export default function PaymentDetails() {
 
                                     {payment.beneficiary && (
                                         <View style={{ width: '40%' }}>
-                                            <Text style={[styles.title, { marginBottom: 10 }]}>beneficiary</Text>
+                                            <Text style={[styles.title, { marginBottom: 0 }]}>Beneficiary</Text>
                                             <View>
                                                 <TouchableOpacity
                                                     style={{ alignItems: 'center', backgroundColor: '#eeeeee', padding: 10, borderRadius: 8 }}
@@ -441,12 +441,12 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     saveLoaderContainer: {
         marginLeft: 10
@@ -461,7 +461,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -475,7 +476,7 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     inputFocused: {
@@ -489,7 +490,7 @@ const styles = StyleSheet.create({
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     header: {
         flexDirection: 'row',
@@ -500,7 +501,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#eee',
     },
     headerTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#111',
     },
@@ -520,8 +521,8 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -546,27 +547,27 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     title: {
-        fontFamily: "Bebas",
+        fontFamily: "Qatar",
         fontSize: 20,
         color: 'black'
     },
     subtitle: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         fontWeight: 'bold'
     },
     paragraph: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         color: 'black'
     },
     profileLink: {
         color: '#FF4000',
         fontSize: 14,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     locationLink: {
         backgroundColor: '#cccccc',
@@ -575,7 +576,7 @@ const styles = StyleSheet.create({
     },
     locationLinkText: {
         color: '#000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         textAlign: 'center'
     },
@@ -586,11 +587,11 @@ const styles = StyleSheet.create({
     },
     editToggleText: {
         color: 'black',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18
     },
     sectionTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#111',
         marginBottom: 10
@@ -601,12 +602,12 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     label: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: '#777'
     },
     value: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: '#111'
     },
@@ -617,7 +618,7 @@ const styles = StyleSheet.create({
     },
     payButtonText: {
         color: '#000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         textAlign: 'center'
     },
@@ -644,7 +645,7 @@ const styles = StyleSheet.create({
     loginText: {
         fontSize: 20,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     sideRect: {
         height: 48,

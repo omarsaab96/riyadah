@@ -88,15 +88,15 @@ export default function WizardStep4() {
         router.push('/wizard/step5')
     }
 
-    const toggleClubSelection = (clubLabel: string) => {
+    const toggleClubSelection = (clubid: string) => {
         if (formData.type == 'Association') {
             // Toggle club in multi-select
             setSelected(prev =>
-                prev.includes(clubLabel) ? prev.filter(c => c !== clubLabel) : [...prev, clubLabel]
+                prev.includes(clubid) ? prev.filter(c => c !== clubid) : [...prev, clubid]
             );
         } else {
             // Single select
-            setSelected([clubLabel]);
+            setSelected([clubid]);
         }
     };
 
@@ -160,7 +160,7 @@ export default function WizardStep4() {
                     </View>
                 </View>
             ) : (
-                <View>
+                <>
                     <View style={styles.form}>
                         {error != null && <View style={styles.error}>
                             <View style={styles.errorIcon}></View>
@@ -199,7 +199,11 @@ export default function WizardStep4() {
                         }
                     </View>
 
-                    {!independent && <ScrollView >
+                    {!independent && <ScrollView
+                        style={{ flex: 1 }}
+                        contentContainerStyle={{ paddingBottom: 120 }}
+                        showsVerticalScrollIndicator={false}
+                    >
                         <View style={styles.wizardContainer}>
                             {(() => {
                                 const visibleClubs = featuredClubs.filter(club => club.visible);
@@ -212,25 +216,25 @@ export default function WizardStep4() {
                                     );
                                 }
 
-                                return visibleClubs.map(({ label, icon }) => {
-                                    const isSelected = selected.includes(label);
+                                return visibleClubs.map((club) => {
+                                    const isSelected = selected.includes(club.id);
                                     return (
                                         <TouchableOpacity
-                                            key={label}
+                                            key={club.id}
                                             style={[
                                                 styles.accountOption,
                                                 isSelected && styles.accountOptionSelected
                                             ]}
-                                            onPress={() => toggleClubSelection(label)}
+                                            onPress={() => toggleClubSelection(club.id)}
                                         >
-                                            <Image source={icon} style={styles.icon} resizeMode="contain" />
+                                            <Image source={club.icon} style={styles.icon} resizeMode="contain" />
                                             <Text
                                                 style={[
                                                     styles.accountText,
                                                     isSelected && styles.accountTextSelected
                                                 ]}
                                             >
-                                                {label}
+                                                {club.label}
                                             </Text>
                                         </TouchableOpacity>
                                     );
@@ -239,16 +243,16 @@ export default function WizardStep4() {
                         </View>
                     </ScrollView>
                     }
-                </View>
+                </>
             )}
 
             {!loadingClubs && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
-                    <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
+                    {/* <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>next</Text>
+                        <Text style={styles.loginText}>NEXT</Text>
                     </View>
-                    <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+                    {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
             </View>}
         </View>
@@ -258,7 +262,7 @@ export default function WizardStep4() {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#fff',
-        height: '100%'
+        flex: 1,
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -266,7 +270,9 @@ const styles = StyleSheet.create({
         marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
+        height: 40,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -280,23 +286,25 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
-        marginBottom: 10
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        opacity: 0.2,
+        width: '100%',
+        textAlign: 'right',
+        textTransform: 'uppercase'
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -305,20 +313,21 @@ const styles = StyleSheet.create({
     },
     paragraph: {
         fontSize: 14,
-        fontFamily: 'Manrope',
-        color:'black'
+        fontFamily: 'Acumin',
+        color: 'black'
     },
     loginButton: {
         flex: 1,
-        backgroundColor: '#000000',
+        backgroundColor: '#1a491e',
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 15
     },
     loginText: {
-        fontSize: 20,
+        fontSize: 18,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     sideRect: {
         height: 48,
@@ -334,7 +343,6 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingBottom: 80
     },
     accountOption: {
         borderWidth: 1,
@@ -347,17 +355,17 @@ const styles = StyleSheet.create({
         width: (width - 60) / 2,
         position: 'relative',
         height: 120,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     accountOptionSelected: {
         borderColor: '#FF4000',
         backgroundColor: '#FFE6D8',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     accountText: {
         fontSize: 16,
         color: '#333',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     icon: {
         width: 60,
@@ -393,32 +401,35 @@ const styles = StyleSheet.create({
     checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20
+        marginBottom: 20,
     },
     checkbox: {
         width: 16,
         height: 16,
         borderWidth: 1,
-        borderColor: '#000000',
+        borderColor: '#000',
         marginRight: 10,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        borderRadius: 5
     },
     checked: {
         width: 16,
         height: 16,
-        backgroundColor: 'black',
+        backgroundColor: '#FF4400',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        borderRadius: 5
     },
     checkImage: {
         width: 16,
         height: 16,
         resizeMode: 'contain',
+        tintColor: '#fff'
     },
     label: {
         color: '#000000',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     error: {
         marginBottom: 15,
@@ -439,7 +450,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     loadingContainer: {
         paddingHorizontal: 20,

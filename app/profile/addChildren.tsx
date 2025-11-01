@@ -384,7 +384,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -398,13 +399,13 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     entity: {
         marginBottom: 20
@@ -434,7 +435,7 @@ const styles = StyleSheet.create({
         color: '#FF4000',
         textAlign: 'center',
         fontSize: 24,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     profileProgressTextSection: {
         flex: 1,
@@ -444,7 +445,7 @@ const styles = StyleSheet.create({
     },
     profileProgressText: {
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
     },
     profileProgressImg: {
@@ -453,13 +454,13 @@ const styles = StyleSheet.create({
         objectFit: 'contain',
     },
     title: {
-        fontFamily: "Bebas",
+        fontFamily: "Qatar",
         fontSize: 20,
         marginBottom: 10,
         color:'black'
     },
     subtitle: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         // fontWeight: 'bold',
         width: '100%',
@@ -467,14 +468,14 @@ const styles = StyleSheet.create({
         color:'black'
     },
     paragraph: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         color:'black'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -509,7 +510,7 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 20,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     navBar: {
         position: 'absolute',
@@ -563,10 +564,10 @@ const styles = StyleSheet.create({
     savebtn: {
         flexDirection: 'row'
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     textarea: {
         fontSize: 14,
@@ -603,7 +604,7 @@ const styles = StyleSheet.create({
     },
     dobSeperator: {
         fontSize: 30,
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontWeight: 'bold',
         color: '#FF4000',
         marginHorizontal: 10
@@ -626,7 +627,7 @@ const styles = StyleSheet.create({
     },
     uploadImageText: {
         color: '#FF4000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 16,
     },
     childrenList: {
@@ -647,21 +648,21 @@ const styles = StyleSheet.create({
     },
     addChildrenButtonText: {
         color: 'black',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18
     },
     noChildrenText: {
         marginBottom: 10,
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     searchLoadingText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#888',
         marginVertical: 5
     },
     searchNoResultText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#555',
         marginVertical: 5
     },
@@ -683,7 +684,7 @@ const styles = StyleSheet.create({
         width: '100%'
     },
     searchResultItemInfo: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         justifyContent: 'space-between',
         flexDirection: 'row',
@@ -733,6 +734,6 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     }
 });

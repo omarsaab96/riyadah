@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     messageContainer: {
         maxWidth: '80%',

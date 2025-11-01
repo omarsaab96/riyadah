@@ -373,12 +373,12 @@ export default function WizardStep2() {
                     styles.fullButtonRow,
                     error != null && { opacity: 0.6 }
                 ]} onPress={handleNext} disabled={error != null}>
-                    <Image source={require('../../assets/buttonBefore_black.png')}
-                        style={styles.sideRect} />
+                    {/* <Image source={require('../../assets/buttonBefore_black.png')} */}
+                    {/* style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>next</Text>
+                        <Text style={styles.loginText}>NEXT</Text>
                     </View>
-                    <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+                    {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
             </View>
         </View>
@@ -396,7 +396,9 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
+        height: 40,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -410,23 +412,23 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
-        marginBottom: 10,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize: 100,
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
         opacity: 0.2,
+        textTransform: 'uppercase'
     },
     form: {
         paddingLeft: 20,
@@ -448,7 +450,7 @@ const styles = StyleSheet.create({
     },
     dobSeperator: {
         fontSize: 30,
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontWeight: 'bold',
         color: '#FF4000',
         marginHorizontal: 10
@@ -460,15 +462,16 @@ const styles = StyleSheet.create({
     },
     loginButton: {
         flex: 1,
-        backgroundColor: '#000000',
+        backgroundColor: '#1a491e',
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 15
     },
     loginText: {
-        fontSize: 20,
+        fontSize: 18,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     sideRect: {
         height: 48,
@@ -499,7 +502,7 @@ const styles = StyleSheet.create({
     hint: {
         color: '#525252',
         fontSize: 12,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         marginTop: 20,
         marginBottom: 10
     },
@@ -522,6 +525,6 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     }
 });

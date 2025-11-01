@@ -310,7 +310,8 @@ const styles = StyleSheet.create({
         height: 270,
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -324,18 +325,18 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -370,16 +371,16 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     savebtn: {
         flexDirection: 'row'
     },
     label: {
-        fontFamily: "Bebas",
+        fontFamily: "Qatar",
         fontSize: 20,
         marginBottom: 10,
         color: 'black'
@@ -409,7 +410,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: '#fff',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
     },
     pickerContainer: {
@@ -418,7 +419,7 @@ const styles = StyleSheet.create({
     },
     picker: {
         width: '100%',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         backgroundColor: '#F4F4F4',
         borderRadius: 8,
@@ -431,11 +432,11 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
 });

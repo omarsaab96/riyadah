@@ -192,7 +192,7 @@ const AttendanceSheet = () => {
 
             {!submitted && !loading && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
-                    <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
+                    {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
                         <Text style={styles.loginText}>
                             {saving ? 'Submitting' : 'Submit Attendance sheet'}
@@ -205,7 +205,7 @@ const AttendanceSheet = () => {
                             />
                         )}
                     </View>
-                    <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+                    {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
             </View>}
 
@@ -256,7 +256,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -270,31 +271,32 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize: 100,
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        opacity: 0.2,
+        textTransform:'uppercase'
     },
     label: {
-        fontFamily: "Bebas",
+        fontFamily: "Qatar",
         fontSize: 20,
         marginBottom: 0
     },
     hint: {
         marginBottom: 20,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#000000'
     },
@@ -370,12 +372,13 @@ const styles = StyleSheet.create({
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        borderRadius:15
     },
     loginText: {
-        fontSize: 20,
+        fontSize: 18,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     sideRect: {
         height: 48,
@@ -401,7 +404,7 @@ const styles = StyleSheet.create({
     },
     name: {
         fontSize: 16,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: '#000000',
     },
     loginLoader: {
@@ -413,7 +416,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     confirmationTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
+        textAlign:'center'
     },
 });

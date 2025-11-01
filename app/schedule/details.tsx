@@ -237,7 +237,7 @@ export default function StaffDetailsScreen() {
               })}
             >
               <FontAwesome name="users" size={16} color="#FF4000" />
-              <Text style={styles.editToggleText}>Manage attendance</Text>
+              <Text style={styles.editToggleText}>Attendance</Text>
             </TouchableOpacity>
           </View>}
 
@@ -351,13 +351,13 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     color: '#ffffff',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 30,
   },
   pageDesc: {
     color: '#ffffff',
     fontSize: 16,
-    fontFamily: 'Manrope'
+    fontFamily: 'Acumin'
   },
   centered: {
     flex: 1,
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 4,
     fontSize: 18,
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     color: 'black'
   },
   contactButton: {
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   contactText: {
-    fontFamily: 'Manrope',
+    fontFamily: 'Acumin',
     fontSize: 16,
     color: 'black'
   },
@@ -446,12 +446,12 @@ const styles = StyleSheet.create({
     width: 200,
     zIndex: 1,
     flexDirection: 'row',
-    alignContent: 'center',
+    alignItems: 'center',
   },
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
-    fontFamily: 'Bebas'
+    fontFamily: 'Qatar'
   },
   profileImage: {
     position: 'absolute',
@@ -469,8 +469,8 @@ const styles = StyleSheet.create({
   },
   ghostText: {
     color: '#ffffff',
-    fontSize: 128,
-    fontFamily: 'Bebas',
+    fontSize:100,textTransform:'uppercase',
+    fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   },
   locationLinkText: {
     color: '#000',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 20,
     textAlign: 'center'
   },
@@ -504,7 +504,7 @@ const styles = StyleSheet.create({
   },
   editToggleText: {
     color: 'black',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 18
   },
 });

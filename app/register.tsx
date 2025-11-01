@@ -10,16 +10,16 @@ import { useRegistration } from '../context/registration';
 
 
 import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -264,7 +264,7 @@ export default function Register() {
               </View>
 
               <Text style={styles.label}>
-                I agree to the{' '}
+                I agree to our{' '}
                 <Text style={styles.link} onPress={() => router.push('/termsConditions')}>
                   Terms & Conditions
                 </Text>
@@ -272,7 +272,7 @@ export default function Register() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.fullButtonRow} onPress={handleRegister}>
-              <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
+              {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
               <View style={styles.loginButton}>
                 <Text style={styles.loginText}>
                   {loading ? 'CREATING' : 'CREATE'} ACCOUNT
@@ -285,7 +285,7 @@ export default function Register() {
                   />
                 )}
               </View>
-              <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+              {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
             </TouchableOpacity>
           </View>
 
@@ -318,7 +318,8 @@ const styles = StyleSheet.create({
     marginBottom: 30
   },
   logo: {
-    width: 120,
+    width: 180,
+    height: 40,
     position: 'absolute',
     top: 20,
     left: 20,
@@ -332,23 +333,23 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     color: '#ffffff',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 30,
-    marginBottom: 10
   },
   pageDesc: {
     color: '#ffffff',
-    fontSize: 16,
-    fontFamily: 'Manrope'
+    fontSize: 18,
+    fontFamily: 'Acumin'
   },
   ghostText: {
     color: '#ffffff',
-    fontSize: 128,
-    fontFamily: 'Bebas',
+    fontSize: 100,
+    fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2
+    opacity: 0.2,
+    textTransform: 'uppercase'
   },
   form: {
     paddingLeft: 20,
@@ -397,19 +398,20 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#1a491e',
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    borderRadius: 15
   },
   loginLoader: {
     marginLeft: 10
   },
   loginText: {
-    fontSize: 20,
+    fontSize: 18,
     color: 'white',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
   },
   sideRect: {
     height: 48,
@@ -437,8 +439,8 @@ const styles = StyleSheet.create({
   },
   switchLink: {
     marginLeft: 5,
-    fontFamily: 'Bebas',
-    fontSize: 16,
+    fontFamily: 'Qatar',
+    fontSize: 14,
     paddingTop: 3,
     lineHeight: 16
   },
@@ -454,8 +456,8 @@ const styles = StyleSheet.create({
   },
   hint: {
     color: '#525252',
-    fontSize: 12,
-    fontFamily: 'Manrope'
+    fontSize: 14,
+    fontFamily: 'Acumin'
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -463,33 +465,37 @@ const styles = StyleSheet.create({
     marginBottom: 40
   },
   checkbox: {
-    width: 16,
-    height: 16,
+    width: 18,
+    height: 18,
     borderWidth: 1,
     borderColor: '#000000',
     marginRight: 10,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    borderRadius: 5
   },
   checked: {
-    width: 16,
-    height: 16,
-    backgroundColor: 'black',
+    width: 18,
+    height: 18,
+    backgroundColor: '#FF4400',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    borderRadius: 5
   },
   checkImage: {
     width: 16,
     height: 16,
     resizeMode: 'contain',
+    tintColor: '#fff'
   },
   label: {
     color: '#000000',
-    fontFamily: 'Manrope'
+    fontFamily: 'Acumin'
   },
   link: {
-    color: '#000000',
-    fontWeight: 'bold',
+    color: '#000',
+    fontFamily: 'Qatar',
+    fontSize: 13
   },
   error: {
     marginBottom: 15,
@@ -510,7 +516,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontFamily: 'Manrope',
+    fontFamily: 'Acumin',
   },
   backBtn: {
     position: 'absolute',
@@ -519,12 +525,12 @@ const styles = StyleSheet.create({
     width: 200,
     zIndex: 1,
     flexDirection: 'row',
-    alignContent: 'center',
+    alignItems: 'center',
   },
   backBtnText: {
     color: '#FFF',
-    fontSize: 18,
-    fontFamily: 'Bebas'
+    fontSize: 16,
+    fontFamily: 'Qatar'
   },
   eyeIcon: {
     position: 'absolute',

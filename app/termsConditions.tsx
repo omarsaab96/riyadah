@@ -41,7 +41,7 @@ export default function TermsConditions() {
 
           <Text style={styles.sectionTitle}>1. Introduction</Text>
           <Text style={styles.paragraph}>
-            Welcome to RIYADAH / رياضة (“the App”), a digital platform operated by [Company Name] (“we”, “us”, or “our”) that serves as a global network for sports enthusiasts, athletes, clubs, associations, and sponsors. By accessing or using RIYADAH, you (“User”) agree to comply with and be bound by these Terms and Conditions. If you do not accept these terms, do not use the App.
+            Welcome to RIYADAH / رياضة (“the App”), a digital platform operated by Riyadah (“we”, “us”, or “our”) that serves as a global network for sports enthusiasts, athletes, clubs, associations, and sponsors. By accessing or using RIYADAH, you (“User”) agree to comply with and be bound by these Terms and Conditions. If you do not accept these terms, do not use the App.
           </Text>
 
           <Text style={styles.sectionTitle}>2. User Eligibility</Text>
@@ -134,8 +134,9 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 120,
+    height: 40,
     position: 'absolute',
-    top: 20,
+    top: 40,
     left: 20,
     zIndex: 1,
   },
@@ -147,19 +148,18 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     color: '#ffffff',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 30,
-    marginBottom: 10
   },
   pageDesc: {
     color: '#ffffff',
     fontSize: 16,
-    fontFamily: 'Manrope'
+    fontFamily: 'Acumin'
   },
   ghostText: {
     color: '#ffffff',
-    fontSize: 128,
-    fontFamily: 'Bebas',
+    fontSize: 100,
+    fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
@@ -172,10 +172,10 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 16,
     marginBottom: 5,
-    fontFamily: 'Bebas'
+    fontFamily: 'Qatar'
   },
   sectionTitle: {
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 18,
     marginTop: 20,
     marginBottom: 10,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     marginBottom: 10,
-    fontFamily: 'Manrope'
+    fontFamily: 'Acumin'
   },
   lastparagraph: {
     marginTop: 20,

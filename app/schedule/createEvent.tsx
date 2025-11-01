@@ -733,7 +733,7 @@ const CreateEventScreen = () => {
                                     </View>
                                 )}
                                 {!searching && equipmentSearch.trim().length >= 3 && searchResults.length == 0 && (
-                                    <Text style={{ fontFamily: 'Manrope', color: 'black' }}>
+                                    <Text style={{ fontFamily: 'Acumin', color: 'black' }}>
                                         No results. Try another keyword
                                     </Text>
                                 )}
@@ -894,7 +894,7 @@ const styles = StyleSheet.create({
     },
     addButtonText: {
         color: '#fff',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
     },
     equipmentList: {
@@ -912,7 +912,7 @@ const styles = StyleSheet.create({
     submitButtonText: {
         color: '#fff',
         fontSize: 18,
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -920,7 +920,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -934,13 +935,13 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     header: {
         flexDirection: 'row',
@@ -951,14 +952,14 @@ const styles = StyleSheet.create({
         borderBottomColor: '#eee',
     },
     headerTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#111',
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -983,10 +984,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     savebtn: {
         flexDirection: 'row'
@@ -995,13 +996,13 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     label: {
-        fontFamily: "Bebas",
+        fontFamily: "Qatar",
         fontSize: 20,
         marginBottom: 10,
         color: 'black'
     },
     hint: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 13,
         marginBottom: 5,
         color: '#666'
@@ -1023,7 +1024,7 @@ const styles = StyleSheet.create({
     },
     picker: {
         width: '100%',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         backgroundColor: '#F4F4F4',
         color: 'black'
     },
@@ -1063,13 +1064,13 @@ const styles = StyleSheet.create({
     },
     searchResultText: {
         fontSize: 16,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         color: 'black'
     },
     searchResultSubText: {
         fontSize: 12,
         color: '#666',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     quantitySelector: {
         marginTop: 10,
@@ -1079,7 +1080,7 @@ const styles = StyleSheet.create({
     },
     selectedItemText: {
         fontSize: 16,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         marginBottom: 8,
         color: 'black'
     },
@@ -1140,7 +1141,7 @@ const styles = StyleSheet.create({
     },
     addSelectedButtonText: {
         color: '#fff',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
     },
     equipmentItem: {
@@ -1155,7 +1156,7 @@ const styles = StyleSheet.create({
     },
     equipmentText: {
         marginRight: 8,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         flex: 1,
         color: 'black'
@@ -1185,7 +1186,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     backBtn: {
         position: 'absolute',
@@ -1194,12 +1195,12 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     iosPickerContainer: {
         backgroundColor: '#fff',
@@ -1224,7 +1225,7 @@ const styles = StyleSheet.create({
     },
     iosPickerButtonText: {
         color: '#000',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     map: {
         borderRadius: 8,

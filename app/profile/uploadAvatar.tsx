@@ -265,7 +265,8 @@ const styles = StyleSheet.create({
         height: 270,
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -279,18 +280,18 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -299,7 +300,7 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 18,
         width: '100%',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         marginBottom: 5,
     },
     profileActions: {
@@ -321,10 +322,10 @@ const styles = StyleSheet.create({
     savebtn: {
         flexDirection: 'row',
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     saveLoaderContainer: {
         marginLeft: 10,
@@ -364,7 +365,7 @@ const styles = StyleSheet.create({
         marginBottom: 5
     },
     uploadHint: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         marginBottom: 10,
         color:'#111111'
     },
@@ -400,6 +401,6 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
 });

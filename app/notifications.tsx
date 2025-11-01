@@ -292,7 +292,9 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
+        height: 40,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -306,13 +308,13 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     notification: {
         backgroundColor: '#dedede',
@@ -326,7 +328,7 @@ const styles = StyleSheet.create({
         marginBottom: 0
     },
     notificationText: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 14,
         flex: 1,
         paddingRight: 20,
@@ -343,12 +345,13 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize: 100,
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        opacity: 0.2,
+        textTransform:'uppercase'
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -365,7 +368,7 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 20,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     navBar: {
         position: 'absolute',
@@ -394,6 +397,7 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
+        tintColor:'#111111'
     },
     activeIcon: {
         width: 24,
@@ -401,7 +405,7 @@ const styles = StyleSheet.create({
         tintColor: '#FF4000',
     },
     emptyNotifications: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: 'black'
     },
@@ -422,7 +426,7 @@ const styles = StyleSheet.create({
     },
     btnText: {
         color: 'black',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18
     },
 });

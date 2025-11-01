@@ -5,14 +5,13 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 
@@ -108,7 +107,7 @@ export default function Login() {
         </View>
 
         <Text style={styles.ghostText}>
-          SIGN IN
+          Login
         </Text>
 
       </View>
@@ -155,7 +154,7 @@ export default function Login() {
         </View>
 
         <TouchableOpacity style={styles.fullButtonRow} onPress={handleLogin}>
-          <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} />
+          {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
           <View style={styles.loginButton}>
             <Text style={styles.loginText}>
               {loading ? 'LOGGING IN' : 'LOGIN'}
@@ -168,7 +167,7 @@ export default function Login() {
               />
             )}
           </View>
-          <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+          {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
         </TouchableOpacity>
       </View>
 
@@ -208,23 +207,26 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     color: '#ffffff',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 30,
-    marginBottom: 10
+    marginBottom: 0
   },
   pageDesc: {
     color: '#ffffff',
-    fontSize: 16,
-    fontFamily: 'Manrope'
+    fontSize: 18,
+    fontFamily: 'Acumin'
   },
   ghostText: {
     color: '#ffffff',
-    fontSize: 128,
-    fontFamily: 'Bebas',
+    fontSize: 100,
+    fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2
+    opacity: 0.2,
+    width:'100%',
+    textAlign:'right',
+    textTransform:'uppercase'
   },
   form: {
     paddingLeft: 20,
@@ -236,7 +238,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F4F4',
     marginBottom: 16,
     color: 'black',
-    borderRadius: 10
+    borderRadius: 10,
+    fontFamily:'Acumin',
   },
   passwordInput: {
     letterSpacing: 1,
@@ -249,16 +252,17 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#1a491e',
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    borderRadius:15
   },
   loginText: {
-    fontSize: 20,
+    fontSize: 18,
     color: 'white',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
   },
   loginLoader: {
     marginLeft: 10
@@ -290,8 +294,8 @@ const styles = StyleSheet.create({
   },
   switchLink: {
     marginLeft: 5,
-    fontFamily: 'Bebas',
-    fontSize: 16,
+    fontFamily: 'Qatar',
+    fontSize: 14,
     paddingTop: 3,
     lineHeight: 16,
     color: 'black'
@@ -315,7 +319,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontFamily: 'Manrope',
+    fontFamily: 'Acumin',
   },
   backBtn: {
     position: 'absolute',
@@ -324,12 +328,12 @@ const styles = StyleSheet.create({
     width: 200,
     zIndex: 1,
     flexDirection: 'row',
-    alignContent: 'center',
+    alignItems: 'center',
   },
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
-    fontFamily: 'Bebas'
+    fontFamily: 'Qatar'
   },
   eyeIcon: {
     position: 'absolute',

@@ -1617,12 +1617,13 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     coachName: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#111111',
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -1636,13 +1637,13 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     profileSection: {
         marginBottom: 30
@@ -1677,7 +1678,7 @@ const styles = StyleSheet.create({
         color: '#FF4000',
         textAlign: 'center',
         fontSize: 24,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     profileProgressTextSection: {
         flex: 1,
@@ -1687,7 +1688,7 @@ const styles = StyleSheet.create({
     },
     profileProgressText: {
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
     },
     profileProgressImg: {
@@ -1696,25 +1697,25 @@ const styles = StyleSheet.create({
         objectFit: 'contain',
     },
     title: {
-        fontFamily: "Bebas",
-        fontSize: 20,
+        fontFamily: "Qatar",
+        fontSize: 16,
         color: 'black'
     },
     subtitle: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         fontWeight: 'bold',
         color: 'black'
     },
     paragraph: {
-        fontFamily: "Manrope",
+        fontFamily: "Acumin",
         fontSize: 16,
         color: 'black'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -1749,7 +1750,7 @@ const styles = StyleSheet.create({
     buttonText: {
         fontSize: 20,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     navBar: {
         position: 'absolute',
@@ -1778,6 +1779,7 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
+        tintColor:'#111111'
     },
     activeIcon: {
         width: 24,
@@ -1795,10 +1797,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     uploadImage: {
         backgroundColor: '#111111',
@@ -1815,7 +1817,7 @@ const styles = StyleSheet.create({
     },
     uploadImageText: {
         color: '#FF4000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 16,
     },
     tabs: {
@@ -1835,7 +1837,7 @@ const styles = StyleSheet.create({
     tabText: {
         // color: '#FF4000',
         color: '#888888',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18
     },
     tabTextActive: {
@@ -1893,8 +1895,8 @@ const styles = StyleSheet.create({
     },
     locationLinkText: {
         color: '#000',
-        fontFamily: 'Bebas',
-        fontSize: 20,
+        fontFamily: 'Qatar',
+        fontSize: 14,
         textAlign: 'center'
     },
     emptyContactInfoBtnText: {
@@ -1904,7 +1906,7 @@ const styles = StyleSheet.create({
 
     },
     emptyContactInfo: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontStyle: 'italic',
         fontSize: 14,
         color: '#888888'
@@ -1930,14 +1932,14 @@ const styles = StyleSheet.create({
         marginRight: 20
     },
     adminName: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: 'black'
     },
     adminLink: {
         color: '#FF4000',
         fontSize: 12,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     adminButton: {
 
@@ -1949,7 +1951,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     sectionTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#111111',
     },
@@ -1961,7 +1963,7 @@ const styles = StyleSheet.create({
     },
     addButtonText: {
         color: 'white',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         fontWeight: 'bold',
     },
@@ -1994,19 +1996,19 @@ const styles = StyleSheet.create({
     },
     defaultLogoText: {
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
     },
     teamInfo: {
         flex: 1,
     },
     teamName: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         color: '#111111',
     },
     teamSport: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
     },
@@ -2015,12 +2017,12 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     teamStatValue: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         color: '#FF4000',
     },
     teamStatLabel: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 12,
         color: '#666666',
     },
@@ -2033,7 +2035,7 @@ const styles = StyleSheet.create({
         borderTopColor: '#eeeeee',
     },
     coachLabel: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
         marginRight: 10,
@@ -2060,7 +2062,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
     },
     teamActionText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 12,
         color: '#FF4000',
         marginTop: 5,
@@ -2075,13 +2077,13 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     emptyStateTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#111111',
         marginBottom: 10,
     },
     emptyStateText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: '#666666',
         textAlign: 'center',
@@ -2096,7 +2098,7 @@ const styles = StyleSheet.create({
     },
     emptyStateButtonText: {
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 18,
     },
     calendarContainer: {
@@ -2111,7 +2113,7 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     monthHeader: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 22,
         color: '#111111',
         textAlign: 'center',
@@ -2122,7 +2124,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     dayHeader: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 12,
         color: '#666666',
         textAlign: 'center',
@@ -2153,7 +2155,7 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     dayNumber: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#111111',
     },
@@ -2186,12 +2188,12 @@ const styles = StyleSheet.create({
         marginRight: 15,
     },
     eventDay: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 24,
         color: '#FF4000',
     },
     eventMonth: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
         textTransform: 'uppercase',
@@ -2200,20 +2202,20 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     eventTitle: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: '#111111',
         fontWeight: 'bold',
         marginBottom: 5,
     },
     eventTime: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
         marginBottom: 3,
     },
     eventLocation: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
     },
@@ -2223,7 +2225,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     subSectionTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         color: '#111111',
         marginBottom: 15,
@@ -2269,12 +2271,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     staffName: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         color: '#111111',
     },
     staffRole: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
     },
@@ -2283,12 +2285,12 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     staffStatValue: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         color: '#FF4000',
     },
     staffStatLabel: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 12,
         color: '#666666',
     },
@@ -2310,7 +2312,7 @@ const styles = StyleSheet.create({
         gap: 5,
     },
     contactButtonText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#FF4000',
     },
@@ -2345,12 +2347,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     inventoryName: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         color: '#111111',
     },
     inventoryCategory: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
     },
@@ -2359,12 +2361,12 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     inventoryStatValue: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         color: '#FF4000',
     },
     inventoryStatLabel: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 12,
         color: '#666666',
     },
@@ -2379,12 +2381,12 @@ const styles = StyleSheet.create({
         marginBottom: 5,
     },
     inventoryDetailLabel: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#666666',
     },
     inventoryDetailValue: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#111111',
         flexShrink: 1,
@@ -2407,12 +2409,12 @@ const styles = StyleSheet.create({
         width: 200,
         zIndex: 1,
         flexDirection: 'row',
-        alignContent: 'center',
+        alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
 });
 

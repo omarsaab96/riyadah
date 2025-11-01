@@ -605,7 +605,8 @@ const styles = StyleSheet.create({
         marginBottom: 30
     },
     logo: {
-        width: 120,
+        width: 120 ,
+        height:30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -619,19 +620,19 @@ const styles = StyleSheet.create({
     },
     pageTitle: {
         color: '#ffffff',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 30,
         marginBottom: 10
     },
     pageDesc: {
         color: '#ffffff',
         fontSize: 16,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     ghostText: {
         color: '#ffffff',
-        fontSize: 128,
-        fontFamily: 'Bebas',
+        fontSize:100,textTransform:'uppercase',
+        fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
@@ -689,7 +690,7 @@ const styles = StyleSheet.create({
     loginText: {
         fontSize: 20,
         color: 'white',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     sideRect: {
         height: 48,
@@ -717,7 +718,7 @@ const styles = StyleSheet.create({
     },
     switchLink: {
         marginLeft: 5,
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 16,
         paddingTop: 3,
         lineHeight: 16
@@ -735,7 +736,7 @@ const styles = StyleSheet.create({
     hint: {
         color: '#525252',
         fontSize: 12,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     checkboxContainer: {
         flexDirection: 'row',
@@ -770,11 +771,11 @@ const styles = StyleSheet.create({
     },
     label: {
         color: '#000000',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     formLabel: {
         color: '#000000',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontWeight: 'bold',
         marginBottom: 10,
         fontSize: 16
@@ -802,7 +803,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     wizardContainer: {
         flexDirection: 'row',
@@ -821,17 +822,17 @@ const styles = StyleSheet.create({
         width: (width - 60) / 2,
         position: 'relative',
         height: 80,
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     accountOptionSelected: {
         borderColor: '#FF4000',
         backgroundColor: '#FFE6D8',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     accountText: {
         fontSize: 14,
         color: '#333',
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     icon: {
         width: 50,
@@ -860,7 +861,7 @@ const styles = StyleSheet.create({
     },
     dobSeperator: {
         fontSize: 30,
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontWeight: 'bold',
         color: '#FF4000',
         marginHorizontal: 10
@@ -869,13 +870,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20
     },
     confirmationTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 20,
         marginBottom: 5,
         color: 'black'
     },
     confirmationSubTitle: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 16,
         color: 'black'
     },
@@ -890,10 +891,10 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         columnGap: 15
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     profileButton: {
         borderRadius: 5,
@@ -913,10 +914,10 @@ const styles = StyleSheet.create({
     createAccountText: {
         fontSize: 20,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     uploadHint: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         marginBottom: 10,
         color: '#111111'
     },

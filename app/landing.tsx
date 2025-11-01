@@ -522,7 +522,7 @@ export default function Landing() {
                                                                 zIndex: 3,
                                                             }}
                                                         >
-                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                            <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
                                                                 + {images.length - 3}
                                                             </Text>
                                                         </View>
@@ -619,7 +619,7 @@ export default function Landing() {
                                                                 zIndex: 3,
                                                             }}
                                                         >
-                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                            <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
                                                                 + {videos.length - 3}
                                                             </Text>
                                                         </View>
@@ -694,7 +694,7 @@ export default function Landing() {
                                                             zIndex: 3,
                                                         }}
                                                     >
-                                                        <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                        <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
                                                             + {allMedia.length - 3}
                                                         </Text>
                                                     </View>
@@ -1190,7 +1190,7 @@ export default function Landing() {
                                 <View style={styles.header}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} >
                                         <Image
-                                            source={require('../assets/logo_white.png')}
+                                            source={require('../assets/logo_orangeBlack.png')}
                                             style={styles.logo}
                                             resizeMode="contain"
                                         />
@@ -1326,7 +1326,7 @@ export default function Landing() {
                                                                                                 zIndex: 3,
                                                                                             }}
                                                                                         >
-                                                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                                            <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
                                                                                                 + {images.length - 3}
                                                                                             </Text>
                                                                                         </View>
@@ -1423,7 +1423,7 @@ export default function Landing() {
                                                                                                 zIndex: 3,
                                                                                             }}
                                                                                         >
-                                                                                            <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                                            <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
                                                                                                 + {videos.length - 3}
                                                                                             </Text>
                                                                                         </View>
@@ -1498,7 +1498,7 @@ export default function Landing() {
                                                                                             zIndex: 3,
                                                                                         }}
                                                                                     >
-                                                                                        <Text style={{ color: '#fff', fontFamily: 'Bebas', fontSize: 30 }}>
+                                                                                        <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
                                                                                             + {allMedia.length - 3}
                                                                                         </Text>
                                                                                     </View>
@@ -1882,9 +1882,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     logo: {
-        width: 120,
-        height: 30,
-        tintColor: '#111111',
+        width: 120 ,
+        height:30,
+        // tintColor: '#111111',
     },
     loadingContainer: {
         flex: 1,
@@ -1906,10 +1906,10 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: 'rgba(0,0,0,0.05)',
     },
-    profileButtonText: {
-        fontSize: 18,
+    profileButtonText: {textTransform:'uppercase',
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     dmBtnImg: {
         width: 25,
@@ -1996,9 +1996,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
     },
     createPostButtonText: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     postContainer: {
         backgroundColor: '#ffffff',
@@ -2036,7 +2036,7 @@ const styles = StyleSheet.create({
         marginBottom: 0,
     },
     postActionText: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#888888'
     },
@@ -2073,7 +2073,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginBottom: 10,
         color: '#050505',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     postImage: {
         width: '100%',
@@ -2221,7 +2221,7 @@ const styles = StyleSheet.create({
     },
     commentModalTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily:'Qatar',
         color: '#333',
     },
     commentModalClose: {
@@ -2252,14 +2252,15 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     commentAuthor: {
-        fontWeight: 'bold',
+        // fontFamily:'Qatar',
+        fontWeight:'bold',
         fontSize: 14,
         color: '#333',
         marginBottom: 3,
         marginRight: 15
     },
     commentText: {
-        fontSize: 14,
+        fontSize: 16,
         color: '#333',
         marginBottom: 3,
     },
@@ -2384,7 +2385,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginLeft: 5,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     postButton: {
         backgroundColor: '#000000',
@@ -2400,18 +2401,18 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '600',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     postSecBtnText: {
         color: '#000',
         fontWeight: '600',
         fontSize: 18,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     postText: {
         fontSize: 16,
         lineHeight: 22,
         color: '#050505',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
 });

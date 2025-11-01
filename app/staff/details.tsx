@@ -4,16 +4,16 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    Linking,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 const { width } = Dimensions.get('window');
@@ -180,7 +180,7 @@ export default function StaffDetailsScreen() {
                     ) : (
                       <Image
                         source={require('../../assets/teamlogo.png')}
-                        style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                        style={{ tintColor:'#000',width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
                       />
                     )}
                   </View>
@@ -251,13 +251,13 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     color: '#ffffff',
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     fontSize: 30,
   },
   pageDesc: {
     color: '#ffffff',
     fontSize: 16,
-    fontFamily: 'Manrope'
+    fontFamily: 'Acumin'
   },
   centered: {
     flex: 1,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 4,
     fontSize: 18,
-    fontFamily: 'Bebas',
+    fontFamily: 'Qatar',
     color:'black'
   },
   contactButton: {
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   contactText: {
     marginLeft: 8,
     color:'black',
-    fontFamily: 'Manrope',
+    fontFamily: 'Acumin',
     fontSize: 16
   },
   teamItem: {
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
-    fontFamily: 'Bebas'
+    fontFamily: 'Qatar'
   },
   profileImage: {
     position: 'absolute',
@@ -371,8 +371,8 @@ const styles = StyleSheet.create({
   },
   ghostText: {
     color: '#ffffff',
-    fontSize: 128,
-    fontFamily: 'Bebas',
+    fontSize:100,textTransform:'uppercase',
+    fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,

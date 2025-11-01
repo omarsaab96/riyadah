@@ -190,7 +190,7 @@ export default function SearchScreen() {
 
             <View style={styles.logoContainer}>
                 <Image
-                    source={require('../assets/logo_white.png')}
+                    source={require('../assets/logo_orangeBlack.png')}
                     style={styles.logo}
                     resizeMode="contain"
                 />
@@ -523,9 +523,8 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     logo: {
-        width: 120,
-        height: 30,
-        tintColor: '#111111',
+        width: 120 ,
+        height:30,
     },
     navBar: {
         position: 'absolute',
@@ -554,6 +553,7 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
+        tintColor:'#111111'
     },
     activeIcon: {
         width: 24,
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F4F4F4',
         color: 'black',
         borderRadius: 10,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     searchLoader: {
         position: 'absolute',
@@ -609,17 +609,17 @@ const styles = StyleSheet.create({
         aspectRatio: 1
     },
     name: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         fontSize: 16,
         color: '#111111',
     },
     role: {
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
         fontSize: 14,
         color: '#888888',
     },
     sectionTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         color: '#111111',
         fontSize: 18,
         marginBottom: 10,
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f4f4f4',
     },
     filterTitle: {
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
         color: '#111111',
         fontSize: 16
     },
@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
         color: '#111111',
         fontWeight: '600',
         fontSize: 16,
-        fontFamily: 'Bebas'
+        fontFamily: 'Qatar'
     },
     tabs: {
         flexDirection: 'row',
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#111111',
         marginBottom: 5,
-        fontFamily: 'Manrope',
+        fontFamily: 'Acumin',
     },
     filterButton: {
         padding: 6,
@@ -677,7 +677,7 @@ const styles = StyleSheet.create({
     filterText: {
         fontSize: 14,
         color: '#555',
-        fontFamily: 'Manrope'
+        fontFamily: 'Acumin'
     },
     activeFilterText: {
         color: '#fff',

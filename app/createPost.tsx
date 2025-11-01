@@ -321,9 +321,9 @@ const styles = StyleSheet.create({
     },
     actionText: {
         marginLeft: 6,
-        fontSize: 18,
+        fontSize: 16,
         color: '#150000',
-        fontFamily: 'Bebas',
+        fontFamily: 'Qatar',
     },
     postButton: {
         backgroundColor: '#000000',
