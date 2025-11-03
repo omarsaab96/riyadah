@@ -37,6 +37,7 @@ export default function Profile() {
     const scrollY = useRef(new Animated.Value(0)).current;
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
+    const [userType, setUserType] = useState(null);
     const [teams, setTeams] = useState(null);
     const [userCoachOf, setUserCoachOf] = useState([]);
     const [schedule, setSchedule] = useState(null);
@@ -156,6 +157,7 @@ export default function Profile() {
                 if (response.ok) {
                     const user = await response.json();
                     setUser(user)
+                    setUserType(user.type)
 
                     if (user.role && user.role == "Coach") {
                         const coachteams = await fetch(`http://193.187.132.170:5000/api/teams/byCoach/${user._id}`);
@@ -902,7 +904,7 @@ export default function Profile() {
                     {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
                     <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
                     {!loading && <Text style={styles.pageDesc}>
-                        {user.role != null ? user.role : user.type}
+                        {user.role != null ? user.role : userType}
                     </Text>}
 
                     {loading &&
@@ -1002,7 +1004,7 @@ export default function Profile() {
             </Animated.View>
 
             {/* Tabs for Athlete */}
-            {!loading && user && (user.type == "Athlete" && user.role != "Coach") && (
+            {!loading && user && (userType == "Athlete" && user.role != "Coach") && (
                 <View style={styles.tabs}>
                     <ScrollView
                         horizontal
@@ -1093,7 +1095,7 @@ export default function Profile() {
                 </View>
             )}
 
-            {true && <View>
+            {false && <View>
                 <TouchableOpacity onPress={() => { router.push("/postSessionSurvey") }}>
                     <Text>post session</Text>
                 </TouchableOpacity>
@@ -2869,9 +2871,9 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
-        height:40,
+        width: 120,
+        height: 30,
+        height: 40,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -2962,7 +2964,7 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
@@ -3027,7 +3029,7 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
-        tintColor:'#111111'
+        tintColor: '#111111'
     },
     activeIcon: {
         width: 24,
@@ -3045,7 +3047,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',

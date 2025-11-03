@@ -89,7 +89,7 @@ export default function Profile() {
         router.push('/profile/accountSettings')
     };
 
-    const openLink = async (url) => {
+    const openLink = async (url:string) => {
         try {
             const supported = await Linking.canOpenURL(url);
             if (supported) {

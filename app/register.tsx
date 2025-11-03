@@ -11,9 +11,11 @@ import { useRegistration } from '../context/registration';
 
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -142,6 +144,19 @@ export default function Register() {
     setAgreed(prev => !prev);
   };
 
+  const openLink = async (url:string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert("Cannot open \n" + url);
+      }
+    } catch (err) {
+      console.error("Failed to open link: ", err);
+    }
+  };
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <KeyboardAvoidingView
@@ -264,9 +279,9 @@ export default function Register() {
               </View>
 
               <Text style={styles.label}>
-                I agree to our{' '}
-                <Text style={styles.link} onPress={() => router.push('/termsConditions')}>
-                  Terms & Conditions
+                I agree Riyadah's{' '}
+                <Text style={styles.link} onPress={() => openLink("https://riyadah.app/terms")}>
+                  Terms and Conditions
                 </Text>
               </Text>
             </TouchableOpacity>
