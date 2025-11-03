@@ -35,6 +35,7 @@ schedule:
 	✔ edit event date and time on repeatig events @done(25-10-24 09:54)
 	✔ cancel event one or repeating @done(25-10-24 10:37)
 	☐ check training flow (start, end, notifications, attendance, surveys)
+	☐ add recurence option in edit
 
 frontend:
 	☐ change icons
@@ -44,6 +45,9 @@ notifications:
 
 test:
 	☐ test everything
+	☐ Wallet replica set
+	☐ timesheet
+	☐ skip survey
 
 Version check:
 	should check version on load and force update if needed
@@ -97,8 +101,3 @@ How to use:
 	•	Coaches view a monthly summary per player or team.
 	•	Can auto-flag players with declining motivation or poor recovery.
 	•	Excellent for wellness tracking + communication insight.
-
-
-
-
-1a491e

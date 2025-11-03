@@ -4,15 +4,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 const { width } = Dimensions.get('window');
@@ -107,7 +107,7 @@ export default function StaffDetailsScreen() {
       {item && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>image</Text>
+          <Text style={styles.sectionTitle}>Image</Text>
           {item.image ? (
             <Image
               source={{ uri: item.image }}
@@ -126,11 +126,11 @@ export default function StaffDetailsScreen() {
           <Text style={styles.contactText}>{item.quantity}</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>unitPrice</Text>
+          <Text style={styles.sectionTitle}>UnitPrice</Text>
           <Text style={styles.contactText}>{item.unitPrice}</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>description</Text>
+          <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.contactText}>{item.description || '-'}</Text>
         </View>
 
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     width: 200,
     zIndex: 1,
     flexDirection: 'row',
-    alignContent: 'center',
+    alignItems: 'center',
   },
   backBtnText: {
     color: '#FFF',

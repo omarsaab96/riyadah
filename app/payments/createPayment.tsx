@@ -429,6 +429,7 @@ export default function AddPayment() {
                                         <Picker.Item label="Club registration fees" value="Club registration fees" />
                                         <Picker.Item label="Monthly subscription fees" value="Monthly subscription fees" />
                                         <Picker.Item label="Equipment purchase" value="Equipment purchase" />
+                                        <Picker.Item label="Salary" value="Salary" />
                                         <Picker.Item label="Other" value="Other" />
                                     </Picker>
                                 </View>
