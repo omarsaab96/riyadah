@@ -58,7 +58,7 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const { payer, beneficiary, type, amount, currency, note, status } = req.body;
 
-    // Find or create wallets inside the session
+    // Find or create wallets
     let payerWallet = await Wallet.findOne({ user: payer });
     let beneficiaryWallet = await Wallet.findOne({ user: beneficiary });
 
@@ -78,8 +78,6 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Check sufficient funds
     if (payerWallet.availableBalance < amount) {
-      await session.abortTransaction();
-      session.endSession();
       return res.status(400).json({ success: false, message: 'Insufficient funds' });
     }
 
