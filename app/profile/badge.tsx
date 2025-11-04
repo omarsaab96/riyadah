@@ -84,7 +84,7 @@ export default function Badge() {
                     </TouchableOpacity>
 
                     <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Get a Riyadah badge</Text>
+                        <Text style={styles.pageTitle}>Riyadah badge</Text>
                         {!loading && user && <Text style={styles.pageDesc}>{user?.name}</Text>}
 
                         {loading &&
@@ -173,19 +173,19 @@ export default function Badge() {
                                     <Text style={styles.title}>Accounts with the Riyadah badge have:</Text>
 
                                     <View style={{ marginTop: 10 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10, marginBottom: 20 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                                             <Text style={styles.statNumber}>+85%</Text>
                                             <Text style={[styles.paragraph, { flex: 3 }]}>
                                                 Higher chance of attracting sponsors and partnerships
                                             </Text>
                                         </View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10, marginBottom: 20 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                                             <Text style={styles.statNumber}>+72%</Text>
                                             <Text style={[styles.paragraph, { flex: 3 }]}>
                                                 More visibility and priority with scouts and recruiters
                                             </Text>
                                         </View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                             <Text style={styles.statNumber}>3x</Text>
                                             <Text style={[styles.paragraph, { flex: 3 }]}>
                                                 More likely to be discovered in search results
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Qatar'
     },
     statNumber: {
-        fontSize: 44,
+        fontSize: 30,
         fontFamily: 'Qatar',
         color: '#FF4000',
         textAlign: 'center',
