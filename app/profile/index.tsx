@@ -1047,14 +1047,6 @@ export default function Profile() {
         }
     };
 
-    const getClubLatitude = async (clubId: string) => {
-
-    };
-
-    const getClubLongitude = async (clubId: string) => {
-
-    };
-
     function getDistanceFromLatLonInMeters(lat1, lon1) {
         const R = 6371e3; // Earth radius in meters
         const lat2 = user.isStaff[0].contactInfo.location.latitude;
@@ -3009,7 +3001,7 @@ export default function Profile() {
                                                 backgroundColor: '#fff',
                                                 marginBottom: 10
                                             }}>
-                                                <View style={{ flexDirection: 'row', alignItem: 'center', justifyContent: 'space-between' }}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                     <Text style={{ fontFamily: 'Qatar', fontSize: 14, flex: 1 }}>
                                                         {checkInDate}
                                                     </Text>
@@ -3029,7 +3021,7 @@ export default function Profile() {
                                                     </Text>)}
                                                 </View>
 
-                                                <View style={{ flexDirection: 'row', alignItem: 'center', justifyContent: 'space-between' }}>
+                                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                     <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
                                                         In: {formatTimeOnly(item.checkIn)}
                                                     </Text>

@@ -1,3 +1,4 @@
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -22,6 +23,7 @@ export default function TimeSheetScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [staff, setStaff] = useState<any>(null);
+  const [timesheet, setTimeSheet] = useState<any>(null);
 
   useEffect(() => {
     const fetchStaff = async () => {
@@ -44,6 +46,26 @@ export default function TimeSheetScreen() {
         }
 
         setStaff(data.data);
+
+        const timesheetResponse = await fetch(`http://193.187.132.170:5000/api/timesheet/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (!timesheetResponse.ok) {
+          throw new Error(data.message || "Failed to load staff details");
+        }
+
+
+
+        const timesheetdata = await timesheetResponse.json();
+        console.log(timesheetdata)
+        setTimeSheet(timesheetdata)
+
+
       } catch (err: any) {
         console.error("Error fetching staff:", err);
         Alert.alert("Error", err.message);
@@ -58,7 +80,68 @@ export default function TimeSheetScreen() {
     }
   }, [id]);
 
+  const formatDateOnly = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
 
+    const day = date.getDate().toString().padStart(2, '0'); // 01–31
+    const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+    const year = date.getFullYear();
+
+    return `${day} ${month} ${year}`;
+  };
+
+  const formatTimeOnly = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+
+    const day = date.getDate().toString().padStart(2, '0'); // 01–31
+    const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+    const year = date.getFullYear();
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; // convert 0–23 to 12-hour format
+    const hourStr = hours.toString().padStart(2, '0');
+
+    return `${hourStr}:${minutes} ${ampm}`;
+  };
+
+  function getDistanceFromLatLonInMeters(lat1, lon1) {
+    const R = 6371e3; // Earth radius in meters
+    const lat2 = staff.isStaff[0].contactInfo.location.latitude;
+    const lon2 = staff.isStaff[0].contactInfo.location.longitude;
+
+    console.log(lat2)
+
+    if (lat2 == null || lon2 == null) {
+      return 0;
+    }
+
+    const toRad = (value) => (value * Math.PI) / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // distance in meters
+  }
+
+  function checkIfLocationIsRight(lat, lon) {
+    const distance = getDistanceFromLatLonInMeters(
+      lat,
+      lon
+    );
+
+    return distance <= 50;
+  }
 
   return (
     <View style={styles.container}>
@@ -77,13 +160,10 @@ export default function TimeSheetScreen() {
         </TouchableOpacity>
 
         <View style={styles.headerTextBlock}>
-          {loading && <Text style={styles.pageTitle}>Staff details</Text>}
+          <Text style={styles.pageTitle}>Timesheet</Text>
 
           {!loading && staff &&
-            <>
-              <Text style={styles.pageTitle}>{staff.userRef.name}</Text>
-              <Text style={styles.pageDesc}>{staff.role || "Staff Member"}</Text>
-            </>
+            <Text style={styles.pageDesc}>{staff.userRef.name || "Staff Member"}</Text>
           }
 
           {loading &&
@@ -97,7 +177,7 @@ export default function TimeSheetScreen() {
           }
         </View>
 
-        <Text style={styles.ghostText}>Staff</Text>
+        <Text style={styles.ghostText}>TimeS</Text>
 
         {!loading && staff &&
           <View style={styles.profileImage}>
@@ -122,13 +202,77 @@ export default function TimeSheetScreen() {
         }
       </View>
 
+      <Text>{id}</Text>
+
       {!staff && !loading && <View style={styles.centered}>
         <Text>No staff member found.</Text>
       </View>}
 
       {staff && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
 
+        <View>
 
+          {!loading && timesheet && <View style={{ marginTop: 30 }}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
+                History
+              </Text>
+            </View>
+
+            {timesheet.length === 0 && (
+              <Text style={{ color: '#888', textAlign: 'center' }}>
+                No timesheet records yet.
+              </Text>
+            )}
+
+            {timesheet.map((item) => {
+              const checkInDate = formatDateOnly(item.checkIn);
+
+              return (
+                <View key={item._id} style={{
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 10,
+                  backgroundColor: '#fff',
+                  marginBottom: 10
+                }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={{ fontFamily: 'Qatar', fontSize: 14, flex: 1 }}>
+                      {checkInDate}
+                    </Text>
+
+                    {item.location && (<Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
+                      {checkIfLocationIsRight(item.location.latitude, item.location.longitude) ? (
+                        <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                          <FontAwesome name="check" size={14} color="#009933" />
+                          <Text>Location match</Text>
+                        </View>
+                      ) : (
+                        <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                          <FontAwesome name="close" size={14} color="#FF4400" />
+                          <Text>Location does not match</Text>
+                        </View>
+                      )}
+                    </Text>)}
+                  </View>
+
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
+                      In: {formatTimeOnly(item.checkIn)}
+                    </Text>
+
+                    <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
+                      Out: {item.checkOut ? formatTimeOnly(item.checkOut) : 'Not checked out yet'}
+                    </Text>
+                  </View>
+
+                </View>
+              );
+            })}
+
+          </View>}
+        </View>
 
       </ScrollView >
       }
@@ -159,7 +303,7 @@ const styles = StyleSheet.create({
   },
   pageDesc: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 20,
     fontFamily: 'Acumin'
   },
   centered: {
@@ -209,7 +353,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     fontSize: 18,
     fontFamily: 'Qatar',
-    color:'black'
+    color: 'black'
   },
   contactButton: {
     flexDirection: "row",
@@ -218,7 +362,7 @@ const styles = StyleSheet.create({
   },
   contactText: {
     marginLeft: 8,
-    color:'black',
+    color: 'black',
     fontFamily: 'Acumin',
     fontSize: 16
   },
@@ -239,7 +383,7 @@ const styles = StyleSheet.create({
   listItem: {
     marginBottom: 2,
     fontSize: 16,
-    color:'black'
+    color: 'black'
   },
   noData: {
     color: "#888", fontSize: 16
@@ -274,11 +418,62 @@ const styles = StyleSheet.create({
   },
   ghostText: {
     color: '#ffffff',
-    fontSize:100,textTransform:'uppercase',
+    fontSize: 100, textTransform: 'uppercase',
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
     opacity: 0.2
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  balanceSection: {
+    marginBottom: 30,
+  },
+  balanceText: {
+    fontFamily: 'Acumin',
+    fontSize: 16,
+    color: 'black',
+    marginBottom: 5,
+  },
+  balanceAmount: {
+    fontFamily: 'Qatar',
+    fontSize: 28,
+    color: '#FF4000',
+    marginBottom: 25,
+  },
+  balanceTitle: {
+    fontFamily: 'Qatar',
+    fontSize: 20,
+    color: '#111111',
+  },
+  balanceActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  balanceButton: {
+    flex: 1,
+    backgroundColor: '#FF4000',
+    paddingVertical: 10,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 5
+  },
+  balanceButtonText: {
+    color: 'white',
+    fontFamily: 'Qatar',
+    fontSize: 16,
+  },
+  paragraph: {
+    fontFamily: "Acumin",
+    fontSize: 16,
+    color: 'black'
   },
 });
