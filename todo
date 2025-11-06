@@ -34,20 +34,20 @@ attendance:
 schedule:
 	✔ edit event date and time on repeatig events @done(25-10-24 09:54)
 	✔ cancel event one or repeating @done(25-10-24 10:37)
-	☐ check training flow (start, end, notifications, attendance, surveys)
+	✔ check training flow (start, end, notifications, attendance, surveys) @done(25-11-06 09:41)
 	☐ add recurence option in edit
 
 frontend:
-	☐ change icons
+	✔ change icons @done(25-11-06 09:41)
 
 notifications:
 	☐ data with deeplink
 
 test:
-	☐ test everything
-	☐ Wallet replica set
+	✔ test everything @done(25-11-06 09:41)
+	✔ Wallet replica set @done(25-11-06 09:41)
 	☐ timesheet
-	☐ skip survey
+	✔ skip survey @done(25-11-06 10:21)
 
 Version check:
 	should check version on load and force update if needed

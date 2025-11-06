@@ -7,12 +7,14 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { RadarChart } from '@salmonco/react-native-radar-chart';
+import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Animated,
     Dimensions,
     Easing,
@@ -28,6 +30,7 @@ import {
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
 
 const { width } = Dimensions.get('window');
 
@@ -53,6 +56,7 @@ export default function Profile() {
     const [inventoryLoading, setInventoryLoading] = useState(true);
     const [financialsLoading, setFinancialsLoading] = useState(true);
     const [clubsLoading, setClubsLoading] = useState(true);
+    const [checkingLoading, setCheckingLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [activePaymentTab, setActivePaymentTab] = useState('pending');
     const [adminUser, setAdminUser] = useState(null);
@@ -62,7 +66,7 @@ export default function Profile() {
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAthlete = ['Profile', 'Schedule', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
-    const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials'];
+    const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials', 'Checkin'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -462,6 +466,10 @@ export default function Profile() {
         // };
     }
 
+    const getCheckin = async () => {
+        setCheckingLoading(false)
+    }
+
     const handleEdit = async () => {
         router.push('/profile/editProfile');
     };
@@ -608,6 +616,11 @@ export default function Profile() {
         if (label == "Clubs") {
             setClubsLoading(true);
             getClubs();
+        }
+
+        if (label == "Checkin") {
+            setCheckingLoading(true);
+            getCheckin();
         }
     }
 
@@ -890,6 +903,36 @@ export default function Profile() {
             setFinancialsLoading(false);
         }
     };
+
+    const logLocationTime = async () => {
+        //get currentLocation
+        try {
+            // Ask for permission
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                Alert.alert("Permission denied", "Enable location to continue.");
+                return;
+            }
+
+            // Get current coords
+            const { coords } = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.High,
+            });
+
+            console.log("Latitude:", coords.latitude);
+            console.log("Longitude:", coords.longitude);
+
+            // Send to API or use however you need:
+            // await fetch(...)
+
+        } catch (err) {
+            console.log("Location error:", err);
+        }
+
+
+        //get current date and time
+        //send to API
+    }
 
     return (
         <View style={styles.container}>
@@ -2733,6 +2776,44 @@ export default function Profile() {
                                         </Text>
                                     </View>
                                 )}
+                            </View>
+                        )}
+                    </View>
+                </Animated.ScrollView>
+            }
+
+            {/* CheckinTab */}
+            {
+                !loading && user && activeTab == "Checkin" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
+                    <View style={styles.contentContainer}>
+                        {checkingLoading ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#FF4000"
+                                    style={{ transform: [{ scale: 1.25 }] }}
+                                />
+                            </View>
+                        ) : (
+                            <View>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
+                                        Checkin
+                                    </Text>
+                                    <TouchableOpacity onPress={() => { logLocationTime() }}>
+                                        <Text>get current loc</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <Text style={styles.paragraph}>
+                                    This will use your current location to check you into your club. Please note that
+                                    your timesheet will be accessed and used by the HR department of your club.
+                                </Text>
                             </View>
                         )}
                     </View>

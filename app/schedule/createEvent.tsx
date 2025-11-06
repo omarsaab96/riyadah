@@ -203,7 +203,16 @@ const CreateEventScreen = () => {
         const fetchTeams = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch('http://193.187.132.170:5000/api/teams', {
+
+                let url = '';
+                if (user && user.type == "Club") {
+                    url = "http://193.187.132.170:5000/api/teams/club/"+user._id;
+                }
+                if (user && user.type == "Athlete" && user.role == "Coach") {
+                    url = "http://193.187.132.170:5000/api/teams/byCoach/"+user._id;
+                }
+
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -572,7 +581,7 @@ const CreateEventScreen = () => {
                         </View>
 
                         < View style={styles.formGroup}>
-                            <Text style={[styles.label,{marginBottom:0}]}>Recurring event</Text>
+                            <Text style={[styles.label, { marginBottom: 0 }]}>Recurring event</Text>
                             <Text style={styles.hint}>Recurrence will expire automatically after one year.</Text>
                             <View style={styles.pickerContainer}>
                                 <Picker
@@ -920,8 +929,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -958,7 +967,7 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
@@ -984,7 +993,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',

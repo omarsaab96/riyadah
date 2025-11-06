@@ -22,6 +22,15 @@ const postSessionSurvey = () => {
 
 
     const handleSubmit = async () => {
+        if (!intensity || !physicalFeeling || !focusLevel || !discomfort || !notes) {
+            Alert.alert("Please fill all fields", "All fields are mandatory.")
+            return;
+        }
+        if (discomfort == "Yes" && !discomfortDetails) {
+            Alert.alert("Please add discomfort details", "This is kept to track your performance.")
+            return;
+        }
+
         const feedbackData = {
             intensity,
             physicalFeeling,
@@ -74,6 +83,10 @@ const postSessionSurvey = () => {
             setSaving(false);
         }
     };
+
+    const handleSkip = () => {
+        router.replace("/landing");
+    }
 
     useEffect(() => {
         if (timer == 0) {
@@ -203,22 +216,31 @@ const postSessionSurvey = () => {
             </KeyboardAvoidingView>}
 
             {!submitted && !loading && <View style={styles.fixedBottomSection}>
-                <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
-                    {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
-                    <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>
-                            {saving ? 'Submitting' : 'Submit Feedback'}
-                        </Text>
-                        {saving && (
-                            <ActivityIndicator
-                                size="small"
-                                color="#FFFFFF"
-                                style={styles.loginLoader}
-                            />
-                        )}
-                    </View>
-                    {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <TouchableOpacity style={styles.fullButtonRow} onPress={handleSkip}>
+                        <View style={[styles.loginButton, { backgroundColor: '#888' }]}>
+                            <Text style={styles.loginText}>
+                                Skip
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
+                        {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
+                        <View style={styles.loginButton}>
+                            <Text style={styles.loginText}>
+                                {saving ? 'Submitting' : 'Submit Feedback'}
+                            </Text>
+                            {saving && (
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#FFFFFF"
+                                    style={styles.loginLoader}
+                                />
+                            )}
+                        </View>
+                        {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
+                    </TouchableOpacity>
+                </View>
             </View>}
 
             {submitted && !loading && !saving && <View>
@@ -272,8 +294,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         position: 'absolute',
         top: 20,
         left: 20,
@@ -297,7 +319,7 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
@@ -350,6 +372,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 4,
+        flex: 1
     },
     loginButton: {
         flex: 1,
@@ -358,7 +381,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        borderRadius:15
+        borderRadius: 15
     },
     loginText: {
         fontSize: 18,
