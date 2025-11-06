@@ -9,7 +9,7 @@ cd /var/www/riyadah
 
 echo "***** Pulling latest changes from GitHub..."
 git reset --hard
-git pull origin master
+git pull origin v2
 
 echo "***** Entering server folder..."
 cd server

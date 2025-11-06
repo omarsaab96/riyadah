@@ -933,8 +933,6 @@ export default function Profile() {
                 body: JSON.stringify({ longitude, latitude }),
             });
 
-            console.warn(response)
-
             const data = await response.json();
             console.log("✅ Logged:", data);
 
