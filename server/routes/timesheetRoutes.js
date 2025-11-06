@@ -15,25 +15,16 @@ const auth = (req, res, next) => {
         next();
     });
 };
-const authorizeRole = (role) => (req, res, next) => {
-    if (!req.user || req.user.role !== role) {
-        return res.status(403).json({ message: "Not authorized" });
-    }
-    next();
-};
-
-const authorizeType = (type) => (req, res, next) => {
-    if (!req.user || req.user.type !== type) {
-        return res.status(403).json({ message: "Not authorized" });
-    }
-    next();
-};
 
 // 🟢 Coach Check-In
-router.post("/checkin", auth, authorizeRole("Coach"), async (req, res) => {
+router.post("/checkin", auth, async (req, res) => {
     console.log('got loc= ', req.body)
     try {
-        const { longitude, latitude } = req.body;
+        const { longitude, latitude, role } = req.body;
+
+        if (role != "Coach") {
+            return res.status(403).json({ message: "Wrong role." });
+        }
 
         // Ensure the coach is not already checked in
         const activeSession = await Timesheet.findOne({ user: req.user._id, checkOut: null });
