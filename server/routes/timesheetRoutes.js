@@ -2,6 +2,18 @@ const express = require("express");
 const router = express.Router();
 const Timesheet = require("../models/Timesheet");
 
+const auth = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) return res.status(401).json({ error: 'Token missing' });
+
+    jwt.verify(token, '123456', (err, decoded) => {
+        if (err) return res.status(403).json({ error: 'Invalid token' });
+        req.user = decoded; // decoded contains userId
+        next();
+    });
+};
 const authorizeRole = (role) => (req, res, next) => {
     if (!req.user || req.user.role !== role) {
         return res.status(403).json({ message: "Not authorized" });
@@ -18,7 +30,7 @@ const authorizeType = (type) => (req, res, next) => {
 
 // 🟢 Coach Check-In
 router.post("/checkin", auth, authorizeRole("Coach"), async (req, res) => {
-    console.log('got loc= ',req.body)
+    console.log('got loc= ', req.body)
     try {
         const { longitude, latitude } = req.body;
 
@@ -30,7 +42,7 @@ router.post("/checkin", auth, authorizeRole("Coach"), async (req, res) => {
 
         const entry = await Timesheet.create({
             user: req.user._id,
-            location:{
+            location: {
                 longitude,
                 latitude
             },
