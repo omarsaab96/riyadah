@@ -931,11 +931,11 @@ export default function Profile() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ longitude, latitude }),
+                body: JSON.stringify({ longitude, latitude, role:user.role }),
             });
 
             const data = await response.json();
-            console.log("✅ Logged:", data);
+            console.log(data);
 
         } catch (error) {
             console.log("❌ logLocationTime Error:", error);

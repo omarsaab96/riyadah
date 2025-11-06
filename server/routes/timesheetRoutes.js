@@ -18,7 +18,6 @@ const auth = (req, res, next) => {
 
 // 🟢 Coach Check-In
 router.post("/checkin", auth, async (req, res) => {
-    console.log('got loc= ', req.body)
     try {
         const { longitude, latitude, role } = req.body;
 
@@ -27,16 +26,16 @@ router.post("/checkin", auth, async (req, res) => {
         }
 
         // Ensure the coach is not already checked in
-        const activeSession = await Timesheet.findOne({ user: req.user._id, checkOut: null });
+        const activeSession = await Timesheet.findOne({ user: req.user.userId, checkOut: null });
         if (activeSession) {
             return res.status(400).json({ message: "You already checked in." });
         }
 
         const entry = await Timesheet.create({
-            user: req.user._id,
+            user: req.user.userId,
             location: {
                 longitude,
-                latitude
+                latitude,
             },
             checkIn: new Date()
         });
