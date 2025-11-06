@@ -1,5 +1,6 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
+import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -479,8 +480,6 @@ export default function Profile() {
                 },
             });
 
-            console.log(response)
-
             if (response.ok) {
                 const data = await response.json();
                 setUserTimeSheet(data)
@@ -904,6 +903,34 @@ export default function Profile() {
         return `${day} ${month} ${year} ${hourStr}:${minutes} ${ampm}`;
     };
 
+    const formatDateOnly = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+
+        const day = date.getDate().toString().padStart(2, '0'); // 01–31
+        const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+        const year = date.getFullYear();
+
+        return `${day} ${month} ${year}`;
+    };
+
+    const formatTimeOnly = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+
+        const day = date.getDate().toString().padStart(2, '0'); // 01–31
+        const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+        const year = date.getFullYear();
+
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // convert 0–23 to 12-hour format
+        const hourStr = hours.toString().padStart(2, '0');
+
+        return `${hourStr}:${minutes} ${ampm}`;
+    };
+
     const handleTopUp = async () => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
@@ -1019,6 +1046,48 @@ export default function Profile() {
             console.log("❌ logLocationTime Error:", error);
         }
     };
+
+    const getClubLatitude = async (clubId: string) => {
+
+    };
+
+    const getClubLongitude = async (clubId: string) => {
+
+    };
+
+    function getDistanceFromLatLonInMeters(lat1, lon1) {
+        const R = 6371e3; // Earth radius in meters
+        const lat2 = user.isStaff[0].contactInfo.location.latitude;
+        const lon2 = user.isStaff[0].contactInfo.location.longitude;
+
+        if (lat2 == null || lon2 == null) {
+            return 0;
+        }
+
+        const toRad = (value) => (value * Math.PI) / 180;
+
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c; // distance in meters
+    }
+
+    function checkIfLocationIsRight(lat, lon) {
+        const distance = getDistanceFromLatLonInMeters(
+            lat,
+            lon
+        );
+
+        return distance <= 50;
+    }
+
 
     return (
         <View style={styles.container}>
@@ -2773,13 +2842,15 @@ export default function Profile() {
                                             style={styles.balanceButton}
                                             onPress={() => handleTopUp()}
                                         >
+                                            <MaterialCommunityIcons name="wallet-plus" size={20} color="#fff" />
                                             <Text style={styles.balanceButtonText}>Top Up</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={styles.balanceButton}
                                             onPress={() => router.push('/payments/createPayment')}
                                         >
-                                            <Text style={styles.balanceButtonText}>Make Payment</Text>
+                                            <FontAwesome6 name="money-bill-transfer" size={20} color="#fff" />
+                                            <Text style={styles.balanceButtonText}>Send money</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -2888,18 +2959,88 @@ export default function Profile() {
                             </View>
                         ) : (
                             <View>
-                                <View style={styles.sectionHeader}>
+                                <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
                                     <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
                                         Timesheet
                                     </Text>
-                                    <TouchableOpacity onPress={() => { handleCheckIn() }}>
-                                        <Text>Checkin</Text>
-                                    </TouchableOpacity>
                                 </View>
                                 <Text style={styles.paragraph}>
                                     This will use your current location to check you into your club. Please note that
                                     your timesheet will be accessed and used by the HR department of your club.
                                 </Text>
+
+                                <View style={[styles.balanceActions, { marginTop: 20 }]}>
+                                    <TouchableOpacity style={styles.balanceButton} onPress={() => { handleCheckIn() }}>
+                                        <Feather name="arrow-down-circle" size={20} color="#fff" />
+                                        <Text style={styles.balanceButtonText}>Check In</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.balanceButton} onPress={() => { handleCheckOut() }}>
+                                        <Feather name="arrow-up-circle" size={20} color="#fff" />
+                                        <Text style={styles.balanceButtonText}>Check Out</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={{ marginTop: 30 }}>
+                                    <View style={styles.sectionHeader}>
+                                        <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
+                                            History
+                                        </Text>
+                                    </View>
+
+                                    {userTimeSheet.length === 0 && (
+                                        <Text style={{ color: '#888', textAlign: 'center' }}>
+                                            No timesheet records yet.
+                                        </Text>
+                                    )}
+
+                                    {userTimeSheet.map((item) => {
+                                        const checkInDate = formatDateOnly(item.checkIn);
+
+                                        return (
+                                            <View key={item._id} style={{
+                                                padding: 12,
+                                                borderWidth: 1,
+                                                borderColor: '#ddd',
+                                                borderRadius: 10,
+                                                backgroundColor: '#fff',
+                                                marginBottom: 10
+                                            }}>
+                                                <View style={{ flexDirection: 'row', alignItem: 'center', justifyContent: 'space-between' }}>
+                                                    <Text style={{ fontFamily: 'Qatar', fontSize: 14, flex: 1 }}>
+                                                        {checkInDate}
+                                                    </Text>
+
+                                                    {item.location && (<Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
+                                                        {checkIfLocationIsRight(item.location.latitude, item.location.longitude) ? (
+                                                            <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                                                                <FontAwesome name="check" size={14} color="#009933" />
+                                                                <Text>Location match</Text>
+                                                            </View>
+                                                        ) : (
+                                                            <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                                                                <FontAwesome name="close" size={14} color="#FF4400" />
+                                                                <Text>Location does not match</Text>
+                                                            </View>
+                                                        )}
+                                                    </Text>)}
+                                                </View>
+
+                                                <View style={{ flexDirection: 'row', alignItem: 'center', justifyContent: 'space-between' }}>
+                                                    <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
+                                                        In: {formatTimeOnly(item.checkIn)}
+                                                    </Text>
+
+                                                    <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
+                                                        Out: {item.checkOut ? formatTimeOnly(item.checkOut) : 'Not checked out yet'}
+                                                    </Text>
+                                                </View>
+
+                                            </View>
+                                        );
+                                    })}
+
+                                </View>
                             </View>
                         )}
                     </View>
@@ -3990,7 +4131,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         paddingVertical: 10,
         borderRadius: 10,
+        justifyContent: 'center',
         alignItems: 'center',
+        flexDirection: 'row',
+        gap: 5
     },
     balanceButtonText: {
         color: 'white',
