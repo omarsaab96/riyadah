@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const Timesheet = require("../models/Timesheet");
-const auth = require("../middleware/auth");
 
 const authorizeRole = (role) => (req, res, next) => {
     if (!req.user || req.user.role !== role) {
