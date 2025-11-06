@@ -48,7 +48,7 @@ router.post("/checkin", auth, async (req, res) => {
 });
 
 // 🔴 Coach Check-Out
-router.post("/checkout", auth, authorizeRole("Coach"), async (req, res) => {
+router.post("/checkout", auth, async (req, res) => {
     try {
         const activeSession = await Timesheet.findOne({ user: req.user._id, checkOut: null });
 
@@ -66,7 +66,7 @@ router.post("/checkout", auth, authorizeRole("Coach"), async (req, res) => {
 });
 
 // 🟣 Club View Coach Timesheet
-router.get("/:coachId", auth, authorizeType("Club"), async (req, res) => {
+router.get("/:coachId", auth, async (req, res) => {
     const { coachId } = req.params;
 
     try {
