@@ -80,4 +80,28 @@ router.get("/:userId", auth, async (req, res) => {
     }
 });
 
+router.get('/club/:id', async (req, res) => {
+    try {
+        const staff = await Staff.findById(req.params.id)
+            .populate('teams')
+            .populate('userRef');
+
+        if (!staff) {
+            return res
+                .status(404)
+                .json({ success: false, message: 'Staff not found' });
+        }
+
+        const records = await Timesheet.find({ user: staff.userRef._id })
+            .sort({ checkIn: -1 });
+
+        res.status(200).json(records);
+    } catch (err) {
+        console.error(err);
+        res
+            .status(500)
+            .json({ success: false, message: 'Server error' });
+    }
+});
+
 module.exports = router;

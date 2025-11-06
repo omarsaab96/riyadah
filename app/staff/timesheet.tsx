@@ -47,14 +47,16 @@ export default function TimeSheetScreen() {
 
         setStaff(data.data);
 
-        const timesheetResponse = await fetch(`http://193.187.132.170:5000/api/timesheet/${id}`, {
+        const timesheetResponse = await fetch(`http://193.187.132.170:5000/api/timesheet/club/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
-        
+
+        console.warn(timesheetResponse)
+
         if (!timesheetResponse.ok) {
           throw new Error(data.message || "Failed to load staff details");
         }
