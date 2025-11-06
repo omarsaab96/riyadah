@@ -49,7 +49,9 @@ router.post("/checkin", auth, async (req, res) => {
 // 🔴 Coach Check-Out
 router.post("/checkout", auth, async (req, res) => {
     try {
-        const activeSession = await Timesheet.findOne({ user: req.user._id, checkOut: null });
+        const { longitude, latitude, role } = req.body;
+
+        const activeSession = await Timesheet.findOne({ user: req.user.userId, checkOut: null });
 
         if (!activeSession) {
             return res.status(400).json({ message: "No active check-in found." });

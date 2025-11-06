@@ -56,17 +56,18 @@ export default function Profile() {
     const [inventoryLoading, setInventoryLoading] = useState(true);
     const [financialsLoading, setFinancialsLoading] = useState(true);
     const [clubsLoading, setClubsLoading] = useState(true);
-    const [checkingLoading, setCheckingLoading] = useState(true);
+    const [timesheetLoading, setTimesheetLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [activePaymentTab, setActivePaymentTab] = useState('pending');
     const [adminUser, setAdminUser] = useState(null);
+    const [userTimeSheet, setUserTimeSheet] = useState(null);
     const [error, setError] = useState('');
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAthlete = ['Profile', 'Schedule', 'Financials'];
     const tabsAssociations = ['Profile', 'Clubs'];
-    const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials', 'Checkin'];
+    const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials', 'Timesheet'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -466,8 +467,31 @@ export default function Profile() {
         // };
     }
 
-    const getCheckin = async () => {
-        setCheckingLoading(false)
+    const getTimesheet = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+
+            const response = await fetch(`http://193.187.132.170:5000/api/timesheet/${user._id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setUserTimeSheet(data)
+            }
+
+            if (!response.ok) {
+                Alert.alert('Error', error)
+            }
+        } catch (error) {
+            console.log("❌ Fetch timesheet Error:", error);
+        } finally {
+            setTimesheetLoading(false)
+        }
     }
 
     const handleEdit = async () => {
@@ -618,9 +642,9 @@ export default function Profile() {
             getClubs();
         }
 
-        if (label == "Checkin") {
-            setCheckingLoading(true);
-            getCheckin();
+        if (label == "Timesheet") {
+            setTimesheetLoading(true);
+            getTimesheet();
         }
     }
 
@@ -904,7 +928,7 @@ export default function Profile() {
         }
     };
 
-    const logLocationTime = async () => {
+    const handleCheckIn = async () => {
         try {
             console.log('getting loc')
             const token = await SecureStore.getItemAsync('userToken');
@@ -931,18 +955,68 @@ export default function Profile() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ longitude, latitude, role:user.role }),
+                body: JSON.stringify({ longitude, latitude, role: user.role }),
             });
 
-            const data = await response.json();
-            console.log(data);
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+            }
+
+            if (!response.ok) {
+                Alert.alert('Error', error)
+            }
+
 
         } catch (error) {
             console.log("❌ logLocationTime Error:", error);
         }
     };
 
+    const handleCheckOut = async () => {
+        try {
+            console.log('getting loc')
+            const token = await SecureStore.getItemAsync('userToken');
 
+            // 1) Request permissions
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                Alert.alert("Location Permission Denied", "Please enable location access.");
+                return;
+            }
+
+            // 2) Get current location
+            const { coords } = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.High,
+            });
+            console.log('coords= ', coords)
+            const latitude = coords.latitude;
+            const longitude = coords.longitude;
+
+            // 3) Send to BACKEND
+            const response = await fetch(`http://193.187.132.170:5000/api/timesheet/checkout`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ longitude, latitude, role: user.role }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+            }
+
+            if (!response.ok) {
+                Alert.alert('Error', error)
+            }
+
+
+        } catch (error) {
+            console.log("❌ logLocationTime Error:", error);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -2792,9 +2866,9 @@ export default function Profile() {
                 </Animated.ScrollView>
             }
 
-            {/* CheckinTab */}
+            {/* TimesheetTab */}
             {
-                !loading && user && activeTab == "Checkin" && <Animated.ScrollView
+                !loading && user && activeTab == "Timesheet" && <Animated.ScrollView
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                         { useNativeDriver: false }
@@ -2802,7 +2876,7 @@ export default function Profile() {
                     scrollEventThrottle={16}
                 >
                     <View style={styles.contentContainer}>
-                        {checkingLoading ? (
+                        {timesheetLoading ? (
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <ActivityIndicator
                                     size="small"
@@ -2814,10 +2888,10 @@ export default function Profile() {
                             <View>
                                 <View style={styles.sectionHeader}>
                                     <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
-                                        Checkin
+                                        Timesheet
                                     </Text>
-                                    <TouchableOpacity onPress={() => { logLocationTime() }}>
-                                        <Text>get current loc</Text>
+                                    <TouchableOpacity onPress={() => { handleCheckIn() }}>
+                                        <Text>Checkin</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <Text style={styles.paragraph}>
