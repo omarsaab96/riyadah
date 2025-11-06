@@ -905,34 +905,43 @@ export default function Profile() {
     };
 
     const logLocationTime = async () => {
-        //get currentLocation
         try {
-            // Ask for permission
-            let { status } = await Location.requestForegroundPermissionsAsync();
+            const token = await SecureStore.getItemAsync('userToken');
+
+            // 1) Request permissions
+            const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== "granted") {
-                Alert.alert("Permission denied", "Enable location to continue.");
+                Alert.alert("Location Permission Denied", "Please enable location access.");
                 return;
             }
 
-            // Get current coords
+            // 2) Get current location
             const { coords } = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.High,
             });
 
-            console.log("Latitude:", coords.latitude);
-            console.log("Longitude:", coords.longitude);
+            const latitude = coords.latitude;
+            const longitude = coords.longitude;
 
-            // Send to API or use however you need:
-            // await fetch(...)
+            // 3) Send to BACKEND
+            const response = await fetch(`http://193.187.132.170:5000/api/timesheet/checkin`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ longitude, latitude }),
+            });
 
-        } catch (err) {
-            console.log("Location error:", err);
+            const data = await response.json();
+            console.log("✅ Logged:", data);
+
+        } catch (error) {
+            console.log("❌ logLocationTime Error:", error);
         }
+    };
 
 
-        //get current date and time
-        //send to API
-    }
 
     return (
         <View style={styles.container}>

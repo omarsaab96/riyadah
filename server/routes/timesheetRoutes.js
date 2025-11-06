@@ -20,6 +20,8 @@ const authorizeType = (type) => (req, res, next) => {
 // 🟢 Coach Check-In
 router.post("/checkin", auth, authorizeRole("Coach"), async (req, res) => {
     try {
+        const { longitude, latitude } = req.body;
+
         // Ensure the coach is not already checked in
         const activeSession = await Timesheet.findOne({ user: req.user._id, checkOut: null });
         if (activeSession) {
@@ -28,6 +30,10 @@ router.post("/checkin", auth, authorizeRole("Coach"), async (req, res) => {
 
         const entry = await Timesheet.create({
             user: req.user._id,
+            location:{
+                longitude,
+                latitude
+            },
             checkIn: new Date()
         });
 
