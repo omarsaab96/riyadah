@@ -906,6 +906,7 @@ export default function Profile() {
 
     const logLocationTime = async () => {
         try {
+            console.log('getting loc')
             const token = await SecureStore.getItemAsync('userToken');
 
             // 1) Request permissions
@@ -919,7 +920,7 @@ export default function Profile() {
             const { coords } = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.High,
             });
-
+            console.log('coords= ', coords)
             const latitude = coords.latitude;
             const longitude = coords.longitude;
 

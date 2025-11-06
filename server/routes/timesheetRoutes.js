@@ -19,6 +19,7 @@ const authorizeType = (type) => (req, res, next) => {
 
 // 🟢 Coach Check-In
 router.post("/checkin", auth, authorizeRole("Coach"), async (req, res) => {
+    console.log('got loc= ',req.body)
     try {
         const { longitude, latitude } = req.body;
 
