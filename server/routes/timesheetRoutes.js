@@ -66,12 +66,12 @@ router.post("/checkout", auth, async (req, res) => {
     }
 });
 
-// 🟣 Club View Coach Timesheet
-router.get("/:coachId", auth, async (req, res) => {
-    const { coachId } = req.params;
+// 🟣 Get user Timesheet
+router.get("/:userId", auth, async (req, res) => {
+    const { userId } = req.params;
 
     try {
-        const records = await Timesheet.find({ user: coachId })
+        const records = await Timesheet.find({ user: userId })
             .sort({ checkIn: -1 });
 
         res.status(200).json(records);

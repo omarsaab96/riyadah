@@ -472,12 +472,14 @@ export default function Profile() {
             const token = await SecureStore.getItemAsync('userToken');
 
             const response = await fetch(`http://193.187.132.170:5000/api/timesheet/${user._id}`, {
-                method: "POST",
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
             });
+
+            console.log(response)
 
             if (response.ok) {
                 const data = await response.json();
