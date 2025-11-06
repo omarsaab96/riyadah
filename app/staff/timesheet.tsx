@@ -1,4 +1,3 @@
-import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
@@ -8,7 +7,6 @@ import {
   Alert,
   Dimensions,
   Image,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,7 +16,7 @@ import {
 
 const { width } = Dimensions.get('window');
 
-export default function StaffDetailsScreen() {
+export default function TimeSheetScreen() {
   const params = useLocalSearchParams();
   const id = params.id;
   const router = useRouter();
@@ -130,101 +128,6 @@ export default function StaffDetailsScreen() {
 
       {staff && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact info</Text>
-          {staff.userRef.phone ? (
-            <TouchableOpacity
-              style={styles.contactButton}
-              onPress={() => Linking.openURL(`tel:${staff.userRef.phone}`)}
-            >
-              <FontAwesome5 name="phone" size={14} color="#FF4000" style={{ marginRight: 2 }} />
-              <Text style={styles.contactText}>{staff.userRef.phone}</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {staff.userRef.email ? (
-            <TouchableOpacity
-              style={styles.contactButton}
-              onPress={() => Linking.openURL(`mailto:${staff.userRef.email}`)}
-            >
-              <MaterialCommunityIcons name="email-outline" size={18} color="#FF4000" />
-              <Text style={styles.contactText}>{staff.userRef.email}</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-
-        {staff.userRef.country && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Country</Text>
-            <Text style={styles.listItem}>
-              {staff.userRef.country}
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Teams</Text>
-          {staff.teams && staff.teams.length > 0 ? (
-            staff.teams.map((team: any) => (
-              <TouchableOpacity key={team._id} onPress={() => router.push({
-                pathname: '/teams/details',
-                params: { id: team._id },
-              })}>
-                <View  style={styles.teamItem}>
-                  <View>
-                    {team.image ? (
-                      <Image
-                        source={{ uri: team.image }}
-                        style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                      />
-                    ) : (
-                      <Image
-                        source={require('../../assets/teamlogo.png')}
-                        style={{ tintColor:'#000',width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
-                      />
-                    )}
-                  </View>
-                  <View>
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamSport}>{team.sport}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-
-            ))
-          ) : (
-            <Text style={styles.noData}>No teams assigned</Text>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Qualifications</Text>
-          {staff.qualifications && staff.qualifications.length > 0 ? (
-            staff.qualifications.map((q: string, i: number) => (
-              <Text key={i} style={styles.listItem}>- {q}</Text>
-            ))
-          ) : (
-            <Text style={styles.noData}>None</Text>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Certifications</Text>
-          {staff.certifications && staff.certifications.length > 0 ? (
-            staff.certifications.map((c: string, i: number) => (
-              <Text key={i} style={styles.listItem}>- {c}</Text>
-            ))
-          ) : (
-            <Text style={styles.noData}>None</Text>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Employment</Text>
-          <Text style={styles.listItem}>Type: {staff.employmentType || "N/A"}</Text>
-          <Text style={styles.listItem}>Salary: {staff.salary || "N/A"}</Text>
-          <Text style={styles.listItem}>Status: {staff.isActive ? "Active" : "Inactive"}</Text>
-        </View>
 
 
       </ScrollView >

@@ -2667,11 +2667,14 @@ export default function Profile() {
                                                 )}
                                                 {member.role && member.role == "Coach" && (
                                                     <TouchableOpacity
-                                                        style={[styles.contactButton, { display: 'none' }]}
-                                                        onPress={() => console.log(member._id)}
+                                                        style={[styles.contactButton]}
+                                                        onPress={() => router.push({
+                                                            pathname: '/staff/timesheet',
+                                                            params: { id: member._id },
+                                                        })}
                                                     >
-                                                        <AntDesign name="team" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>View teams</Text>
+                                                        <MaterialCommunityIcons name="table-account" size={16} color="#FF4000" />
+                                                        <Text style={styles.contactButtonText}>TimeSheet</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
