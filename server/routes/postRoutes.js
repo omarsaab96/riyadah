@@ -131,7 +131,7 @@ router.post('/like/:postId', authenticateToken, async (req, res) => {
                     userToNotify,
                     notificationTitle,
                     notificationBody,
-                    { postId: post._id.toString() });
+                    {screen:'postDetails', postId: post._id.toString() });
             } catch (err) {
                 console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
             }
@@ -206,7 +206,7 @@ router.post('/comments/:postId', authenticateToken, async (req, res) => {
                         userToNotify,
                         notificationTitle,
                         notificationBody,
-                        { postId: post._id.toString() }
+                        { screen:'postDetails', postId: post._id.toString() }
                     );
                 } catch (err) {
                     console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);

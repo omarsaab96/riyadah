@@ -49,7 +49,7 @@ async function notify(job) {
   const body = `You have a new ${event.eventType} scheduled for ${formatDate(
     event.date
   )} at ${formatTime(event.startTime)}.`;
-  const data = { eventId: event._id.toString() };
+  const data = {screen:'schedule/details', id: event._id.toString() };
 
   let i = 0;
   while (i < users.length) {

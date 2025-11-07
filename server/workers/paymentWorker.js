@@ -65,7 +65,8 @@ const processPendingPayments = async () => {
             await sendNotification(
                 beneficiaryUser,
                 '💰 Payment Received',
-                `${payerUser.name} sent you ${payment.amount} ${payment.currency}.`
+                `${payerUser.name} sent you ${payment.amount} ${payment.currency}.`,
+                {screen:'profile?tab=Financials'}
             );
 
             console.log(`[paymentAuditor] Marked completed.`);

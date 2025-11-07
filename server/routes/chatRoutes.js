@@ -269,7 +269,7 @@ router.post("/:chatId/message", authenticateToken, async (req, res) => {
                     const notificationBody = text;
 
                     try {
-                        await sendNotification(userToNotify, notificationTitle, notificationBody, { postId: chatId }, false);
+                        await sendNotification(userToNotify, notificationTitle, notificationBody, { screen:'chat' , chatId: chatId }, false);
                     } catch (err) {
                         console.error(`Failed to send notification to user ${userToNotify._id}:`, err.message);
                     }

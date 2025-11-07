@@ -66,7 +66,7 @@ async function sendEventReminders() {
 
       const title = '⏰ Event Reminder';
       const body = `"${e.title}" starts in 30 minutes!`;
-      const payload = { eventId: e._id, type: 'event_reminder' };
+      const payload = {screen:'schedule/details', id: e._id, type: 'event_reminder' };
 
       for (const user of users) {
         try {

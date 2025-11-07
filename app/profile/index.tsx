@@ -498,6 +498,7 @@ export default function Profile() {
     const handleEdit = async () => {
         router.push('/profile/editProfile');
     };
+
     const handleVerification = async () => {
         router.push('/profile/verification');
     };
@@ -2662,7 +2663,11 @@ export default function Profile() {
                                                         style={[styles.contactButton]}
                                                         onPress={() => router.push({
                                                             pathname: '/staff/timesheet',
-                                                            params: { id: member._id },
+                                                            params: {
+                                                                id: member._id,
+                                                                long: user?.contactInfo?.location.longitude || null,
+                                                                lat: user?.contactInfo?.location.latitude || null,
+                                                            },
                                                         })}
                                                     >
                                                         <MaterialCommunityIcons name="table-account" size={16} color="#FF4000" />

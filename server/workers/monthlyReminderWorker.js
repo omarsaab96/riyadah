@@ -69,7 +69,7 @@ async function sendPaymentReminders() {
         athlete,
         '💳 Payment Reminder',
         `Dear ${athlete.name || 'Athlete'}, please note that your club membership fee is due today.`,
-        { type: 'monthly_payment_reminder', clubs: athlete.clubs },
+        { screen:'/profile?tab=Financials', type: 'monthly_payment_reminder', clubs: athlete.clubs },
         true
       );
       successCount++;

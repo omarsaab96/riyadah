@@ -1,5 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import Octicons from '@expo/vector-icons/Octicons';
+import Constants from "expo-constants";
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -27,8 +28,6 @@ export default function Profile() {
     const [user, setUser] = useState(null);
     const [verificationLoading, setVerificationLoading] = useState(true);
     const year = new Date().getFullYear();
-
-
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -181,16 +180,12 @@ export default function Profile() {
                                 <Text style={[styles.profileButtonText, { fontSize: 14, width:'100%', textAlign:'center' }]}>Logout</Text>
                             </TouchableOpacity>
 
-                            <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v1.0.0</Text>
+                            <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v{Constants.expoConfig.version}</Text>
 
                         </View>
                     </View>
                 </View>
-
-
             </ScrollView>
-
-
 
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>

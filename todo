@@ -41,6 +41,7 @@ frontend:
 
 notifications:
 	☐ data with deeplink
+	☐ add post details page that takes postId
 
 test:
 	✔ test everything @done(25-11-06 09:41)
@@ -49,7 +50,7 @@ test:
 	✔ skip survey @done(25-11-06 10:21)
 
 Version check:
-	should check version on load and force update if needed
+	✔ should check version on load and force update if needed @done(25-11-07 18:00)
 
 ---------------------------------------------------------
 *1. Post-Workout / Session Survey (Micro-Survey)*:

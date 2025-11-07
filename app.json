@@ -2,7 +2,7 @@
   "expo": {
     "name": "Riyadah",
     "slug": "riyadah",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "splash": {
@@ -14,6 +14,10 @@
     "deepLinking": true,
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
+    "updates": {
+      "enabled": true,
+      "fallbackToCacheTimeout": 0
+    },
     "ios": {
       "bundleIdentifier": "app.omarsaab96.riyadah",
       "associatedDomains": [

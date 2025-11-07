@@ -20,6 +20,8 @@ const { width } = Dimensions.get('window');
 export default function TimeSheetScreen() {
   const params = useLocalSearchParams();
   const id = params.id;
+  const lon2 = params.long;
+  const lat2 = params.lat;
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [staff, setStaff] = useState<any>(null);
@@ -55,7 +57,7 @@ export default function TimeSheetScreen() {
           },
         });
 
-        console.warn(timesheetResponse)
+        // console.warn(timesheetResponse)
 
         if (!timesheetResponse.ok) {
           throw new Error(data.message || "Failed to load staff details");
@@ -64,7 +66,7 @@ export default function TimeSheetScreen() {
 
 
         const timesheetdata = await timesheetResponse.json();
-        console.log(timesheetdata)
+        // console.log(timesheetdata)
         setTimeSheet(timesheetdata)
 
 
@@ -112,10 +114,6 @@ export default function TimeSheetScreen() {
 
   function getDistanceFromLatLonInMeters(lat1, lon1) {
     const R = 6371e3; // Earth radius in meters
-    const lat2 = staff.isStaff[0].contactInfo.location.latitude;
-    const lon2 = staff.isStaff[0].contactInfo.location.longitude;
-
-    console.log(lat2)
 
     if (lat2 == null || lon2 == null) {
       return 0;
@@ -203,8 +201,6 @@ export default function TimeSheetScreen() {
           </View>
         }
       </View>
-
-      <Text>{id}</Text>
 
       {!staff && !loading && <View style={styles.centered}>
         <Text>No staff member found.</Text>

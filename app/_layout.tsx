@@ -5,11 +5,12 @@ import * as Notifications from 'expo-notifications';
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
+import * as Updates from 'expo-updates';
 import { useEffect } from "react";
+import { Alert } from 'react-native';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RegistrationProvider } from '../context/registration';
-
 
 const linking = {
   prefixes: ['riyadah://', 'https://riyadah.app'],
@@ -22,6 +23,30 @@ const linking = {
 
 export default function RootLayout() {
   const router = useRouter();
+
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          Alert.alert(
+            'Update Available',
+            'A new version of Riyadah is ready. Restart to update?',
+            [
+              { text: 'Later' },
+              { text: 'Restart', onPress: () => Updates.reloadAsync() }
+            ]
+          );
+        }
+      } catch (error) {
+        console.log('Error checking for updates:', error);
+      }
+    };
+
+    checkForUpdates();
+  }, []);
+
   useEffect(() => {
     const checkToken = async () => {
       const token = await SecureStore.getItemAsync('userToken');
@@ -33,11 +58,29 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    const subscription = Notifications.addNotificationReceivedListener(notification => {
+    const receivedSubscription = Notifications.addNotificationReceivedListener(notification => {
       console.log("Notification received:", notification);
     });
 
-    return () => subscription.remove();
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      console.log("Notification tapped:", data);
+
+      // Example: data = { screen: "staff/timesheet", id: "68af3a1cdc2139d825ad504a" }
+      if (data?.screen) {
+        router.push({
+          pathname: `/${data.screen}`,
+          params: data,
+        });
+      } else {
+        router.push('/landing'); // fallback if no target screen
+      }
+    });
+
+    return () => {
+      receivedSubscription.remove();
+      responseSubscription.remove();
+    };
   }, []);
 
   Notifications.setNotificationHandler({

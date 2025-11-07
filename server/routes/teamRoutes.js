@@ -354,7 +354,7 @@ router.put('/:teamId/members', authenticateToken, async (req, res) => {
           user,
           '👥 Added as member',
           `You have been added to the team "${team.name}"`,
-          { teamId }
+          {screen:'teams/details', teamId }
         );
       } catch (err) {
         console.error(`Failed to send notification to user ${user._id}:`, err.message);
@@ -452,7 +452,7 @@ router.put('/:teamId/coaches', authenticateToken, async (req, res) => {
           user,
           '📋 Added as coach',
           `You have been assigned to coach the team "${team.name}"`,
-          { teamId }
+          {screen:'teams/details', teamId }
         );
       } catch (err) {
         console.error(`Failed to send notification to user ${user._id}:`, err.message);
