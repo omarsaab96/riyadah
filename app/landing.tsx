@@ -464,94 +464,99 @@ export default function Landing() {
 
                 <View style={styles.post}>
                     <View style={styles.postContent}>
-                        {item.title && <Text style={styles.postTitle}>{item.title}</Text>}
-                        {item.content?.trim() !== '' && (
-                            <Text style={styles.postText}>{item.content}</Text>
-                        )}
+                        <TouchableOpacity
+                            style={styles.postContent}
+                            onPress={() => router.push(`/posts/${item._id}`)}
+                        >
+                            {item.title && <Text style={styles.postTitle}>{item.title}</Text>}
 
-                        {/* Render images */}
-                        {item.type === 'image' && item.media.images?.length > 0 && (() => {
-                            const images = item.media.images;
-                            const isMoreThanFour = images.length >= 4;
-                            const previewImages = isMoreThanFour ? images.slice(0, 4) : images;
+                            {item.content?.trim() !== '' && (
+                                <Text style={styles.postText}>{item.content}</Text>
+                            )}
 
-                            return (
-                                images.length === 1 ? (
-                                    <Image
-                                        source={{ uri: images[0] }}
-                                        style={[styles.postImage, { marginTop: 10 }]}
-                                        resizeMode="cover"
-                                        onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
-                                    />
-                                ) : (
-                                    <MasonryList
-                                        data={previewImages}
-                                        keyExtractor={(uri, index) => uri + index}
-                                        numColumns={2}
-                                        containerStyle={{ marginTop: 10 }}
-                                        style={{ margin: -5 }}
-                                        renderItem={({ item: image }) => {
-                                            const currentIndex = previewImages.findIndex(img => img === image);
-                                            const isLastPreview = isMoreThanFour && currentIndex === 3;
+                            {/* Render images */}
+                            {item.type === 'image' && item.media.images?.length > 0 && (() => {
+                                const images = item.media.images;
+                                const isMoreThanFour = images.length >= 4;
+                                const previewImages = isMoreThanFour ? images.slice(0, 4) : images;
 
-                                            return (
-                                                <View
-                                                    style={{
-                                                        borderRadius: 8,
-                                                        overflow: 'hidden',
-                                                        margin: 5,
-                                                        backgroundColor: 'black',
-                                                        position: 'relative',
-                                                    }}
-                                                >
-                                                    <Image
-                                                        source={{ uri: image }}
-                                                        resizeMode="cover"
-                                                        style={{ width: '100%', aspectRatio: 1 }}
-                                                    />
+                                return (
+                                    images.length === 1 ? (
+                                        <Image
+                                            source={{ uri: images[0] }}
+                                            style={[styles.postImage, { marginTop: 10 }]}
+                                            resizeMode="cover"
+                                            onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+                                        />
+                                    ) : (
+                                        <MasonryList
+                                            data={previewImages}
+                                            keyExtractor={(uri, index) => uri + index}
+                                            numColumns={2}
+                                            containerStyle={{ marginTop: 10 }}
+                                            style={{ margin: -5 }}
+                                            renderItem={({ item: image }) => {
+                                                const currentIndex = previewImages.findIndex(img => img === image);
+                                                const isLastPreview = isMoreThanFour && currentIndex === 3;
 
-                                                    {isLastPreview && (
-                                                        <View
-                                                            style={{
-                                                                position: 'absolute',
-                                                                width: '100%',
-                                                                height: '100%',
-                                                                backgroundColor: 'rgba(0,0,0,0.5)',
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                                zIndex: 3,
-                                                            }}
-                                                        >
-                                                            <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
-                                                                + {images.length - 3}
-                                                            </Text>
-                                                        </View>
-                                                    )}
-                                                </View>
-                                            );
-                                        }}
-                                    />
-                                )
-                            );
-                        })()}
+                                                return (
+                                                    <View
+                                                        style={{
+                                                            borderRadius: 8,
+                                                            overflow: 'hidden',
+                                                            margin: 5,
+                                                            backgroundColor: 'black',
+                                                            position: 'relative',
+                                                        }}
+                                                    >
+                                                        <Image
+                                                            source={{ uri: image }}
+                                                            resizeMode="cover"
+                                                            style={{ width: '100%', aspectRatio: 1 }}
+                                                        />
 
-                        {/* Render videos */}
-                        {item.type === 'video' && item.media.videos?.length > 0 && (() => {
-                            const videos = item.media.videos;
-                            const isMoreThanFour = videos.length >= 4;
-                            const previewVideos = isMoreThanFour ? videos.slice(0, 4) : videos;
+                                                        {isLastPreview && (
+                                                            <View
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    backgroundColor: 'rgba(0,0,0,0.5)',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    zIndex: 3,
+                                                                }}
+                                                            >
+                                                                <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
+                                                                    + {images.length - 3}
+                                                                </Text>
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                );
+                                            }}
+                                        />
+                                    )
+                                );
+                            })()}
 
-                            return (
-                                videos.length === 1 ? (
-                                    <View
-                                        style={{
-                                            borderRadius: 8,
-                                            backgroundColor: 'black',
-                                            overflow: 'hidden',
-                                            marginTop: 10,
-                                            aspectRatio: 1
-                                        }}>
-                                        {/* <Video
+                            {/* Render videos */}
+                            {item.type === 'video' && item.media.videos?.length > 0 && (() => {
+                                const videos = item.media.videos;
+                                const isMoreThanFour = videos.length >= 4;
+                                const previewVideos = isMoreThanFour ? videos.slice(0, 4) : videos;
+
+                                return (
+                                    videos.length === 1 ? (
+                                        <View
+                                            style={{
+                                                borderRadius: 8,
+                                                backgroundColor: 'black',
+                                                overflow: 'hidden',
+                                                marginTop: 10,
+                                                aspectRatio: 1
+                                            }}>
+                                            {/* <Video
                                             source={{ uri: videos[0] }}
                                             style={{
                                                 width: '100%',
@@ -562,35 +567,35 @@ export default function Landing() {
                                             isLooping
                                         /> */}
 
-                                        <VideoPlayer
-                                            uri={videos[0]}
-                                            style={{ width: '100%', height: '100%' }}
-                                        />
-                                    </View>
-                                ) : (
-                                    <MasonryList
-                                        data={previewVideos}
-                                        keyExtractor={(uri, index) => uri + index}
-                                        numColumns={2}
-                                        containerStyle={{ marginTop: 10 }}
-                                        style={{ marginVertical: -5, marginHorizontal: -0, }}
-                                        renderItem={({ item: video }) => {
-                                            const currentIndex = previewVideos.findIndex(v => v === video);
-                                            const isLastPreview = isMoreThanFour && currentIndex === 3;
+                                            <VideoPlayer
+                                                uri={videos[0]}
+                                                style={{ width: '100%', height: '100%' }}
+                                            />
+                                        </View>
+                                    ) : (
+                                        <MasonryList
+                                            data={previewVideos}
+                                            keyExtractor={(uri, index) => uri + index}
+                                            numColumns={2}
+                                            containerStyle={{ marginTop: 10 }}
+                                            style={{ marginVertical: -5, marginHorizontal: -0, }}
+                                            renderItem={({ item: video }) => {
+                                                const currentIndex = previewVideos.findIndex(v => v === video);
+                                                const isLastPreview = isMoreThanFour && currentIndex === 3;
 
-                                            return (
-                                                <View
-                                                    style={{
-                                                        borderRadius: 8,
-                                                        backgroundColor: 'black',
-                                                        overflow: 'hidden',
-                                                        marginVertical: 5,
-                                                        marginHorizontal: 0,
-                                                        position: 'relative',
-                                                        aspectRatio: 1,
-                                                        borderWidth: 1
-                                                    }}>
-                                                    {/* <Video
+                                                return (
+                                                    <View
+                                                        style={{
+                                                            borderRadius: 8,
+                                                            backgroundColor: 'black',
+                                                            overflow: 'hidden',
+                                                            marginVertical: 5,
+                                                            marginHorizontal: 0,
+                                                            position: 'relative',
+                                                            aspectRatio: 1,
+                                                            borderWidth: 1
+                                                        }}>
+                                                        {/* <Video
                                                         source={{ uri: video }}
                                                         style={{
                                                             width: '100%',
@@ -601,11 +606,85 @@ export default function Landing() {
                                                         isLooping
                                                     /> */}
 
-                                                    <VideoPlayer
-                                                        uri={videos[0]}
-                                                        style={{ width: '100%', height: '100%' }}
-                                                        showFullscreenToggle={true}
-                                                    />
+                                                        <VideoPlayer
+                                                            uri={videos[0]}
+                                                            style={{ width: '100%', height: '100%' }}
+                                                            showFullscreenToggle={true}
+                                                        />
+
+                                                        {isLastPreview && (
+                                                            <View
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    backgroundColor: 'rgba(0,0,0,0.5)',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    zIndex: 3,
+                                                                }}
+                                                            >
+                                                                <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
+                                                                    + {videos.length - 3}
+                                                                </Text>
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                );
+                                            }}
+                                        />
+                                    )
+                                );
+                            })()}
+
+                            {/* Render multiple media */}
+                            {item.type === 'multipleMedia' && (() => {
+                                const images = item.media.images || [];
+                                const videos = item.media.videos || [];
+
+                                const allMedia = [
+                                    ...images.map(uri => ({ uri, type: 'image' })),
+                                    ...videos.map(uri => ({ uri, type: 'video' }))
+                                ];
+
+                                const isMoreThanFour = allMedia.length > 4;
+                                const previewMedia = isMoreThanFour ? allMedia.slice(0, 4) : allMedia;
+
+                                return (
+                                    <MasonryList
+                                        data={previewMedia}
+                                        keyExtractor={(item, index) => item.uri + index}
+                                        numColumns={2}
+                                        containerStyle={{ marginTop: 10 }}
+                                        style={{ margin: -5 }}
+                                        renderItem={({ item }) => {
+                                            const currentIndex = previewMedia.findIndex(m => m.uri === item.uri && m.type === item.type);
+                                            const isLastPreview = isMoreThanFour && currentIndex === 3;
+
+                                            return (
+                                                <View
+                                                    style={{
+                                                        borderRadius: 8,
+                                                        backgroundColor: 'black',
+                                                        overflow: 'hidden',
+                                                        margin: 5,
+                                                        position: 'relative',
+                                                    }}
+                                                >
+                                                    {item.type === 'image' ? (
+                                                        <Image
+                                                            source={{ uri: item.uri }}
+                                                            style={{ width: '100%', aspectRatio: 1 }}
+                                                            resizeMode="cover"
+                                                        />
+                                                    ) : (
+                                                        <Video
+                                                            source={{ uri: item.uri }}
+                                                            style={{ width: '100%', aspectRatio: 1, backgroundColor: 'black' }}
+                                                            resizeMode="cover"
+                                                            isLooping
+                                                        />
+                                                    )}
 
                                                     {isLastPreview && (
                                                         <View
@@ -620,7 +699,7 @@ export default function Landing() {
                                                             }}
                                                         >
                                                             <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
-                                                                + {videos.length - 3}
+                                                                + {allMedia.length - 3}
                                                             </Text>
                                                         </View>
                                                     )}
@@ -628,83 +707,9 @@ export default function Landing() {
                                             );
                                         }}
                                     />
-                                )
-                            );
-                        })()}
-
-
-                        {/* Render multiple media */}
-                        {item.type === 'multipleMedia' && (() => {
-                            const images = item.media.images || [];
-                            const videos = item.media.videos || [];
-
-                            const allMedia = [
-                                ...images.map(uri => ({ uri, type: 'image' })),
-                                ...videos.map(uri => ({ uri, type: 'video' }))
-                            ];
-
-                            const isMoreThanFour = allMedia.length > 4;
-                            const previewMedia = isMoreThanFour ? allMedia.slice(0, 4) : allMedia;
-
-                            return (
-                                <MasonryList
-                                    data={previewMedia}
-                                    keyExtractor={(item, index) => item.uri + index}
-                                    numColumns={2}
-                                    containerStyle={{ marginTop: 10 }}
-                                    style={{ margin: -5 }}
-                                    renderItem={({ item }) => {
-                                        const currentIndex = previewMedia.findIndex(m => m.uri === item.uri && m.type === item.type);
-                                        const isLastPreview = isMoreThanFour && currentIndex === 3;
-
-                                        return (
-                                            <View
-                                                style={{
-                                                    borderRadius: 8,
-                                                    backgroundColor: 'black',
-                                                    overflow: 'hidden',
-                                                    margin: 5,
-                                                    position: 'relative',
-                                                }}
-                                            >
-                                                {item.type === 'image' ? (
-                                                    <Image
-                                                        source={{ uri: item.uri }}
-                                                        style={{ width: '100%', aspectRatio: 1 }}
-                                                        resizeMode="cover"
-                                                    />
-                                                ) : (
-                                                    <Video
-                                                        source={{ uri: item.uri }}
-                                                        style={{ width: '100%', aspectRatio: 1, backgroundColor: 'black' }}
-                                                        resizeMode="cover"
-                                                        isLooping
-                                                    />
-                                                )}
-
-                                                {isLastPreview && (
-                                                    <View
-                                                        style={{
-                                                            position: 'absolute',
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            backgroundColor: 'rgba(0,0,0,0.5)',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            zIndex: 3,
-                                                        }}
-                                                    >
-                                                        <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
-                                                            + {allMedia.length - 3}
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                            </View>
-                                        );
-                                    }}
-                                />
-                            );
-                        })()}
+                                );
+                            })()}
+                        </TouchableOpacity>
                     </View>
 
                     <View style={styles.postStats}>
@@ -1882,8 +1887,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         // tintColor: '#111111',
     },
     loadingContainer: {
@@ -1906,7 +1911,8 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: 'rgba(0,0,0,0.05)',
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -2221,7 +2227,7 @@ const styles = StyleSheet.create({
     },
     commentModalTitle: {
         fontSize: 18,
-        fontFamily:'Qatar',
+        fontFamily: 'Qatar',
         color: '#333',
     },
     commentModalClose: {
@@ -2253,7 +2259,7 @@ const styles = StyleSheet.create({
     },
     commentAuthor: {
         // fontFamily:'Qatar',
-        fontWeight:'bold',
+        fontWeight: 'bold',
         fontSize: 14,
         color: '#333',
         marginBottom: 3,

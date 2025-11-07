@@ -46,6 +46,27 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/post/:postid', async (req, res) => {
+  const { postid } = req.params;
+
+  try {
+    const post = await Post.findById(postid)
+      .populate('created_by', '_id name image gender type')
+      .populate('likes', '_id name image')
+      .populate('comments.user', '_id name image');
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.json(post);
+  } catch (err) {
+    console.error('Error fetching post:', err);
+    res.status(500).json({ error: 'Failed to fetch post' });
+  }
+});
+
+
 // Create a new post
 router.post('/', authenticateToken, async (req, res) => {
     try {
