@@ -40,8 +40,8 @@ frontend:
 	✔ change icons @done(25-11-06 09:41)
 
 notifications:
-	☐ data with deeplink
-	☐ add post details page that takes postId
+	✔ data with deeplink @done(25-11-07 20:50)
+	✔ add post details page that takes postId @done(25-11-07 20:50)
 
 test:
 	✔ test everything @done(25-11-06 09:41)

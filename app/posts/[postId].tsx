@@ -11,6 +11,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Keyboard,
   Modal,
   Platform,
   RefreshControl,
@@ -26,54 +27,70 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const { width } = Dimensions.get('window');
 
+// Component for user avatar display
+const UserAvatar = ({ user, style = {} }) => {
+  const getAvatarSource = () => {
+    if (!user) return require('../../assets/avatar.png');
+
+    if (user.image) {
+      return { uri: user.image };
+    }
+
+    if (user.type === "Club" || user.type === "Association") {
+      return require('../../assets/clublogo.png');
+    }
+
+    if (user.gender === "Female") {
+      return require('../../assets/avatarF.png');
+    }
+
+    return require('../../assets/avatar.png');
+  };
+
+  return (
+    <View style={[styles.profileImage, style]}>
+      <Image
+        source={getAvatarSource()}
+        style={styles.profileImageAvatar}
+        resizeMode="contain"
+      />
+    </View>
+  );
+};
+
+// Comment Footer Component
 const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }) => {
   const [newComment, setNewComment] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardVisible(true);
     });
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
       setKeyboardVisible(false);
     });
 
     return () => {
-      showSub.remove();
-      hideSub.remove();
+      showSubscription.remove();
+      hideSubscription.remove();
     };
   }, []);
 
-  const handlePress = () => {
-    onSubmitComment(newComment);
-    setNewComment('');
+  const handleSubmit = () => {
+    if (newComment.trim()) {
+      onSubmitComment(newComment);
+      setNewComment('');
+    }
   };
 
   return (
     <BottomSheetFooter {...footerProps}>
-      <View style={[styles.commentInputContainer, keyboardVisible && { paddingBottom: 10 }]}>
-        <View style={styles.profileImage}>
-          {(user?.image == null || user?.image == "") && (user?.type == "Club" || user?.type == "Association") && <Image
-            source={require('../../assets/clublogo.png')}
-            style={styles.profileImageAvatar}
-            resizeMode="contain"
-          />}
-          {(user?.image == null || user?.image == "") && user?.gender == "Male" && <Image
-            source={require('../../assets/avatar.png')}
-            style={styles.profileImageAvatar}
-            resizeMode="contain"
-          />}
-          {(user?.image == null || user?.image == "") && user?.gender == "Female" && <Image
-            source={require('../../assets/avatarF.png')}
-            style={styles.profileImageAvatar}
-            resizeMode="contain"
-          />}
-          {user?.image != null && <Image
-            source={{ uri: user?.image }}
-            style={styles.profileImageAvatar}
-            resizeMode="contain"
-          />}
-        </View>
+      <View style={[
+        styles.commentInputContainer,
+        keyboardVisible && styles.commentInputContainerKeyboardVisible
+      ]}>
+        <UserAvatar user={user} />
         <BottomSheetTextInput
           style={styles.commentInput}
           value={newComment}
@@ -83,17 +100,17 @@ const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }
         />
         <TouchableOpacity
           style={styles.commentSubmit}
-          onPress={handlePress}
+          onPress={handleSubmit}
           disabled={!newComment.trim() || submittingComment}
         >
-          {!submittingComment ? (
+          {submittingComment ? (
+            <ActivityIndicator size="small" color="#FF4000" />
+          ) : (
             <Ionicons
               name="send"
               size={20}
               color={newComment.trim() ? "#FF4000" : "#888"}
             />
-          ) : (
-            <ActivityIndicator size={'small'} color="#FF4000" />
           )}
         </TouchableOpacity>
       </View>
@@ -101,18 +118,17 @@ const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }
   );
 };
 
+// Video Player Component
 const VideoPlayer = ({ uri, style, showFullscreenToggle = false }) => {
-  const videoRef = React.useRef<Video>(null);
-  const fullscreenVideoRef = React.useRef<Video>(null);
-  const [status, setStatus] = React.useState<any>({});
-  const [fullscreenStatus, setFullscreenStatus] = React.useState<any>({});
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [duration, setDuration] = React.useState(0);
-  const [currentPosition, setCurrentPosition] = React.useState(0);
-  const [isFullscreen, setIsFullscreen] = React.useState(false);
-  const [showControls, setShowControls] = React.useState(false);
+  const videoRef = useRef<Video>(null);
+  const fullscreenVideoRef = useRef<Video>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentPosition, setCurrentPosition] = useState(0);
 
-  const formatTime = (millis: number) => {
+  const formatTime = (millis) => {
     if (!millis) return "0:00";
     const totalSeconds = Math.floor(millis / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -121,24 +137,10 @@ const VideoPlayer = ({ uri, style, showFullscreenToggle = false }) => {
   };
 
   const getDisplayTime = () => {
-    if (isPlaying) {
-      return formatTime(duration - currentPosition);
-    }
-    return formatTime(duration);
+    return formatTime(isPlaying ? duration - currentPosition : duration);
   };
 
-  const handlePlaybackStatusUpdate = (status: any) => {
-    setStatus(status);
-    if (status.positionMillis !== undefined) {
-      setCurrentPosition(status.positionMillis);
-    }
-    if (status.durationMillis !== undefined) {
-      setDuration(status.durationMillis);
-    }
-  };
-
-  const handleFullscreenPlaybackStatusUpdate = (status: any) => {
-    setFullscreenStatus(status);
+  const handlePlaybackStatusUpdate = (status) => {
     if (status.positionMillis !== undefined) {
       setCurrentPosition(status.positionMillis);
     }
@@ -163,14 +165,10 @@ const VideoPlayer = ({ uri, style, showFullscreenToggle = false }) => {
 
     if (isFullscreen) {
       videoRef.current?.setPositionAsync(currentPosition);
-      if (isPlaying) {
-        videoRef.current?.playAsync();
-      }
+      if (isPlaying) videoRef.current?.playAsync();
     } else {
       fullscreenVideoRef.current?.setPositionAsync(currentPosition);
-      if (isPlaying) {
-        fullscreenVideoRef.current?.playAsync();
-      }
+      if (isPlaying) fullscreenVideoRef.current?.playAsync();
     }
   };
 
@@ -181,40 +179,25 @@ const VideoPlayer = ({ uri, style, showFullscreenToggle = false }) => {
           <Video
             ref={videoRef}
             source={{ uri }}
-            style={{ width: '100%', height: '100%' }}
+            style={styles.video}
             resizeMode="cover"
             isLooping
             shouldPlay={isPlaying && !isFullscreen}
             useNativeControls={false}
             onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
           />
-
           <View style={[styles.overlay, !showControls && !isPlaying && styles.centerOverlay]}>
             {(!isPlaying || showControls) && (
-              <TouchableOpacity
-                onPress={togglePlayPause}
-                style={styles.playButton}
-              >
-                <Ionicons
-                  name={isPlaying ? "pause" : "play"}
-                  size={20}
-                  color="white"
-                />
+              <TouchableOpacity onPress={togglePlayPause} style={styles.playButton}>
+                <Ionicons name={isPlaying ? "pause" : "play"} size={20} color="white" />
               </TouchableOpacity>
             )}
-
             {showFullscreenToggle && (
-              <TouchableOpacity onPress={toggleFullscreen}
-                style={{ position: 'absolute', right: 0, top: 0, width: '100%', height: '70%' }}
-              >
-              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleFullscreen} style={styles.fullscreenToggleArea} />
             )}
-
             {(showControls || !isPlaying) && (
               <View style={styles.bottomBar}>
-                <Text style={styles.durationText}>
-                  {getDisplayTime()}
-                </Text>
+                <Text style={styles.durationText}>{getDisplayTime()}</Text>
               </View>
             )}
           </View>
@@ -223,7 +206,7 @@ const VideoPlayer = ({ uri, style, showFullscreenToggle = false }) => {
 
       <Modal
         visible={isFullscreen}
-        transparent={true}
+        transparent
         animationType="slide"
         supportedOrientations={['portrait', 'landscape']}
         onRequestClose={toggleFullscreen}
@@ -232,41 +215,25 @@ const VideoPlayer = ({ uri, style, showFullscreenToggle = false }) => {
           <Video
             ref={fullscreenVideoRef}
             source={{ uri }}
-            style={{ width: '100%', height: '100%' }}
+            style={styles.fullscreenVideo}
             resizeMode="contain"
             isLooping
             shouldPlay={isPlaying}
             useNativeControls={true}
-            onPlaybackStatusUpdate={handleFullscreenPlaybackStatusUpdate}
+            onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
           />
-
           <TouchableWithoutFeedback onPress={() => setShowControls(!showControls)}>
             <View style={[styles.fullscreenOverlay, !showControls && !isPlaying && styles.centerOverlay]}>
               {(showControls || !isPlaying) && (
                 <View style={styles.fullscreenBottomBar}>
                   {(!isPlaying || showControls) && (
-                    <TouchableOpacity
-                      onPress={togglePlayPause}
-                      style={[styles.playButton, styles.fixedPlayButton]}
-                    >
-                      <Ionicons
-                        name={isPlaying ? "pause" : "play"}
-                        size={36}
-                        color="white"
-                      />
+                    <TouchableOpacity onPress={togglePlayPause} style={[styles.playButton, styles.fixedPlayButton]}>
+                      <Ionicons name={isPlaying ? "pause" : "play"} size={36} color="white" />
                     </TouchableOpacity>
                   )}
-
-                  <Text style={styles.fullscreenDurationText}>
-                    {getDisplayTime()}
-                  </Text>
-
+                  <Text style={styles.fullscreenDurationText}>{getDisplayTime()}</Text>
                   <TouchableOpacity onPress={toggleFullscreen}>
-                    <Ionicons
-                      name="contract"
-                      size={36}
-                      color="white"
-                    />
+                    <Ionicons name="contract" size={36} color="white" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -278,29 +245,277 @@ const VideoPlayer = ({ uri, style, showFullscreenToggle = false }) => {
   );
 };
 
+// Media Renderer Component
+const MediaRenderer = ({ post }) => {
+  if (!post || !post.type) return null;
+
+  const renderMediaGrid = (mediaItems, isLastItemOverlay) => {
+    return (
+      <MasonryList
+        data={mediaItems}
+        keyExtractor={(item, index) => `${item.uri || item}-${index}`}
+        numColumns={2}
+        containerStyle={styles.mediaGridContainer}
+        style={styles.mediaGrid}
+        renderItem={({ item, index }) => {
+          const isLastPreview = isLastItemOverlay && index === 3;
+          const remainingCount = mediaItems.length - 3;
+
+          return (
+            <View style={styles.mediaItemContainer}>
+              {typeof item === 'string' ? (
+                <Image source={{ uri: item }} style={styles.mediaImage} resizeMode="cover" />
+              ) : item.type === 'image' ? (
+                <Image source={{ uri: item.uri }} style={styles.mediaImage} resizeMode="cover" />
+              ) : (
+                <VideoPlayer uri={item.uri} style={styles.mediaVideo} />
+              )}
+              {isLastPreview && (
+                <View style={styles.mediaOverlay}>
+                  <Text style={styles.mediaOverlayText}>+ {remainingCount}</Text>
+                </View>
+              )}
+            </View>
+          );
+        }}
+      />
+    );
+  };
+
+  switch (post.type) {
+    case 'image':
+      if (post.media?.images?.length === 1) {
+        return (
+          <Image
+            source={{ uri: post.media.images[0] }}
+            style={styles.singleImage}
+            resizeMode="cover"
+          />
+        );
+      } else if (post.media?.images?.length > 1) {
+        const isMoreThanFour = post.media.images.length >= 4;
+        const previewImages = isMoreThanFour ? post.media.images.slice(0, 4) : post.media.images;
+        return renderMediaGrid(previewImages, isMoreThanFour);
+      }
+      break;
+
+    case 'video':
+      if (post.media?.videos?.length === 1) {
+        return (
+          <View style={styles.singleVideoContainer}>
+            <VideoPlayer uri={post.media.videos[0]} style={styles.singleVideo} />
+          </View>
+        );
+      } else if (post.media?.videos?.length > 1) {
+        const isMoreThanFour = post.media.videos.length >= 4;
+        const previewVideos = isMoreThanFour ? post.media.videos.slice(0, 4) : post.media.videos;
+        return renderMediaGrid(previewVideos, isMoreThanFour);
+      }
+      break;
+
+    case 'multipleMedia':
+      const images = post.media?.images || [];
+      const videos = post.media?.videos || [];
+      const allMedia = [
+        ...images.map(uri => ({ uri, type: 'image' })),
+        ...videos.map(uri => ({ uri, type: 'video' }))
+      ];
+
+      if (allMedia.length > 0) {
+        const isMoreThanFour = allMedia.length > 4;
+        const previewMedia = isMoreThanFour ? allMedia.slice(0, 4) : allMedia;
+        return renderMediaGrid(previewMedia, isMoreThanFour);
+      }
+      break;
+  }
+
+  return null;
+};
+
+// Post Header Component
+const PostHeader = ({ post, onMoreOptions, formatDate }) => (
+  <View style={styles.postHeader}>
+    <UserAvatar user={post.created_by} />
+    <View style={styles.postHeaderInfo}>
+      <Text style={styles.postUserName}>{post.created_by?.name || 'Unknown User'}</Text>
+      <Text style={styles.postDate}>{formatDate(post.date)}</Text>
+    </View>
+    <TouchableOpacity onPress={() => onMoreOptions(post)} style={styles.postOptions}>
+      <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
+    </TouchableOpacity>
+  </View>
+);
+
+// Post Actions Component
+const PostActions = ({ post, userId, onLike, onComment, onShare, liking }) => {
+  const isLiked = userId && post.likes?.some(like => like._id === userId);
+
+  return (
+    <View style={styles.postStats}>
+      <TouchableOpacity onPress={onLike} style={styles.postActionBtn}>
+        {liking ? (
+          <ActivityIndicator size="small" color="#FF4000" style={styles.likeIndicator} />
+        ) : (
+          <FontAwesome
+            name={isLiked ? "heart" : "heart-o"}
+            size={24}
+            color={isLiked ? "#FF4000" : "#888888"}
+          />
+        )}
+        <Text style={styles.postActionText}>{post.likes?.length || 0}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onComment} style={styles.postActionBtn}>
+        <FontAwesome name="comment-o" size={24} color="#888888" />
+        <Text style={styles.postActionText}>{post.comments?.length || 0}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onShare} style={[styles.postActionBtn, styles.postActionBtnLast]}>
+        <FontAwesome name="share-square-o" size={24} color="#888888" />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// Bottom Navigation Component
+const BottomNavigation = ({ router }) => (
+  <View style={styles.navBar}>
+    <TouchableOpacity onPress={() => router.replace('/settings')}>
+      <Image source={require('../../assets/settings.png')} style={styles.icon} />
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.replace('/search')}>
+      <Image source={require('../../assets/search.png')} style={styles.icon} />
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.replace('/landing')}>
+      <Image source={require('../../assets/home.png')} style={styles.activeIcon} />
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.replace('/notifications')}>
+      <Image source={require('../../assets/notifications.png')} style={styles.icon} />
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => router.replace('/profile')}>
+      <Image source={require('../../assets/profile.png')} style={styles.icon} />
+    </TouchableOpacity>
+  </View>
+);
+
+// Comments List Component
+const CommentsList = ({ comments, loadingComments, formatDate }) => {
+  if (loadingComments) {
+    return (
+      <View style={styles.commentLoading}>
+        <ActivityIndicator size="large" color="#FF4000" />
+      </View>
+    );
+  }
+
+  if (!comments || comments.length === 0) {
+    return (
+      <View style={styles.noComments}>
+        <Text style={styles.noCommentsText}>No comments yet</Text>
+      </View>
+    );
+  }
+
+  return (
+    <>
+      {comments.map((item) => (
+        <View key={item._id} style={styles.commentItem}>
+          <UserAvatar user={item.user} />
+          <View style={styles.commentContent}>
+            <View style={styles.commentHeader}>
+              <Text style={styles.commentAuthor}>{item.user?.name || 'Unknown User'}</Text>
+              <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+            </View>
+            <Text style={styles.commentText}>{item.content}</Text>
+          </View>
+        </View>
+      ))}
+    </>
+  );
+};
+
+// More Options Component
+const MoreOptionsSheet = ({
+  post,
+  userId,
+  deleteConfirmation,
+  onClose,
+  onDelete,
+  onConfirmDelete,
+  onCancelDelete,
+  router
+}) => (
+  <BottomSheetView style={styles.moreOptionsContainer}>
+    <View style={styles.moreOptionsContent}>
+      {post.created_by._id === userId ? (
+        <TouchableOpacity onPress={() => { onClose(); router.replace('/profile'); }} style={styles.profileButton}>
+          <Text style={styles.profileButtonText}>Go to your profile</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity onPress={() => {
+          onClose();
+          router.push({ pathname: '/profile/public', params: { id: post.created_by._id } });
+        }} style={styles.profileButton}>
+          <Text style={styles.profileButtonText}>Go to {post.created_by.name}'s profile</Text>
+        </TouchableOpacity>
+      )}
+
+      {post.created_by._id === userId && (
+        <View>
+          {!deleteConfirmation && (
+            <TouchableOpacity onPress={onDelete} style={[styles.profileButton, styles.deleteButton]}>
+              <Text style={[styles.profileButtonText, styles.deleteButtonText]}>Delete post</Text>
+            </TouchableOpacity>
+          )}
+          {deleteConfirmation && (
+            <View style={[styles.profileButton, styles.confirmationContainer]}>
+              <Text style={[styles.profileButtonText, styles.deleteButtonText]}>Are you sure?</Text>
+              <View style={styles.confirmationButtons}>
+                <TouchableOpacity onPress={onConfirmDelete} style={styles.confirmationButton}>
+                  <Text style={styles.confirmationButtonText}>Yes, delete</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onCancelDelete} style={styles.confirmationButton}>
+                  <Text style={styles.confirmationButtonText}>No</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+      )}
+
+      <TouchableOpacity onPress={onClose} style={[styles.profileButton, styles.cancelButton]}>
+        <Text style={[styles.profileButtonText, styles.cancelButtonText]}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  </BottomSheetView>
+);
+
+// Main Post Screen Component
 export default function PostScreen() {
   const { postId } = useLocalSearchParams();
   const router = useRouter();
 
+  // State management
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
   const [liking, setLiking] = useState(false);
-
-  // Comments state
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [selectedPost, setSelectedPost] = useState(null);
 
-  // Bottom sheet refs
+  // Refs
   const bottomSheetRef = useRef<BottomSheet>(null);
   const moreOptionsRef = useRef<BottomSheet>(null);
-  const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
+  // Constants
   const snapPoints = useMemo(() => ["50%", "90%"], []);
 
+  // Callbacks
   const handlePresentModalPress = useCallback(() => {
     bottomSheetRef.current?.snapToIndex(0);
   }, []);
@@ -314,58 +529,53 @@ export default function PostScreen() {
     moreOptionsRef.current?.close();
   }, []);
 
-  const renderBackdrop = useCallback(
-    (props) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-      />
-    ),
-    []
-  );
+  const renderBackdrop = useCallback((props) => (
+    <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+  ), []);
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  // Date formatting
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
 
-  useEffect(() => {
-    if (userId && postId) {
-      fetchPost();
-    }
-  }, [userId, postId]);
+    if (diffInMinutes < 1) return 'now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
 
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // API functions
   const fetchUser = async () => {
-    const token = await SecureStore.getItemAsync('userToken');
-    if (token) {
+    try {
+      const token = await SecureStore.getItemAsync('userToken');
+      if (!token) return;
+
       const decodedToken = jwtDecode(token);
+      const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      try {
-        const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-          setUserId(userData._id);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setUserId(userData._id);
       }
+    } catch (error) {
+      console.error('Error fetching user:', error);
     }
   };
 
   const fetchPost = async () => {
-    console.log('getting post')
     setLoading(true);
     try {
       const token = await SecureStore.getItemAsync('userToken');
       const response = await fetch(`http://193.187.132.170:5000/api/posts/post/${postId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      console.log(response)
 
       if (response.ok) {
         const postData = await response.json();
@@ -390,8 +600,6 @@ export default function PostScreen() {
     if (!post) return;
 
     setLiking(true);
-
-    // Optimistic update
     const isLiked = post.likes?.some(like => like._id === userId);
     const updatedLikes = isLiked
       ? post.likes.filter(like => like._id !== userId)
@@ -415,7 +623,6 @@ export default function PostScreen() {
       }
     } catch (err) {
       console.error('Like error:', err);
-      // Revert optimistic update on error
       setPost(prev => ({ ...prev, likes: post.likes }));
     } finally {
       setLiking(false);
@@ -443,7 +650,7 @@ export default function PostScreen() {
     }
   };
 
-  const handleSubmitComment = async (commentText: string) => {
+  const handleSubmitComment = async (commentText) => {
     if (!commentText.trim()) return;
     setSubmittingComment(true);
 
@@ -470,14 +677,15 @@ export default function PostScreen() {
     }
   };
 
-  const handleMoreOptions = () => {
+  const handleMoreOptions = (post) => {
+    setSelectedPost(post);
     handleOpenMoreOptions();
   };
 
   const handleShare = async () => {
     const url = `https://riyadah.app/posts/${postId}`;
     try {
-      const result = await Share.share({
+      await Share.share({
         message: `Check out this post on Riyadah: ${url}`,
       });
     } catch (error) {
@@ -485,9 +693,8 @@ export default function PostScreen() {
     }
   };
 
-  const handleDeletePost = () => {
-    setDeleteConfirmation(postId);
-  };
+  const handleDeletePost = () => setDeleteConfirmation(postId);
+  const handleCancelDeletePost = () => setDeleteConfirmation('');
 
   const handleConfirmDeletePost = async () => {
     try {
@@ -505,7 +712,7 @@ export default function PostScreen() {
       if (res.ok) {
         setDeleteConfirmation('');
         handleCloseModalPress();
-        router.back(); // Go back to previous screen after deletion
+        router.back();
       } else {
         alert(`Error: ${data.message}`);
       }
@@ -515,247 +722,18 @@ export default function PostScreen() {
     }
   };
 
-  const handleCancelDeletePost = () => {
-    setDeleteConfirmation('');
-  };
+  // Effects
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMinutes / 60);
-
-    if (diffInMinutes < 1) {
-      return 'now';
-    } else if (diffInMinutes < 60) {
-      return `${diffInMinutes}m ago`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  useEffect(() => {
+    if (userId && postId) {
+      fetchPost();
     }
-  };
+  }, [userId, postId]);
 
-  const renderMedia = () => {
-    if (!post) return null;
-
-    // Images only
-    if (post.type === 'image' && post.media.images?.length > 0) {
-      const images = post.media.images;
-      const isMoreThanFour = images.length >= 4;
-      const previewImages = isMoreThanFour ? images.slice(0, 4) : images;
-
-      return (
-        images.length === 1 ? (
-          <Image
-            source={{ uri: images[0] }}
-            style={[styles.postImage, { marginTop: 10 }]}
-            resizeMode="cover"
-          />
-        ) : (
-          <MasonryList
-            data={previewImages}
-            keyExtractor={(uri, index) => uri + index}
-            numColumns={2}
-            containerStyle={{ marginTop: 10 }}
-            style={{ margin: -5 }}
-            renderItem={({ item: image }) => {
-              const currentIndex = previewImages.findIndex(img => img === image);
-              const isLastPreview = isMoreThanFour && currentIndex === 3;
-
-              return (
-                <View
-                  style={{
-                    borderRadius: 8,
-                    overflow: 'hidden',
-                    margin: 5,
-                    backgroundColor: 'black',
-                    position: 'relative',
-                  }}
-                >
-                  <Image
-                    source={{ uri: image }}
-                    resizeMode="cover"
-                    style={{ width: '100%', aspectRatio: 1 }}
-                  />
-
-                  {isLastPreview && (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 3,
-                      }}
-                    >
-                      <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
-                        + {images.length - 3}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              );
-            }}
-          />
-        )
-      );
-    }
-
-    // Videos only
-    if (post.type === 'video' && post.media.videos?.length > 0) {
-      const videos = post.media.videos;
-      const isMoreThanFour = videos.length >= 4;
-      const previewVideos = isMoreThanFour ? videos.slice(0, 4) : videos;
-
-      return (
-        videos.length === 1 ? (
-          <View
-            style={{
-              borderRadius: 8,
-              backgroundColor: 'black',
-              overflow: 'hidden',
-              marginTop: 10,
-              aspectRatio: 1
-            }}>
-            <VideoPlayer
-              uri={videos[0]}
-              style={{ width: '100%', height: '100%' }}
-            />
-          </View>
-        ) : (
-          <MasonryList
-            data={previewVideos}
-            keyExtractor={(uri, index) => uri + index}
-            numColumns={2}
-            containerStyle={{ marginTop: 10 }}
-            style={{ marginVertical: -5, marginHorizontal: -0, }}
-            renderItem={({ item: video }) => {
-              const currentIndex = previewVideos.findIndex(v => v === video);
-              const isLastPreview = isMoreThanFour && currentIndex === 3;
-
-              return (
-                <View
-                  style={{
-                    borderRadius: 8,
-                    backgroundColor: 'black',
-                    overflow: 'hidden',
-                    marginVertical: 5,
-                    marginHorizontal: 0,
-                    position: 'relative',
-                    aspectRatio: 1,
-                    borderWidth: 1
-                  }}>
-                  <VideoPlayer
-                    uri={video}
-                    style={{ width: '100%', height: '100%' }}
-                    showFullscreenToggle={true}
-                  />
-
-                  {isLastPreview && (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 3,
-                      }}
-                    >
-                      <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
-                        + {videos.length - 3}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              );
-            }}
-          />
-        )
-      );
-    }
-
-    // Multiple media
-    if (post.type === 'multipleMedia') {
-      const images = post.media.images || [];
-      const videos = post.media.videos || [];
-
-      const allMedia = [
-        ...images.map(uri => ({ uri, type: 'image' })),
-        ...videos.map(uri => ({ uri, type: 'video' }))
-      ];
-
-      const isMoreThanFour = allMedia.length > 4;
-      const previewMedia = isMoreThanFour ? allMedia.slice(0, 4) : allMedia;
-
-      return (
-        <MasonryList
-          data={previewMedia}
-          keyExtractor={(item, index) => item.uri + index}
-          numColumns={2}
-          containerStyle={{ marginTop: 10 }}
-          style={{ margin: -5 }}
-          renderItem={({ item }) => {
-            const currentIndex = previewMedia.findIndex(m => m.uri === item.uri && m.type === item.type);
-            const isLastPreview = isMoreThanFour && currentIndex === 3;
-
-            return (
-              <View
-                style={{
-                  borderRadius: 8,
-                  backgroundColor: 'black',
-                  overflow: 'hidden',
-                  margin: 5,
-                  position: 'relative',
-                }}
-              >
-                {item.type === 'image' ? (
-                  <Image
-                    source={{ uri: item.uri }}
-                    style={{ width: '100%', aspectRatio: 1 }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <Video
-                    source={{ uri: item.uri }}
-                    style={{ width: '100%', aspectRatio: 1, backgroundColor: 'black' }}
-                    resizeMode="cover"
-                    isLooping
-                  />
-                )}
-
-                {isLastPreview && (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      backgroundColor: 'rgba(0,0,0,0.5)',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      zIndex: 3,
-                    }}
-                  >
-                    <Text style={{ color: '#fff', fontFamily: 'Qatar', fontSize: 30 }}>
-                      + {allMedia.length - 3}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            );
-          }}
-        />
-      );
-    }
-
-    return null;
-  };
-
+  // Loading state
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -764,16 +742,16 @@ export default function PostScreen() {
     );
   }
 
-  if (!post) {
+  // Error state
+  if (!post || typeof post !== 'object' || !post.created_by) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Post not found</Text>
+        <Text>Invalid post data</Text>
       </View>
     );
   }
 
-  const isLiked = userId && post.likes?.some((like: any) => like._id === userId);
-
+  // Main render
   return (
     <GestureHandlerRootView style={styles.container}>
       {Platform.OS === 'ios' ? (
@@ -782,123 +760,65 @@ export default function PostScreen() {
         <View style={{ height: 25, backgroundColor: '#FF4000' }} />
       )}
 
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.header}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} >
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={24} color="#000" />
-            </TouchableOpacity>
-            <Image
-              source={require('../../assets/logo_orangeBlack.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <View style={{ width: 24 }} /> {/* Spacer for balance */}
-          </View>
-        </View>
+      <SafeAreaView>
+        <View style={{ height: '100%', paddingBottom: 100 }}>
+          <FlatList
+            data={[post]}
+            renderItem={() => (
+              <View style={styles.postContainer}>
+                <PostHeader
+                  post={post}
+                  onMoreOptions={handleMoreOptions}
+                  formatDate={formatDate}
+                />
 
-        <FlatList
-          data={[post]} // Wrap post in array for FlatList
-          renderItem={() => (
-            <View style={styles.postContainer}>
-              <View style={styles.postHeader}>
-                {(post.created_by.image == null || post.created_by.image == "") ? (
-                  <View style={styles.profileImage}>
-                    {post.created_by.gender == "Male" && <Image
-                      source={require('../../assets/avatar.png')}
-                      style={styles.profileImageAvatar}
-                      resizeMode="contain"
-                    />}
-                    {post.created_by.gender == "Female" && <Image
-                      source={require('../../assets/avatarF.png')}
-                      style={styles.profileImageAvatar}
-                      resizeMode="contain"
-                    />}
-                    {post.created_by.type == "Club" && <Image
-                      source={require('../../assets/clublogo.png')}
-                      style={styles.profileImageAvatar}
-                      resizeMode="contain"
-                    />}
+                <View style={styles.post}>
+                  <View style={styles.postContent}>
+                    {post.title && <Text style={styles.postTitle}>{post.title}</Text>}
+                    {post.content?.trim() !== '' && (
+                      <Text style={styles.postText}>{post.content}</Text>
+                    )}
+                    <MediaRenderer post={post} />
                   </View>
-                ) : (
-                  <View style={styles.profileImage}>
+
+                  <PostActions
+                    post={post}
+                    userId={userId}
+                    onLike={handleLike}
+                    onComment={handleComment}
+                    onShare={handleShare}
+                    liking={liking}
+                  />
+                </View>
+              </View>
+            )}
+            ListHeaderComponent={
+              <>
+                <View style={styles.header}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} >
                     <Image
-                      source={{ uri: post.created_by.image }}
-                      style={styles.avatar}
+                      source={require('../../assets/logo_orangeBlack.png')}
+                      style={styles.logo}
                       resizeMode="contain"
                     />
                   </View>
-                )}
 
-                <View style={styles.postHeaderInfo}>
-                  <Text style={styles.postUserName}>{post.created_by.name}</Text>
-                  <Text style={styles.postDate}>{formatDate(post.date)}</Text>
                 </View>
+              </>
+            }
+            keyExtractor={() => post._id}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#FF4000']}
+                tintColor="#FF4000"
+              />
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
 
-                <TouchableOpacity onPress={handleMoreOptions} style={styles.postOptions}>
-                  <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.post}>
-                <View style={styles.postContent}>
-                  {post.title && <Text style={styles.postTitle}>{post.title}</Text>}
-                  {post.content?.trim() !== '' && (
-                    <Text style={styles.postText}>{post.content}</Text>
-                  )}
-
-                  {renderMedia()}
-                </View>
-
-                <View style={styles.postStats}>
-                  <TouchableOpacity onPress={handleLike} style={styles.postActionBtn}>
-                    <View>
-                      {liking ? (
-                        <ActivityIndicator
-                          size="small"
-                          color="#FF4000"
-                          style={{ marginBottom: 5 }}
-                        />
-                      ) : (
-                        <FontAwesome
-                          name={isLiked ? "heart" : "heart-o"}
-                          size={24}
-                          color={isLiked ? "#FF4000" : "#888888"}
-                        />
-                      )}
-                    </View>
-                    <Text style={styles.postActionText}>
-                      {post.likes?.length}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={handleComment} style={styles.postActionBtn}>
-                    <View style={styles.postActionBtn}>
-                      <FontAwesome name="comment-o" size={24} color="#888888" />
-                      <Text style={styles.postActionText}>{post.comments?.length}</Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={handleShare} style={[styles.postActionBtn, { marginBottom: 14 }]}>
-                    <View style={[styles.postActionBtn, styles.postActionBtnLast]}>
-                      <FontAwesome name="share-square-o" size={24} color="#888888" />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
-          keyExtractor={() => post._id}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={['#FF4000']}
-              tintColor="#FF4000"
-            />
-          }
-          showsVerticalScrollIndicator={false}
-        />
-
-        {/* Bottom Navigation */}
         <View style={styles.navBar}>
           <TouchableOpacity onPress={() => router.replace('/settings')}>
             <Image source={require('../../assets/settings.png')} style={styles.icon} />
@@ -909,7 +829,7 @@ export default function PostScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.replace('/landing')}>
-            <Image source={require('../../assets/home.png')} style={[styles.activeIcon]} />
+            <Image source={require('../../assets/home.png')} style={[styles.icon]} />
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.replace('/notifications')}>
@@ -923,155 +843,73 @@ export default function PostScreen() {
       </SafeAreaView>
 
       {/* Comments Bottom Sheet */}
-      {user && (
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          snapPoints={snapPoints}
-          enableDynamicSizing={false}
-          enablePanDownToClose={true}
-          handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
-          backdropComponent={renderBackdrop}
-          footerComponent={(footerProps) => (
-            <CommentFooter
-              footerProps={footerProps}
-              user={user}
-              submittingComment={submittingComment}
-              onSubmitComment={handleSubmitComment}
-            />
-          )}
-          keyboardBehavior="extend"
-          keyboardBlurBehavior="restore"
-        >
-          <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
-            <View style={[styles.commentModalHeader, {}]}>
-              <Text style={styles.commentModalTitle}>Comments</Text>
-              <TouchableOpacity
-                style={styles.commentModalClose}
-                onPress={handleCloseModalPress}
-              >
-                <Ionicons name="close" size={24} color="#888" />
-              </TouchableOpacity>
-            </View>
-          </BottomSheetView>
-
-          <BottomSheetScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingHorizontal: 15, marginTop: 50, paddingBottom: 140 }}
-            showsVerticalScrollIndicator={false}
-          >
-            {loadingComments ? (
-              <View style={styles.commentLoading}>
-                <ActivityIndicator size="large" color="#FF4000" />
-              </View>
-            ) : (
-              comments.length === 0 ? (
-                <View style={styles.noComments}>
-                  <Text style={styles.noCommentsText}>No comments yet</Text>
-                </View>
-              ) : (
-                comments.map((item) => (
-                  <View key={item._id} style={styles.commentItem}>
-                    <View style={styles.profileImage}>
-                      {(item.user?.image == null || item.user?.image === '') && item.user?.type === 'Club' && (
-                        <Image source={require('../../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                      )}
-                      {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Male' && (
-                        <Image source={require('../../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                      )}
-                      {(item.user?.image == null || item.user?.image === '') && item.user?.gender === 'Female' && (
-                        <Image source={require('../../assets/avatarF.png')} style={styles.profileImageAvatar} resizeMode="contain" />
-                      )}
-                      {item.user?.image && (
-                        <Image source={{ uri: item.user.image }} style={styles.profileImageAvatar} resizeMode="contain" />
-                      )}
-                    </View>
-                    <View style={styles.commentContent}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <View>
-                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={styles.commentAuthor}>{item.user.name}</Text>
-                            <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
-                          </View>
-                          <Text style={styles.commentText}>{item.content}</Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                ))
-              )
+      {
+        user && (
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={-1}
+            snapPoints={snapPoints}
+            enableDynamicSizing={false}
+            enablePanDownToClose={true}
+            handleIndicatorStyle={styles.bottomSheetHandle}
+            backdropComponent={renderBackdrop}
+            footerComponent={(footerProps) => (
+              <CommentFooter
+                footerProps={footerProps}
+                user={user}
+                submittingComment={submittingComment}
+                onSubmitComment={handleSubmitComment}
+              />
             )}
-          </BottomSheetScrollView>
-        </BottomSheet>
-      )}
+            keyboardBehavior="extend"
+            keyboardBlurBehavior="restore"
+          >
+            <BottomSheetView style={styles.commentsSheet}>
+              <View style={styles.commentModalHeader}>
+                <Text style={styles.commentModalTitle}>Comments</Text>
+                <TouchableOpacity onPress={handleCloseModalPress} style={styles.commentModalClose}>
+                  <Ionicons name="close" size={24} color="#888" />
+                </TouchableOpacity>
+              </View>
+              <BottomSheetScrollView
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={styles.commentsScrollContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <CommentsList
+                  comments={comments}
+                  loadingComments={loadingComments}
+                  formatDate={formatDate}
+                />
+              </BottomSheetScrollView>
+            </BottomSheetView>
+          </BottomSheet>
+        )
+      }
 
       {/* More Options Bottom Sheet */}
-      <BottomSheet
-        ref={moreOptionsRef}
-        enablePanDownToClose={true}
-        handleIndicatorStyle={{ width: 50, backgroundColor: '#aaa' }}
-        backdropComponent={renderBackdrop}
-      >
-        <BottomSheetView style={{
-          flex: 1, paddingBottom: 50
-        }}>
-          <View style={{ padding: 20 }}>
-            {post.created_by._id == userId ? (
-              <TouchableOpacity
-                onPress={() => {
-                  handleCloseModalPress();
-                  router.replace('/profile')
-                }}
-                style={styles.profileButton}>
-                <Text style={styles.profileButtonText}>Go to your profile</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                onPress={() => {
-                  handleCloseModalPress();
-                  router.push({
-                    pathname: '/profile/public',
-                    params: { id: post.created_by._id },
-                  })
-                }}
-                style={styles.profileButton}>
-                <Text style={styles.profileButtonText}>Go to {post.created_by.name} 's profile</Text>
-              </TouchableOpacity>
-            )}
-
-            {post.created_by._id == userId && (
-              <View>
-                {deleteConfirmation == '' && <TouchableOpacity onPress={handleDeletePost} style={[styles.profileButton, { marginTop: 10 }]}>
-                  <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete post</Text>
-                </TouchableOpacity>}
-                {deleteConfirmation == postId &&
-                  <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
-                    <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
-                    <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
-                      <TouchableOpacity onPress={handleConfirmDeletePost}
-                        style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                        <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity onPress={handleCancelDeletePost}
-                        style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                        <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>}
-              </View>
-            )}
-
-            <TouchableOpacity onPress={() => {
-              handleCloseModalPress();
-            }
-            } style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
-              <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </BottomSheetView>
-      </BottomSheet>
-    </GestureHandlerRootView>
+      {
+        selectedPost && (
+          <BottomSheet
+            ref={moreOptionsRef}
+            enablePanDownToClose={true}
+            handleIndicatorStyle={styles.bottomSheetHandle}
+            backdropComponent={renderBackdrop}
+          >
+            <MoreOptionsSheet
+              post={post}
+              userId={userId}
+              deleteConfirmation={deleteConfirmation}
+              onClose={handleCloseModalPress}
+              onDelete={handleDeletePost}
+              onConfirmDelete={handleConfirmDeletePost}
+              onCancelDelete={handleCancelDeletePost}
+              router={router}
+            />
+          </BottomSheet>
+        )
+      }
+    </GestureHandlerRootView >
   );
 }
 
@@ -1618,5 +1456,153 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: '#050505',
     fontFamily: 'Acumin'
+  },
+  video: {
+    width: '100%', 
+    height: '100%'
+  },
+  fullscreenVideo: {
+    width: '100%', 
+    height: '100%'
+  },
+  fullscreenToggleArea: {
+    position: 'absolute', 
+    right: 0, 
+    top: 0, 
+    width: '100%', 
+    height: '70%'
+  },
+  mediaGridContainer: {
+    marginTop: 10
+  },
+  mediaGrid: {
+    margin: -5
+  },
+  mediaItemContainer: {
+    borderRadius: 8,
+    backgroundColor: 'black',
+    overflow: 'hidden',
+    margin: 5,
+    position: 'relative',
+  },
+  mediaImage: {
+    width: '100%', 
+    aspectRatio: 1
+  },
+  mediaVideo: {
+    width: '100%', 
+    aspectRatio: 1
+  },
+  mediaOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 3,
+  },
+  mediaOverlayText: {
+    color: '#fff', 
+    fontFamily: 'Qatar', 
+    fontSize: 30
+  },
+  singleImage: {
+    width: '100%', 
+    height: width * 0.8, 
+    borderRadius: 8, 
+    marginTop: 10
+  },
+  singleVideoContainer: {
+    borderRadius: 8,
+    backgroundColor: 'black',
+    overflow: 'hidden',
+    marginTop: 10,
+    aspectRatio: 1
+  },
+  singleVideo: {
+    width: '100%', 
+    height: '100%'
+  },
+  likeIndicator: {
+    marginBottom: 5
+  },
+  commentInputContainerKeyboardVisible: {
+    paddingBottom: 10
+  },
+  bottomSheetHandle: {
+    width: 50, 
+    backgroundColor: '#aaa'
+  },
+  commentsSheet: {
+    backgroundColor: 'white', 
+    zIndex: 1
+  },
+  commentsScrollContent: {
+    paddingHorizontal: 15, 
+    marginTop: 50, 
+    paddingBottom: 140
+  },
+  commentHeader: {
+    flexDirection: 'row', 
+    alignItems: 'center'
+  },
+  moreOptionsContainer: {
+    flex: 1, 
+    paddingBottom: 50
+  },
+  moreOptionsContent: {
+    padding: 20
+  },
+  deleteButton: {
+    marginTop: 10
+  },
+  deleteButtonText: {
+    color: '#FF4000'
+  },
+  confirmationContainer: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginTop: 10
+  },
+  confirmationButtons: {
+    flexDirection: 'row', 
+    columnGap: 30, 
+    alignItems: 'center'
+  },
+  confirmationButton: {
+    backgroundColor: 'transparent', 
+    padding: 0
+  },
+  confirmationButtonText: {
+    textAlign: 'center'
+  },
+  cancelButton: {
+    marginTop: 20, 
+    backgroundColor: '#111111'
+  },
+  cancelButtonText: {
+    textAlign: 'center', 
+    color: '#fff'
+  },
+  iosStatusBar: {
+    height: 60,
+    backgroundColor: '#FF4000'
+  },
+  androidStatusBar: {
+    height: 25,
+    backgroundColor: '#FF4000'
+  },
+  safeArea: {
+    flex: 1,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerSpacer: {
+    width: 24,
   },
 });
