@@ -120,9 +120,9 @@ const styles = StyleSheet.create({
         marginBottom: 20
     },
     headline: {
-        fontSize: 50,
+        fontSize: 40,
         fontFamily: 'Qatar',
-        lineHeight: 54,
+        lineHeight: 45,
         color: '#111111',
     },
     subtext: {

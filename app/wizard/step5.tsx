@@ -279,11 +279,11 @@ export default function WizardStep5() {
 
             {!loading && registrationError != null && <View style={styles.fixedBottomSection}>
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleRetry}>
-                    <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
+                    {/* <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
                         <Text style={styles.loginText}>Try again</Text>
                     </View>
-                    <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
+                    {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
             </View>}
         </View>
