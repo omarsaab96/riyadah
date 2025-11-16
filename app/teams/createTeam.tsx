@@ -1,11 +1,13 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -21,7 +23,6 @@ import {
     View
 } from 'react-native';
 
-
 const { width } = Dimensions.get('window');
 
 export default function CreateTeam() {
@@ -35,7 +36,11 @@ export default function CreateTeam() {
     const [coaches, setCoaches] = useState<string[]>([]);
     const [staff, setStaff] = useState([]);
     const [staffLoading, setStaffLoading] = useState(false);
-
+    const [showNewAgeGroupInput, setShowNewAgeGroupInput] = useState(false);
+    const [newAgeGroupError, setNewAgeGroupError] = useState(false);
+    const [newAgeGroup, setNewAgeGroup] = useState('');
+    const newAgeGroupRef = useRef(null);
+    const [ageGroups, setAgeGroups] = useState(['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'U21', 'Senior']);
 
     const [teamData, setTeamData] = useState({
         name: '',
@@ -47,12 +52,8 @@ export default function CreateTeam() {
     });
 
     const sports = [
-        'Football', 'Basketball', 'Volleyball', 'Tennis',
-        'Swimming', 'Athletics', 'Handball', 'Hockey'
-    ];
-
-    const ageGroups = [
-        'U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'U21', 'Senior'
+        'Football', 'Basketball', 'Gymnastics', 'Volleyball', 'Swimming', 'Tennis',
+        // 'Athletics', 'Handball', 'Hockey'
     ];
 
     const genders = ['Male', 'Female', 'Mixed'];
@@ -215,6 +216,33 @@ export default function CreateTeam() {
         }
     };
 
+    const handleAddNewAgeGroup = () => {
+        setShowNewAgeGroupInput(true);
+        setTimeout(() => {
+            newAgeGroupRef.current?.focus();
+        }, 100);
+    };
+
+    const handleCancelNewAgeGroup = () => {
+        setShowNewAgeGroupInput(false);
+        setNewAgeGroup('')
+    };
+    const handleSubmitNewAgeGroup = () => {
+        if (newAgeGroup.trim() == "") {
+            setNewAgeGroupError(true)
+            setTimeout(() => {
+                newAgeGroupRef.current?.focus();
+            }, 100);
+            return;
+        }
+        setNewAgeGroupError(false)
+        setAgeGroups([...ageGroups, newAgeGroup]);
+        setShowNewAgeGroupInput(false)
+        setTeamData({ ...teamData, ageGroup: newAgeGroup })
+        console.log("New age group:", ageGroups);
+        setNewAgeGroup('')
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -308,6 +336,7 @@ export default function CreateTeam() {
                                 placeholderTextColor={"#888888"}
                                 value={teamData.name}
                                 onChangeText={(text) => setTeamData({ ...teamData, name: text })}
+                                selectionColor={'#FF4400'}
                             />
                         </View>
 
@@ -392,7 +421,7 @@ export default function CreateTeam() {
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Age Group</Text>
                             <View style={styles.pickerContainer}>
-                                <Picker
+                                {/* <Picker
                                     selectedValue={teamData.ageGroup}
                                     onValueChange={(itemValue) =>
                                         setTeamData({ ...teamData, ageGroup: itemValue })
@@ -402,7 +431,50 @@ export default function CreateTeam() {
                                     {ageGroups.map((group, index) => (
                                         <Picker.Item key={index} label={group} value={group} />
                                     ))}
-                                </Picker>
+                                </Picker> */}
+                                <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                    {ageGroups.map((group, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={[styles.multipleChoice, teamData.ageGroup == group && styles.selectedChoice]}
+                                            onPress={() => { setTeamData({ ...teamData, ageGroup: group }) }}
+                                        >
+                                            <Text style={[styles.multipleChoiceText, teamData.ageGroup == group && styles.selectedChoiceText]}>
+                                                {group}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+
+                                    {!showNewAgeGroupInput && <TouchableOpacity
+                                        style={[styles.multipleChoice]}
+                                        onPress={() => { handleAddNewAgeGroup() }}
+                                    >
+                                        <Entypo name="plus" size={20} color="black" />
+                                    </TouchableOpacity>}
+
+                                    {showNewAgeGroupInput && <View style={[styles.newAgeGroupContainer, newAgeGroupError && { borderWidth: 1, borderColor: '#ff4400' }]}>
+                                        <TextInput
+                                            style={[styles.input, styles.newAgeGroupInput]}
+                                            placeholder="Enter age group name"
+                                            placeholderTextColor={"#888888"}
+                                            value={newAgeGroup}
+                                            onChangeText={setNewAgeGroup}
+                                            selectionColor={'#FF4400'}
+                                            ref={newAgeGroupRef}
+                                        />
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                            <TouchableOpacity onPress={() => { handleCancelNewAgeGroup() }}>
+                                                <MaterialIcons name="close" size={20} color="black" />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity onPress={() => { handleSubmitNewAgeGroup() }}>
+                                                <FontAwesome6 name="check" size={18} color="black" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>}
+
+
+                                </View>
+
                             </View>
                         </View>
 
@@ -474,7 +546,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -488,8 +561,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         position: 'absolute',
         top: 30,
         left: 20,
@@ -566,12 +639,29 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     input: {
+        fontFamily: 'Acumin',
         fontSize: 14,
         padding: 15,
         backgroundColor: '#F4F4F4',
         marginBottom: 16,
         color: 'black',
         borderRadius: 10
+    },
+    newAgeGroupInput: {
+        borderRadius: 30,
+        marginBottom: 0,
+        padding: 0,
+        paddingLeft: 0,
+        maxWidth: 200
+    },
+    newAgeGroupContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        backgroundColor: '#F4F4F4',
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 5
     },
     inputError: {
         borderColor: '#FF4000',
@@ -601,7 +691,7 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
@@ -671,4 +761,21 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: 'Qatar'
     },
+    multipleChoice: {
+        backgroundColor: '#F4F4F4',
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 5
+    },
+    multipleChoiceText: {
+        fontFamily: 'Acumin',
+        color: '#000',
+        fontSize: 16,
+    },
+    selectedChoice: {
+        backgroundColor: '#1a491e'
+    },
+    selectedChoiceText: {
+        color: '#fff'
+    }
 });

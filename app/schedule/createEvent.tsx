@@ -206,10 +206,10 @@ const CreateEventScreen = () => {
 
                 let url = '';
                 if (user && user.type == "Club") {
-                    url = "http://193.187.132.170:5000/api/teams/club/"+user._id;
+                    url = "http://193.187.132.170:5000/api/teams/club/" + user._id;
                 }
                 if (user && user.type == "Athlete" && user.role == "Coach") {
-                    url = "http://193.187.132.170:5000/api/teams/byCoach/"+user._id;
+                    url = "http://193.187.132.170:5000/api/teams/byCoach/" + user._id;
                 }
 
                 const response = await fetch(url, {
@@ -536,7 +536,7 @@ const CreateEventScreen = () => {
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Event Type *</Text>
                             <View style={styles.pickerContainer}>
-                                <Picker
+                                {/* <Picker
                                     selectedValue={formData.eventType}
                                     onValueChange={(value) => handleChange('eventType', value)}
                                     style={styles.picker}
@@ -545,7 +545,21 @@ const CreateEventScreen = () => {
                                     <Picker.Item label="Match" value="Match" />
                                     <Picker.Item label="Meeting" value="Meeting" />
                                     <Picker.Item label="Tournament" value="Tournament" />
-                                </Picker>
+                                </Picker> */}
+                                <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+
+                                    {['Training', 'Match', 'Meeting','Tournament'].map((type, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={[styles.multipleChoice, formData.eventType == type && styles.selectedChoice]}
+                                            onPress={() => { handleChange('eventType', type) }}
+                                        >
+                                            <Text style={[styles.multipleChoiceText, formData.eventType == type && styles.selectedChoiceText]}>
+                                                {type}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
                         </View>
 
@@ -584,8 +598,8 @@ const CreateEventScreen = () => {
                             <Text style={[styles.label, { marginBottom: 0 }]}>Recurring event</Text>
                             <Text style={styles.hint}>Recurrence will expire automatically after one year.</Text>
                             <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={'No'}
+                                {/* <Picker
+                                    selectedValue={repeat}
                                     onValueChange={setRepeat}
                                     style={styles.picker}
                                 >
@@ -593,15 +607,29 @@ const CreateEventScreen = () => {
                                     <Picker.Item label="Daily" value="Daily" />
                                     <Picker.Item label="Weekly" value="Weekly" />
                                     <Picker.Item label="Monthly" value="Monthly" />
-                                    {/* <Picker.Item label="Yearly" value="Yearly" /> */}
-                                </Picker>
+                                    <Picker.Item label="Yearly" value="Yearly" />
+                                </Picker> */}
+                                <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+
+                                    {['No', 'Daily', 'Weekly', 'Monthly'].map((reccurence, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={[styles.multipleChoice, repeat == reccurence && styles.selectedChoice]}
+                                            onPress={() => { setRepeat(reccurence) }}
+                                        >
+                                            <Text style={[styles.multipleChoiceText, repeat == reccurence && styles.selectedChoiceText]}>
+                                                {reccurence}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
                         </View>
 
                         <View style={styles.formGroup}>
                             <Text style={styles.label}>Location Type</Text>
                             <View style={styles.pickerContainer}>
-                                <Picker
+                                {/* <Picker
                                     selectedValue={formData.locationType}
                                     onValueChange={(value) => handleChange('locationType', value)}
                                     style={styles.picker}
@@ -609,7 +637,22 @@ const CreateEventScreen = () => {
                                     <Picker.Item label="Venue" value="Venue" />
                                     <Picker.Item label="Online" value="Online" />
                                     <Picker.Item label="To Be Determined" value="tbd" />
-                                </Picker>
+                                </Picker> */}
+
+                                <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+
+                                    {['Venue', 'Online', 'To Be Determined'].map((type, index) => (
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={[styles.multipleChoice, formData.locationType == type && styles.selectedChoice]}
+                                            onPress={() => { handleChange('locationType', type) }}
+                                        >
+                                            <Text style={[styles.multipleChoiceText, formData.locationType == type && styles.selectedChoiceText]}>
+                                                {type}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
                         </View>
 
@@ -1248,6 +1291,23 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 150,
     },
+    multipleChoice: {
+        backgroundColor: '#F4F4F4',
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 5
+    },
+    multipleChoiceText: {
+        fontFamily: 'Acumin',
+        color: '#000',
+        fontSize: 16,
+    },
+    selectedChoice: {
+        backgroundColor: '#1a491e'
+    },
+    selectedChoiceText: {
+        color: '#fff'
+    }
 });
 
 export default CreateEventScreen;

@@ -21,7 +21,6 @@ import {
     View
 } from 'react-native';
 
-
 const { width } = Dimensions.get('window');
 
 export default function AddPayment() {
@@ -170,10 +169,10 @@ export default function AddPayment() {
     };
 
     const handleSave = async () => {
-        if (paymentType == "Other" && paymentTypeOther.trim() == '') {
-            setError('Kindly specify payment type')
-            return;
-        }
+        // if (paymentType == "Other" && paymentTypeOther.trim() == '') {
+        //     setError('Kindly specify payment type')
+        //     return;
+        // }
         setSaving(true);
         setError('');
 
@@ -221,9 +220,6 @@ export default function AddPayment() {
             setError('Something went wrong. Please try again.');
             setSaving(false);
         }
-
-
-
     };
 
     const handleCancel = async () => {

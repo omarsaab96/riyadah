@@ -52,52 +52,50 @@ test:
 Version check:
 	✔ should check version on load and force update if needed @done(25-11-07 18:00)
 
+
+1. Post-Workout / Session Survey (Micro-Survey)*:
+	
+	✔ Frequency: After every training session or match. @done(25-11-16 11:19)
+	Suggested Questions:
+	1.	How intense was today's session?:
+		✔ (1 = Very Easy, 10 = Extremely Hard) → used for RPE (Rate of Perceived Exertion). @done(25-11-16 11:18)
+	2.	How do you feel physically right now?:
+		✔ •	Great @done(25-11-16 11:18)
+		✔ •	Tired @done(25-11-16 11:18)
+		✔ •	Exhausted @done(25-11-16 11:18)
+	3.	How was your focus and motivation today?:
+		✔ •	High / Moderate / Low @done(25-11-16 11:18)
+	4.	Any pain, soreness, or discomfort?:
+		✔ •	Yes / No → if Yes, open comment field (“Where?”): @done(25-11-16 11:18)
+	✔ 5.	Any comments or feedback for the coach? (Optional open text) @done(25-11-16 11:18)
+
+	How to use:
+	•	Data feeds into the athlete's daily readiness dashboard.
+	•	Average RPE x duration = session load.
+	•	Alerts if fatigue or soreness is consistently high
+
 ---------------------------------------------------------
-*1. Post-Workout / Session Survey (Micro-Survey)*:
+✔ 2. Monthly Athlete Wellness & Progress Survey: @done(25-11-16 11:17)
 
-Frequency: After every training session or match.
+	✔ Frequency: Once per month (auto-triggered on 30th or end of training cycle). @done(25-11-16 11:19)
+	Suggested Questions:
+	1.	How satisfied are you with your overall training this month?:
+		✔ (1-5 scale: Very dissatisfied → Very satisfied) @done(25-11-16 11:19)
+	2.	Do you feel your performance is improving?:
+		✔ •	Yes / Slightly / No change / Declining @done(25-11-16 11:19)
+	3.	How well are you recovering between sessions?:
+		✔ •	Excellent / Good / Poor / Very poor @done(25-11-16 11:19)
+	4.	How would you rate your sleep quality this month?:
+		✔ •	Excellent / Fair / Poor @done(25-11-16 11:19)
+	5.	Do you feel mentally motivated to train?:
+		✔ •	Always / Often / Sometimes / Rarely @done(25-11-16 11:19)
+	6.	Any injuries or pain affecting performance?:
+		✔ •	Yes / No → (if yes, describe briefly) @done(25-11-16 11:19)
+	7.	What is one area you want to improve next month? (open text):
+	8.	Overall satisfaction with your coach/training environment?:
+		✔ (1-5 scale) @done(25-11-16 11:19)
 
-☐ Suggested Questions
-1.	How intense was today's session?
-	(1 = Very Easy, 10 = Extremely Hard) → used for RPE (Rate of Perceived Exertion).
-2.	How do you feel physically right now?
-	•	Great
-	•	Tired
-	•	Exhausted
-3.	How was your focus and motivation today?
-	•	High / Moderate / Low
-4.	Any pain, soreness, or discomfort?
-	•	Yes / No → if Yes, open comment field (“Where?”)
-5.	Any comments or feedback for the coach? (Optional open text)
-
-How to use:
-•	Data feeds into the athlete's daily readiness dashboard.
-•	Average RPE x duration = session load.
-•	Alerts if fatigue or soreness is consistently high
-
----------------------------------------------------------
-2. Monthly Athlete Wellness & Progress Survey
-
-Frequency: Once per month (auto-triggered on 30th or end of training cycle).
-
-☐ Suggested Questions
-1.	How satisfied are you with your overall training this month?
-	(1-5 scale: Very dissatisfied → Very satisfied)
-2.	Do you feel your performance is improving?
-	•	Yes / Slightly / No change / Declining
-3.	How well are you recovering between sessions?
-	•	Excellent / Good / Poor / Very poor
-4.	How would you rate your sleep quality this month?
-	•	Excellent / Fair / Poor
-5.	Do you feel mentally motivated to train?
-	•	Always / Often / Sometimes / Rarely
-6.	Any injuries or pain affecting performance?
-	•	Yes / No → (if yes, describe briefly)
-7.	What is one area you want to improve next month? (open text)
-8.	Overall satisfaction with your coach/training environment?
-	(1-5 scale)
-
-How to use:
-	•	Coaches view a monthly summary per player or team.
-	•	Can auto-flag players with declining motivation or poor recovery.
-	•	Excellent for wellness tracking + communication insight.
+	How to use:
+		•	Coaches view a monthly summary per player or team.
+		•	Can auto-flag players with declining motivation or poor recovery.
+		•	Excellent for wellness tracking + communication insight.
