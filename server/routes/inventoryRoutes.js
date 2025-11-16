@@ -50,7 +50,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Get all inventory items by club (authenticated)
-router.get('/byClub/:id', authenticateToken, async (req, res) => {
+router.get('/byClub/:id', async (req, res) => {
   try {
     const clubId = req.params.id;
 
