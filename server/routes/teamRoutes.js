@@ -134,7 +134,7 @@ router.get('/club/:clubId', async (req, res) => {
   console.log(req.params.clubId)
   const filters = { club: req.params.clubId, linked: true };
 
-  const user = await User.findById(req.user.userId);
+  const user = await User.findById(req.params.clubId);
   if (!user) {
     return res.status(404).json({ success: false, message: 'User not found' });
   }
