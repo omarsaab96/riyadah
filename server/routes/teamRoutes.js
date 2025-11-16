@@ -130,7 +130,7 @@ router.get('/:id', async (req, res) => {
 // @desc    Get teams by club id
 // @route   GET /api/teams/club/:id
 // @access  Public
-router.get('/club/:clubId', authenticateToken, async (req, res) => {
+router.get('/club/:clubId', async (req, res) => {
   console.log(req.params.clubId)
   const filters = { club: req.params.clubId, linked: true };
 
