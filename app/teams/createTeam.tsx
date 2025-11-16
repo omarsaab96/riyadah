@@ -2,7 +2,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -34,6 +33,7 @@ export default function CreateTeam() {
     const [error, setError] = useState('');
     const [localImg, setLocalImg] = useState<string | null>(null);
     const [coaches, setCoaches] = useState<string[]>([]);
+    const [visibleCoaches, setVisibleCoaches] = useState<string[]>([]);
     const [staff, setStaff] = useState([]);
     const [staffLoading, setStaffLoading] = useState(false);
     const [showNewAgeGroupInput, setShowNewAgeGroupInput] = useState(false);
@@ -204,6 +204,7 @@ export default function CreateTeam() {
                 if (response.ok) {
                     // console.log("Staff=", data.data)
                     setStaff(data.data);
+                    setVisibleCoaches(data.data.filter(member => member.role === "Coach"))
                 } else {
                     setStaff([]);
                 }
@@ -359,39 +360,38 @@ export default function CreateTeam() {
                             ) : (
                                 <View style={styles.pickerContainer}>
                                     <View style={{ gap: 10 }}>
-                                        {staff
-                                            .filter(member => member.role === "Coach")
-                                            .map((coach, index) => {
-                                                const isSelected = coaches.includes(coach._id);
-                                                return (
-                                                    <TouchableOpacity
-                                                        key={index}
-                                                        onPress={() => {
-                                                            let updated;
-                                                            if (isSelected) {
-                                                                updated = coaches.filter(id => id !== coach._id);
-                                                            } else {
-                                                                updated = [...coaches, coach._id];
-                                                            }
-                                                            setCoaches(updated);
-                                                            setTeamData({ ...teamData, coaches: updated });
-                                                        }}
-                                                        style={{
-                                                            flexDirection: 'row',
-                                                            alignItems: 'center',
-                                                        }}
-                                                    >
-                                                        <MaterialIcons
-                                                            name={isSelected ? "check-box" : "check-box-outline-blank"}
-                                                            size={20}
-                                                            color={isSelected ? "#FF4000" : "#333"}
-                                                        />
-                                                        <Text style={{ marginLeft: 5, color: "#000" }}>
-                                                            {coach.userRef.name}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                );
-                                            })}
+                                        {visibleCoaches.length == 0 && <Text>No coaches in your staff yet</Text>}
+                                        {visibleCoaches.length > 0 && visibleCoaches.map((coach, index) => {
+                                            const isSelected = coaches.includes(coach._id);
+                                            return (
+                                                <TouchableOpacity
+                                                    key={index}
+                                                    onPress={() => {
+                                                        let updated;
+                                                        if (isSelected) {
+                                                            updated = coaches.filter(id => id !== coach._id);
+                                                        } else {
+                                                            updated = [...coaches, coach._id];
+                                                        }
+                                                        setCoaches(updated);
+                                                        setTeamData({ ...teamData, coaches: updated });
+                                                    }}
+                                                    style={{
+                                                        flexDirection: 'row',
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    <MaterialIcons
+                                                        name={isSelected ? "check-box" : "check-box-outline-blank"}
+                                                        size={20}
+                                                        color={isSelected ? "#FF4000" : "#333"}
+                                                    />
+                                                    <Text style={{ marginLeft: 5, color: "#000" }}>
+                                                        {coach.userRef.name}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
                                     </View>
 
                                 </View>
@@ -402,7 +402,7 @@ export default function CreateTeam() {
                         {/* Sport Selection */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Sport</Text>
-                            <View style={styles.pickerContainer}>
+                            {/* <View style={styles.pickerContainer}>
                                 <Picker
                                     selectedValue={teamData.sport}
                                     onValueChange={(itemValue) =>
@@ -414,6 +414,19 @@ export default function CreateTeam() {
                                         <Picker.Item key={index} label={sport} value={sport} />
                                     ))}
                                 </Picker>
+                            </View> */}
+                            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                {sports.map((sport, index) => (
+                                    <TouchableOpacity
+                                        key={index}
+                                        style={[styles.multipleChoice, teamData.sport == sport && styles.selectedChoice]}
+                                        onPress={() => { setTeamData({ ...teamData, sport: sport }) }}
+                                    >
+                                        <Text style={[styles.multipleChoiceText, teamData.sport == sport && styles.selectedChoiceText]}>
+                                            {sport}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
                             </View>
                         </View>
 
@@ -481,7 +494,7 @@ export default function CreateTeam() {
                         {/* Gender */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Gender</Text>
-                            <View style={styles.pickerContainer}>
+                            {/* <View style={styles.pickerContainer}>
                                 <Picker
                                     selectedValue={teamData.gender}
                                     onValueChange={(itemValue) =>
@@ -493,6 +506,19 @@ export default function CreateTeam() {
                                         <Picker.Item key={index} label={gender} value={gender} />
                                     ))}
                                 </Picker>
+                            </View> */}
+                            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                {genders.map((gender, index) => (
+                                    <TouchableOpacity
+                                        key={index}
+                                        style={[styles.multipleChoice, teamData.gender == gender && styles.selectedChoice]}
+                                        onPress={() => { setTeamData({ ...teamData, gender: gender }) }}
+                                    >
+                                        <Text style={[styles.multipleChoiceText, teamData.gender == gender && styles.selectedChoiceText]}>
+                                            {gender}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
                             </View>
                         </View>
 

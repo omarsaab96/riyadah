@@ -375,13 +375,14 @@ export default function Profile() {
             try {
                 setInventoryLoading(true);
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`http://193.187.132.170:5000/api/inventory/byClub/${userId}`, {
+                const response = await fetch(`http://193.187.132.170:5000/api/inventory/byClub/${user._id}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
+
                 const data = await response.json();
                 // console.log(data)
                 if (response.ok) {
@@ -629,7 +630,7 @@ export default function Profile() {
             getStaff();
         }
 
-        if (label == "Staff") {
+        if (label == "Inventory") {
             setInventoryLoading(true);
             getInventory();
         }

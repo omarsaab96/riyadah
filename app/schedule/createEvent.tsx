@@ -200,6 +200,7 @@ const CreateEventScreen = () => {
     }, []);
 
     useEffect(() => {
+        if(!user) return;
         const fetchTeams = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
@@ -234,7 +235,7 @@ const CreateEventScreen = () => {
         const fetchInventory = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`http://193.187.132.170:5000/api/inventory/byClub/${userId}`, {
+                const response = await fetch('http://193.187.132.170:5000/api/inventory/byClub/' + user._id, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -242,7 +243,7 @@ const CreateEventScreen = () => {
                     }
                 });
                 const data = await response.json();
-                console.log("data= ", data)
+                // console.log("data= ", data)
                 if (data.success) {
                     setInventoryItems(data.data);
                 } else {
