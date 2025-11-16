@@ -132,7 +132,7 @@ router.get('/:id', async (req, res) => {
 // @access  Public
 router.get('/club/:clubId', authenticateToken, async (req, res) => {
 
-  const filters = { club: req.user.userId, linked: true };
+  const filters = { club: req.params.clubId, linked: true };
 
   const user = await User.findById(req.user.userId);
   if (!user) {
@@ -354,7 +354,7 @@ router.put('/:teamId/members', authenticateToken, async (req, res) => {
           user,
           '👥 Added as member',
           `You have been added to the team "${team.name}"`,
-          { screen: 'teams/details', teamId }
+          {screen:'teams/details', teamId }
         );
       } catch (err) {
         console.error(`Failed to send notification to user ${user._id}:`, err.message);
@@ -452,7 +452,7 @@ router.put('/:teamId/coaches', authenticateToken, async (req, res) => {
           user,
           '📋 Added as coach',
           `You have been assigned to coach the team "${team.name}"`,
-          { screen: 'teams/details', teamId }
+          {screen:'teams/details', teamId }
         );
       } catch (err) {
         console.error(`Failed to send notification to user ${user._id}:`, err.message);

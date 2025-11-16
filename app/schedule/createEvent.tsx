@@ -29,7 +29,7 @@ const CreateEventScreen = () => {
         date: new Date(),
         startTime: new Date(new Date().getTime() * 60 * 60 * 1000),
         endTime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
-        locationType: 'venue',
+        locationType: 'Venue',
         venue: {
             name: '',
             address: ''
@@ -547,8 +547,7 @@ const CreateEventScreen = () => {
                                     <Picker.Item label="Tournament" value="Tournament" />
                                 </Picker> */}
                                 <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-
-                                    {['Training', 'Match', 'Meeting','Tournament'].map((type, index) => (
+                                    {['Training', 'Match', 'Meeting', 'Tournament'].map((type, index) => (
                                         <TouchableOpacity
                                             key={index}
                                             style={[styles.multipleChoice, formData.eventType == type && styles.selectedChoice]}
