@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
 import { useEffect } from "react";
 import { Alert } from 'react-native';
+import 'react-native-get-random-values';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { RegistrationProvider } from '../context/registration';

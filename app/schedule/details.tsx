@@ -210,7 +210,7 @@ export default function StaffDetailsScreen() {
         <Text>No event found.</Text>
       </View>}
 
-      {event && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
+      {event && !loading && <ScrollView style={{ paddingHorizontal: 20}}>
         <View style={[styles.section]}>
           {(userId == event.createdBy || userId == event.club) && <View style={{ flexDirection: 'row', gap: 20, marginBottom: 30 }}>
             {event.status == 'scheduled' && <TouchableOpacity style={styles.editToggle}
@@ -326,6 +326,8 @@ export default function StaffDetailsScreen() {
             </TouchableOpacity>
           </View>
         )}
+
+        <View style={{height:100}}></View>
 
       </ScrollView >
       }

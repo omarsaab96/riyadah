@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const { width } = Dimensions.get('window');
@@ -28,7 +28,7 @@ const CreateEventScreen = () => {
         team: '',
         date: new Date(),
         startTime: new Date(new Date().getTime() * 60 * 60 * 1000),
-        endTime: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
+        endTime: new Date(new Date().getTime() + 1 * 60 * 60 * 1000),
         locationType: 'Venue',
         venue: {
             name: '',
@@ -50,6 +50,8 @@ const CreateEventScreen = () => {
         requiredEquipment: [] as Array<{ itemId: string, name: string, quantity: number }>
     });
 
+    const [placesResults, setPlacesResults] = useState([]);
+
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [pickedDate, setPickedDate] = useState(new Date());
 
@@ -57,7 +59,7 @@ const CreateEventScreen = () => {
     const [pickedStartTime, setPickedStartTime] = useState(new Date());
 
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-    const [pickedEndTime, setPickedEndTime] = useState(new Date());
+    const [pickedEndTime, setPickedEndTime] = useState(new Date(new Date().getTime() + 1 * 60 * 60 * 1000));
 
     const [searching, setSearching] = useState(false);
     const [equipmentSearch, setEquipmentSearch] = useState('');
@@ -200,7 +202,7 @@ const CreateEventScreen = () => {
     }, []);
 
     useEffect(() => {
-        if(!user) return;
+        if (!user) return;
         const fetchTeams = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
@@ -397,6 +399,96 @@ const CreateEventScreen = () => {
         }
     };
 
+    //google places
+    const [query, setQuery] = useState("");
+    const [results, setResults] = useState([]);
+    const [selectedPlace, setSelectedPlace] = useState(null);
+    const GOOGLE_KEY = 'AIzaSyDHaMtAqPpITLBiPKevf5hPu5hNqpURvII'
+    const searchPlaces = async (text) => {
+        setQuery(text);
+        if (text.length < 2) return;
+
+        try {
+            const response = await fetch(
+                "https://places.googleapis.com/v1/places:autocomplete",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Goog-Api-Key": GOOGLE_KEY,
+                        "X-Goog-FieldMask":
+                            "suggestions.placePrediction.place," +
+                            "suggestions.placePrediction.placeId," +
+                            "suggestions.placePrediction.text," +
+                            "suggestions.placePrediction.structuredFormat"
+                    },
+                    body: JSON.stringify({ input: text })
+                }
+            );
+
+            const json = await response.json();
+            setResults(json.suggestions || []);
+        } catch (err) {
+            console.log("FETCH ERROR:", err);
+        }
+    };
+
+    const fetchPlaceDetails = async (placeId) => {
+        try {
+            const url = `https://places.googleapis.com/v1/places/${placeId}?key=${GOOGLE_KEY}&fields=id,displayName,formattedAddress,location`;
+
+            const res = await fetch(url);
+            const json = await res.json();
+
+            console.log("PLACE DETAILS:", json);
+
+            setLocation({
+                latitude: json.location.latitude,
+                longitude: json.location.longitude,
+            });
+
+            setFormData(prev => ({
+                ...prev,
+                venue: {
+                    ...prev.venue,
+                    name: json.displayName?.text || prev.venue.name,
+                    address: json.formattedAddress || prev.venue.address,
+                },
+                location: {
+                    latitude: json.location.latitude,
+                    longitude: json.location.longitude,
+                }
+            }));
+
+            // Update UI
+            setSelectedPlace(json);
+            setQuery(json.displayName?.text || "");
+            setResults([]);
+
+        } catch (err) {
+            console.log("DETAILS ERROR:", err);
+        }
+    };
+
+    const renderItem = ({ item }) => {
+        const prediction = item.placePrediction;
+        const placeId = prediction.placeId;
+
+        return (
+            <TouchableOpacity
+                style={styles.item}
+                onPress={() => fetchPlaceDetails(placeId)}
+            >
+                <Text style={styles.title}>
+                    {prediction.structuredFormat?.mainText?.text}
+                </Text>
+                <Text style={styles.address}>
+                    {prediction.structuredFormat?.secondaryText?.text}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -441,99 +533,112 @@ const CreateEventScreen = () => {
                     <Text style={styles.ghostText}>Events</Text>
                 </View>
 
-                <ScrollView >
-                    {error != '' && <View style={styles.error}>
-                        <View style={styles.errorIcon}></View>
-                        <Text style={styles.errorText}>{error}</Text>
-                    </View>}
+                <FlatList
+                    data={[{ key: 'form' }]}
+                    keyExtractor={item => item.key}
+                    keyboardShouldPersistTaps="always"
+                    renderItem={() => (
+                        <>
+                            {error != '' && (
+                                <View style={styles.error}>
+                                    <View style={styles.errorIcon} />
+                                    <Text style={styles.errorText}>{error}</Text>
+                                </View>
+                            )}
 
-                    <View style={styles.contentContainer}>
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Event Title *</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter event title"
-                                placeholderTextColor={"#888"}
-                                value={formData.title}
-                                onChangeText={(text) => handleChange('title', text)}
-                            />
-                        </View>
+                            <View >
+                                {error != '' && <View style={styles.error}>
+                                    <View style={styles.errorIcon}></View>
+                                    <Text style={styles.errorText}>{error}</Text>
+                                </View>}
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Date*</Text>
-                            <TouchableOpacity
-                                style={styles.dateInput}
-                                onPress={() => setShowDatePicker(true)}
-                            >
-                                <Text style={styles.inputText}>
-                                    {formatDate(pickedDate)}
-                                </Text>
-                                <FontAwesome5 name="calendar-alt" size={18} color="#666" />
-                            </TouchableOpacity>
-                        </View>
+                                <View style={styles.contentContainer}>
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Event Title *</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Enter event title"
+                                            placeholderTextColor={"#888"}
+                                            value={formData.title}
+                                            onChangeText={(text) => handleChange('title', text)}
+                                        />
+                                    </View>
 
-                        {/* Event Time start-end */}
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
-                            <View style={[styles.formGroup, { flex: 1 }]}>
-                                <Text style={styles.label}>From*</Text>
-                                <TouchableOpacity
-                                    style={styles.dateInput}
-                                    onPress={() => setShowStartTimePicker(true)}
-                                >
-                                    <Text style={styles.inputText}>
-                                        {formatTime(pickedStartTime)}
-                                    </Text>
-                                    <FontAwesome5 name="clock" size={18} color="#666" />
-                                </TouchableOpacity>
-                            </View>
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Date*</Text>
+                                        <TouchableOpacity
+                                            style={styles.dateInput}
+                                            onPress={() => setShowDatePicker(true)}
+                                        >
+                                            <Text style={styles.inputText}>
+                                                {formatDate(pickedDate)}
+                                            </Text>
+                                            <FontAwesome5 name="calendar-alt" size={18} color="#666" />
+                                        </TouchableOpacity>
+                                    </View>
 
-                            <View style={[styles.formGroup, { flex: 1 }]}>
-                                <Text style={styles.label}>Till*</Text>
-                                <TouchableOpacity
-                                    style={styles.dateInput}
-                                    onPress={() => setShowEndTimePicker(true)}
-                                >
-                                    <Text style={styles.inputText}>
-                                        {formatTime(pickedEndTime)}
-                                    </Text>
-                                    <FontAwesome5 name="clock" size={18} color="#666" />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                                    {/* Event Time start-end */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                                        <View style={[styles.formGroup, { flex: 1 }]}>
+                                            <Text style={styles.label}>From*</Text>
+                                            <TouchableOpacity
+                                                style={styles.dateInput}
+                                                onPress={() => setShowStartTimePicker(true)}
+                                            >
+                                                <Text style={styles.inputText}>
+                                                    {formatTime(pickedStartTime)}
+                                                </Text>
+                                                <FontAwesome5 name="clock" size={18} color="#666" />
+                                            </TouchableOpacity>
+                                        </View>
 
-                        {/* //show datetime picker */}
-                        {showDatePicker && <DateTimePicker
-                            value={pickedDate}
-                            mode="date"
-                            is24Hour={true}
-                            display={'default'}
-                            onChange={setEventDate}
-                        />}
+                                        <View style={[styles.formGroup, { flex: 1 }]}>
+                                            <Text style={styles.label}>Till*</Text>
+                                            <TouchableOpacity
+                                                style={styles.dateInput}
+                                                onPress={() => setShowEndTimePicker(true)}
+                                            >
+                                                <Text style={styles.inputText}>
+                                                    {formatTime(pickedEndTime)}
+                                                </Text>
+                                                <FontAwesome5 name="clock" size={18} color="#666" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
 
-                        {showStartTimePicker && (
-                            <DateTimePicker
-                                value={pickedStartTime}
-                                mode="time"
-                                is24Hour={false}
-                                display={'spinner'}
-                                onChange={setEventStartTime}
-                            />
-                        )}
+                                    {/* //show datetime picker */}
+                                    {showDatePicker && <DateTimePicker
+                                        value={pickedDate}
+                                        mode="date"
+                                        is24Hour={true}
+                                        display={'default'}
+                                        onChange={setEventDate}
+                                    />}
 
-                        {showEndTimePicker && (
-                            <DateTimePicker
-                                value={pickedEndTime}
-                                mode="time"
-                                is24Hour={false}
-                                display={'spinner'}
-                                onChange={setEventEndTime}
-                            />
-                        )}
+                                    {showStartTimePicker && (
+                                        <DateTimePicker
+                                            value={pickedStartTime}
+                                            mode="time"
+                                            is24Hour={false}
+                                            display={'spinner'}
+                                            onChange={setEventStartTime}
+                                        />
+                                    )}
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Event Type *</Text>
-                            <View style={styles.pickerContainer}>
-                                {/* <Picker
+                                    {showEndTimePicker && (
+                                        <DateTimePicker
+                                            value={pickedEndTime}
+                                            mode="time"
+                                            is24Hour={false}
+                                            display={'spinner'}
+                                            onChange={setEventEndTime}
+                                        />
+                                    )}
+
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Event Type *</Text>
+                                        <View style={styles.pickerContainer}>
+                                            {/* <Picker
                                     selectedValue={formData.eventType}
                                     onValueChange={(value) => handleChange('eventType', value)}
                                     style={styles.picker}
@@ -543,58 +648,58 @@ const CreateEventScreen = () => {
                                     <Picker.Item label="Meeting" value="Meeting" />
                                     <Picker.Item label="Tournament" value="Tournament" />
                                 </Picker> */}
-                                <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
-                                    {['Training', 'Match', 'Meeting', 'Tournament'].map((type, index) => (
-                                        <TouchableOpacity
-                                            key={index}
-                                            style={[styles.multipleChoice, formData.eventType == type && styles.selectedChoice]}
-                                            onPress={() => { handleChange('eventType', type) }}
-                                        >
-                                            <Text style={[styles.multipleChoiceText, formData.eventType == type && styles.selectedChoiceText]}>
-                                                {type}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
-                        </View>
+                                            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                                {['Training', 'Match', 'Meeting', 'Tournament'].map((type, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={[styles.multipleChoice, formData.eventType == type && styles.selectedChoice]}
+                                                        onPress={() => { handleChange('eventType', type) }}
+                                                    >
+                                                        <Text style={[styles.multipleChoiceText, formData.eventType == type && styles.selectedChoiceText]}>
+                                                            {type}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+                                    </View>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Team *</Text>
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    selectedValue={formData.team}
-                                    onValueChange={(value) => handleChange('team', value)}
-                                    style={styles.picker}
-                                >
-                                    {teams.map(team => (
-                                        <Picker.Item
-                                            key={team._id}
-                                            label={`${team.name} (${team.sport})`}
-                                            value={team._id}
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Team *</Text>
+                                        <View style={styles.pickerContainer}>
+                                            <Picker
+                                                selectedValue={formData.team}
+                                                onValueChange={(value) => handleChange('team', value)}
+                                                style={styles.picker}
+                                            >
+                                                {teams.map(team => (
+                                                    <Picker.Item
+                                                        key={team._id}
+                                                        label={`${team.name} (${team.sport})`}
+                                                        value={team._id}
+                                                    />
+                                                ))}
+                                            </Picker>
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Description</Text>
+                                        <TextInput
+                                            style={[styles.input]}
+                                            placeholder="Enter description"
+                                            placeholderTextColor={"#888"}
+                                            multiline
+                                            value={formData.description}
+                                            onChangeText={(text) => handleChange('description', text)}
                                         />
-                                    ))}
-                                </Picker>
-                            </View>
-                        </View>
+                                    </View>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Description</Text>
-                            <TextInput
-                                style={[styles.input]}
-                                placeholder="Enter description"
-                                placeholderTextColor={"#888"}
-                                multiline
-                                value={formData.description}
-                                onChangeText={(text) => handleChange('description', text)}
-                            />
-                        </View>
-
-                        < View style={styles.formGroup}>
-                            <Text style={[styles.label, { marginBottom: 0 }]}>Recurring event</Text>
-                            <Text style={styles.hint}>Recurrence will expire automatically after one year.</Text>
-                            <View style={styles.pickerContainer}>
-                                {/* <Picker
+                                    < View style={styles.formGroup}>
+                                        <Text style={[styles.label, { marginBottom: 0 }]}>Recurring event</Text>
+                                        <Text style={styles.hint}>Recurrence will expire automatically after one year.</Text>
+                                        <View style={styles.pickerContainer}>
+                                            {/* <Picker
                                     selectedValue={repeat}
                                     onValueChange={setRepeat}
                                     style={styles.picker}
@@ -605,27 +710,27 @@ const CreateEventScreen = () => {
                                     <Picker.Item label="Monthly" value="Monthly" />
                                     <Picker.Item label="Yearly" value="Yearly" />
                                 </Picker> */}
-                                <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
 
-                                    {['No', 'Daily', 'Weekly', 'Monthly'].map((reccurence, index) => (
-                                        <TouchableOpacity
-                                            key={index}
-                                            style={[styles.multipleChoice, repeat == reccurence && styles.selectedChoice]}
-                                            onPress={() => { setRepeat(reccurence) }}
-                                        >
-                                            <Text style={[styles.multipleChoiceText, repeat == reccurence && styles.selectedChoiceText]}>
-                                                {reccurence}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
-                        </View>
+                                                {['No', 'Daily', 'Weekly', 'Monthly'].map((reccurence, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={[styles.multipleChoice, repeat == reccurence && styles.selectedChoice]}
+                                                        onPress={() => { setRepeat(reccurence) }}
+                                                    >
+                                                        <Text style={[styles.multipleChoiceText, repeat == reccurence && styles.selectedChoiceText]}>
+                                                            {reccurence}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+                                    </View>
 
-                        <View style={styles.formGroup}>
-                            <Text style={styles.label}>Location Type</Text>
-                            <View style={styles.pickerContainer}>
-                                {/* <Picker
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Location Type</Text>
+                                        <View style={styles.pickerContainer}>
+                                            {/* <Picker
                                     selectedValue={formData.locationType}
                                     onValueChange={(value) => handleChange('locationType', value)}
                                     style={styles.picker}
@@ -635,278 +740,302 @@ const CreateEventScreen = () => {
                                     <Picker.Item label="To Be Determined" value="tbd" />
                                 </Picker> */}
 
-                                <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+                                            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
 
-                                    {['Venue', 'Online', 'To Be Determined'].map((type, index) => (
-                                        <TouchableOpacity
-                                            key={index}
-                                            style={[styles.multipleChoice, formData.locationType == type && styles.selectedChoice]}
-                                            onPress={() => { handleChange('locationType', type) }}
-                                        >
-                                            <Text style={[styles.multipleChoiceText, formData.locationType == type && styles.selectedChoiceText]}>
-                                                {type}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
-                        </View>
-
-                        {formData.locationType === 'Venue' && (
-                            <>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Venue Name</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholderTextColor={"#888"}
-                                        placeholder="Enter venue name"
-                                        value={formData.venue.name}
-                                        onChangeText={(text) => handleNestedChange('venue', 'name', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Venue Address</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholderTextColor={"#888"}
-                                        placeholder="Enter venue address"
-                                        value={formData.venue.address}
-                                        onChangeText={(text) => handleNestedChange('venue', 'address', text)}
-                                    />
-                                </View>
-                            </>
-                        )}
-
-                        {formData.locationType === 'Online' && (
-                            <View style={styles.formGroup}>
-                                <Text style={styles.label}>Online Meeting Link</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholderTextColor={"#888"}
-                                    placeholder="Enter meeting link"
-                                    value={formData.onlineLink}
-                                    onChangeText={(text) => handleChange('onlineLink', text)}
-                                />
-                            </View>
-                        )}
-
-                        {formData.locationType !== 'Online' &&
-                            <View>
-                                <Text style={styles.label}>Venue Location</Text>
-                                <View style={styles.map}>
-                                    <MapView
-                                        provider={PROVIDER_GOOGLE}
-                                        style={styles.mapPreview}
-                                        region={{
-                                            latitude: formData.location?.latitude || 0,
-                                            longitude: formData.location?.longitude || 0,
-                                            latitudeDelta: formData.location?.latitude ? 0.01 : 50,
-                                            longitudeDelta: formData.location?.longitude ? 0.01 : 50
-                                        }}
-                                        onPress={(e) => {
-                                            const coords = e.nativeEvent.coordinate;
-                                            setLocation(coords);
-                                            handleChange('location.latitude', String(coords.latitude))
-                                            handleChange('location.longitude', String(coords.longitude))
-                                        }}
-                                    >
-                                        {location && (
-                                            <Marker
-                                                coordinate={location}
-                                                draggable
-                                                onDragEnd={(e) => {
-                                                    const coords = e.nativeEvent.coordinate;
-                                                    setLocation(coords);
-                                                    handleChange('location.latitude', String(coords.latitude))
-                                                    handleChange('location.longitude', String(coords.longitude))
-                                                }}
-                                            />
-                                        )}
-                                    </MapView>
-                                </View>
-                            </View>
-                        }
-
-                        {formData.eventType === 'Training' && (
-                            <View style={styles.formGroup}>
-                                <Text style={styles.label}>Training Focus</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholderTextColor={"#888"}
-                                    placeholder="E.g. Passing drills, defensive positioning"
-                                    value={formData.trainingFocus}
-                                    onChangeText={(text) => handleChange('trainingFocus', text)}
-                                />
-                            </View>
-                        )}
-
-                        {formData.eventType === 'Training' && inventoryItems.length > 0 && (
-                            <View style={styles.formGroup}>
-                                <Text style={styles.label}>Required Equipment</Text>
-                                <View>
-                                    <View style={styles.equipmentContainer}>
-                                        <TextInput
-                                            style={[styles.input, { marginBottom: 0, flex: 1 }]}
-                                            placeholder="Search equipment (min. 3 characters)"
-                                            value={equipmentSearch}
-                                            placeholderTextColor={"#888"}
-                                            onChangeText={handleSearch}
-                                        />
-                                    </View>
-                                    {searching &&
-                                        <ActivityIndicator
-                                            size="small"
-                                            color="#FF4000"
-                                            style={styles.searchLoader}
-                                        />
-                                    }
-                                </View>
-
-                                {!searching && searchResults.length > 0 && (
-                                    <View style={styles.searchResults}>
-                                        {searchResults.map(item => (
-                                            <TouchableOpacity
-                                                key={item._id}
-                                                style={styles.searchResultItem}
-                                                onPress={() => {
-                                                    setSelectedItem(item);
-                                                    setEquipmentSearch('');
-                                                    setSearchResults([]);
-                                                }}
-                                            >
-                                                <Text style={styles.searchResultText}>{item.itemName}</Text>
-                                                <Text style={styles.searchResultSubText}>Available: {item.quantity}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                )}
-                                {!searching && equipmentSearch.trim().length >= 3 && searchResults.length == 0 && (
-                                    <Text style={{ fontFamily: 'Acumin', color: 'black' }}>
-                                        No results. Try another keyword
-                                    </Text>
-                                )}
-
-                                {selectedItem && (
-                                    <View style={styles.quantitySelector}>
-                                        <Text style={styles.selectedItemText}>{selectedItem.itemName}</Text>
-                                        <View style={styles.quantityControls}>
-                                            <TouchableOpacity
-                                                style={styles.quantityButton}
-                                                onPress={() => setQuantity(Math.max(1, quantity - 1))}
-                                            >
-                                                <Text style={styles.quantityButtonText}>-</Text>
-                                            </TouchableOpacity>
-                                            <TextInput
-                                                style={styles.quantityInput}
-                                                value={quantity.toString()}
-                                                onChangeText={(text) => setQuantity(parseInt(text) || 0)}
-                                                keyboardType="numeric"
-                                            />
-                                            <TouchableOpacity
-                                                style={styles.quantityButton}
-                                                onPress={() => setQuantity(quantity + 1)}
-                                            >
-                                                <Text style={styles.quantityButtonText}>+</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={styles.addSelectedButton}
-                                                onPress={addEquipment}
-                                            >
-                                                <Text style={styles.addSelectedButtonText}>Add</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-                                )}
-
-                                <View style={styles.equipmentList}>
-                                    {formData.requiredEquipment.map((item, index) => (
-                                        <View key={index} style={styles.equipmentItem}>
-                                            <Text style={styles.equipmentText}>{item.name}</Text>
-                                            <View style={styles.equipmentQuantity}>
-                                                <TouchableOpacity
-                                                    style={styles.quantityButtonSmall}
-                                                    onPress={() => updateQuantity(index, item.quantity - 1)}
-                                                >
-                                                    <Text style={styles.quantityButtonText}>-</Text>
-                                                </TouchableOpacity>
-                                                <TextInput
-                                                    style={styles.quantityInputSmall}
-                                                    value={item.quantity.toString()}
-                                                    onChangeText={(text) => updateQuantity(index, parseInt(text) || 0)}
-                                                    keyboardType="numeric"
-                                                />
-                                                <TouchableOpacity
-                                                    style={styles.quantityButtonSmall}
-                                                    onPress={() => updateQuantity(index, item.quantity + 1)}
-                                                >
-                                                    <Text style={styles.quantityButtonText}>+</Text>
-                                                </TouchableOpacity>
+                                                {['Venue', 'Online', 'To Be Determined'].map((type, index) => (
+                                                    <TouchableOpacity
+                                                        key={index}
+                                                        style={[styles.multipleChoice, formData.locationType == type && styles.selectedChoice]}
+                                                        onPress={() => { handleChange('locationType', type) }}
+                                                    >
+                                                        <Text style={[styles.multipleChoiceText, formData.locationType == type && styles.selectedChoiceText]}>
+                                                            {type}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
                                             </View>
-                                            <TouchableOpacity onPress={() => removeEquipment(index)}>
-                                                <FontAwesome5 name="times" size={14} color="#FF4000" />
-                                            </TouchableOpacity>
                                         </View>
-                                    ))}
+                                    </View>
+
+                                    {/* {formData.locationType === 'Venue' && (
+                                        <>
+                                            <View style={styles.formGroup}>
+                                                <Text style={styles.label}>Venue Name</Text>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholderTextColor={"#888"}
+                                                    placeholder="Enter venue name"
+                                                    value={formData.venue.name}
+                                                    onChangeText={(text) => handleNestedChange('venue', 'name', text)}
+                                                />
+                                            </View>
+                                            <View style={styles.formGroup}>
+                                                <Text style={styles.label}>Venue Address</Text>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholderTextColor={"#888"}
+                                                    placeholder="Enter venue address"
+                                                    value={formData.venue.address}
+                                                    onChangeText={(text) => handleNestedChange('venue', 'address', text)}
+                                                />
+                                            </View>
+                                        </>
+                                    )} */}
+
+                                    {formData.locationType === 'Online' && (
+                                        <View style={styles.formGroup}>
+                                            <Text style={styles.label}>Online Meeting Link</Text>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholderTextColor={"#888"}
+                                                placeholder="Enter meeting link"
+                                                value={formData.onlineLink}
+                                                onChangeText={(text) => handleChange('onlineLink', text)}
+                                            />
+                                        </View>
+                                    )}
+
+                                    {formData.locationType !== 'Online' &&
+                                        <>
+                                            {/* <TouchableOpacity onPress={() => { router.push('/schedule/test') }}><Text>Click</Text></TouchableOpacity> */}
+                                            <Text style={styles.label}>Venue Location</Text>
+                                            <View style={{ position: "relative", height: 60, zIndex: 9999 }}>
+                                                <TextInput
+                                                    value={query}
+                                                    onChangeText={searchPlaces}
+                                                    placeholder="Search location..."
+                                                    placeholderTextColor="#888"
+                                                    style={styles.input}
+                                                />
+                                                <FlatList
+                                                    data={results}
+                                                    keyExtractor={(item, index) => item.placePrediction.placeId + index}
+                                                    style={{
+                                                        backgroundColor: "#fff",
+                                                        borderRadius: 8,
+                                                        elevation: 4,
+                                                        maxHeight: 300,
+                                                    }}
+                                                    renderItem={renderItem}
+                                                />
+                                            </View>
+                                            <View style={styles.map}>
+                                                <MapView
+                                                    provider={PROVIDER_GOOGLE}
+                                                    style={styles.mapPreview}
+                                                    region={{
+                                                        latitude: formData.location?.latitude || 0,
+                                                        longitude: formData.location?.longitude || 0,
+                                                        latitudeDelta: formData.location?.latitude ? 0.01 : 50,
+                                                        longitudeDelta: formData.location?.longitude ? 0.01 : 50
+                                                    }}
+                                                    onPress={(e) => {
+                                                        const coords = e.nativeEvent.coordinate;
+                                                        setLocation(coords);
+                                                        handleChange('location.latitude', String(coords.latitude))
+                                                        handleChange('location.longitude', String(coords.longitude))
+                                                    }}
+                                                >
+                                                    {location && (
+                                                        <Marker
+                                                            coordinate={location}
+                                                            draggable
+                                                            onDragEnd={(e) => {
+                                                                const coords = e.nativeEvent.coordinate;
+                                                                setLocation(coords);
+                                                                handleChange('location.latitude', String(coords.latitude))
+                                                                handleChange('location.longitude', String(coords.longitude))
+                                                            }}
+                                                        />
+                                                    )}
+                                                </MapView>
+                                            </View>
+                                        </>
+                                    }
+
+                                    {formData.eventType === 'Training' && (
+                                        <View style={styles.formGroup}>
+                                            <Text style={styles.label}>Training Focus</Text>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholderTextColor={"#888"}
+                                                placeholder="E.g. Passing drills, defensive positioning"
+                                                value={formData.trainingFocus}
+                                                onChangeText={(text) => handleChange('trainingFocus', text)}
+                                            />
+                                        </View>
+                                    )}
+
+                                    {formData.eventType === 'Training' && inventoryItems.length > 0 && (
+                                        <View style={styles.formGroup}>
+                                            <Text style={styles.label}>Required Equipment</Text>
+                                            <View>
+                                                <View style={styles.equipmentContainer}>
+                                                    <TextInput
+                                                        style={[styles.input, { marginBottom: 0, flex: 1 }]}
+                                                        placeholder="Search equipment (min. 3 characters)"
+                                                        value={equipmentSearch}
+                                                        placeholderTextColor={"#888"}
+                                                        onChangeText={handleSearch}
+                                                    />
+                                                </View>
+                                                {searching &&
+                                                    <ActivityIndicator
+                                                        size="small"
+                                                        color="#FF4000"
+                                                        style={styles.searchLoader}
+                                                    />
+                                                }
+                                            </View>
+
+                                            {!searching && searchResults.length > 0 && (
+                                                <View style={styles.searchResults}>
+                                                    {searchResults.map(item => (
+                                                        <TouchableOpacity
+                                                            key={item._id}
+                                                            style={styles.searchResultItem}
+                                                            onPress={() => {
+                                                                setSelectedItem(item);
+                                                                setEquipmentSearch('');
+                                                                setSearchResults([]);
+                                                            }}
+                                                        >
+                                                            <Text style={styles.searchResultText}>{item.itemName}</Text>
+                                                            <Text style={styles.searchResultSubText}>Available: {item.quantity}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </View>
+                                            )}
+                                            {!searching && equipmentSearch.trim().length >= 3 && searchResults.length == 0 && (
+                                                <Text style={{ fontFamily: 'Acumin', color: 'black' }}>
+                                                    No results. Try another keyword
+                                                </Text>
+                                            )}
+
+                                            {selectedItem && (
+                                                <View style={styles.quantitySelector}>
+                                                    <Text style={styles.selectedItemText}>{selectedItem.itemName}</Text>
+                                                    <View style={styles.quantityControls}>
+                                                        <TouchableOpacity
+                                                            style={styles.quantityButton}
+                                                            onPress={() => setQuantity(Math.max(1, quantity - 1))}
+                                                        >
+                                                            <Text style={styles.quantityButtonText}>-</Text>
+                                                        </TouchableOpacity>
+                                                        <TextInput
+                                                            style={styles.quantityInput}
+                                                            value={quantity.toString()}
+                                                            onChangeText={(text) => setQuantity(parseInt(text) || 0)}
+                                                            keyboardType="numeric"
+                                                        />
+                                                        <TouchableOpacity
+                                                            style={styles.quantityButton}
+                                                            onPress={() => setQuantity(quantity + 1)}
+                                                        >
+                                                            <Text style={styles.quantityButtonText}>+</Text>
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity
+                                                            style={styles.addSelectedButton}
+                                                            onPress={addEquipment}
+                                                        >
+                                                            <Text style={styles.addSelectedButtonText}>Add</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </View>
+                                            )}
+
+                                            <View style={styles.equipmentList}>
+                                                {formData.requiredEquipment.map((item, index) => (
+                                                    <View key={index} style={styles.equipmentItem}>
+                                                        <Text style={styles.equipmentText}>{item.name}</Text>
+                                                        <View style={styles.equipmentQuantity}>
+                                                            <TouchableOpacity
+                                                                style={styles.quantityButtonSmall}
+                                                                onPress={() => updateQuantity(index, item.quantity - 1)}
+                                                            >
+                                                                <Text style={styles.quantityButtonText}>-</Text>
+                                                            </TouchableOpacity>
+                                                            <TextInput
+                                                                style={styles.quantityInputSmall}
+                                                                value={item.quantity.toString()}
+                                                                onChangeText={(text) => updateQuantity(index, parseInt(text) || 0)}
+                                                                keyboardType="numeric"
+                                                            />
+                                                            <TouchableOpacity
+                                                                style={styles.quantityButtonSmall}
+                                                                onPress={() => updateQuantity(index, item.quantity + 1)}
+                                                            >
+                                                                <Text style={styles.quantityButtonText}>+</Text>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                        <TouchableOpacity onPress={() => removeEquipment(index)}>
+                                                            <FontAwesome5 name="times" size={14} color="#FF4000" />
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {formData.eventType === 'Match' && (
+                                        <>
+                                            <View style={styles.formGroup}>
+                                                <Text style={styles.label}>Opponent Name</Text>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="Enter opponent team name"
+                                                    placeholderTextColor={"#888"}
+                                                    value={formData.opponent.name}
+                                                    onChangeText={(text) => handleNestedChange('opponent', 'name', text)}
+                                                />
+                                            </View>
+                                            <View style={styles.formGroup}>
+                                                <Text style={styles.label}>Opponent Logo URL</Text>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="Enter opponent logo URL"
+                                                    placeholderTextColor={"#888"}
+                                                    value={formData.opponent.logo}
+                                                    onChangeText={(text) => handleNestedChange('opponent', 'logo', text)}
+                                                />
+                                            </View>
+                                            <View style={styles.formGroup}>
+                                                <Text style={styles.label}>Home or Away</Text>
+                                                <Picker
+                                                    selectedValue={formData.isHomeGame}
+                                                    onValueChange={(value) => handleChange('isHomeGame', value)}
+                                                    style={styles.picker}
+                                                >
+                                                    <Picker.Item label="Home Game" value={true} />
+                                                    <Picker.Item label="Away Game" value={false} />
+                                                </Picker>
+                                            </View>
+                                        </>
+                                    )}
+
+
+                                    <View style={[styles.profileActions, styles.inlineActions]}>
+                                        <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
+                                            <Text style={styles.profileButtonText}>Cancel</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
+                                            <Text style={styles.profileButtonText}>
+                                                {saving ? 'Saving' : 'save'}
+                                            </Text>
+                                            {saving && (
+                                                <ActivityIndicator
+                                                    size="small"
+                                                    color="#111111"
+                                                    style={styles.saveLoaderContainer}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
-                        )}
-
-                        {formData.eventType === 'Match' && (
-                            <>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Opponent Name</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter opponent team name"
-                                        placeholderTextColor={"#888"}
-                                        value={formData.opponent.name}
-                                        onChangeText={(text) => handleNestedChange('opponent', 'name', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Opponent Logo URL</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter opponent logo URL"
-                                        placeholderTextColor={"#888"}
-                                        value={formData.opponent.logo}
-                                        onChangeText={(text) => handleNestedChange('opponent', 'logo', text)}
-                                    />
-                                </View>
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Home or Away</Text>
-                                    <Picker
-                                        selectedValue={formData.isHomeGame}
-                                        onValueChange={(value) => handleChange('isHomeGame', value)}
-                                        style={styles.picker}
-                                    >
-                                        <Picker.Item label="Home Game" value={true} />
-                                        <Picker.Item label="Away Game" value={false} />
-                                    </Picker>
-                                </View>
-                            </>
-                        )}
-
-
-                        <View style={[styles.profileActions, styles.inlineActions]}>
-                            <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>
-                                    {saving ? 'Saving' : 'save'}
-                                </Text>
-                                {saving && (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#111111"
-                                        style={styles.saveLoaderContainer}
-                                    />
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </ScrollView>
+                        </>
+                    )}
+                />
             </View >
         </KeyboardAvoidingView >
     );
@@ -1303,6 +1432,26 @@ const styles = StyleSheet.create({
     },
     selectedChoiceText: {
         color: '#fff'
+    },
+    list: {
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        elevation: 4,
+        maxHeight: 300,
+    },
+    item: {
+        padding: 12,
+        borderBottomColor: "#eee",
+        borderBottomWidth: 1,
+    },
+    title: {
+        color: "#000",
+        fontSize: 16,
+    },
+    address: {
+        color: "#555",
+        fontSize: 12,
+        marginTop: 2,
     }
 });
 
