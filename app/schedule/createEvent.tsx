@@ -257,10 +257,6 @@ const CreateEventScreen = () => {
         fetchInventory();
     }, [user]);
 
-    useEffect(() => {
-        console.log(inventoryItems)
-    }, [inventoryItems]);
-
     const handleSearch = (text: string) => {
         setEquipmentSearch(text);
 
