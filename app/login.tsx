@@ -69,8 +69,14 @@ export default function Login() {
       // Save the token securely
       await SecureStore.setItemAsync('userToken', token);
       setLoading(false)
-      // Navigate to profile screen
-      router.replace('/landing');
+      
+
+      if (user.type === "Manager") {
+        router.replace('/manager/dashboard');
+      } else {
+        router.replace('/landing');
+      }
+
     } catch (error: any) {
       setError("Login failed. Please try again")
       setLoading(false)
@@ -224,9 +230,9 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: -5,
     opacity: 0.2,
-    width:'100%',
-    textAlign:'right',
-    textTransform:'uppercase'
+    width: '100%',
+    textAlign: 'right',
+    textTransform: 'uppercase'
   },
   form: {
     paddingLeft: 20,
@@ -239,7 +245,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: 'black',
     borderRadius: 10,
-    fontFamily:'Acumin',
+    fontFamily: 'Acumin',
   },
   passwordInput: {
     letterSpacing: 1,
@@ -257,7 +263,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    borderRadius:15
+    borderRadius: 15
   },
   loginText: {
     fontSize: 18,

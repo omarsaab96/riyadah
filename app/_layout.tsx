@@ -6,6 +6,7 @@ import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
+import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
 import { Alert } from 'react-native';
 import 'react-native-get-random-values';
@@ -52,7 +53,23 @@ export default function RootLayout() {
     const checkToken = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        router.replace('/landing');
+        const decodedToken = jwtDecode(token);
+        const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const user = await response.json();
+          if (user.type === "Manager") {
+            router.replace('/manager/dashboard');
+          }else{
+            router.replace('/landing');
+          }
+        } else {
+          console.error('API error')
+        }
+
+        
       }
     };
     checkToken();

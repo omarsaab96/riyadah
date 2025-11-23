@@ -4,8 +4,6 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import Octicons from '@expo/vector-icons/Octicons';
-import { RadarChart } from '@salmonco/react-native-radar-chart';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useRef, useState } from 'react';
@@ -943,7 +941,7 @@ export default function PublicProfile() {
                         )}
 
                         {/* SKILLS */}
-                        {user.type == "Athlete" && (
+                        {/* {user.type == "Athlete" && (
                             <View style={[styles.profileSection, styles.skillsSection]}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5 }}>
                                     <Text style={styles.title}>
@@ -977,7 +975,7 @@ export default function PublicProfile() {
                                     />
                                 </View>
                             </View>
-                        )}
+                        )} */}
 
                         {/* ACIONS */}
                         <View style={[styles.profileSection, styles.profileActions]}>
