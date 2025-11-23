@@ -317,7 +317,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#f2f2f2',
         borderRadius: 10,
-        marginBottom:10
+        marginBottom:10,
+        paddingVertical:10
     },
     deactivateBtnText: {
         color: '#FF4000',
@@ -332,7 +333,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#f2f2f2',
         borderRadius: 10,
-        marginBottom: 20
+        marginBottom: 20,
+        paddingVertical:10
     },
     footer: {
         // position: 'absolute',

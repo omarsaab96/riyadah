@@ -3,7 +3,6 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Slider from '@react-native-community/slider';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -668,7 +667,7 @@ export default function EditProfile() {
                             </View>} */}
 
                             {/* SKILLS */}
-                            {user.type == "Athlete" && <View style={styles.entity}>
+                            {/* {user.type == "Athlete" && <View style={styles.entity}>
                                 <Text style={styles.title}>
                                     Skills
                                 </Text>
@@ -779,7 +778,7 @@ export default function EditProfile() {
                                 </View>
 
 
-                            </View>}
+                            </View>} */}
 
                             <View style={[styles.profileActions, styles.inlineActions]}>
                                 <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>

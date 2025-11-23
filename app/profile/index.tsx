@@ -31,6 +31,7 @@ import {
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import DynamicLineChart from './chartsExample';
 
 
 const { width } = Dimensions.get('window');
@@ -58,6 +59,7 @@ export default function Profile() {
     const [financialsLoading, setFinancialsLoading] = useState(true);
     const [clubsLoading, setClubsLoading] = useState(true);
     const [timesheetLoading, setTimesheetLoading] = useState(true);
+    const [skillsLoading, setSkillsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [activePaymentTab, setActivePaymentTab] = useState('pending');
     const [adminUser, setAdminUser] = useState(null);
@@ -66,7 +68,7 @@ export default function Profile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
-    const tabsAthlete = ['Profile', 'Schedule', 'Financials'];
+    const tabsAthlete = ['Profile', 'Schedule', 'Financials', 'Skills'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials', 'Timesheet'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
@@ -85,6 +87,7 @@ export default function Profile() {
     const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth()); // 0-11
     const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
     const [calendarDays, setCalendarDays] = useState([]);
+    const [overallGraphData, setOverallGraphData] = useState([]);
 
     const generateCalendarDays = (year, month, events = []) => {
         const startOfMonth = new Date(year, month, 1);
@@ -118,15 +121,6 @@ export default function Profile() {
             setCalendarDays(updatedDays);
         }
     }, [calendarMonth, calendarYear, schedule]);
-
-    //graph data
-    const data = [
-        { label: 'Attack', sublabel: user?.skills?.attack, value: user?.skills?.attack },
-        { label: 'Defense', sublabel: user?.skills?.defense, value: user?.skills?.defense },
-        { label: 'Speed', sublabel: user?.skills?.speed, value: user?.skills?.speed },
-        { label: 'Stamina', sublabel: user?.skills?.stamina, value: user?.skills?.stamina },
-        { label: 'Skill', sublabel: user?.skills?.skill, value: user?.skills?.skill }
-    ];
 
     const headerHeight = scrollY.interpolate({
         inputRange: [0, 300],
@@ -575,7 +569,7 @@ export default function Profile() {
             progress = Math.round((filledFields / totalFields) * 100);
 
         } else {
-            const totalFields = user.sport.some(s => ['Football', 'Basketball', 'Volleyball'].includes(s)) ? 19 : 18;
+            const totalFields = user.sport.some(s => ['Football', 'Basketball', 'Volleyball'].includes(s)) ? 14 : 13;
 
             if (user.name != null) filledFields++;
             if (user.email != null) filledFields++;
@@ -593,11 +587,6 @@ export default function Profile() {
             // if (user.stats != null) filledFields++;
             if (user.achievements != null) filledFields++;
             if (user.events != null) filledFields++;
-            if (user.skills.attack != null) filledFields++;
-            if (user.skills.skill != null) filledFields++;
-            if (user.skills.stamina != null) filledFields++;
-            if (user.skills.speed != null) filledFields++;
-            if (user.skills.defense != null) filledFields++;
 
             progress = Math.round((filledFields / totalFields) * 100);
         }
@@ -649,6 +638,25 @@ export default function Profile() {
             setTimesheetLoading(true);
             getTimesheet();
         }
+
+        if (label == "Skills") {
+            setSkillsLoading(true);
+            getSkills();
+        }
+    }
+
+    const getSkills = () => {
+        console.log("clicked skills")
+        setSkillsLoading(false)
+
+        //graph data
+        setOverallGraphData([
+            { label: 'Attack', sublabel: user?.skills?.attack, value: user?.skills?.attack },
+            { label: 'Defense', sublabel: user?.skills?.defense, value: user?.skills?.defense },
+            { label: 'Speed', sublabel: user?.skills?.speed, value: user?.skills?.speed },
+            { label: 'Stamina', sublabel: user?.skills?.stamina, value: user?.skills?.stamina },
+            { label: 'Skill', sublabel: user?.skills?.skill, value: user?.skills?.skill }
+        ]);
     }
 
     const handleLayout = (event) => {
@@ -1808,43 +1816,6 @@ export default function Profile() {
                         ) : (
                             <Text style={styles.paragraph}>-</Text>
                         )}
-                    </View>}
-
-                    {/* SKILLS */}
-                    {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5 }}>
-                            <Text style={styles.title}>
-                                Skills
-                            </Text>
-                            {user.skillsAreVerified?.by != null &&
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                    <Octicons name="verified" size={16} color="#009933" />
-                                    <Text style={{ color: "#009933" }}>Verified</Text>
-                                </View>
-                            }
-                        </View>
-
-                        <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
-                            <RadarChart
-                                data={data}
-                                maxValue={100}
-                                gradientColor={{
-                                    startColor: '#FF9432',
-                                    endColor: '#FFF8F1',
-                                    count: 5,
-                                }}
-                                stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
-                                strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
-                                strokeOpacity={[1, 1, 1, 1, 0.13]}
-                                labelColor="#111111"
-                                dataFillColor="#FF9432"
-                                dataFillOpacity={0.8}
-                                dataStroke="#FF4000"
-                                dataStrokeWidth={2}
-                                isCircle
-                            />
-
-                        </View>
                     </View>}
 
                     {/* ACIONS */}
@@ -3048,6 +3019,115 @@ export default function Profile() {
                 </Animated.ScrollView>
             }
 
+            {/* SkillsTab */}
+            {
+                !loading && user && activeTab == "Skills" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
+                    <View style={styles.contentContainer}>
+                        {skillsLoading ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#FF4000"
+                                    style={{ transform: [{ scale: 1.25 }] }}
+                                />
+                            </View>
+                        ) : (
+                            <View>
+                                <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
+                                    <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
+                                        Skills
+                                    </Text>
+                                    {user.skillsAreVerified?.by != null &&
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                            <Octicons name="verified" size={16} color="#009933" />
+                                            <Text style={{ color: "#009933" }}>Verified</Text>
+                                        </View>
+                                    }
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
+                                    <Text style={styles.title}>
+                                        Overall Skill Ratings
+                                    </Text>
+                                    <Text>
+                                        Last updated
+                                    </Text>
+                                </View>
+
+                                {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
+                                    <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
+                                        <RadarChart
+                                            data={overallGraphData}
+                                            maxValue={100}
+                                            gradientColor={{
+                                                startColor: '#FF9432',
+                                                endColor: '#FFF8F1',
+                                                count: 5,
+                                            }}
+                                            stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
+                                            strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
+                                            strokeOpacity={[1, 1, 1, 1, 0.13]}
+                                            labelColor="#111111"
+                                            dataFillColor="#FF9432"
+                                            dataFillOpacity={0.8}
+                                            dataStroke="#FF4000"
+                                            dataStrokeWidth={2}
+                                            isCircle
+                                        />
+
+                                    </View>
+                                </View>}
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
+                                    <Text style={styles.title}>
+                                        Attack progress
+                                    </Text>
+                                    <Text>
+                                        Last updated
+                                    </Text>
+                                </View>
+                                {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
+                                    <DynamicLineChart
+                                        data={[0, 20, 40, 30, 60, 95]}
+                                        labels={["JAN", "FEB", "MAR", "APR", "MAY", "JUN"]}
+                                        title="Athlete Skill Progress"
+                                        subtitle="Last 6 months"
+                                        primaryColor="#1363DF"
+                                        bgBarColor="#E8F0FF"
+                                    />
+                                </View>}
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
+                                    <Text style={styles.title}>
+                                        Speed progress
+                                    </Text>
+                                    <Text>
+                                        Last updated
+                                    </Text>
+                                </View>
+                                {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
+                                    <DynamicLineChart
+                                        data={[0, 0, 0, 0, 0, 60]}
+                                        labels={["JAN", "FEB", "MAR", "APR", "MAY", "JUN"]}
+                                        title="Athlete Skill Progress"
+                                        subtitle="Last 6 months"
+                                        primaryColor="#1363DF"
+                                        bgBarColor="#E8F0FF"
+                                    />
+                                </View>}
+
+                            </View>
+                        )}
+                    </View>
+                </Animated.ScrollView>
+            }
+
             <View style={styles.navBar}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../../assets/settings.png')} style={styles.icon} />
@@ -3259,6 +3339,12 @@ const styles = StyleSheet.create({
         fontFamily: "Qatar",
         fontSize: 14,
         color: 'black'
+    },
+    skillsTitle: {
+        fontFamily: "Qatar",
+        fontSize: 14,
+        color: 'black',
+        marginBottom: 5
     },
     subtitle: {
         fontFamily: "Acumin",
