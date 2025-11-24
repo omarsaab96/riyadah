@@ -768,6 +768,9 @@ export default function Landing() {
 
             if (response.ok) {
                 const user = await response.json();
+                if(user.type==="Manager"){
+                    router.replace('/manager/dashboard');
+                }
                 setUser(user)
                 registerForPushNotificationsAsync(user, token);
                 if (posts.length === 0) {

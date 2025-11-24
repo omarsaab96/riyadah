@@ -10,6 +10,7 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
 
@@ -39,7 +40,7 @@ export default function ManagerDashboardScreen() {
 
                 if (response.ok) {
                     const user = await response.json();
-                    console.log("MANAGER USER: ", user)
+                    // console.log("MANAGER USER: ", user)
                     setUser(user)
                     setLoading(false)
                 } else {
@@ -81,13 +82,19 @@ export default function ManagerDashboardScreen() {
                 </View>
 
                 {user && !loading && <ScrollView ref={scrollRef}>
-
                     <View style={styles.contentContainer}>
                         {error != null && <View style={styles.error}>
                             <View style={styles.errorIcon}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
                     </View>
+
+                    <TouchableOpacity
+                        style={styles.fullButtonRow}
+                        onPress={() => router.push('/manager/skillsTesting')}>
+                        <Text>Riyadah Athletes Evaluation</Text>
+                    </TouchableOpacity>
+
                 </ScrollView>
                 }
             </View >
