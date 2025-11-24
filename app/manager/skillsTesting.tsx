@@ -197,7 +197,7 @@ export default function skillsTestingScreen() {
                 } else {
                     setError("");
 
-                    const testResponse = await fetch(`http://10.0.2.2:5000/api/test/user/${userData._id}`);
+                    const testResponse = await fetch(`http://193.187.132.170:5000/api/test/user/${userData._id}`);
 
                     if (testResponse.ok) { // ✅ fixed
                         const testData = await testResponse.json();
@@ -271,7 +271,7 @@ export default function skillsTestingScreen() {
 
             console.log("Submitting test data:", test);
 
-            const response = await fetch(`http://10.0.2.2:5000/api/test/add-result/${selectedUser._id}`, {
+            const response = await fetch(`http://193.187.132.170:5000/api/test/add-result/${selectedUser._id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 // keep your payload style
