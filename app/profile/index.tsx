@@ -3096,10 +3096,6 @@ export default function Profile() {
                                     <DynamicLineChart
                                         data={[0, 20, 40, 30, 60, 95]}
                                         labels={["JAN", "FEB", "MAR", "APR", "MAY", "JUN"]}
-                                        title="Athlete Skill Progress"
-                                        subtitle="Last 6 months"
-                                        primaryColor="#1363DF"
-                                        bgBarColor="#E8F0FF"
                                     />
                                 </View>}
 

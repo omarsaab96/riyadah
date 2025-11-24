@@ -34,6 +34,8 @@ router.post("/add-result/:userId", async (req, res) => {
         const { userId } = req.params;
         const { testData } = req.body;
 
+        console.log("Received testData:", testData);
+
         if (!testData) {
             return res.status(400).json({ message: "testData is required" });
         }

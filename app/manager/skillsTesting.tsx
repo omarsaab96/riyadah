@@ -1,4 +1,4 @@
-
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { StatusBar } from 'expo-status-bar';
@@ -8,6 +8,7 @@ import {
     ActivityIndicator,
     Dimensions,
     Image,
+    KeyboardAvoidingView,
     Platform,
     ScrollView,
     StyleSheet,
@@ -48,9 +49,11 @@ export default function skillsTestingScreen() {
     const [selectedGender, setSelectedGender] = useState('All');
     const [position, setPosition] = useState('');
 
+    const [addNewResultsModalVisible, setAddNewResultsModalVisible] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState('');
 
-    const [testedSkills,setTestedSkills] = useState([]);
+    const [testedSkills, setTestedSkills] = useState([]);
+    const [previouslyTestedSkills, setPreviouslyTestedSkills] = useState({});
 
     useEffect(() => {
         fetchUser();
@@ -83,8 +86,6 @@ export default function skillsTestingScreen() {
             params += `&userType=${selectedRole}`;
         }
 
-        // console.log(params)
-
         try {
             const response = await fetch(`http://193.187.132.170:5000/api/search?${params}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -92,9 +93,7 @@ export default function skillsTestingScreen() {
 
             if (response.ok) {
                 const data = await response.json();
-                // console.log("Search results: ", data);
 
-                // Separate users by type
                 const groupedUsers = {
                     athlete: [],
                     club: [],
@@ -147,17 +146,15 @@ export default function skillsTestingScreen() {
             return;
         }
 
-        // Clear previous timeout
         if (debounceTimeout) clearTimeout(debounceTimeout);
 
-        // Set new debounce timeout
         const timeout = setTimeout(() => {
             if (text.trim().length >= 3) {
                 search(text);
             } else {
                 setSearchResults([]);
             }
-        }, 500); // delay: 500ms
+        }, 500);
 
         setDebounceTimeout(timeout);
     };
@@ -165,10 +162,8 @@ export default function skillsTestingScreen() {
     const fetchUser = async () => {
         const token = await SecureStore.getItemAsync('userToken');
 
-        console.log(token)
         if (token) {
             const decodedToken = jwtDecode(token);
-            console.log("DECODED: ", decodedToken)
             setUserId(decodedToken.userId);
 
             const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
@@ -196,19 +191,22 @@ export default function skillsTestingScreen() {
             if (response.ok) {
                 const userData = await response.json();
                 setSelectedUser(userData);
+
                 if (userData.type != "Athlete") {
                     setError("Selected user is not an athlete.");
                 } else {
                     setError("");
 
-                    const testResponse = await fetch(`http://193.187.132.170:5000/api/test/user/${userData._id}`);
+                    const testResponse = await fetch(`http://10.0.2.2:5000/api/test/user/${userData._id}`);
 
-                    if (response.ok) {
+                    if (testResponse.ok) { // ✅ fixed
                         const testData = await testResponse.json();
                         setSelectedUserTest(testData.test);
-                        setTestedSkills(testData.test.results||[]);
+                        const grouped = groupSkills(testData.test?.results || []);
+                        setPreviouslyTestedSkills(grouped);
                     } else {
                         setSelectedUserTest(null);
+                        setPreviouslyTestedSkills({});
                         console.error('Test API error');
                     }
                 }
@@ -222,24 +220,48 @@ export default function skillsTestingScreen() {
         }
     }
 
+    const groupSkills = (results) => {
+        return results.reduce((acc, item) => {
+            if (!acc[item.testedSkill]) {
+                acc[item.testedSkill] = [];
+            }
+            acc[item.testedSkill].push(item);
+            return acc;
+        }, {});
+    };
+
     const handleCancelAccountSelection = () => {
         setSelectedAccount('');
         setSelectedUser(null);
         setSelectedUserTest(null);
         setError('');
+        setAddNewResultsModalVisible(false);
+        setTestedSkills([]);
     }
 
+    // ✅ add a new empty row (for NEW skill)
+    const addSkillRow = () => {
+        setTestedSkills(prev => [...prev, { testedSkill: "", score: "" }]);
+    };
+
+    // ✅ remove a row
+    const removeSkillRow = (index) => {
+        setTestedSkills(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmitTestResults = async () => {
-        setLoadingSubmittingTest(false);
+        setLoadingSubmittingTest(true); // ✅ fixed
 
         try {
             const nowdate = new Date();
 
-            const dynamicResults = testedSkills.map(s => ({
-                testedSkill: s.testedSkill,
-                score: Number(s.score),
-                date: nowdate
-            }));
+            const dynamicResults = testedSkills
+                .filter(s => s.testedSkill.trim() !== "" && s.score !== "")
+                .map(s => ({
+                    testedSkill: s.testedSkill.trim(),
+                    score: Number(s.score),
+                    date: nowdate
+                }));
 
             const test = {
                 testedSubject: selectedAccount,
@@ -247,16 +269,21 @@ export default function skillsTestingScreen() {
                 results: dynamicResults
             }
 
-            const response = await fetch(`http://193.187.132.170:5000/api/test/add-result/${selectedUser._id}`, {
+            console.log("Submitting test data:", test);
+
+            const response = await fetch(`http://10.0.2.2:5000/api/test/add-result/${selectedUser._id}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
+                // keep your payload style
                 body: JSON.stringify({ testData: test }),
             });
 
             if (response.ok) {
-                console.error("Submitted test results successfully");
+                console.log("Submitted test results successfully");
+                setAddNewResultsModalVisible(false);
+                setTestedSkills([]);
+                // refresh user test
+                handleAccountSelected(selectedUser._id);
             } else {
                 console.error("Couldn't submit test results");
             }
@@ -267,8 +294,25 @@ export default function skillsTestingScreen() {
         }
     }
 
+    const handleOpenAddResults = () => {
+        // Prefill a row for each existing skill so you can add a NEW record under it
+        const existingSkillNames = previouslyTestedSkills
+            ? Object.keys(previouslyTestedSkills)
+            : [];
+        const prefilledRows =
+            existingSkillNames.length > 0
+                ? existingSkillNames.map(name => ({ testedSkill: name, score: "" }))
+                : [];
+
+        // Always add one empty row to allow new skill
+        setTestedSkills([...prefilledRows, { testedSkill: "", score: "" }]);
+        setAddNewResultsModalVisible(true);
+    }
+
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView style={[styles.container, { flex: 1 }]}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}>
             {Platform.OS === 'ios' ? (
                 <View style={{ height: 60, backgroundColor: '#FF4000' }} />
             ) : (
@@ -571,30 +615,172 @@ export default function skillsTestingScreen() {
                         <Text style={styles.errorText}>{error}</Text>
                     </View>}
 
-                    <TouchableOpacity onPress={() => { handleCancelAccountSelection() }} style={{ marginBottom: 20 }}>
-                        <Text>Back to search</Text>
+                    <TouchableOpacity onPress={() => { handleCancelAccountSelection() }} style={{marginBottom: 30,flexDirection:'row',alignItems:'center',gap:10  }}>
+                        <Ionicons name="arrow-back" size={20} color="black" />
+                        <Text style={{}}>
+                            Back to search
+                        </Text>
                     </TouchableOpacity>
 
-                    <View>
-                        <Text>Selected {selectedAccount}</Text>
-                        <Text>{selectedUser.name}</Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                        <Text style={styles.label}>Selected user</Text>
+                        <Text style={styles.selectedUserEmail}>{selectedAccount}</Text>
+                    </View>
+                    <View style={styles.selectedUserContainer}>
+                        <Image
+                            source={
+                                selectedUser.image != null
+                                    ? { uri: selectedUser.image }
+                                    : require('../../assets/avatar.png')
+                            }
+                            style={styles.userAvatar}
+                            resizeMode="contain"
+                        />
+                        <View style={styles.selectedUserInfo}>
+                            <Text style={styles.selectedUserName}>{selectedUser.name}</Text>
+                            <Text style={styles.selectedUserEmail}>{selectedUser.email}</Text>
+                            <Text style={styles.selectedUserEmail}>{selectedUser.type} {selectedUser.role && " | " + selectedUser.role} | {selectedUser.sport}</Text>
+                        </View>
                     </View>
 
-                    <TouchableOpacity onPress={() => { handleSubmitTestResults() }}>
-                        <Text>New test result</Text>
-                    </TouchableOpacity>
-
                     {selectedUserTest != null ? (<View style={{ marginTop: 20 }}>
-                        <Text>Test Details:</Text>
-                        <Text>Test ID: {selectedUserTest._id}</Text>
-                        <Text>Test Date: {new Date(selectedUserTest.testDate).toLocaleDateString()}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text>Last updated: {new Date(selectedUserTest.lastTested).toLocaleDateString()}</Text>
+
+                            {/* OPEN ADD RESULTS */}
+                            {!addNewResultsModalVisible && <TouchableOpacity onPress={handleOpenAddResults} style={styles.addbtn}>
+                                <Text style={{ fontWeight: "bold" }}>Add new result</Text>
+                            </TouchableOpacity>}
+
+                            {/* CLOSE */}
+                            {addNewResultsModalVisible && <TouchableOpacity onPress={() => setAddNewResultsModalVisible(false)} style={styles.addbtn}>
+                                <Text style={{ fontWeight: "bold" }}>Cancel</Text>
+                            </TouchableOpacity>}
+                        </View>
+
+                        {/* ADD RESULTS SECTION */}
+                        {addNewResultsModalVisible && (
+                            <View style={{ padding: 10, marginTop: 10, marginBottom: 20, backgroundColor: "#f4f4f4", borderRadius: 10 }}>
+
+                                <Text style={{ fontWeight: "bold", marginBottom: 10 }}>
+                                    New Test Results
+                                </Text>
+
+                                {testedSkills.map((skill, index) => (
+                                    <View
+                                        key={index}
+                                        style={{
+                                            flexDirection: "row",
+                                            alignItems: "center",
+                                            marginBottom: 12
+                                        }}
+                                    >
+                                        {/* Skill input */}
+                                        <TextInput
+                                            placeholder="Skill"
+                                            value={skill.testedSkill}
+                                            onChangeText={(text) => {
+                                                const updated = [...testedSkills];
+                                                updated[index].testedSkill = text;
+                                                setTestedSkills(updated);
+                                            }}
+                                            style={{
+                                                flex: 1,
+                                                backgroundColor: "#ddd",
+                                                padding: 10,
+                                                borderRadius: 8,
+                                                marginRight: 8
+                                            }}
+                                        />
+
+                                        {/* Score input */}
+                                        <TextInput
+                                            placeholder="Score"
+                                            value={skill.score}
+                                            onChangeText={(text) => {
+                                                const updated = [...testedSkills];
+                                                updated[index].score = text;
+                                                setTestedSkills(updated);
+                                            }}
+                                            keyboardType="numeric"
+                                            style={{
+                                                width: 90,
+                                                backgroundColor: "#ddd",
+                                                padding: 10,
+                                                borderRadius: 8,
+                                                textAlign: "center",
+                                                marginRight: 8
+                                            }}
+                                        />
+
+                                        {/* Remove row */}
+                                        <TouchableOpacity onPress={() => removeSkillRow(index)}>
+                                            <Ionicons name="remove-circle" size={18} color="red" />
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                    {/* Add new row */}
+                                    <TouchableOpacity onPress={addSkillRow} style={styles.addbtn}>
+                                        <Text style={{ fontWeight: "bold" }}>
+                                            + Add Another Skill
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    {/* Submit */}
+                                    <TouchableOpacity
+                                        onPress={handleSubmitTestResults}
+                                        disabled={loadingSubmittingTest}
+                                        style={[styles.addbtn, { flexDirection: 'row', alignItems: 'center', gap: 5 }]}
+                                    >
+                                        {loadingSubmittingTest && <ActivityIndicator size="small" color="#FF4000" />}
+                                        <Text style={{ fontWeight: "bold", color: "#FF4000" }}>
+                                            {loadingSubmittingTest ? "Submitting..." : "Submit Results"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+
+                        {Object.keys(previouslyTestedSkills).length > 0 ? (
+                            Object.entries(previouslyTestedSkills).map(([skillName, entries], idx) => (
+                                <View key={idx} style={{ marginTop: 10 }}>
+                                    <Text style={{ fontWeight: "bold" }}>
+                                        {skillName.toUpperCase()}
+                                    </Text>
+
+                                    {entries.map((entry, i) => (
+                                        <View
+                                            key={i}
+                                            style={{
+                                                marginLeft: 10,
+                                                marginTop: 5,
+                                                flexDirection: "row",
+                                                gap: 10,
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                backgroundColor: i % 2 === 0 ? "#FFE8D3" : "#FFF8F1",
+                                            }}
+                                        >
+                                            <Text>{new Date(entry.date).toLocaleString()}</Text>
+                                            <Text>{entry.score}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            ))
+                        ) : (
+                            <Text>No skills tested yet.</Text>
+                        )}
+
                     </View>
                     ) : (
                         <Text style={{ marginTop: 20 }}>No test data found for this user.</Text>
                     )}
+
                 </View>}
             </ScrollView>
-        </View >
+        </KeyboardAvoidingView >
     );
 }
 
@@ -652,13 +838,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#e0e0e0',
 
-        // iOS shadow
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
         shadowRadius: 6,
-
-        // Android shadow
         elevation: 5,
     },
     icon: {
@@ -792,5 +975,45 @@ const styles = StyleSheet.create({
     },
     activeFilterText: {
         color: '#fff',
+    },
+    addbtn: {
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+        backgroundColor: '#FFD9C2',
+    },
+    selectedUserContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 20,
+    },
+    selectedUserInfo: {
+        flex: 1,
+    },
+    selectedUserName: {
+        fontFamily: 'Acumin',
+        fontWeight: 'bold',
+        fontSize: 16,
+        color: 'black'
+    },
+    selectedUserEmail: {
+        fontFamily: 'Acumin',
+        color: '#666',
+        fontSize: 14,
+    },
+    userAvatar: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginRight: 10,
+        backgroundColor: "#FF4000"
+    },
+    label: {
+        fontWeight: 'bold',
+        marginBottom: 5,
+        color: '#444'
     },
 });

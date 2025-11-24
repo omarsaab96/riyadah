@@ -20,6 +20,7 @@ const monthlySurveyRoutes = require("./routes/monthlySurveyRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const timesheetRoutes = require("./routes/timesheetRoutes");
+const testRoutes = require("./routes/testRoutes");
 const Chat = require("./models/Chat");
 
 
@@ -44,6 +45,7 @@ app.use('/api/monthlySurvey', monthlySurveyRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/timesheet', timesheetRoutes);
 app.use('/api/wallet', walletRoutes);
+app.use('/api/test', testRoutes);
 
 app.use('/api/search', searchRoutes);
 app.use('/api/notifications', notificationsRoutes);

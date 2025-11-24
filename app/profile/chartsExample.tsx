@@ -3,14 +3,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { PanResponder, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 
-export default function DynamicLineChart({
-    data = [],
-    labels = [],
-    title = "Chart Title",
-    subtitle = "",
-    primaryColor = "#FF4400",
-    bgBarColor = "#FF4400",
-}) {
+export default function DynamicLineChart({data = [],labels = []}) {
     const [chartWidth, setChartWidth] = useState(0);
     const height = 200;
 
