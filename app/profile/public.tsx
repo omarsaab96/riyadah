@@ -704,7 +704,7 @@ export default function PublicProfile() {
                             </View>
 
                             {/* PLAYS IN TEAMS */}
-                            {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            {user.type == "Athlete"&& user.role != "Coach"  && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Text style={styles.title}>
                                     Plays in
                                 </Text>

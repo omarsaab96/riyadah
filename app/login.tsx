@@ -26,6 +26,8 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false);
+
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -87,6 +89,44 @@ export default function Login() {
       console.error('Login failed:', error.message);
     }
   };
+  
+  const handleNext = async () => {
+    if (loading) return;
+
+    setLoading(true)
+
+    if (!email) {
+      setError("Please fill email")
+      setLoading(false)
+    };
+
+    try {
+      const response = await fetch('http://193.187.132.170:5000/api/users/checkemail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      if (!response.ok) {
+        setError(resp.error);
+        setEmailChecked(false);
+        setLoading(false);
+        return;
+      }
+      if (!response.ok) {
+        const resp = await response.json()
+        console.log(resp.personalAccount)
+      }
+
+    } catch (error: any) {
+      setError("Email Check failed. Please try again")
+      setLoading(false)
+      setEmailChecked(false)
+      console.error('Login failed:', error.message);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -127,7 +167,7 @@ export default function Login() {
           <View style={styles.errorIcon}></View>
           <Text style={styles.errorText}>{error}</Text>
         </View>}
-        <TextInput
+        {!emailChecked && <TextInput
           style={styles.input}
           placeholder="Email"
           placeholderTextColor="#A8A8A8"
@@ -135,8 +175,9 @@ export default function Login() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
-        />
-        <View>
+        />}
+
+        {emailChecked && <View>
           <TextInput
             style={[styles.input, styles.passwordInput]}
             placeholder="Password"
@@ -155,15 +196,15 @@ export default function Login() {
               color="#707070"
             />
           </TouchableOpacity>
-        </View>
+        </View>}
 
-        <View>
+        {emailChecked && <View>
           <TouchableOpacity style={styles.forgotPassword} onPress={() => { router.push('/profile/forgotPassword') }}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
-        </View>
+        </View>}
 
-        <TouchableOpacity style={styles.fullButtonRow} onPress={handleLogin}>
+        {emailChecked && <TouchableOpacity style={styles.fullButtonRow} onPress={handleLogin}>
           {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
           <View style={styles.loginButton}>
             <Text style={styles.loginText}>
@@ -178,7 +219,24 @@ export default function Login() {
             )}
           </View>
           {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
-        </TouchableOpacity>
+        </TouchableOpacity>}
+
+        {!emailChecked && <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
+          {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
+          <View style={styles.loginButton}>
+            <Text style={styles.loginText}>
+              {loading ? 'NEXT' : 'NEXT'}
+            </Text>
+            {loading && (
+              <ActivityIndicator
+                size="small"
+                color="#FFFFFF"
+                style={styles.loginLoader}
+              />
+            )}
+          </View>
+          {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
+        </TouchableOpacity>}
       </View>
 
       <View style={styles.switchLinkContainer}>

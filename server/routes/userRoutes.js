@@ -77,6 +77,23 @@ router.get('/find-children', async (req, res) => {
   }
 });
 
+router.post('/checkAccount', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    return res.status(200).json({ success: true, personalAccount:user.personalAccount });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 router.post('/check', async (req, res) => {
   const { email, phone } = req.body;
 
@@ -88,7 +105,7 @@ router.post('/check', async (req, res) => {
     if (email) {
       const existingEmail = await User.findOne({ email });
       if (existingEmail) {
-        return res.status(200).json({ success: false, msg: 'Email already exists'});
+        return res.status(200).json({ success: false, msg: 'Email already exists' });
       }
     }
 
@@ -156,9 +173,9 @@ router.post('/updatePassword', authenticateToken, async (req, res) => {
 
 router.post('/resetPassword', async (req, res) => {
   try {
-    const {email,password} = req.body;
+    const { email, password } = req.body;
 
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });

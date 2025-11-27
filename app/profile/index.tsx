@@ -1664,7 +1664,7 @@ export default function Profile() {
                         </View>
 
                         {/* PLAYS IN TEAMS */}
-                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type == "Athlete"&& user.role != "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Plays in
                             </Text>
@@ -3133,14 +3133,16 @@ export default function Profile() {
                                     }
                                 </View>
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
+                                {selectedUserTest==null && <Text>No data yet</Text>}
+
+                                {selectedUserTest && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
                                     <Text style={styles.title}>
                                         Last Test Date
                                     </Text>
                                     <Text>
-                                        {formatDate(selectedUserTest.lastTested)}
+                                        {formatDate(selectedUserTest?.lastTested)}
                                     </Text>
-                                </View>
+                                </View>}
 
                                 {user.type == "Athlete" && overallGraphData && overallGraphData.length > 0 &&
                                     <>
