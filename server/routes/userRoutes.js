@@ -79,7 +79,7 @@ router.get('/find-children', async (req, res) => {
 
 router.post('/checkAccount', async (req, res) => {
   try {
-    const {email} = req.user.body;
+    const {email} = req.body;
 
     const user = await User.findBy(email);
 
