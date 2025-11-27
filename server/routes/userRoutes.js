@@ -77,11 +77,11 @@ router.get('/find-children', async (req, res) => {
   }
 });
 
-router.post('/checkAccount', authenticateToken, async (req, res) => {
+router.post('/checkAccount', async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const {email} = req.user.body;
 
-    const user = await User.findById(userId);
+    const user = await User.findBy(email);
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });

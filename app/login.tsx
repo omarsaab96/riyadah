@@ -101,16 +101,16 @@ export default function Login() {
     };
 
     try {
-      const response = await fetch('http://193.187.132.170:5000/api/users/checkemail', {
+      const response = await fetch('http://193.187.132.170:5000/api/users/checkAccount', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email }),
       });
-      
+      console.log(response)
       if (!response.ok) {
-        setError(resp.error);
+        setError("hi");
         setEmailChecked(false);
         setLoading(false);
         return;
