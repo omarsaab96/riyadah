@@ -81,7 +81,7 @@ router.post('/checkAccount', async (req, res) => {
   try {
     const {email} = req.body;
 
-    const user = await User.findBy(email);
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
