@@ -31,7 +31,11 @@ export default function Login() {
     const checkAuth = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        router.replace('/landing');
+        if (SecureStore.getItemAsync('user').type === "Manager") {
+          router.replace('/manager/dashboard');
+        } else {
+          router.replace('/landing');
+        }
       }
     };
 
@@ -69,7 +73,7 @@ export default function Login() {
       // Save the token securely
       await SecureStore.setItemAsync('userToken', token);
       setLoading(false)
-      
+
 
       if (user.type === "Manager") {
         router.replace('/manager/dashboard');

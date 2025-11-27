@@ -1,3 +1,4 @@
+import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -13,7 +14,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-
 
 const { width } = Dimensions.get('window');
 
@@ -87,14 +87,16 @@ export default function ManagerDashboardScreen() {
                             <View style={styles.errorIcon}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
+
+                        <Text style={styles.sectionTitle}>Quick links</Text>
+
+                        <TouchableOpacity
+                            style={styles.fullButtonRow}
+                            onPress={() => router.push('/manager/skillsTesting')}>
+                            <Text style={styles.fullButtonText}>Athletes Performance Tests</Text>
+                            <Feather name="arrow-right" size={20} color="#FF4400" />
+                        </TouchableOpacity>
                     </View>
-
-                    <TouchableOpacity
-                        style={styles.fullButtonRow}
-                        onPress={() => router.push('/manager/skillsTesting')}>
-                        <Text>Riyadah Athletes Evaluation</Text>
-                    </TouchableOpacity>
-
                 </ScrollView>
                 }
             </View >
@@ -256,7 +258,21 @@ const styles = StyleSheet.create({
     fullButtonRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 4,
+        padding:10,
+        // backgroundColor:'#000',
+        borderWidth:1,
+        borderColor:'#000',
+        borderRadius:10,
+        justifyContent:'space-between'
+    },
+    sectionTitle:{
+        color:"#000",
+        fontSize:14,
+        marginBottom:20
+    },
+    fullButtonText:{
+        fontFamily:'Qatar',
+        fontSize:14,
     },
     button: {
         flex: 1,
@@ -349,7 +365,8 @@ const styles = StyleSheet.create({
     input: {
         fontSize: 14,
         padding: 15,
-        backgroundColor: '#F4F4F4',
+        borderWidth:1,
+        borderColor:'#000',
         marginBottom: 16,
         color: 'black',
         borderRadius: 10

@@ -330,6 +330,9 @@ export default function skillsTestingScreen() {
             </View>
 
             {selectedAccount == '' && <View style={styles.searchContainer}>
+                <Text style={{marginBottom:5,fontFamily:'Qatar',fontSize:14}}>
+                    Tested subject
+                </Text>
                 <TextInput
                     style={[styles.input, Platform.OS === 'ios' && { padding: 15 }]}
                     value={keyword}
@@ -347,7 +350,7 @@ export default function skillsTestingScreen() {
                 }
             </View>}
 
-            {selectedAccount == '' && <View style={styles.filters}>
+            {/* {selectedAccount == '' && <View style={styles.filters}>
                 <Text style={styles.filterTitle} onPress={() => { setShowFilters(prev => !prev) }}>Filters</Text>
                 {showFilters && <View style={{ marginTop: 20 }} >
                     <View style={styles.filter}>
@@ -448,7 +451,7 @@ export default function skillsTestingScreen() {
                         <Text style={styles.filterBtnText}>Filter</Text>
                     </TouchableOpacity>
                 </View>}
-            </View>}
+            </View>} */}
 
             <ScrollView>
                 {selectedAccount == '' && <View>
@@ -860,15 +863,16 @@ const styles = StyleSheet.create({
     },
     input: {
         fontSize: 14,
-        paddingHorizontal: 15,
-        backgroundColor: '#F4F4F4',
+        paddingHorizontal: 15,        
+        borderWidth:1,
+        borderColor:'#000',
         color: 'black',
         borderRadius: 10,
         fontFamily: 'Acumin',
     },
     searchLoader: {
         position: 'absolute',
-        top: 15,
+        top: Platform.OS=='ios'? 30 : 40,
         right: 30,
     },
     searchResultsContainer: {
