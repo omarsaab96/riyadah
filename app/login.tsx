@@ -89,7 +89,7 @@ export default function Login() {
       console.error('Login failed:', error.message);
     }
   };
-  
+
   const handleNext = async () => {
     if (loading) return;
 
@@ -108,16 +108,22 @@ export default function Login() {
         },
         body: JSON.stringify({ email }),
       });
-      console.log(response)
+
+      const resp = await response.json()
+
       if (!response.ok) {
-        setError("hi");
+        setError(resp.message);
         setEmailChecked(false);
         setLoading(false);
         return;
       }
-      if (!response.ok) {
-        const resp = await response.json()
-        console.log(resp.personalAccount)
+      if (response.ok) {
+        if(resp.personalAccount){
+          router.push('/setPersonalAccount')
+        }
+        setEmailChecked(true)
+        setError(resp.message);
+        setLoading(false);
       }
 
     } catch (error: any) {

@@ -84,7 +84,7 @@ router.post('/checkAccount', async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({ success: false, message: 'This email is not registered' });
     }
 
     return res.status(200).json({ success: true, personalAccount:user.personalAccount });
