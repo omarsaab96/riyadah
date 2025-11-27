@@ -52,6 +52,11 @@ export default function ManagerDashboardScreen() {
         fetchUser();
     }, []);
 
+    const handleLogout = async () => {
+        await SecureStore.deleteItemAsync('userToken');
+        router.replace('/')
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -64,6 +69,10 @@ export default function ManagerDashboardScreen() {
                         style={styles.logo}
                         resizeMode="contain"
                     />
+                    <TouchableOpacity style={styles.logout} onPress={() => { handleLogout() }}>
+                        <Text style={styles.logoutText}>Logout</Text>
+                    </TouchableOpacity>
+
 
                     <View style={styles.headerTextBlock}>
                         <Text style={styles.pageTitle}>Manager dashboard</Text>
@@ -258,21 +267,21 @@ const styles = StyleSheet.create({
     fullButtonRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding:10,
+        padding: 10,
         // backgroundColor:'#000',
-        borderWidth:1,
-        borderColor:'#000',
-        borderRadius:10,
-        justifyContent:'space-between'
+        borderWidth: 1,
+        borderColor: '#000',
+        borderRadius: 10,
+        justifyContent: 'space-between'
     },
-    sectionTitle:{
-        color:"#000",
-        fontSize:14,
-        marginBottom:20
+    sectionTitle: {
+        color: "#000",
+        fontSize: 14,
+        marginBottom: 20
     },
-    fullButtonText:{
-        fontFamily:'Qatar',
-        fontSize:14,
+    fullButtonText: {
+        fontFamily: 'Qatar',
+        fontSize: 14,
     },
     button: {
         flex: 1,
@@ -365,8 +374,8 @@ const styles = StyleSheet.create({
     input: {
         fontSize: 14,
         padding: 15,
-        borderWidth:1,
-        borderColor:'#000',
+        borderWidth: 1,
+        borderColor: '#000',
         marginBottom: 16,
         color: 'black',
         borderRadius: 10
@@ -486,5 +495,21 @@ const styles = StyleSheet.create({
     },
     adminDiv: {
         marginBottom: 20
+    },
+    logout: {
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#fff',
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 1,
+    },
+    logoutText: {
+        color: '#fff',
+        fontFamily: 'Acumin',
+        fontSize: 16
     }
 });

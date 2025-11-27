@@ -620,7 +620,7 @@ export default function skillsTestingScreen() {
 
                     <TouchableOpacity onPress={() => { handleCancelAccountSelection() }} style={{marginBottom: 30,flexDirection:'row',alignItems:'center',gap:10  }}>
                         <Ionicons name="arrow-back" size={20} color="black" />
-                        <Text style={{}}>
+                        <Text style={{fontFamily:'Qatar'}}>
                             Back to search
                         </Text>
                     </TouchableOpacity>
@@ -652,12 +652,12 @@ export default function skillsTestingScreen() {
 
                             {/* OPEN ADD RESULTS */}
                             {!addNewResultsModalVisible && <TouchableOpacity onPress={handleOpenAddResults} style={styles.addbtn}>
-                                <Text style={{ fontWeight: "bold" }}>Add new result</Text>
+                                <Text style={{ fontWeight: "bold",color:'#fff' }}>Add new result</Text>
                             </TouchableOpacity>}
 
                             {/* CLOSE */}
                             {addNewResultsModalVisible && <TouchableOpacity onPress={() => setAddNewResultsModalVisible(false)} style={styles.addbtn}>
-                                <Text style={{ fontWeight: "bold" }}>Cancel</Text>
+                                <Text style={{ fontWeight: "bold",color:'#fff' }}>Cancel</Text>
                             </TouchableOpacity>}
                         </View>
 
@@ -726,7 +726,7 @@ export default function skillsTestingScreen() {
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                                     {/* Add new row */}
                                     <TouchableOpacity onPress={addSkillRow} style={styles.addbtn}>
-                                        <Text style={{ fontWeight: "bold" }}>
+                                        <Text style={{ fontWeight: "bold",color:'#fff' }}>
                                             + Add Another Skill
                                         </Text>
                                     </TouchableOpacity>
@@ -735,10 +735,10 @@ export default function skillsTestingScreen() {
                                     <TouchableOpacity
                                         onPress={handleSubmitTestResults}
                                         disabled={loadingSubmittingTest}
-                                        style={[styles.addbtn, { flexDirection: 'row', alignItems: 'center', gap: 5 }]}
+                                        style={[styles.addbtn, { backgroundColor:'#FF4400',flexDirection: 'row', alignItems: 'center', gap: 5 }]}
                                     >
-                                        {loadingSubmittingTest && <ActivityIndicator size="small" color="#FF4000" />}
-                                        <Text style={{ fontWeight: "bold", color: "#FF4000" }}>
+                                        {loadingSubmittingTest && <ActivityIndicator size="small" color="#fff" />}
+                                        <Text style={{ fontWeight: "bold", color: "#fff" }}>
                                             {loadingSubmittingTest ? "Submitting..." : "Submit Results"}
                                         </Text>
                                     </TouchableOpacity>
@@ -763,7 +763,7 @@ export default function skillsTestingScreen() {
                                                 gap: 10,
                                                 justifyContent: "space-between",
                                                 alignItems: "center",
-                                                backgroundColor: i % 2 === 0 ? "#FFE8D3" : "#FFF8F1",
+                                                backgroundColor: i % 2 === 0 ? "#f4f4f4" : "#dedede",
                                             }}
                                         >
                                             <Text>{new Date(entry.date).toLocaleString()}</Text>
@@ -794,6 +794,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 20,
+        paddingTop:0,
         paddingBottom: 130
     },
     error: {
@@ -984,7 +985,7 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 8,
-        backgroundColor: '#FFD9C2',
+        backgroundColor: '#000',
     },
     selectedUserContainer: {
         flexDirection: 'row',

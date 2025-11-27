@@ -68,7 +68,7 @@ export default function Profile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
-    const tabsAthlete = ['Profile', 'Schedule', 'Financials', 'Skills'];
+    const tabsAthlete = ['Profile', 'Schedule', 'Financials', 'Performance'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials', 'Timesheet'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
@@ -87,7 +87,11 @@ export default function Profile() {
     const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth()); // 0-11
     const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
     const [calendarDays, setCalendarDays] = useState([]);
-    const [overallGraphData, setOverallGraphData] = useState([]);
+    const [overallGraphData, setOverallGraphData] = useState(null);
+    const [skillsChartsData, setSkillsChartsData] = useState(null);
+
+    const [selectedUserTest, setSelectedUserTest] = useState(null);
+    const [previouslyTestedSkills, setPreviouslyTestedSkills] = useState({});
 
     const generateCalendarDays = (year, month, events = []) => {
         const startOfMonth = new Date(year, month, 1);
@@ -639,25 +643,106 @@ export default function Profile() {
             getTimesheet();
         }
 
-        if (label == "Skills") {
+        if (label == "Performance") {
             setSkillsLoading(true);
-            getSkills();
+            getPerformance();
         }
     }
 
-    const getSkills = () => {
-        console.log("clicked skills")
-        setSkillsLoading(false)
+    const getPerformance = async () => {
+        if (!user) return;
 
-        //graph data
-        setOverallGraphData([
-            { label: 'Attack', sublabel: user?.skills?.attack, value: user?.skills?.attack },
-            { label: 'Defense', sublabel: user?.skills?.defense, value: user?.skills?.defense },
-            { label: 'Speed', sublabel: user?.skills?.speed, value: user?.skills?.speed },
-            { label: 'Stamina', sublabel: user?.skills?.stamina, value: user?.skills?.stamina },
-            { label: 'Skill', sublabel: user?.skills?.skill, value: user?.skills?.skill }
-        ]);
+        if (user.type != "Athlete") {
+            setError("Selected user is not an athlete.");
+            return;
+        }
+
+        try {
+            setError("");
+            const testResponse = await fetch(`http://193.187.132.170:5000/api/test/user/${userId}`);
+            if (testResponse.ok) {
+                const testData = await testResponse.json();
+                setSelectedUserTest(testData.test);
+                const grouped = groupSkills(testData.test?.results || []);
+                setPreviouslyTestedSkills(grouped);
+
+                // console.log("testData.test= ", testData.test)
+                // console.log("grouped= ", grouped)
+
+                const dynamicGraphData = Object.keys(previouslyTestedSkills).map((skillName) => {
+                    const values = previouslyTestedSkills[skillName];
+
+                    // calculate the average score for that skill
+                    const sum = values.reduce((acc, v) => acc + (v.score || 0), 0);
+                    const avg = values.length > 0 ? Math.round(sum / values.length) : 0;
+
+                    return {
+                        label: skillName.charAt(0).toUpperCase() + skillName.slice(1),
+                        sublabel: avg,
+                        value: avg,
+                    };
+                });
+
+                const chartDataPerSkill = Object.keys(previouslyTestedSkills).map((skillName) => {
+                    const entries = previouslyTestedSkills[skillName];
+
+                    // take last 6 values (most recent)
+                    const lastSix = entries.slice(-6);
+
+                    const data = lastSix.map(v => v.score);
+
+                    // check if all months are the same
+                    const months = lastSix.map(v => new Date(v.date).getMonth());
+                    const uniqueMonths = new Set(months);
+
+                    const labels = lastSix.map(v => {
+                        const d = new Date(v.date);
+
+                        // If all entries belong to the same month → show Day + Month
+                        if (uniqueMonths.size === 1) {
+                            return d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+                            // Example: "12 Nov"
+                        }
+
+                        // Otherwise → show Month only
+                        return d.toLocaleDateString("en-US", { month: "short" });
+                        // Example: "Nov"
+                    });
+
+                    return {
+                        skillName,
+                        data,
+                        labels,
+                        lastUpdated: lastSix[lastSix.length - 1]?.date || null
+                    };
+                });
+
+                console.log(dynamicGraphData)
+
+                setOverallGraphData(dynamicGraphData)
+                setSkillsChartsData(chartDataPerSkill)
+
+            } else {
+                setSelectedUserTest(null);
+                setPreviouslyTestedSkills({});
+                console.error('Test API error');
+            }
+        } catch (error) {
+            console.error('Failed to fetch performance:', error);
+        } finally {
+            setSkillsLoading(false);
+        }
     }
+
+    const groupSkills = (results) => {
+        return results.reduce((acc, item) => {
+            if (!acc[item.testedSkill]) {
+                acc[item.testedSkill] = [];
+            }
+            acc[item.testedSkill].push(item);
+            return acc;
+        }, {});
+    };
 
     const handleLayout = (event) => {
         const { width } = event.nativeEvent.layout;
@@ -3019,9 +3104,9 @@ export default function Profile() {
                 </Animated.ScrollView>
             }
 
-            {/* SkillsTab */}
+            {/* PerformanceTab */}
             {
-                !loading && user && activeTab == "Skills" && <Animated.ScrollView
+                !loading && user && activeTab == "Performance" && <Animated.ScrollView
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                         { useNativeDriver: false }
@@ -3041,7 +3126,7 @@ export default function Profile() {
                             <View>
                                 <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
                                     <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
-                                        Skills
+                                        Performance
                                     </Text>
                                     {user.skillsAreVerified?.by != null &&
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
@@ -3053,14 +3138,20 @@ export default function Profile() {
 
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
                                     <Text style={styles.title}>
-                                        Overall Skill Ratings
+                                        Last Test Date
                                     </Text>
                                     <Text>
-                                        Last updated
+                                        {formatDate(selectedUserTest.lastTested)}
                                     </Text>
                                 </View>
 
-                                {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
+                                    <Text style={styles.title}>
+                                        Overall Average Performance
+                                    </Text>
+                                </View>
+
+                                {user.type == "Athlete" && overallGraphData && <View style={[styles.profileSection, styles.skillsSection]}>
                                     <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
                                         <RadarChart
                                             data={overallGraphData}
@@ -3084,40 +3175,42 @@ export default function Profile() {
                                     </View>
                                 </View>}
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
-                                    <Text style={styles.title}>
-                                        Attack progress
-                                    </Text>
-                                    <Text>
-                                        Last updated
-                                    </Text>
-                                </View>
-                                {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
-                                    <DynamicLineChart
-                                        data={[0, 20, 40, 30, 60, 95]}
-                                        labels={["JAN", "FEB", "MAR", "APR", "MAY", "JUN"]}
-                                    />
-                                </View>}
+                                {(skillsChartsData != null && skillsChartsData.length >= 0) &&
+                                    skillsChartsData.map((item, index) => (
+                                        <View key={index} style={{ marginBottom: 20 }}>
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
-                                    <Text style={styles.title}>
-                                        Speed progress
-                                    </Text>
-                                    <Text>
-                                        Last updated
-                                    </Text>
-                                </View>
-                                {user.type == "Athlete" && <View style={[styles.profileSection, styles.skillsSection]}>
-                                    <DynamicLineChart
-                                        data={[0, 0, 0, 0, 0, 60]}
-                                        labels={["JAN", "FEB", "MAR", "APR", "MAY", "JUN"]}
-                                        title="Athlete Skill Progress"
-                                        subtitle="Last 6 months"
-                                        primaryColor="#1363DF"
-                                        bgBarColor="#E8F0FF"
-                                    />
-                                </View>}
+                                            {/* Header */}
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                gap: 5,
+                                                marginBottom: 10
+                                            }}>
+                                                <Text style={styles.title}>
+                                                    {item.skillName.charAt(0).toUpperCase() + item.skillName.slice(1)}
+                                                </Text>
 
+                                                <Text style={{ opacity: 0.7 }}>
+                                                    {item.lastUpdated
+                                                        ? `Last updated ${new Date(item.lastUpdated).toLocaleDateString()}`
+                                                        : "No data"
+                                                    }
+                                                </Text>
+                                            </View>
+
+                                            {/* Chart */}
+                                            {user.type === "Athlete" && (
+                                                <View style={[styles.profileSection, styles.skillsSection]}>
+                                                    <DynamicLineChart
+                                                        data={item.data}
+                                                        labels={item.labels}
+                                                    />
+                                                </View>
+                                            )}
+                                        </View>
+                                    ))
+                                }
                             </View>
                         )}
                     </View>
