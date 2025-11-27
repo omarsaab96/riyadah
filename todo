@@ -103,4 +103,4 @@ Version check:
 
 		☐ think about the accounts created by the club for staff (not personal accounts)
 		✔ create manager dashboard where a manager can see all users, and create test results @done(25-11-27 12:51)
-		☐ fix logo touching status bar on ios
+		✔ fix logo touching status bar on ios @done(25-11-27 12:59)
