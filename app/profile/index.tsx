@@ -494,6 +494,88 @@ export default function Profile() {
         }
     }
 
+    const getPerformance = async () => {
+        if (!user) return;
+
+        if (user.type != "Athlete") {
+            setError("Selected user is not an athlete.");
+            return;
+        }
+
+        try {
+            setError("");
+            const testResponse = await fetch(`http://193.187.132.170:5000/api/test/user/${userId}`);
+            if (testResponse.ok) {
+                const testData = await testResponse.json();
+                setSelectedUserTest(testData.test);
+                const grouped = groupSkills(testData.test?.results || []);
+                setPreviouslyTestedSkills(grouped);
+
+                // console.log("testData.test= ", testData.test)
+                // console.log("grouped= ", grouped)
+
+                const dynamicGraphData = Object.keys(previouslyTestedSkills).map((skillName) => {
+                    const values = previouslyTestedSkills[skillName];
+
+                    // calculate the average score for that skill
+                    const sum = values.reduce((acc, v) => acc + (v.score || 0), 0);
+                    const avg = values.length > 0 ? Math.round(sum / values.length) : 0;
+
+                    return {
+                        label: skillName.charAt(0).toUpperCase() + skillName.slice(1),
+                        sublabel: avg,
+                        value: avg,
+                    };
+                });
+
+                const chartDataPerSkill = Object.keys(previouslyTestedSkills).map((skillName) => {
+                    const entries = previouslyTestedSkills[skillName];
+
+                    // take last 6 values (most recent)
+                    const lastSix = entries.slice(-6);
+
+                    const data = lastSix.map(v => v.score);
+
+                    // check if all months are the same
+                    const months = lastSix.map(v => new Date(v.date).getMonth());
+                    const uniqueMonths = new Set(months);
+
+                    const labels = lastSix.map(v => {
+                        const d = new Date(v.date);
+
+                        // If all entries belong to the same month → show Day + Month
+                        if (uniqueMonths.size === 1) {
+                            return d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+                            // Example: "12 Nov"
+                        }
+
+                        // Otherwise → show Month only
+                        return d.toLocaleDateString("en-US", { month: "short" });
+                        // Example: "Nov"
+                    });
+
+                    return {
+                        skillName,
+                        data,
+                        labels,
+                        lastUpdated: lastSix[lastSix.length - 1]?.date || null
+                    };
+                });
+                setOverallGraphData(dynamicGraphData)
+                setSkillsChartsData(chartDataPerSkill)
+
+            } else {
+                setSelectedUserTest(null);
+                setPreviouslyTestedSkills({});
+                console.error('Test API error');
+            }
+        } catch (error) {
+            console.error('Failed to fetch performance:', error);
+        } finally {
+            setSkillsLoading(false);
+        }
+    }
+
     const handleEdit = async () => {
         router.push('/profile/editProfile');
     };
@@ -646,91 +728,6 @@ export default function Profile() {
         if (label == "Performance") {
             setSkillsLoading(true);
             getPerformance();
-        }
-    }
-
-    const getPerformance = async () => {
-        if (!user) return;
-
-        if (user.type != "Athlete") {
-            setError("Selected user is not an athlete.");
-            return;
-        }
-
-        try {
-            setError("");
-            const testResponse = await fetch(`http://193.187.132.170:5000/api/test/user/${userId}`);
-            if (testResponse.ok) {
-                const testData = await testResponse.json();
-                setSelectedUserTest(testData.test);
-                const grouped = groupSkills(testData.test?.results || []);
-                setPreviouslyTestedSkills(grouped);
-
-                // console.log("testData.test= ", testData.test)
-                // console.log("grouped= ", grouped)
-
-                const dynamicGraphData = Object.keys(previouslyTestedSkills).map((skillName) => {
-                    const values = previouslyTestedSkills[skillName];
-
-                    // calculate the average score for that skill
-                    const sum = values.reduce((acc, v) => acc + (v.score || 0), 0);
-                    const avg = values.length > 0 ? Math.round(sum / values.length) : 0;
-
-                    return {
-                        label: skillName.charAt(0).toUpperCase() + skillName.slice(1),
-                        sublabel: avg,
-                        value: avg,
-                    };
-                });
-
-                const chartDataPerSkill = Object.keys(previouslyTestedSkills).map((skillName) => {
-                    const entries = previouslyTestedSkills[skillName];
-
-                    // take last 6 values (most recent)
-                    const lastSix = entries.slice(-6);
-
-                    const data = lastSix.map(v => v.score);
-
-                    // check if all months are the same
-                    const months = lastSix.map(v => new Date(v.date).getMonth());
-                    const uniqueMonths = new Set(months);
-
-                    const labels = lastSix.map(v => {
-                        const d = new Date(v.date);
-
-                        // If all entries belong to the same month → show Day + Month
-                        if (uniqueMonths.size === 1) {
-                            return d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-                            // Example: "12 Nov"
-                        }
-
-                        // Otherwise → show Month only
-                        return d.toLocaleDateString("en-US", { month: "short" });
-                        // Example: "Nov"
-                    });
-
-                    return {
-                        skillName,
-                        data,
-                        labels,
-                        lastUpdated: lastSix[lastSix.length - 1]?.date || null
-                    };
-                });
-
-                console.log(dynamicGraphData)
-
-                setOverallGraphData(dynamicGraphData)
-                setSkillsChartsData(chartDataPerSkill)
-
-            } else {
-                setSelectedUserTest(null);
-                setPreviouslyTestedSkills({});
-                console.error('Test API error');
-            }
-        } catch (error) {
-            console.error('Failed to fetch performance:', error);
-        } finally {
-            setSkillsLoading(false);
         }
     }
 
@@ -3145,35 +3142,38 @@ export default function Profile() {
                                     </Text>
                                 </View>
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
-                                    <Text style={styles.title}>
-                                        Overall Average Performance
-                                    </Text>
-                                </View>
+                                {user.type == "Athlete" && overallGraphData && overallGraphData.length > 0 &&
+                                    <>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
+                                            <Text style={styles.title}>
+                                                Overall Average Performance
+                                            </Text>
+                                        </View>
+                                        <View style={[styles.profileSection, styles.skillsSection]}>
+                                            <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
+                                                <RadarChart
+                                                    data={overallGraphData}
+                                                    maxValue={100}
+                                                    gradientColor={{
+                                                        startColor: '#FF9432',
+                                                        endColor: '#FFF8F1',
+                                                        count: 5,
+                                                    }}
+                                                    stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
+                                                    strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
+                                                    strokeOpacity={[1, 1, 1, 1, 0.13]}
+                                                    labelColor="#111111"
+                                                    dataFillColor="#FF9432"
+                                                    dataFillOpacity={0.8}
+                                                    dataStroke="#FF4000"
+                                                    dataStrokeWidth={2}
+                                                    isCircle
+                                                />
 
-                                {user.type == "Athlete" && overallGraphData && <View style={[styles.profileSection, styles.skillsSection]}>
-                                    <View style={user.skills != null ? { alignItems: 'center' } : { alignItems: 'flex-start' }}>
-                                        <RadarChart
-                                            data={overallGraphData}
-                                            maxValue={100}
-                                            gradientColor={{
-                                                startColor: '#FF9432',
-                                                endColor: '#FFF8F1',
-                                                count: 5,
-                                            }}
-                                            stroke={['#FFE8D3', '#FFE8D3', '#FFE8D3', '#FFE8D3', '#ff9532']}
-                                            strokeWidth={[0.5, 0.5, 0.5, 0.5, 1]}
-                                            strokeOpacity={[1, 1, 1, 1, 0.13]}
-                                            labelColor="#111111"
-                                            dataFillColor="#FF9432"
-                                            dataFillOpacity={0.8}
-                                            dataStroke="#FF4000"
-                                            dataStrokeWidth={2}
-                                            isCircle
-                                        />
-
-                                    </View>
-                                </View>}
+                                            </View>
+                                        </View>
+                                    </>
+                                }
 
                                 {(skillsChartsData != null && skillsChartsData.length >= 0) &&
                                     skillsChartsData.map((item, index) => (
@@ -3350,10 +3350,9 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 120,
-        height: 30,
         height: 40,
         position: 'absolute',
-        top: 20,
+        top: 40,
         left: 20,
         zIndex: 1,
     },

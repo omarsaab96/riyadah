@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 120,
-        height: 30,
+        height: 40,
         position: 'absolute',
         top: 50,
         left: 20,

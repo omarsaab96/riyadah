@@ -357,9 +357,9 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 120,
-        height: 30,
+        height: 40,
         position: 'absolute',
-        top: 20,
+        top: 40,
         left: 20,
         zIndex: 1,
     },
