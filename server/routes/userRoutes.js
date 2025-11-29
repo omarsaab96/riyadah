@@ -558,6 +558,27 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
+// Get user info by email
+router.get('/byEmail/:userEmail', async (req, res) => {
+  const { userEmail } = req.params;
+
+  // console.log('getting user info for userId = ', userEmail)
+
+  try {
+    const user = await User.findOne({email:userEmail})
+      .select('-password')
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // console.log(user)
+
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 // ✅ Store Expo push token
 router.post('/push-token', authenticateToken, async (req, res) => {
   const { userId, expoPushToken } = req.body;

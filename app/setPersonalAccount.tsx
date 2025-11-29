@@ -55,7 +55,37 @@ export default function SetPersonalAccountScreen() {
   }, []);
 
   useEffect(() => {
-    setEmail(registeredEmail)
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(`http://193.187.132.170:5000/api/users/byEmail/${registeredEmail}`);
+
+        if (response.ok) {
+          const userData = await response.json();
+          setName(userData.name);
+          setEmail(userData.email);
+
+          // if (userData.role == "Coach") {
+          //   const coachteams = await fetch(`http://193.187.132.170:5000/api/teams/byCoach/${userData._id}`);
+
+          //   if (coachteams.ok) {
+          //     const coachdata = await coachteams.json();
+          //     setUserCoachOf(coachdata.data);
+          //   } else {
+          //     console.log('Could not get teams of coach');
+          //   }
+          // }
+        } else {
+          console.error('API error');
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+    fetchUser();
   }, [registeredEmail]);
 
   const checkAvailability = async (email: string, phone: string) => {
@@ -135,7 +165,7 @@ export default function SetPersonalAccountScreen() {
         password: password,
         country: countryCode,
         agreed: agreed,
-        personalAccount:false
+        personalAccount: false
       });
       setLoading(false)
       router.push('/wizard');
@@ -216,7 +246,7 @@ export default function SetPersonalAccountScreen() {
             />
 
             <TextInput
-              style={[styles.input,{color:'#888'}]}
+              style={[styles.input, { color: '#888' }]}
               placeholder="Email"
               placeholderTextColor="#A8A8A8"
               value={email}
