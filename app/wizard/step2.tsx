@@ -258,10 +258,10 @@ export default function WizardStep2() {
                 });
 
                 // console.log(formData)
-                if (formData.type == "Parent") {
+                if(!formData.personalAccount || formData.type == "Parent"){
                     router.push('/wizard/step5');
-                } else {
-                    router.push('/wizard/step3');
+                }else{
+                    router.push('/wizard/step3')
                 }
 
             } else {
@@ -396,8 +396,8 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         height: 40,
         position: 'absolute',
         top: 40,

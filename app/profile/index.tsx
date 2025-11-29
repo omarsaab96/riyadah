@@ -1723,7 +1723,7 @@ export default function Profile() {
                                                     </Text>
                                                 );
                                             }
-                                        })
+                                        })()
                                     )}
                                 </View>
                             )}

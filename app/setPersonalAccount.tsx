@@ -68,7 +68,9 @@ export default function SetPersonalAccountScreen() {
             type: userData.type,
             sport: userData.sport,
             clubs: userData.clubs,
-            isStaff: userData.isStaff
+            isStaff: userData.isStaff,
+            role: userData.role,
+            personalAccount: userData.personalAccount
           });
 
           // if (userData.role == "Coach") {
@@ -172,10 +174,9 @@ export default function SetPersonalAccountScreen() {
         password: password,
         country: countryCode,
         agreed: agreed,
-        personalAccount: false
       });
       setLoading(false)
-      router.push('/wizard');
+      router.push('/wizard/step2');
 
     } else {
       setLoading(false)
