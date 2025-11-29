@@ -96,8 +96,9 @@ export default function Login() {
     setLoading(true)
 
     if (!email) {
-      setError("Please fill email")
+      setError("Please enter email")
       setLoading(false)
+      return;
     };
 
     try {
@@ -118,12 +119,17 @@ export default function Login() {
         return;
       }
       if (response.ok) {
-        if(resp.personalAccount){
-          router.push('/setPersonalAccount')
+        if (!resp.personalAccount) {
+          router.replace({
+            pathname: '/setPersonalAccount',
+            params: { registeredEmail: email },
+          })
+        } else {
+          setEmailChecked(true)
+          setError("");
+          setLoading(false);
         }
-        setEmailChecked(true)
-        setError(resp.message);
-        setLoading(false);
+
       }
 
     } catch (error: any) {
@@ -184,6 +190,10 @@ export default function Login() {
         />}
 
         {emailChecked && <View>
+          <TouchableOpacity style={{ marginBottom: 40, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <Ionicons name="chevron-back" size={20} color="#FF4400" style={{ maarginTop: 2 }} />
+            <Text style={{ color: "#FF4400" }}>{email}</Text>
+          </TouchableOpacity>
           <TextInput
             style={[styles.input, styles.passwordInput]}
             placeholder="Password"
@@ -412,7 +422,7 @@ const styles = StyleSheet.create({
   eyeIcon: {
     position: 'absolute',
     right: 15,
-    top: 12,
+    top: 72,
     zIndex: 1,
   },
 });

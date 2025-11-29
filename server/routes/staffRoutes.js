@@ -59,7 +59,7 @@ router.post(
           agreed: false,
           bio: null,
           children: null,
-          club: club,
+          clubs: [],
           contactInfo: {
             phone: null,
             email: null,
@@ -108,7 +108,7 @@ router.post(
           },
           sport: null,
           stats: null,
-          type: null,
+          type: 'Athlete',
           verified: {
             email: null,
             phone: null
@@ -116,6 +116,18 @@ router.post(
           weight: null
         });
         newUser.isStaff.push(club);
+        newUser.clubs.push(club);
+        if (role === 'Coach' && Array.isArray(req.body.teams)) {
+          const teamId = req.body.teams[0];
+
+          if (teamId) {
+            const foundTeam = await Team.findById(teamId).select("sport");
+
+            if (foundTeam) {
+              newUser.sport = foundTeam.sport;
+            }
+          }
+        }
 
         await newUser.save();
         req.body.userRef = newUser._id;

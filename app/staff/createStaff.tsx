@@ -197,7 +197,7 @@ const CreateStaffScreen = () => {
 
         const dataToSubmit = {
             ...formData,
-            club: userId
+            club: userId,
         };
 
 
