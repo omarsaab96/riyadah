@@ -129,7 +129,8 @@ export default function Register() {
         phone: "+" + callingCode + phoneNumber,
         password: password,
         country: countryCode,
-        agreed: agreed
+        agreed: agreed,
+        isStaff: []
       });
       setLoading(false)
       router.push('/wizard');

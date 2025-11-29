@@ -49,6 +49,21 @@ router.post('/', async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    const existing = await User.findOne({email:req.body.email});
+
+    if(existing){
+      // Update only provided fields
+      if (hashedPassword) rest.password = hashedPassword;
+
+      await User.findByIdAndUpdate(existing._id, rest, { new: true });
+
+      const updatedUser = await User.findById(existing._id);
+
+      const token = jwt.sign({ userId: updatedUser._id }, "123456");
+
+      return res.status(200).json({ user: updatedUser, token });
+    }
+
     // Create user with hashed password
     const newUser = await User.create({ ...rest, password: hashedPassword });
 

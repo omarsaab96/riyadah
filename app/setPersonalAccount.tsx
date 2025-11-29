@@ -64,6 +64,13 @@ export default function SetPersonalAccountScreen() {
           setName(userData.name);
           setEmail(userData.email);
 
+          updateFormData({
+            type: userData.type,
+            sport: userData.sport,
+            clubs: userData.clubs,
+            isStaff: userData.isStaff
+          });
+
           // if (userData.role == "Coach") {
           //   const coachteams = await fetch(`http://193.187.132.170:5000/api/teams/byCoach/${userData._id}`);
 
@@ -325,7 +332,7 @@ export default function SetPersonalAccountScreen() {
               {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
               <View style={styles.loginButton}>
                 <Text style={styles.loginText}>
-                  {loading ? 'CREATING' : 'CREATE'} ACCOUNT
+                  NEXT
                 </Text>
                 {loading && (
                   <ActivityIndicator
@@ -339,12 +346,12 @@ export default function SetPersonalAccountScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.switchLinkContainer}>
+          {/* <View style={styles.switchLinkContainer}>
             <Text style={{ color: 'black' }}>Already have an account?</Text>
             <TouchableOpacity onPress={() => router.replace('/login')}>
               <Text style={styles.switchLink}>LOGIN HERE</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           <View style={styles.disclaimer}>
             <Text style={styles.hint}>

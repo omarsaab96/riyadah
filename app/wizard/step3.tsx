@@ -19,7 +19,7 @@ export default function WizardStep3() {
     const router = useRouter();
     const [keyword, setKeyword] = useState('');
     const { formData, updateFormData } = useRegistration();
-    const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : []);
+    const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : (formData.type === "Athlete" && formData.role === "Coach") && Array.isArray(formData.sport) ? formData.sport : []);
     const [error, setError] = useState<string | null>(null);
     const [independent, setIndependent] = useState<boolean>(formData.organization.independent ? true : false);
     const [orgName, setOrgName] = useState<string | null>(formData.organization.name || null);
@@ -47,6 +47,10 @@ export default function WizardStep3() {
             }
         };
         checkAuth();
+
+        if (formData.sport) {
+            setSelected(formData.sport)
+        }
     }, []);
 
     const handleNext = () => {
@@ -135,7 +139,7 @@ export default function WizardStep3() {
                     visible: sport.label.toLowerCase().includes(lowerKeyword)
                 }))
             );
-            
+
             setSearching(false);
         }, 500);
 
@@ -326,8 +330,8 @@ const styles = StyleSheet.create({
         marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         height: 40,
         position: 'absolute',
         top: 40,
@@ -352,7 +356,7 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
@@ -370,7 +374,7 @@ const styles = StyleSheet.create({
         height: 48,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius:15
+        borderRadius: 15
     },
     loginText: {
         fontSize: 18,
@@ -514,9 +518,9 @@ const styles = StyleSheet.create({
         top: 15,
         right: 10,
     },
-     paragraph: {
+    paragraph: {
         fontSize: 14,
         fontFamily: 'Acumin',
-        color:'black'
+        color: 'black'
     },
 });

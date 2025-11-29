@@ -51,7 +51,6 @@ export default function WizardStep4() {
                         visible: true
                     }));
                     setFeaturedClubs(formatted);
-
                 } else {
                     console.error('Failed to fetch clubs');
                 }
@@ -66,7 +65,6 @@ export default function WizardStep4() {
         fetchClubs();
         checkAuth();
     }, []);
-
 
     const toggleCheckbox = () => {
         setIndependent(prev => !prev);

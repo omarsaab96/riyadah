@@ -13,7 +13,7 @@ interface RegistrationData {
   agreed: boolean | null;
   bio: string | null;
   children: [] | null;
-  club: string | null;
+  clubs: [] | null;
   contactInfo: {
     phone: string | null;
     email: string | null;
@@ -61,7 +61,7 @@ interface RegistrationData {
     by: string | null;
     date: Date | null;
   };
-  sport: string | null;
+  sport: [] | null;
   position: string | null;
   stats: any;
   type: string | null;
@@ -100,7 +100,7 @@ export const RegistrationProvider = ({ children }: Props) => {
     agreed: false,
     bio: null,
     children: null,
-    club: null,
+    clubs: [],
     contactInfo: {
       phone: null,
       email: null,
@@ -154,7 +154,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       by:null,
       date:null
     },
-    sport: null,
+    sport: [],
     position:null,
     stats: null,
     type: null,
@@ -182,7 +182,7 @@ export const RegistrationProvider = ({ children }: Props) => {
       agreed: false,
       bio: null,
       children: null,
-      club: null,
+      clubs: [],
       contactInfo: {
         phone: null,
         email: null,
@@ -236,7 +236,7 @@ export const RegistrationProvider = ({ children }: Props) => {
         by:null,
         date:null
       },
-      sport: null,
+      sport: [],
       position:null,
       stats: null,
       type: null,
