@@ -31,6 +31,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 connectDB();
 
+app.get('/', (req, res) =>
+    res.send(`🚀 Server running on http://localhost:${process.env.PORT || 5000}`)
+);
+app.get("/api", (req, res) => {
+    res.send("OK");
+});
 app.use('/api/users', userRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/schedules', schedulesRoutes);
