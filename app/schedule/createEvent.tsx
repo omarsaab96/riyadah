@@ -182,7 +182,7 @@ const CreateEventScreen = () => {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -209,10 +209,10 @@ const CreateEventScreen = () => {
 
                 let url = '';
                 if (user && user.type == "Club") {
-                    url = "http://193.187.132.170:5000/api/teams/club/" + user._id;
+                    url = "https://server.riyadah.app/api/teams/club/" + user._id;
                 }
                 if (user && user.type == "Athlete" && user.role == "Coach") {
-                    url = "http://193.187.132.170:5000/api/teams/byCoach/" + user._id;
+                    url = "https://server.riyadah.app/api/teams/byCoach/" + user._id;
                 }
 
                 const response = await fetch(url, {
@@ -237,7 +237,7 @@ const CreateEventScreen = () => {
         const fetchInventory = async () => {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch('http://193.187.132.170:5000/api/inventory/byClub/' + user._id, {
+                const response = await fetch('https://server.riyadah.app/api/inventory/byClub/' + user._id, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -370,7 +370,7 @@ const CreateEventScreen = () => {
 
             // console.log(requestBody)
 
-            const response = await fetch('http://193.187.132.170:5000/api/schedules', {
+            const response = await fetch('https://server.riyadah.app/api/schedules', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

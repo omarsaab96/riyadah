@@ -48,7 +48,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                 const decodedToken = jwtDecode(token);
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -95,7 +95,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
         try {
             const token = await SecureStore.getItemAsync('userToken');
 
-            const response = await fetch('http://193.187.132.170:5000/api/inventory/', {
+            const response = await fetch('https://server.riyadah.app/api/inventory/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

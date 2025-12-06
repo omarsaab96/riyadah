@@ -154,7 +154,7 @@ export default function Profile() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -164,7 +164,7 @@ export default function Profile() {
                     setUserType(user.type)
 
                     if (user.role && user.role == "Coach") {
-                        const coachteams = await fetch(`http://193.187.132.170:5000/api/teams/byCoach/${user._id}`);
+                        const coachteams = await fetch(`https://server.riyadah.app/api/teams/byCoach/${user._id}`);
 
                         if (coachteams.ok) {
                             const coachdata = await coachteams.json();
@@ -195,7 +195,7 @@ export default function Profile() {
     const getAdminInfo = async () => {
         if (user.type == "Club") {
             try {
-                const res = await fetch(`http://193.187.132.170:5000/api/users/findAdmin?email=${user.admin.email}`, {
+                const res = await fetch(`https://server.riyadah.app/api/users/findAdmin?email=${user.admin.email}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -219,7 +219,7 @@ export default function Profile() {
             const token = await SecureStore.getItemAsync('userToken');
 
             try {
-                const res = await fetch(`http://193.187.132.170:5000/api/teams/club/${userId}`, {
+                const res = await fetch(`https://server.riyadah.app/api/teams/club/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -243,7 +243,7 @@ export default function Profile() {
             const token = await SecureStore.getItemAsync('userToken');
 
             try {
-                const res = await fetch(`http://193.187.132.170:5000/api/teams/byCoach/${userId}`, {
+                const res = await fetch(`https://server.riyadah.app/api/teams/byCoach/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -267,7 +267,7 @@ export default function Profile() {
     const getSchedule = async () => {
         if (user.type == "Athlete" && user.role != "Coach") {
             try {
-                const res = await fetch(`http://193.187.132.170:5000/api/schedules/user/${userId}`, {
+                const res = await fetch(`https://server.riyadah.app/api/schedules/user/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
@@ -291,7 +291,7 @@ export default function Profile() {
 
         if (user.type == "Club") {
             try {
-                const res = await fetch(`http://193.187.132.170:5000/api/schedules/club/${userId}`, {
+                const res = await fetch(`https://server.riyadah.app/api/schedules/club/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
@@ -316,7 +316,7 @@ export default function Profile() {
         if (user.type == "Athlete" && user.role == "Coach") {
 
             try {
-                const res = await fetch(`http://193.187.132.170:5000/api/schedules/user/${userId}`, {
+                const res = await fetch(`https://server.riyadah.app/api/schedules/user/${userId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
@@ -343,7 +343,7 @@ export default function Profile() {
         if (user.type == "Club") {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`http://193.187.132.170:5000/api/staff/byClub/${userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/staff/byClub/${userId}`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -373,7 +373,7 @@ export default function Profile() {
             try {
                 setInventoryLoading(true);
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`http://193.187.132.170:5000/api/inventory/byClub/${user._id}`, {
+                const response = await fetch(`https://server.riyadah.app/api/inventory/byClub/${user._id}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -401,7 +401,7 @@ export default function Profile() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             // console.log(userId)
-            const res = await fetch(`http://193.187.132.170:5000/api/financials/user`, {
+            const res = await fetch(`https://server.riyadah.app/api/financials/user`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -420,7 +420,7 @@ export default function Profile() {
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`http://193.187.132.170:5000/api/wallet/`, {
+            const res = await fetch(`https://server.riyadah.app/api/wallet/`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -444,7 +444,7 @@ export default function Profile() {
         // if (user?.type === "Association") {
         //     try {
         //         const token = await SecureStore.getItemAsync('userToken');
-        //         const res = await fetch(`http://193.187.132.170:5000/api/users/clubs/byAssociation/${userId}`, {
+        //         const res = await fetch(`https://server.riyadah.app/api/users/clubs/byAssociation/${userId}`, {
         //             headers: { Authorization: `Bearer ${token}` }
         //         });
 
@@ -471,7 +471,7 @@ export default function Profile() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
 
-            const response = await fetch(`http://193.187.132.170:5000/api/timesheet/${user._id}`, {
+            const response = await fetch(`https://server.riyadah.app/api/timesheet/${user._id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -504,7 +504,7 @@ export default function Profile() {
 
         try {
             setError("");
-            const testResponse = await fetch(`http://193.187.132.170:5000/api/test/user/${userId}`);
+            const testResponse = await fetch(`https://server.riyadah.app/api/test/user/${userId}`);
             if (testResponse.ok) {
                 const testData = await testResponse.json();
                 setSelectedUserTest(testData.test);
@@ -773,7 +773,7 @@ export default function Profile() {
     const searchClubs = async (name: string) => {
         try {
             setSearching(true);
-            const res = await fetch(`http://193.187.132.170:5000/api/users/search?keyword=${name}&type=Club`);
+            const res = await fetch(`https://server.riyadah.app/api/users/search?keyword=${name}&type=Club`);
 
             if (res.ok) {
                 const data = await res.json();
@@ -807,7 +807,7 @@ export default function Profile() {
                 return;
             }
 
-            const res = await fetch(`http://193.187.132.170:5000/api/users/association/${user._id}/add-club`, {
+            const res = await fetch(`https://server.riyadah.app/api/users/association/${user._id}/add-club`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -843,7 +843,7 @@ export default function Profile() {
                 throw new Error('Authentication token missing');
             }
 
-            const res = await fetch(`http://193.187.132.170:5000/api/users/association/${user._id}/remove-clubs`, {
+            const res = await fetch(`https://server.riyadah.app/api/users/association/${user._id}/remove-clubs`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -921,7 +921,7 @@ export default function Profile() {
                 throw new Error('Authentication token missing');
             }
 
-            const res = await fetch(`http://193.187.132.170:5000/api/teams/${teamid}`, {
+            const res = await fetch(`https://server.riyadah.app/api/teams/${teamid}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1026,7 +1026,7 @@ export default function Profile() {
     const handleTopUp = async () => {
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`http://193.187.132.170:5000/api/wallet/`, {
+            const res = await fetch(`https://server.riyadah.app/api/wallet/`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1070,7 +1070,7 @@ export default function Profile() {
             const longitude = coords.longitude;
 
             // 3) Send to BACKEND
-            const response = await fetch(`http://193.187.132.170:5000/api/timesheet/checkin`, {
+            const response = await fetch(`https://server.riyadah.app/api/timesheet/checkin`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1115,7 +1115,7 @@ export default function Profile() {
             const longitude = coords.longitude;
 
             // 3) Send to BACKEND
-            const response = await fetch(`http://193.187.132.170:5000/api/timesheet/checkout`, {
+            const response = await fetch(`https://server.riyadah.app/api/timesheet/checkout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

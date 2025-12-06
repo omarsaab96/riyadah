@@ -87,7 +87,7 @@ export default function skillsTestingScreen() {
         }
 
         try {
-            const response = await fetch(`http://193.187.132.170:5000/api/search?${params}`, {
+            const response = await fetch(`https://server.riyadah.app/api/search?${params}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -166,7 +166,7 @@ export default function skillsTestingScreen() {
             const decodedToken = jwtDecode(token);
             setUserId(decodedToken.userId);
 
-            const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+            const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -186,7 +186,7 @@ export default function skillsTestingScreen() {
         setLoadingSelectedUser(true)
         setSelectedAccount(accountId);
         try {
-            const response = await fetch(`http://193.187.132.170:5000/api/users/${accountId}`);
+            const response = await fetch(`https://server.riyadah.app/api/users/${accountId}`);
 
             if (response.ok) {
                 const userData = await response.json();
@@ -197,7 +197,7 @@ export default function skillsTestingScreen() {
                 } else {
                     setError("");
 
-                    const testResponse = await fetch(`http://193.187.132.170:5000/api/test/user/${userData._id}`);
+                    const testResponse = await fetch(`https://server.riyadah.app/api/test/user/${userData._id}`);
 
                     if (testResponse.ok) { // ✅ fixed
                         const testData = await testResponse.json();
@@ -271,7 +271,7 @@ export default function skillsTestingScreen() {
 
             console.log("Submitting test data:", test);
 
-            const response = await fetch(`http://193.187.132.170:5000/api/test/add-result/${selectedUser._id}`, {
+            const response = await fetch(`https://server.riyadah.app/api/test/add-result/${selectedUser._id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 // keep your payload style

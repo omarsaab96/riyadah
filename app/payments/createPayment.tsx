@@ -56,7 +56,7 @@ export default function AddPayment() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -79,7 +79,7 @@ export default function AddPayment() {
         // const fetchAthletes = async () => {
         //     try {
         //         const token = await SecureStore.getItemAsync('userToken');
-        //         const response = await fetch(`http://193.187.132.170:5000/api/users/byclub/${userId}`, {
+        //         const response = await fetch(`https://server.riyadah.app/api/users/byclub/${userId}`, {
         //             method: 'GET',
         //             headers: {
         //                 'Content-Type': 'application/json'
@@ -126,7 +126,7 @@ export default function AddPayment() {
         try {
             setSearching(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const url = `http://193.187.132.170:5000/api/users/search?keyword=${encodeURIComponent(text)}`;
+            const url = `https://server.riyadah.app/api/users/search?keyword=${encodeURIComponent(text)}`;
             console.log('Search URL:', url);
 
             const response = await fetch(url, {
@@ -194,7 +194,7 @@ export default function AddPayment() {
                 return;
             }
 
-            const response = await fetch('http://193.187.132.170:5000/api/financials', {
+            const response = await fetch('https://server.riyadah.app/api/financials', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

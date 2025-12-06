@@ -10,18 +10,18 @@ import { useRegistration } from '../context/registration';
 
 
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  KeyboardAvoidingView,
-  Linking,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    KeyboardAvoidingView,
+    Linking,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -55,7 +55,7 @@ export default function Register() {
 
   const checkAvailability = async (email: string, phone: string) => {
     try {
-      const response = await fetch('http://193.187.132.170:5000/api/users/check', {
+      const response = await fetch('https://server.riyadah.app/api/users/check', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

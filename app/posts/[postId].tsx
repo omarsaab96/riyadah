@@ -7,21 +7,21 @@ import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Dimensions,
-  FlatList,
-  Image,
-  Keyboard,
-  Modal,
-  Platform,
-  RefreshControl,
-  SafeAreaView,
-  Share,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    Image,
+    Keyboard,
+    Modal,
+    Platform,
+    RefreshControl,
+    SafeAreaView,
+    Share,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -555,7 +555,7 @@ export default function PostScreen() {
       if (!token) return;
 
       const decodedToken = jwtDecode(token);
-      const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+      const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -573,7 +573,7 @@ export default function PostScreen() {
     setLoading(true);
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const response = await fetch(`http://193.187.132.170:5000/api/posts/post/${postId}`, {
+      const response = await fetch(`https://server.riyadah.app/api/posts/post/${postId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -609,7 +609,7 @@ export default function PostScreen() {
 
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const res = await fetch(`http://193.187.132.170:5000/api/posts/like/${postId}`, {
+      const res = await fetch(`https://server.riyadah.app/api/posts/like/${postId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -635,7 +635,7 @@ export default function PostScreen() {
 
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const res = await fetch(`http://193.187.132.170:5000/api/posts/comments/${postId}`, {
+      const res = await fetch(`https://server.riyadah.app/api/posts/comments/${postId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -656,7 +656,7 @@ export default function PostScreen() {
 
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const res = await fetch(`http://193.187.132.170:5000/api/posts/comments/${postId}`, {
+      const res = await fetch(`https://server.riyadah.app/api/posts/comments/${postId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -699,7 +699,7 @@ export default function PostScreen() {
   const handleConfirmDeletePost = async () => {
     try {
       const token = await SecureStore.getItemAsync('userToken');
-      const res = await fetch(`http://193.187.132.170:5000/api/posts/delete/${postId}`, {
+      const res = await fetch(`https://server.riyadah.app/api/posts/delete/${postId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

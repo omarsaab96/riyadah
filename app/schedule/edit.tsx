@@ -179,7 +179,7 @@ export default function EditEventScreen() {
         const token = await SecureStore.getItemAsync("userToken");
         if (!id || !token) return;
 
-        const res = await fetch(`http://193.187.132.170:5000/api/schedules/${id}`, {
+        const res = await fetch(`https://server.riyadah.app/api/schedules/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -241,7 +241,7 @@ export default function EditEventScreen() {
         console.log("DECODED: ", decodedToken)
         setUserId(decodedToken.userId);
 
-        const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+        const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -264,7 +264,7 @@ export default function EditEventScreen() {
     const fetchTeams = async () => {
       try {
         const token = await SecureStore.getItemAsync('userToken');
-        const response = await fetch('http://193.187.132.170:5000/api/teams', {
+        const response = await fetch('https://server.riyadah.app/api/teams', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -286,7 +286,7 @@ export default function EditEventScreen() {
     const fetchInventory = async () => {
       try {
         const token = await SecureStore.getItemAsync('userToken');
-        const response = await fetch(`http://193.187.132.170:5000/api/inventory/byClub/${userId}`, {
+        const response = await fetch(`https://server.riyadah.app/api/inventory/byClub/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -459,7 +459,7 @@ export default function EditEventScreen() {
 
       // console.log(requestBody)
 
-      const response = await fetch(`http://193.187.132.170:5000/api/schedules/${id}`, {
+      const response = await fetch(`https://server.riyadah.app/api/schedules/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ const AttendanceSheet = () => {
 
         const fetchTeamMembers = async () => {
             try {
-                const response = await fetch(`http://193.187.132.170:5000/api/attendance/byEvent/${eventId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/attendance/byEvent/${eventId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -83,7 +83,7 @@ const AttendanceSheet = () => {
         try {
             setSaving(true);
 
-            const response = await fetch('http://193.187.132.170:5000/api/attendance', {
+            const response = await fetch('https://server.riyadah.app/api/attendance', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

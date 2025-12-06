@@ -87,7 +87,7 @@ export default function ChatPage() {
             console.log("DECODED token: ", decodedToken)
             setUserId(decodedToken.userId);
 
-            const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+            const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -111,7 +111,7 @@ export default function ChatPage() {
         const token = await SecureStore.getItemAsync('userToken');
 
         try {
-            const res = await fetch(`http://193.187.132.170:5000/api/chats/${chatId}`, {
+            const res = await fetch(`https://server.riyadah.app/api/chats/${chatId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -129,7 +129,7 @@ export default function ChatPage() {
         }
         finally {
             setLoading(false);
-            await fetch(`http://193.187.132.170:5000/api/chats/open/${chatId}`, {
+            await fetch(`https://server.riyadah.app/api/chats/open/${chatId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -145,7 +145,7 @@ export default function ChatPage() {
         const token = await SecureStore.getItemAsync('userToken');
         if (!token) return;
 
-        const socket = io('http://193.187.132.170:5000', {
+        const socket = io('https://server.riyadah.app', {
             auth: { token },
             query: { chatId },
         });
@@ -188,7 +188,7 @@ export default function ChatPage() {
         setText('')
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`http://193.187.132.170:5000/api/chats/${chatId}/message`, {
+            const res = await fetch(`https://server.riyadah.app/api/chats/${chatId}/message`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -50,7 +50,7 @@ const postSessionSurvey = () => {
                 return;
             }
 
-            const response = await fetch('http://193.187.132.170:5000/api/PostSessionSurvey', {
+            const response = await fetch('https://server.riyadah.app/api/PostSessionSurvey', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

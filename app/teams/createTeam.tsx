@@ -67,7 +67,7 @@ export default function CreateTeam() {
                 console.log("DECODED: ", decodedToken)
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -154,7 +154,7 @@ export default function CreateTeam() {
             // console.log("sending OBJ = ", requestBody)
 
 
-            const response = await fetch('http://193.187.132.170:5000/api/teams', {
+            const response = await fetch('https://server.riyadah.app/api/teams', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -192,7 +192,7 @@ export default function CreateTeam() {
         if (user.type == "Club") {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
-                const response = await fetch(`http://193.187.132.170:5000/api/staff/byClub/${userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/staff/byClub/${userId}`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,

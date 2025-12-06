@@ -54,7 +54,7 @@ export default function RootLayout() {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
         const decodedToken = jwtDecode(token);
-        const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+        const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

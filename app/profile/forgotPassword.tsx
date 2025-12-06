@@ -119,7 +119,7 @@ export default function ForgotPassword() {
 
         setCheckingEmail(true)
         try {
-            const response = await fetch(`http://193.187.132.170:5000/api/users/check/`, {
+            const response = await fetch(`https://server.riyadah.app/api/users/check/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ export default function ForgotPassword() {
 
     const handleSendEmailOTP = async () => {
 
-        const response = await fetch(`http://193.187.132.170:5000/api/verify/email`, {
+        const response = await fetch(`https://server.riyadah.app/api/verify/email`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ export default function ForgotPassword() {
     const handleVerifyEmailOTP = async () => {
         setVerifyingEmailOTP(true)
 
-        const response = await fetch(`http://193.187.132.170:5000/api/verify/emailOtp`, {
+        const response = await fetch(`https://server.riyadah.app/api/verify/emailOtp`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -223,7 +223,7 @@ export default function ForgotPassword() {
 
         setError(null)
         setSaving(true)
-        const response = await fetch(`http://193.187.132.170:5000/api/users/resetPassword`, {
+        const response = await fetch(`https://server.riyadah.app/api/users/resetPassword`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

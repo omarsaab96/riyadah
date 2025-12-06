@@ -4,15 +4,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 const { width } = Dimensions.get('window');
@@ -32,7 +32,7 @@ export default function TimeSheetScreen() {
       try {
         const token = await SecureStore.getItemAsync("userToken");
         const response = await fetch(
-          `http://193.187.132.170:5000/api/staff/${id}`,
+          `https://server.riyadah.app/api/staff/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -49,7 +49,7 @@ export default function TimeSheetScreen() {
 
         setStaff(data.data);
 
-        const timesheetResponse = await fetch(`http://193.187.132.170:5000/api/timesheet/club/${id}`, {
+        const timesheetResponse = await fetch(`https://server.riyadah.app/api/timesheet/club/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

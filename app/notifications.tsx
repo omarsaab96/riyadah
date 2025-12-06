@@ -30,7 +30,7 @@ export default function Notifications() {
                 const decodedToken = jwtDecode(token);
                 setUserId(decodedToken.userId);
 
-                const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+                const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -51,7 +51,7 @@ export default function Notifications() {
             if (!user) return;
             const token = await SecureStore.getItemAsync('userToken');
             if (token) {
-                const response = await fetch(`http://193.187.132.170:5000/api/notifications/${user._id}`, {
+                const response = await fetch(`https://server.riyadah.app/api/notifications/${user._id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -77,7 +77,7 @@ export default function Notifications() {
                 return;
             }
 
-            const response = await fetch(`http://193.187.132.170:5000/api/notifications/mark-read/${notificationID}`, {
+            const response = await fetch(`https://server.riyadah.app/api/notifications/mark-read/${notificationID}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ export default function Notifications() {
             return;
         }
         try {
-            const res = await fetch(`http://193.187.132.170:5000/api/notifications/mark-all-read`, {
+            const res = await fetch(`https://server.riyadah.app/api/notifications/mark-all-read`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ export default function Notifications() {
                 return;
             }
 
-            const response = await fetch(`http://193.187.132.170:5000/api/notifications/delete/${notificationID}`, {
+            const response = await fetch(`https://server.riyadah.app/api/notifications/delete/${notificationID}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

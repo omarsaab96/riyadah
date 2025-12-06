@@ -189,7 +189,7 @@ export default function Landing() {
             const token = await SecureStore.getItemAsync('userToken');
             console.log("getting posts")
             const res = await fetch(
-                `http://193.187.132.170:5000/api/posts?page=${currentPage}&limit=${pageLimit}`,
+                `https://server.riyadah.app/api/posts?page=${currentPage}&limit=${pageLimit}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -281,7 +281,7 @@ export default function Landing() {
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`http://193.187.132.170:5000/api/posts/like/${postId}`, {
+            const res = await fetch(`https://server.riyadah.app/api/posts/like/${postId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -328,7 +328,7 @@ export default function Landing() {
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`http://193.187.132.170:5000/api/posts/comments/${postId}`, {
+            const res = await fetch(`https://server.riyadah.app/api/posts/comments/${postId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -355,7 +355,7 @@ export default function Landing() {
 
         try {
             const token = await SecureStore.getItemAsync('userToken');
-            const res = await fetch(`http://193.187.132.170:5000/api/posts/comments/${currentPostId}`, {
+            const res = await fetch(`https://server.riyadah.app/api/posts/comments/${currentPostId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -761,7 +761,7 @@ export default function Landing() {
             console.log("DECODED token: ", decodedToken)
             setUserId(decodedToken.userId);
 
-            const response = await fetch(`http://193.187.132.170:5000/api/users/${decodedToken.userId}`, {
+            const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -992,7 +992,7 @@ export default function Landing() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
 
-            const res = await fetch(`http://193.187.132.170:5000/api/posts/delete/${postid}`, {
+            const res = await fetch(`https://server.riyadah.app/api/posts/delete/${postid}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1106,7 +1106,7 @@ export default function Landing() {
 
             // Send the post to your backend
             const token = await SecureStore.getItemAsync('userToken');
-            const response = await fetch('http://193.187.132.170:5000/api/posts', {
+            const response = await fetch('https://server.riyadah.app/api/posts', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
