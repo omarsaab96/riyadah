@@ -15,8 +15,6 @@ const postRoutes = require('./routes/postRoutes')
 const searchRoutes = require('./routes/searchRoutes')
 const chatRouter = require('./routes/chatRoutes');
 const verificationRoutes = require("./routes/verificationRoutes");
-const postSessionSurveyRoutes = require("./routes/postSessionSurveyRoutes");
-const monthlySurveyRoutes = require("./routes/monthlySurveyRoutes");
 const surveyRoutes = require("./routes/surveyRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const walletRoutes = require("./routes/walletRoutes");
@@ -47,8 +45,6 @@ app.use('/api/financials', paymentRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/chats', chatRouter);
 app.use('/api/verify', verificationRoutes);
-app.use('/api/postSessionSurvey', postSessionSurveyRoutes);
-app.use('/api/monthlySurvey', monthlySurveyRoutes);
 app.use('/api/surveys', surveyRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/timesheet', timesheetRoutes);

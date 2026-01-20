@@ -107,6 +107,28 @@ router.get('/', advancedResults(Team, 'club coaches members'), async (req, res) 
   res.status(200).json(res.advancedResults);
 });
 
+// @desc    Search teams by name
+// @route   GET /api/teams/search
+// @access  Private
+router.get('/search', authenticateToken, async (req, res) => {
+  const { keyword } = req.query;
+  if (!keyword) {
+    return res.status(400).json({ error: 'Keyword is required' });
+  }
+
+  try {
+    const regex = new RegExp(keyword, 'i');
+    const teams = await Team.find({ name: { $regex: regex } })
+      .select('_id name club')
+      .limit(10);
+
+    res.json({ teams });
+  } catch (error) {
+    console.error('Error searching teams:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // @desc    Get single team
 // @route   GET /api/teams/:id
 // @access  Public

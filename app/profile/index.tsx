@@ -60,17 +60,20 @@ export default function Profile() {
     const [clubsLoading, setClubsLoading] = useState(true);
     const [timesheetLoading, setTimesheetLoading] = useState(true);
     const [skillsLoading, setSkillsLoading] = useState(true);
+    const [surveysLoading, setSurveysLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Profile');
     const [activePaymentTab, setActivePaymentTab] = useState('pending');
     const [adminUser, setAdminUser] = useState(null);
     const [userTimeSheet, setUserTimeSheet] = useState(null);
     const [error, setError] = useState('');
+    const [surveysError, setSurveysError] = useState('');
+    const [coachSurveys, setCoachSurveys] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
     const tabsAthlete = ['Profile', 'Schedule', 'Financials', 'Performance'];
     const tabsAssociations = ['Profile', 'Clubs'];
-    const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Financials', 'Timesheet'];
+    const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Surveys', 'Financials', 'Timesheet'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -494,6 +497,36 @@ export default function Profile() {
         }
     }
 
+    const getCoachSurveys = async () => {
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setSurveysError('User not authenticated');
+                setSurveysLoading(false);
+                return;
+            }
+
+            const response = await fetch('https://server.riyadah.app/api/surveys/visible', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                setSurveysError(data.error || 'Failed to load surveys');
+                setSurveysLoading(false);
+                return;
+            }
+
+            const data = await response.json();
+            setCoachSurveys(data.surveys || []);
+            setSurveysError('');
+        } catch (err) {
+            setSurveysError('Failed to load surveys');
+        } finally {
+            setSurveysLoading(false);
+        }
+    }
+
     const getPerformance = async () => {
         if (!user) return;
 
@@ -723,6 +756,11 @@ export default function Profile() {
         if (label == "Timesheet") {
             setTimesheetLoading(true);
             getTimesheet();
+        }
+
+        if (label == "Surveys") {
+            setSurveysLoading(true);
+            getCoachSurveys();
         }
 
         if (label == "Performance") {
@@ -1378,13 +1416,6 @@ export default function Profile() {
             )}
 
             {false && <View>
-                <TouchableOpacity onPress={() => { router.push("/postSessionSurvey") }}>
-                    <Text>post session</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => { router.push("/monthlySurvey") }}>
-                    <Text>monthly</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity
                     onPress={() => router.push({
                         pathname: '/attendanceSheet',
@@ -2611,6 +2642,62 @@ export default function Profile() {
                 </Animated.ScrollView>
             }
 
+            {/* surveysTab */}
+            {
+                !loading && user && user.role && user.role == "Coach" && activeTab == "Surveys" && <Animated.ScrollView
+                    onScroll={Animated.event(
+                        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                        { useNativeDriver: false }
+                    )}
+                    scrollEventThrottle={16}
+                >
+                    <View style={styles.contentContainer}>
+                        {surveysError != '' && <View style={styles.error}>
+                            <View style={styles.errorIcon}></View>
+                            <Text style={styles.errorText}>{surveysError}</Text>
+                        </View>}
+
+                        {surveysLoading && (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                                <ActivityIndicator
+                                    size="small"
+                                    color="#FF4000"
+                                    style={{ transform: [{ scale: 1.25 }] }}
+                                />
+                            </View>
+                        )}
+
+                        {!surveysLoading && coachSurveys.length === 0 && (
+                            <View style={styles.emptyState}>
+                                <Text style={styles.emptyStateTitle}>No Surveys</Text>
+                                <Text style={styles.emptyStateText}>No surveys are assigned to your teams yet.</Text>
+                            </View>
+                        )}
+
+                        {coachSurveys.length > 0 && (
+                            <View>
+                                {coachSurveys.map((survey) => (
+                                    <TouchableOpacity
+                                        key={survey._id}
+                                        style={styles.surveyListItem}
+                                        onPress={() => router.push({
+                                            pathname: '/coach/surveyDetails',
+                                            params: { id: survey._id },
+                                        })}
+                                    >
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.surveyListTitle}>{survey.title}</Text>
+                                            <Text style={styles.surveyListMeta}>{survey.questions?.length || 0} questions</Text>
+                                        </View>
+                                        <Feather name="arrow-right" size={18} color="#FF4400" />
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                    </View>
+                </Animated.ScrollView>
+            }
+
             {/* staffTab */}
             {
                 !loading && user && activeTab == "Staff" && <Animated.ScrollView
@@ -3474,6 +3561,26 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginVertical: 4,
+    },
+    surveyListItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 10,
+        marginBottom: 10,
+        justifyContent: 'space-between'
+    },
+    surveyListTitle: {
+        fontFamily: 'Qatar',
+        fontSize: 16,
+        color: '#111111'
+    },
+    surveyListMeta: {
+        fontFamily: 'Acumin',
+        fontSize: 12,
+        color: '#666'
     },
     button: {
         flex: 1,

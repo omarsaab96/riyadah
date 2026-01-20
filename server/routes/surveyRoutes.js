@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Survey = require('../models/survey');
 const SurveyResponse = require('../models/surveyResponse');
+const Team = require('../models/Team');
+const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
@@ -40,6 +42,71 @@ const normalizeQuestions = (questions = []) =>
     } : undefined,
   }));
 
+const normalizeRepeating = (repeating = {}) => {
+  const enabled = Boolean(repeating.enabled);
+  const cadence = enabled ? String(repeating.cadence ?? '') : '';
+  return {
+    enabled,
+    cadence: enabled ? (cadence === 'monthly' || cadence === 'post-training' ? cadence : null) : null,
+  };
+};
+
+const normalizeRestriction = (restrictedTo = {}) => {
+  const scope = String(restrictedTo.scope ?? 'none');
+  const refId = restrictedTo.refId ? restrictedTo.refId : null;
+  if (!['none', 'club', 'coach', 'team'].includes(scope)) {
+    return { scope: 'none', refId: null };
+  }
+  if (scope === 'none') {
+    return { scope: 'none', refId: null };
+  }
+  return { scope, refId };
+};
+
+const getUserTeams = async (userId) => {
+  return Team.find({
+    $or: [{ members: userId }, { coaches: userId }]
+  }).select('_id club members coaches');
+};
+
+const canUserAccessSurvey = async (userId, survey) => {
+  const restriction = survey.restrictedTo || { scope: 'none', refId: null };
+  if (!restriction.scope || restriction.scope === 'none') {
+    return true;
+  }
+  if (!restriction.refId) {
+    return false;
+  }
+
+  if (restriction.scope === 'coach') {
+    return String(userId) === String(restriction.refId);
+  }
+
+  const teams = await getUserTeams(userId);
+
+  if (restriction.scope === 'team') {
+    return teams.some(team => String(team._id) === String(restriction.refId));
+  }
+
+  if (restriction.scope === 'club') {
+    if (String(userId) === String(restriction.refId)) {
+      return true;
+    }
+    return teams.some(team => String(team.club) === String(restriction.refId));
+  }
+
+  return false;
+};
+
+const getCoachTeamMemberIds = async (coachId) => {
+  const teams = await Team.find({ coaches: coachId }).select('members');
+  const memberIds = new Set();
+  teams.forEach(team => {
+    (team.members || []).forEach(memberId => memberIds.add(String(memberId)));
+  });
+  return Array.from(memberIds);
+};
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const surveys = await Survey.find({}).sort({ updatedAt: -1 });
@@ -52,19 +119,57 @@ router.get('/', authenticateToken, async (req, res) => {
 
 router.get('/active', authenticateToken, async (req, res) => {
   try {
-    let survey = await Survey.findOne({ isActive: true }).sort({ updatedAt: -1 });
-    if (!survey) {
-      survey = await Survey.findOne({}).sort({ updatedAt: -1 });
+    const activeSurveys = await Survey.find({ isActive: true }).sort({ updatedAt: -1 });
+    let chosen = null;
+    for (const survey of activeSurveys) {
+      const canAccess = await canUserAccessSurvey(req.user.userId, survey);
+      if (canAccess) {
+        chosen = survey;
+        break;
+      }
     }
-    res.json({ survey: survey || null });
+
+    if (!chosen) {
+      const allSurveys = await Survey.find({}).sort({ updatedAt: -1 });
+      for (const survey of allSurveys) {
+        const canAccess = await canUserAccessSurvey(req.user.userId, survey);
+        if (canAccess) {
+          chosen = survey;
+          break;
+        }
+      }
+    }
+
+    res.json({ survey: chosen || null });
   } catch (error) {
     console.error('Error fetching active survey:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+router.get('/visible', authenticateToken, async (req, res) => {
+  try {
+    const surveys = await Survey.find({}).sort({ updatedAt: -1 });
+    const visible = [];
+    for (const survey of surveys) {
+      const canAccess = await canUserAccessSurvey(req.user.userId, survey);
+      if (canAccess) visible.push(survey);
+    }
+    res.json({ surveys: visible });
+  } catch (error) {
+    console.error('Error fetching visible surveys:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/:id/responses', authenticateToken, async (req, res) => {
   try {
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) return res.status(404).json({ error: 'Survey not found' });
+
+    const canAccess = await canUserAccessSurvey(req.user.userId, survey);
+    if (!canAccess) return res.status(403).json({ error: 'Not authorized to view this survey' });
+
     const { from, to, userId, limit = 50, skip = 0 } = req.query;
     const filter = { survey: req.params.id };
     if (userId) filter.user = userId;
@@ -88,6 +193,20 @@ router.get('/:id/responses', authenticateToken, async (req, res) => {
       }
     }
 
+    const requestor = await User.findById(req.user.userId).select('role');
+    if (requestor?.role === 'Coach') {
+      const memberIds = await getCoachTeamMemberIds(req.user.userId);
+      if (filter.user) {
+        if (filter.user.$in) {
+          filter.user.$in = filter.user.$in.filter(id => memberIds.includes(String(id)));
+        } else if (!memberIds.includes(String(filter.user))) {
+          return res.json({ responses: [], count: 0 });
+        }
+      } else {
+        filter.user = { $in: memberIds };
+      }
+    }
+
     const responses = await SurveyResponse.find(filter)
       .populate('user', 'name email')
       .sort({ createdAt: -1 })
@@ -107,6 +226,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const survey = await Survey.findById(req.params.id);
     if (!survey) return res.status(404).json({ error: 'Survey not found' });
+    const canAccess = await canUserAccessSurvey(req.user.userId, survey);
+    if (!canAccess) return res.status(403).json({ error: 'Not authorized to view this survey' });
     res.json({ survey });
   } catch (error) {
     console.error('Error fetching survey:', error);
@@ -116,7 +237,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, isActive, questions } = req.body;
+    const { title, isActive, questions, repeating, restrictedTo } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
@@ -129,6 +250,8 @@ router.post('/', authenticateToken, async (req, res) => {
     const survey = await Survey.create({
       title: String(title).trim(),
       isActive: Boolean(isActive),
+      repeating: normalizeRepeating(repeating),
+      restrictedTo: normalizeRestriction(restrictedTo),
       questions: normalizeQuestions(questions),
     });
 
@@ -141,7 +264,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { title, isActive, questions } = req.body;
+    const { title, isActive, questions, repeating, restrictedTo } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
@@ -156,6 +279,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
       {
         title: String(title).trim(),
         isActive: Boolean(isActive),
+        repeating: normalizeRepeating(repeating),
+        restrictedTo: normalizeRestriction(restrictedTo),
         questions: normalizeQuestions(questions),
       },
       { new: true, runValidators: true }
@@ -185,6 +310,8 @@ router.post('/:id/responses', authenticateToken, async (req, res) => {
   try {
     const survey = await Survey.findById(req.params.id);
     if (!survey) return res.status(404).json({ error: 'Survey not found' });
+    const canAccess = await canUserAccessSurvey(req.user.userId, survey);
+    if (!canAccess) return res.status(403).json({ error: 'Not authorized to submit this survey' });
 
     const { answers } = req.body;
     if (!Array.isArray(answers) || answers.length === 0) {

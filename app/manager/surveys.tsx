@@ -43,6 +43,8 @@ type Survey = {
     _id: string;
     title: string;
     isActive: boolean;
+    repeating?: { enabled: boolean; cadence: 'monthly' | 'post-training' | null };
+    restrictedTo?: { scope: 'none' | 'club' | 'coach' | 'team'; refId: string | null };
     questions: SurveyQuestion[];
 };
 
@@ -79,6 +81,14 @@ export default function ManagerSurveysScreen() {
     const [editingSurveyId, setEditingSurveyId] = useState<string | null>(null);
     const [title, setTitle] = useState('');
     const [isActive, setIsActive] = useState(false);
+    const [isRepeating, setIsRepeating] = useState(false);
+    const [repeatCadence, setRepeatCadence] = useState<'monthly' | 'post-training'>('monthly');
+    const [restrictionScope, setRestrictionScope] = useState<'none' | 'club' | 'coach' | 'team'>('none');
+    const [restrictionRefId, setRestrictionRefId] = useState('');
+    const [restrictionLabel, setRestrictionLabel] = useState('');
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [searching, setSearching] = useState(false);
     const [questions, setQuestions] = useState<QuestionForm[]>([defaultQuestion()]);
 
     const fetchSurveys = async () => {
@@ -119,6 +129,13 @@ export default function ManagerSurveysScreen() {
         setEditingSurveyId(null);
         setTitle('');
         setIsActive(false);
+        setIsRepeating(false);
+        setRepeatCadence('monthly');
+        setRestrictionScope('none');
+        setRestrictionRefId('');
+        setRestrictionLabel('');
+        setSearchKeyword('');
+        setSearchResults([]);
         setQuestions([defaultQuestion()]);
         setError('');
     };
@@ -127,6 +144,13 @@ export default function ManagerSurveysScreen() {
         setEditingSurveyId(survey._id);
         setTitle(survey.title);
         setIsActive(survey.isActive);
+        setIsRepeating(Boolean(survey.repeating?.enabled));
+        setRepeatCadence(survey.repeating?.cadence === 'post-training' ? 'post-training' : 'monthly');
+        setRestrictionScope(survey.restrictedTo?.scope || 'none');
+        setRestrictionRefId(survey.restrictedTo?.refId || '');
+        setRestrictionLabel('');
+        setSearchKeyword('');
+        setSearchResults([]);
         setQuestions(
             (survey.questions || []).map(question => ({
                 _id: question._id,
@@ -212,6 +236,14 @@ export default function ManagerSurveysScreen() {
             setError('Survey title is required.');
             return false;
         }
+        if (isRepeating && repeatCadence !== 'monthly' && repeatCadence !== 'post-training') {
+            setError('Repeating cadence is required.');
+            return false;
+        }
+        if (restrictionScope !== 'none' && !restrictionRefId) {
+            setError('Restriction selection is required.');
+            return false;
+        }
         for (const question of questions) {
             if (!question.text.trim()) {
                 setError('All questions need text.');
@@ -241,6 +273,11 @@ export default function ManagerSurveysScreen() {
             const payload = {
                 title: title.trim(),
                 isActive,
+                repeating: { enabled: isRepeating, cadence: isRepeating ? repeatCadence : null },
+                restrictedTo: {
+                    scope: restrictionScope,
+                    refId: restrictionScope === 'none' ? null : restrictionRefId
+                },
                 questions: buildPayload()
             };
 
@@ -310,6 +347,78 @@ export default function ManagerSurveysScreen() {
         ]);
     };
 
+    const handleRestrictionSearchInput = (text: string) => {
+        setSearchKeyword(text);
+        if (text.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+        searchRestriction(text);
+    };
+
+    const searchRestriction = async (keyword: string) => {
+        if (!keyword.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        setSearching(true);
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setError('User not authenticated');
+                setSearching(false);
+                return;
+            }
+
+            let url = '';
+            if (restrictionScope === 'club') {
+                url = `https://server.riyadah.app/api/users/search?keyword=${encodeURIComponent(keyword)}&type=Club`;
+            } else if (restrictionScope === 'coach') {
+                url = `https://server.riyadah.app/api/users/search?keyword=${encodeURIComponent(keyword)}&role=Coach`;
+            } else if (restrictionScope === 'team') {
+                url = `https://server.riyadah.app/api/teams/search?keyword=${encodeURIComponent(keyword)}`;
+            }
+
+            if (!url) {
+                setSearchResults([]);
+                setSearching(false);
+                return;
+            }
+
+            const response = await fetch(url, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.error || 'Failed to search');
+                setSearchResults([]);
+                setSearching(false);
+                return;
+            }
+
+            const data = await response.json();
+            if (restrictionScope === 'team') {
+                setSearchResults(data.teams || []);
+            } else {
+                setSearchResults(data || []);
+            }
+        } catch (err) {
+            setError('Failed to search');
+            setSearchResults([]);
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleSelectRestriction = (item: any) => {
+        setRestrictionRefId(item._id);
+        setRestrictionLabel(item.name || item.email || item._id);
+        setSearchResults([]);
+        setSearchKeyword('');
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -365,6 +474,91 @@ export default function ManagerSurveysScreen() {
                             </View>
                             <Text style={styles.toggleLabel}>Set as active survey</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.toggleRow} onPress={() => setIsRepeating(prev => !prev)}>
+                            <View style={[styles.toggleBox, isRepeating && styles.toggleBoxActive]}>
+                                {isRepeating && <Feather name="check" size={16} color="#fff" />}
+                            </View>
+                            <Text style={styles.toggleLabel}>Repeating survey</Text>
+                        </TouchableOpacity>
+
+                        {isRepeating && (
+                            <View style={styles.inlineRow}>
+                                {['monthly', 'post-training'].map(item => (
+                                    <TouchableOpacity
+                                        key={item}
+                                        style={[styles.chip, repeatCadence === item && styles.activeChip]}
+                                        onPress={() => setRepeatCadence(item as 'monthly' | 'post-training')}
+                                    >
+                                        <Text style={[styles.chipText, repeatCadence === item && styles.activeChipText]}>{item}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
+                        <Text style={styles.label}>Restriction</Text>
+                        <View style={styles.inlineRow}>
+                            {['none', 'club', 'coach', 'team'].map(item => (
+                                <TouchableOpacity
+                                    key={item}
+                                    style={[styles.chip, restrictionScope === item && styles.activeChip]}
+                                    onPress={() => {
+                                        setRestrictionScope(item as 'none' | 'club' | 'coach' | 'team');
+                                        setRestrictionRefId('');
+                                        setRestrictionLabel('');
+                                        setSearchKeyword('');
+                                        setSearchResults([]);
+                                    }}
+                                >
+                                    <Text style={[styles.chipText, restrictionScope === item && styles.activeChipText]}>{item}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        {restrictionScope !== 'none' && (
+                            <View style={styles.restrictionBox}>
+                                <Text style={styles.hintText}>Search {restrictionScope} (min 3 characters)</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={searchKeyword}
+                                    onChangeText={handleRestrictionSearchInput}
+                                    placeholder={`Search ${restrictionScope}`}
+                                    placeholderTextColor="#888"
+                                />
+                                {searching && <ActivityIndicator size="small" color="#FF4400" />}
+
+                                {restrictionRefId ? (
+                                    <View style={styles.selectedRestriction}>
+                                        <Text style={styles.selectedRestrictionText}>
+                                            Selected: {restrictionLabel || restrictionRefId}
+                                        </Text>
+                                        <TouchableOpacity onPress={() => {
+                                            setRestrictionRefId('');
+                                            setRestrictionLabel('');
+                                        }}>
+                                            <Text style={styles.linkText}>Clear</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : null}
+
+                                {searchResults.length > 0 && (
+                                    <View style={styles.searchResults}>
+                                        {searchResults.map(item => (
+                                            <TouchableOpacity
+                                                key={item._id}
+                                                style={styles.searchResultItem}
+                                                onPress={() => handleSelectRestriction(item)}
+                                            >
+                                                <Text style={styles.searchResultText}>
+                                                    {item.name || item.email || item._id}
+                                                </Text>
+                                                <Text style={styles.searchResultSub}>{item._id}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
+                        )}
 
                         <View style={styles.sectionHeader}>
                             <Text style={styles.sectionTitle}>Questions</Text>
@@ -495,7 +689,11 @@ export default function ManagerSurveysScreen() {
                                 <View style={styles.surveyHeader}>
                                     <View style={{ flex: 1 }}>
                                         <Text style={styles.surveyTitle}>{survey.title}</Text>
-                                        <Text style={styles.surveyMeta}>{survey.questions?.length || 0} questions</Text>
+                                        <Text style={styles.surveyMeta}>
+                                            {survey.questions?.length || 0} questions
+                                            {survey.repeating?.enabled && survey.repeating?.cadence ? ` - ${survey.repeating.cadence}` : ''}
+                                            {survey.restrictedTo?.scope && survey.restrictedTo?.scope !== 'none' ? ` - ${survey.restrictedTo.scope}` : ''}
+                                        </Text>
                                     </View>
                                     {survey.isActive && (
                                         <View style={styles.activeBadge}>
@@ -764,6 +962,42 @@ const styles = StyleSheet.create({
         color: '#666',
         fontSize: 14,
         marginBottom: 20
+    },
+    restrictionBox: {
+        marginBottom: 10
+    },
+    selectedRestriction: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 10
+    },
+    selectedRestrictionText: {
+        fontFamily: 'Acumin',
+        fontSize: 12,
+        color: '#111111'
+    },
+    searchResults: {
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        borderRadius: 10,
+        overflow: 'hidden',
+        marginBottom: 10
+    },
+    searchResultItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderColor: '#e0e0e0'
+    },
+    searchResultText: {
+        fontFamily: 'Acumin',
+        fontSize: 13,
+        color: '#111111'
+    },
+    searchResultSub: {
+        fontFamily: 'Acumin',
+        fontSize: 11,
+        color: '#666'
     },
     error: {
         marginBottom: 15,

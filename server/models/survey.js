@@ -25,6 +25,14 @@ const surveyQuestionSchema = new mongoose.Schema({
 const surveySchema = new mongoose.Schema({
   title: { type: String, required: true },
   isActive: { type: Boolean, default: false },
+  repeating: {
+    enabled: { type: Boolean, default: false },
+    cadence: { type: String, enum: ['monthly', 'post-training'], default: null },
+  },
+  restrictedTo: {
+    scope: { type: String, enum: ['none', 'club', 'coach', 'team'], default: 'none' },
+    refId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  },
   questions: [surveyQuestionSchema],
 }, { timestamps: true });
 
