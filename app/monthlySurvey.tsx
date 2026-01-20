@@ -5,56 +5,123 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 const { width } = Dimensions.get('window');
 
+type SurveyOption = {
+    label: string;
+    value: string;
+};
+
+type SurveyQuestion = {
+    _id: string;
+    text: string;
+    type: 'rating' | 'single' | 'multi' | 'text' | 'long-text';
+    description?: string;
+    required?: boolean;
+    options?: SurveyOption[];
+    scale?: {
+        min?: number;
+        max?: number;
+        step?: number;
+    };
+};
+
+type Survey = {
+    _id: string;
+    title: string;
+    type: string;
+    questions: SurveyQuestion[];
+};
+
 const monthlySurvey = () => {
     const router = useRouter();
-    const [injuries, setInjuries] = useState<String | null>(null);
-    const [injuryDetails, setInjuryDetails] = useState<String | null>(null);
-    const [coachTrainingSatisfaction, setCoachTrainingSatisfaction] = useState(5);
-    const [areaOfImprovement, setAreaOfImprovement] = useState<String | null>(null);
-    const [satisfaction, setSatisfaction] = useState(5);
-    const [performance, setPerformance] = useState<String | null>(null);
-    const [recovery, setRecovery] = useState<String | null>(null);
-    const [sleep, setSleep] = useState<String | null>(null);
-    const [mentally, setMentally] = useState<String | null>(null);
-    const [notes, setNotes] = useState('');
-
-    const [loading, setLoading] = useState(false);
+    const [survey, setSurvey] = useState<Survey | null>(null);
+    const [answers, setAnswers] = useState<Record<string, any>>({});
+    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [timer, setTimer] = useState(5);
     const [error, setError] = useState('');
 
+    const buildInitialAnswers = (questions: SurveyQuestion[]) => {
+        const initial: Record<string, any> = {};
+        questions.forEach(question => {
+            if (question.type === 'rating') {
+                initial[question._id] = question.scale?.min ?? 0;
+            }
+            if (question.type === 'multi') {
+                initial[question._id] = [];
+            }
+        });
+        return initial;
+    };
+
+    const fetchSurvey = async () => {
+        setLoading(true);
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            if (!token) {
+                setError('User not authenticated');
+                setLoading(false);
+                return;
+            }
+
+            const response = await fetch('https://server.riyadah.app/api/surveys/active', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.error || 'Failed to load survey');
+                setLoading(false);
+                return;
+            }
+
+            const data = await response.json();
+            setSurvey(data.survey);
+            setAnswers(buildInitialAnswers(data.survey?.questions || []));
+        } catch (err) {
+            setError('Failed to load survey');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSurvey();
+    }, []);
+
+    const isAnswerFilled = (question: SurveyQuestion, value: any) => {
+        if (!question.required) return true;
+        if (question.type === 'rating') return value !== undefined && value !== null;
+        if (question.type === 'multi') return Array.isArray(value) && value.length > 0;
+        if (question.type === 'text' || question.type === 'long-text') {
+            return typeof value === 'string' && value.trim().length > 0;
+        }
+        return value !== undefined && value !== null && value !== '';
+    };
 
     const handleSubmit = async () => {
-        const feedbackData = {
-            injuries,
-            injuryDetails,
-            coachTrainingSatisfaction,
-            areaOfImprovement,
-            satisfaction,
-            performance,
-            recovery,
-            sleep,
-            mentally,
-            notes,
-        };
-
-        console.log(feedbackData)
-
-        if (!injuries || !coachTrainingSatisfaction || !areaOfImprovement || !satisfaction || !performance || !recovery || !sleep || !mentally ) {
-            Alert.alert("Please fill all fields", "All fields are mandatory.")
-            return;
-        }
-        if (injuries == "Yes" && !injuryDetails) {
-            Alert.alert("Please add injury details", "This is kept to track your performance.")
+        if (!survey) {
+            Alert.alert('Survey unavailable', 'No survey was found to submit.');
             return;
         }
 
-        
+        const missing = survey.questions.filter(question => !isAnswerFilled(question, answers[question._id]));
+        if (missing.length > 0) {
+            Alert.alert('Please fill all required fields', 'All required fields are mandatory.');
+            return;
+        }
+
+        const payloadAnswers = survey.questions
+            .map(question => {
+                const value = answers[question._id];
+                if (value === undefined || value === null) return null;
+                if (typeof value === 'string' && value.trim().length === 0) return null;
+                if (Array.isArray(value) && value.length === 0) return null;
+                return { questionId: question._id, value };
+            })
+            .filter(Boolean);
 
         setSaving(true);
-        console.log('Feedback submitted:', feedbackData);
-
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
@@ -63,23 +130,23 @@ const monthlySurvey = () => {
                 return;
             }
 
-            const response = await fetch('https://server.riyadah.app/api/monthlySurvey', {
+            const response = await fetch(`https://server.riyadah.app/api/surveys/${survey._id}/responses`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify(feedbackData)
+                body: JSON.stringify({ answers: payloadAnswers })
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.message || 'Failed to submit survey');
+                setError(errorData.error || 'Failed to submit survey');
                 setSaving(false);
                 return;
             }
-            setSubmitted(true)
 
+            setSubmitted(true);
             setInterval(() => {
                 setTimer(prev => {
                     if (prev <= 1) {
@@ -88,7 +155,6 @@ const monthlySurvey = () => {
                     return prev - 1;
                 });
             }, 1000);
-
         } catch (err) {
             Alert.alert('Error', 'Failed to submit monthly survey.');
         } finally {
@@ -104,8 +170,17 @@ const monthlySurvey = () => {
         if (timer == 0) {
             router.replace("/landing");
         }
-
     }, [timer]);
+
+    const handleMultiToggle = (questionId: string, optionValue: string) => {
+        setAnswers(prev => {
+            const current = Array.isArray(prev[questionId]) ? prev[questionId] : [];
+            if (current.includes(optionValue)) {
+                return { ...prev, [questionId]: current.filter((item: string) => item !== optionValue) };
+            }
+            return { ...prev, [questionId]: [...current, optionValue] };
+        });
+    };
 
     return (
         <View style={styles.container}>
@@ -117,9 +192,7 @@ const monthlySurvey = () => {
                 />
 
                 <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Monthly Athlete Wellness & Progress Survey</Text>
-                    {/* {!loading && <Text style={styles.pageDesc}>Event name</Text>} */}
-
+                    <Text style={styles.pageTitle}>{survey?.title || 'Monthly Athlete Wellness & Progress Survey'}</Text>
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                             <ActivityIndicator
@@ -140,139 +213,86 @@ const monthlySurvey = () => {
             >
                 <ScrollView>
                     <View style={styles.contentContainer}>
-                        <Text style={styles.label}>How satisfied are you with your overall training this month?</Text>
-                        <Text style={styles.hint}>0 = Very dissatisfied, 10 = Very satisfied</Text>
-                        <View style={styles.rangeSliderContainer}>
-                            <Slider
-                                style={styles.rangeSlider}
-                                minimumValue={0}
-                                maximumValue={10}
-                                step={1}
-                                value={satisfaction}
-                                onValueChange={setSatisfaction}
-                                minimumTrackTintColor="#FF4000"
-                                maximumTrackTintColor="#111111"
-                                thumbTintColor="#FF4000"
-                            />
-                            <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                {satisfaction || 0}
-                            </Text>
-                        </View>
+                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                        {!survey && !error && (
+                            <Text style={styles.hint}>No survey is available right now.</Text>
+                        )}
+                        {survey?.questions?.map(question => (
+                            <View key={question._id} style={styles.questionBlock}>
+                                <Text style={styles.label}>
+                                    {question.text}{question.required ? ' *' : ''}
+                                </Text>
+                                {!!question.description && <Text style={styles.hint}>{question.description}</Text>}
 
-                        <Text style={styles.label}>Do you feel your performance is improving?</Text>
-                        <View style={styles.radioGroup}>
-                            {['Declining', 'No change', 'Slightly', 'Yes'].map((option) => (
-                                <TouchableOpacity
-                                    key={option}
-                                    style={styles.radioButtonContainer}
-                                    onPress={() => setPerformance(option)}
-                                >
-                                    <View style={styles.outerCircle}>
-                                        {performance === option && <View style={styles.innerCircle} />}
+                                {question.type === 'rating' && (
+                                    <View style={styles.rangeSliderContainer}>
+                                        <Slider
+                                            style={styles.rangeSlider}
+                                            minimumValue={question.scale?.min ?? 0}
+                                            maximumValue={question.scale?.max ?? 10}
+                                            step={question.scale?.step ?? 1}
+                                            value={answers[question._id] ?? question.scale?.min ?? 0}
+                                            onValueChange={(value) => setAnswers(prev => ({ ...prev, [question._id]: value }))}
+                                            minimumTrackTintColor="#FF4000"
+                                            maximumTrackTintColor="#111111"
+                                            thumbTintColor="#FF4000"
+                                        />
+                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                            {answers[question._id] ?? question.scale?.min ?? 0}
+                                        </Text>
                                     </View>
-                                    <Text style={styles.optionText}>{option}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                                )}
 
-                        <Text style={styles.label}>How well are you recovering between sessions?</Text>
-                        <View style={styles.radioGroup}>
-                            {['Very poor', 'Poor', 'Good', 'Excellent'].map((option) => (
-                                <TouchableOpacity
-                                    key={option}
-                                    style={styles.radioButtonContainer}
-                                    onPress={() => setRecovery(option)}
-                                >
-                                    <View style={styles.outerCircle}>
-                                        {recovery === option && <View style={styles.innerCircle} />}
+                                {question.type === 'single' && (
+                                    <View style={styles.radioGroup}>
+                                        {(question.options || []).map(option => (
+                                            <TouchableOpacity
+                                                key={option.value}
+                                                style={styles.radioButtonContainer}
+                                                onPress={() => setAnswers(prev => ({ ...prev, [question._id]: option.value }))}
+                                            >
+                                                <View style={styles.outerCircle}>
+                                                    {answers[question._id] === option.value && <View style={styles.innerCircle} />}
+                                                </View>
+                                                <Text style={styles.optionText}>{option.label}</Text>
+                                            </TouchableOpacity>
+                                        ))}
                                     </View>
-                                    <Text style={styles.optionText}>{option}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                                )}
 
-                        <Text style={styles.label}>How would you rate your sleep quality this month?</Text>
-                        <View style={styles.radioGroup}>
-                            {['Poor', 'Fair', 'Excellent'].map((option) => (
-                                <TouchableOpacity
-                                    key={option}
-                                    style={styles.radioButtonContainer}
-                                    onPress={() => setSleep(option)}
-                                >
-                                    <View style={styles.outerCircle}>
-                                        {sleep === option && <View style={styles.innerCircle} />}
+                                {question.type === 'multi' && (
+                                    <View style={styles.radioGroup}>
+                                        {(question.options || []).map(option => (
+                                            <TouchableOpacity
+                                                key={option.value}
+                                                style={styles.radioButtonContainer}
+                                                onPress={() => handleMultiToggle(question._id, option.value)}
+                                            >
+                                                <View style={styles.checkboxOuter}>
+                                                    {Array.isArray(answers[question._id]) && answers[question._id].includes(option.value) && (
+                                                        <View style={styles.checkboxInner} />
+                                                    )}
+                                                </View>
+                                                <Text style={styles.optionText}>{option.label}</Text>
+                                            </TouchableOpacity>
+                                        ))}
                                     </View>
-                                    <Text style={styles.optionText}>{option}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                                )}
 
-                        <Text style={styles.label}>Do you feel mentally motivated to train?</Text>
-                        <View style={styles.radioGroup}>
-                            {['Rarely', 'Sometimes', 'Often', 'Always'].map((option) => (
-                                <TouchableOpacity
-                                    key={option}
-                                    style={styles.radioButtonContainer}
-                                    onPress={() => setMentally(option)}
-                                >
-                                    <View style={styles.outerCircle}>
-                                        {mentally === option && <View style={styles.innerCircle} />}
-                                    </View>
-                                    <Text style={styles.optionText}>{option}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        <Text style={styles.label}>Any injuries or pain affecting performance?</Text>
-                        <View style={[styles.radioGroup, injuries == 'Yes' && { marginBottom: 0 }]}>
-                            {['Yes', 'No'].map((option) => (
-                                <TouchableOpacity
-                                    key={option}
-                                    style={styles.radioButtonContainer}
-                                    onPress={() => setInjuries(option)}
-                                >
-                                    <View style={styles.outerCircle}>
-                                        {injuries === option && <View style={styles.innerCircle} />}
-                                    </View>
-                                    <Text style={styles.optionText}>{option}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                        {injuries == 'Yes' && <TextInput style={styles.input}
-                            placeholder="Please provide details"
-                            placeholderTextColor="#A8A8A8"
-                            value={injuryDetails || ""}
-                            onChangeText={setInjuryDetails}
-                        />}
-                        <Text style={styles.label}>Overall satisfaction with your coach/training environment?</Text>
-                        <Text style={styles.hint}>0 = Very dissatisfied, 10 = Very satisfied</Text>
-                        <View style={styles.rangeSliderContainer}>
-                            <Slider
-                                style={styles.rangeSlider}
-                                minimumValue={0}
-                                maximumValue={10}
-                                step={1}
-                                value={coachTrainingSatisfaction}
-                                onValueChange={setCoachTrainingSatisfaction}
-                                minimumTrackTintColor="#FF4000"
-                                maximumTrackTintColor="#111111"
-                                thumbTintColor="#FF4000"
-                            />
-                            <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
-                                {coachTrainingSatisfaction || 0}
-                            </Text>
-                        </View>
-
-                        <Text style={[styles.label, { marginBottom: 10 }]}>What is one area you want to improve next month?</Text>
-                        <TextInput style={styles.textarea}
-                            placeholder="Any comments, injuries, etc."
-                            placeholderTextColor="#A8A8A8"
-                            value={areaOfImprovement || ""}
-                            onChangeText={setAreaOfImprovement}
-                            multiline={true}
-                            blurOnSubmit={false}
-                            returnKeyType="default"
-                        />
+                                {(question.type === 'text' || question.type === 'long-text') && (
+                                    <TextInput
+                                        style={question.type === 'long-text' ? styles.textarea : styles.input}
+                                        placeholder={question.type === 'long-text' ? 'Type your response' : 'Answer'}
+                                        placeholderTextColor="#A8A8A8"
+                                        value={answers[question._id] || ''}
+                                        onChangeText={(value) => setAnswers(prev => ({ ...prev, [question._id]: value }))}
+                                        multiline={question.type === 'long-text'}
+                                        blurOnSubmit={false}
+                                        returnKeyType="default"
+                                    />
+                                )}
+                            </View>
+                        ))}
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>}
@@ -287,7 +307,6 @@ const monthlySurvey = () => {
                         </View>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
-                        {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                         <View style={styles.loginButton}>
                             <Text style={styles.loginText}>
                                 {saving ? 'Submitting' : 'Submit Feedback'}
@@ -300,7 +319,6 @@ const monthlySurvey = () => {
                                 />
                             )}
                         </View>
-                        {/* <Image source={require('../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                     </TouchableOpacity>
                 </View>
             </View>}
@@ -334,8 +352,6 @@ const monthlySurvey = () => {
                 </View>
             </View>}
         </View >
-
-
     );
 };
 
@@ -393,6 +409,9 @@ const styles = StyleSheet.create({
         fontSize: 20,
         // marginBottom: 10
     },
+    questionBlock: {
+        marginBottom: 20
+    },
     rangeContainer: {
 
     },
@@ -430,6 +449,11 @@ const styles = StyleSheet.create({
         color: 'black',
         borderRadius: 10,
         marginTop: 10
+    },
+    errorText: {
+        color: 'red',
+        fontFamily: 'Acumin',
+        marginBottom: 10
     },
     fixedBottomSection: {
         position: 'absolute',
@@ -495,6 +519,22 @@ const styles = StyleSheet.create({
     radioButtonContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    checkboxOuter: {
+        height: 22,
+        width: 22,
+        borderRadius: 4,
+        borderWidth: 2,
+        borderColor: '#FF4400',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 6,
+    },
+    checkboxInner: {
+        height: 12,
+        width: 12,
+        borderRadius: 2,
+        backgroundColor: '#FF4400',
     },
     outerCircle: {
         height: 22,

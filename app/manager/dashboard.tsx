@@ -105,6 +105,12 @@ export default function ManagerDashboardScreen() {
                             <Text style={styles.fullButtonText}>Athletes Performance Tests</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.fullButtonRow, { marginTop: 10 }]}
+                            onPress={() => router.push('/manager/surveys')}>
+                            <Text style={styles.fullButtonText}>Survey Manager</Text>
+                            <Feather name="arrow-right" size={20} color="#FF4400" />
+                        </TouchableOpacity>
                     </View>
                 </ScrollView>
                 }
