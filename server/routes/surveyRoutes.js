@@ -3,7 +3,7 @@ const router = express.Router();
 const Survey = require('../models/survey');
 const SurveyResponse = require('../models/surveyResponse');
 const Team = require('../models/Team');
-const User = require('../models/user');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {

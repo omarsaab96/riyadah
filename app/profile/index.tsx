@@ -510,6 +510,9 @@ export default function Profile() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
+            
+                console.log(response)
+
             if (!response.ok) {
                 const data = await response.json();
                 setSurveysError(data.error || 'Failed to load surveys');
