@@ -63,6 +63,46 @@ router.get('/active', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/:id/responses', authenticateToken, async (req, res) => {
+  try {
+    const { from, to, userId, limit = 50, skip = 0 } = req.query;
+    const filter = { survey: req.params.id };
+    if (userId) filter.user = userId;
+
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) {
+        const fromDate = new Date(from);
+        if (!isNaN(fromDate.getTime())) {
+          filter.createdAt.$gte = fromDate;
+        }
+      }
+      if (to) {
+        const toDate = new Date(to);
+        if (!isNaN(toDate.getTime())) {
+          filter.createdAt.$lte = toDate;
+        }
+      }
+      if (Object.keys(filter.createdAt).length === 0) {
+        delete filter.createdAt;
+      }
+    }
+
+    const responses = await SurveyResponse.find(filter)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(Number(skip))
+      .limit(Number(limit));
+
+    const count = await SurveyResponse.countDocuments(filter);
+
+    res.json({ responses, count });
+  } catch (error) {
+    console.error('Error fetching survey responses:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const survey = await Survey.findById(req.params.id);

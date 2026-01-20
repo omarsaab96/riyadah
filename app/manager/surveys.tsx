@@ -508,6 +508,12 @@ export default function ManagerSurveysScreen() {
                                     <TouchableOpacity style={styles.secondaryButton} onPress={() => startEditing(survey)}>
                                         <Text style={styles.secondaryButtonText}>Edit</Text>
                                     </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.secondaryButton}
+                                        onPress={() => router.push({ pathname: '/manager/surveyDetails', params: { id: survey._id } })}
+                                    >
+                                        <Text style={styles.secondaryButtonText}>Submissions</Text>
+                                    </TouchableOpacity>
                                     <TouchableOpacity style={styles.secondaryButton} onPress={() => handleDeleteSurvey(survey._id)}>
                                         <Text style={[styles.secondaryButtonText, { color: '#FF4400' }]}>Delete</Text>
                                     </TouchableOpacity>
