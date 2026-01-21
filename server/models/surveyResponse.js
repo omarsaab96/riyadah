@@ -8,6 +8,7 @@ const surveyAnswerSchema = new mongoose.Schema({
 const surveyResponseSchema = new mongoose.Schema({
   survey: { type: mongoose.Schema.Types.ObjectId, ref: 'Survey', required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  session: { type: mongoose.Schema.Types.ObjectId, ref: 'Schedule', default: null },
   answers: [surveyAnswerSchema],
 }, { timestamps: true });
 

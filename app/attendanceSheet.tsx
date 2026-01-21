@@ -12,6 +12,10 @@ const AttendanceSheet = () => {
     const [athletes, setAthletes] = useState([]);
     const [presentAthletes, setPresentAthletes] = useState({});
     const [isExistingAttendance, setIsExistingAttendance] = useState(false);
+    const [eventStartTime, setEventStartTime] = useState<Date | null>(null);
+    const [lockTime, setLockTime] = useState<Date | null>(null);
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [isLocked, setIsLocked] = useState(false);
 
     const { eventId } = useLocalSearchParams();
 
@@ -35,6 +39,12 @@ const AttendanceSheet = () => {
                     setTeam(data.data.team);
                     setAthletes(data.data.members);
                     setIsExistingAttendance(data.data.isExisting);
+                    if (data.data.event?.startTime || data.data.event?.date) {
+                        const start = new Date(data.data.event.startTime || data.data.event.date);
+                        setEventStartTime(start);
+                        const lockAt = new Date(start.getTime() + 15 * 60 * 1000);
+                        setLockTime(lockAt);
+                    }
 
                     let initialAttendance = {};
 
@@ -70,6 +80,10 @@ const AttendanceSheet = () => {
     }, [eventId]);
 
     const handleSubmit = async () => {
+        if (isLocked) {
+            Alert.alert('Attendance locked', 'Attendance can no longer be edited.');
+            return;
+        }
         const attendedAthletes = Object.keys(presentAthletes).filter(id => presentAthletes[id]);
 
         const body = {
@@ -110,6 +124,32 @@ const AttendanceSheet = () => {
         }
     };
 
+    useEffect(() => {
+        if (!lockTime) return;
+
+        const updateTimer = () => {
+            const now = new Date();
+            const diff = lockTime.getTime() - now.getTime();
+            if (diff <= 0) {
+                setTimeLeft(0);
+                setIsLocked(true);
+                return;
+            }
+            setTimeLeft(Math.ceil(diff / 1000));
+            setIsLocked(false);
+        };
+
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+        return () => clearInterval(interval);
+    }, [lockTime]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
     return (
 
         <View style={styles.container}>
@@ -140,16 +180,26 @@ const AttendanceSheet = () => {
 
             {!loading && !submitted && <ScrollView>
                 <View style={styles.contentContainer}>
+                    {lockTime && (
+                        <View style={styles.lockBanner}>
+                            <Text style={styles.lockText}>
+                                {isLocked ? 'Attendance locked' : `Editing closes in ${formatTime(timeLeft)}`}
+                            </Text>
+                        </View>
+                    )}
                     <Text style={styles.label}>Who attended?</Text>
                     <Text style={styles.hint}>Selected athletes are the ones that were present.</Text>
 
                     {athletes.map(athlete => (
                         <TouchableOpacity
                             key={athlete._id}
-                            onPress={() => setPresentAthletes(prev => ({
-                                ...prev,
-                                [athlete._id]: !prev[athlete._id]
-                            }))}
+                            onPress={() => {
+                                if (isLocked) return;
+                                setPresentAthletes(prev => ({
+                                    ...prev,
+                                    [athlete._id]: !prev[athlete._id]
+                                }))
+                            }}
                             style={styles.checkboxContainer}
                             activeOpacity={1}
                         >
@@ -191,11 +241,11 @@ const AttendanceSheet = () => {
             }
 
             {!submitted && !loading && <View style={styles.fixedBottomSection}>
-                <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
+                <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit} disabled={isLocked}>
                     {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
-                    <View style={styles.loginButton}>
+                    <View style={[styles.loginButton, isLocked && styles.loginButtonDisabled]}>
                         <Text style={styles.loginText}>
-                            {saving ? 'Submitting' : 'Submit Attendance sheet'}
+                            {isLocked ? 'Attendance Locked' : saving ? 'Submitting' : 'Submit Attendance sheet'}
                         </Text>
                         {saving && (
                             <ActivityIndicator
@@ -249,6 +299,19 @@ const styles = StyleSheet.create({
     contentContainer: {
         padding: 20,
         paddingBottom: 130
+    },
+    lockBanner: {
+        backgroundColor: '#111111',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        marginBottom: 12
+    },
+    lockText: {
+        color: '#ffffff',
+        fontFamily: 'Acumin',
+        fontSize: 14,
+        textAlign: 'center'
     },
     pageHeader: {
         backgroundColor: '#FF4000',
@@ -374,6 +437,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         borderRadius:15
+    },
+    loginButtonDisabled: {
+        backgroundColor: '#777777'
     },
     loginText: {
         fontSize: 18,

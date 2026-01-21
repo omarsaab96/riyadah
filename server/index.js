@@ -21,6 +21,11 @@ const walletRoutes = require("./routes/walletRoutes");
 const timesheetRoutes = require("./routes/timesheetRoutes");
 const testRoutes = require("./routes/testRoutes");
 const Chat = require("./models/Chat");
+const Schedule = require("./models/Schedule");
+const Survey = require("./models/survey");
+const Attendance = require("./models/Attendance");
+const User = require("./models/User");
+const { sendNotification } = require("./utils/notificationService");
 
 
 const app = express();
@@ -154,6 +159,88 @@ function setupChatListUpdates(io) {
 
 const notifyChatListUpdate = setupChatListUpdates(io);
 app.set('notifyChatListUpdate', notifyChatListUpdate);
+
+let processingPostTrainingNotifications = false;
+const notifyPostTrainingSurveys = async () => {
+    if (processingPostTrainingNotifications) return;
+    processingPostTrainingNotifications = true;
+
+    try {
+        const surveys = await Survey.find({
+            isActive: true,
+            'repeating.enabled': true,
+            'repeating.cadence': 'post-training'
+        });
+
+        if (surveys.length === 0) {
+            processingPostTrainingNotifications = false;
+            return;
+        }
+
+        const now = new Date();
+        const sessions = await Schedule.find({
+            endTime: { $lte: now },
+            notifiedAfterEnd: { $ne: true },
+            status: { $ne: 'cancelled' },
+            eventType: { $in: ['Training', 'training'] }
+        }).select('_id team club coaches endTime status');
+
+        for (const session of sessions) {
+            const attendance = await Attendance.findOne({ event: session._id });
+            if (!attendance) {
+                continue;
+            }
+
+            const attendeeIds = (attendance.present || []).map(id => id.toString());
+            if (attendeeIds.length === 0) {
+                session.notifiedAfterEnd = true;
+                session.status = session.status === 'scheduled' ? 'completed' : session.status;
+                await session.save();
+                continue;
+            }
+
+            for (const survey of surveys) {
+                const scope = survey.restrictedTo?.scope || 'none';
+                const refId = survey.restrictedTo?.refId ? survey.restrictedTo.refId.toString() : null;
+                if (scope === 'coach') {
+                    continue;
+                }
+                if (scope === 'team' && refId && refId !== String(session.team)) {
+                    continue;
+                }
+                if (scope === 'club' && refId && refId !== String(session.club)) {
+                    continue;
+                }
+
+                for (const attendeeId of attendeeIds) {
+                    const user = await User.findById(attendeeId).select('expoPushToken');
+                    if (!user) continue;
+                    try {
+                        await sendNotification(
+                            user,
+                            'Post-training survey',
+                            'Please complete your post-training survey.',
+                            { type: 'survey', surveyId: survey._id, sessionId: session._id },
+                            true
+                        );
+                    } catch (err) {
+                        console.error('Failed to send survey notification:', err.message || err);
+                    }
+                }
+            }
+
+            session.notifiedAfterEnd = true;
+            session.status = session.status === 'scheduled' ? 'completed' : session.status;
+            await session.save();
+        }
+    } catch (error) {
+        console.error('Error sending post-training surveys:', error);
+    } finally {
+        processingPostTrainingNotifications = false;
+    }
+};
+
+setInterval(notifyPostTrainingSurveys, 60 * 1000);
 
 
 const PORT = 5000;

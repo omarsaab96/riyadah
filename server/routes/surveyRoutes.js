@@ -4,6 +4,8 @@ const Survey = require('../models/survey');
 const SurveyResponse = require('../models/surveyResponse');
 const Team = require('../models/Team');
 const User = require('../models/User');
+const Schedule = require('../models/Schedule');
+const Attendance = require('../models/Attendance');
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
@@ -107,6 +109,19 @@ const getCoachTeamMemberIds = async (coachId) => {
   return Array.from(memberIds);
 };
 
+const getEligibleTrainingSessionsForUser = async (userId) => {
+  const attendances = await Attendance.find({ present: userId }).select('event');
+  const eventIds = attendances.map(item => item.event).filter(Boolean);
+  if (eventIds.length === 0) return [];
+
+  return Schedule.find({
+    _id: { $in: eventIds },
+    endTime: { $lte: new Date() },
+    status: { $ne: 'cancelled' },
+    eventType: { $in: ['Training', 'training'] }
+  }).select('_id team club coaches endTime');
+};
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const surveys = await Survey.find({}).sort({ updatedAt: -1 });
@@ -120,29 +135,113 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/active', authenticateToken, async (req, res) => {
   try {
     const activeSurveys = await Survey.find({ isActive: true }).sort({ updatedAt: -1 });
-    let chosen = null;
+    const visible = [];
     for (const survey of activeSurveys) {
       const canAccess = await canUserAccessSurvey(req.user.userId, survey);
-      if (canAccess) {
-        chosen = survey;
-        break;
-      }
+      if (canAccess) visible.push(survey);
     }
 
-    if (!chosen) {
-      const allSurveys = await Survey.find({}).sort({ updatedAt: -1 });
-      for (const survey of allSurveys) {
-        const canAccess = await canUserAccessSurvey(req.user.userId, survey);
-        if (canAccess) {
-          chosen = survey;
-          break;
-        }
-      }
-    }
-
-    res.json({ survey: chosen || null });
+    res.json({ surveys: visible });
   } catch (error) {
     console.error('Error fetching active survey:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/active/summary', authenticateToken, async (req, res) => {
+  try {
+    const activeSurveys = await Survey.find({ isActive: true }).sort({ updatedAt: -1 });
+    const visible = [];
+    for (const survey of activeSurveys) {
+      const canAccess = await canUserAccessSurvey(req.user.userId, survey);
+      if (canAccess) visible.push(survey);
+    }
+
+    if (visible.length === 0) {
+      return res.json({ surveys: [] });
+    }
+
+    const requestor = await User.findById(req.user.userId).select('role');
+    const isCoach = requestor?.role === 'Coach';
+    const surveyIds = visible.map(survey => survey._id);
+
+    if (isCoach) {
+      const memberIds = await getCoachTeamMemberIds(req.user.userId);
+      const counts = await SurveyResponse.aggregate([
+        { $match: { survey: { $in: surveyIds }, user: { $in: memberIds } } },
+        { $group: { _id: '$survey', count: { $sum: 1 } } }
+      ]);
+      const countMap = new Map(counts.map(item => [String(item._id), item.count]));
+
+      const surveys = visible.map(survey => ({
+        _id: survey._id,
+        title: survey.title,
+        questionsCount: survey.questions?.length || 0,
+        repeating: survey.repeating,
+        restrictedTo: survey.restrictedTo,
+        submissionCount: countMap.get(String(survey._id)) || 0
+      }));
+
+      return res.json({ surveys });
+    }
+
+    const responses = await SurveyResponse.find({
+      survey: { $in: surveyIds },
+      user: req.user.userId
+    }).select('survey session createdAt');
+
+    const responseMap = new Map();
+    responses.forEach(response => {
+      const key = String(response.survey);
+      if (!responseMap.has(key)) responseMap.set(key, []);
+      responseMap.get(key).push(response);
+    });
+
+    const trainingSessions = await getEligibleTrainingSessionsForUser(req.user.userId);
+    const surveys = [];
+
+    for (const survey of visible) {
+      const surveyKey = String(survey._id);
+      const surveyResponses = responseMap.get(surveyKey) || [];
+      let status = 'pending';
+      let pendingCount = 0;
+
+      if (!survey.repeating?.enabled) {
+        status = surveyResponses.length > 0 ? 'submitted' : 'pending';
+      } else if (survey.repeating?.cadence === 'monthly') {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const hasThisMonth = surveyResponses.some(response => response.createdAt >= startOfMonth);
+        status = hasThisMonth ? 'submitted' : 'pending';
+      } else if (survey.repeating?.cadence === 'post-training') {
+        const scope = survey.restrictedTo?.scope || 'none';
+        const refId = survey.restrictedTo?.refId ? String(survey.restrictedTo.refId) : null;
+        const eligibleSessions = trainingSessions.filter(session => {
+          if (scope === 'team' && refId) return String(session.team) === refId;
+          if (scope === 'club' && refId) return String(session.club) === refId;
+          return true;
+        });
+        const respondedSessions = new Set(
+          surveyResponses.map(response => response.session ? String(response.session) : null).filter(Boolean)
+        );
+        pendingCount = eligibleSessions.filter(session => !respondedSessions.has(String(session._id))).length;
+        status = pendingCount > 0 ? 'pending' : 'up-to-date';
+      }
+
+      surveys.push({
+        _id: survey._id,
+        title: survey.title,
+        questionsCount: survey.questions?.length || 0,
+        repeating: survey.repeating,
+        restrictedTo: survey.restrictedTo,
+        status,
+        pendingCount
+      });
+    }
+
+    res.json({ surveys });
+  } catch (error) {
+    console.error('Error fetching active survey summary:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -170,9 +269,10 @@ router.get('/:id/responses', authenticateToken, async (req, res) => {
     const canAccess = await canUserAccessSurvey(req.user.userId, survey);
     if (!canAccess) return res.status(403).json({ error: 'Not authorized to view this survey' });
 
-    const { from, to, userId, limit = 50, skip = 0 } = req.query;
+    const { from, to, userId, sessionId, limit = 50, skip = 0 } = req.query;
     const filter = { survey: req.params.id };
     if (userId) filter.user = userId;
+    if (sessionId) filter.session = sessionId;
 
     if (from || to) {
       filter.createdAt = {};
@@ -243,10 +343,6 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Title is required' });
     }
 
-    if (isActive) {
-      await Survey.updateMany({}, { isActive: false });
-    }
-
     const survey = await Survey.create({
       title: String(title).trim(),
       isActive: Boolean(isActive),
@@ -268,10 +364,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
-    }
-
-    if (isActive) {
-      await Survey.updateMany({ _id: { $ne: req.params.id } }, { isActive: false });
     }
 
     const survey = await Survey.findByIdAndUpdate(
@@ -313,14 +405,72 @@ router.post('/:id/responses', authenticateToken, async (req, res) => {
     const canAccess = await canUserAccessSurvey(req.user.userId, survey);
     if (!canAccess) return res.status(403).json({ error: 'Not authorized to submit this survey' });
 
-    const { answers } = req.body;
+    const { answers, sessionId } = req.body;
     if (!Array.isArray(answers) || answers.length === 0) {
       return res.status(400).json({ error: 'Answers are required' });
+    }
+
+    if (!survey.repeating?.enabled) {
+      const existing = await SurveyResponse.findOne({ survey: survey._id, user: req.user.userId });
+      if (existing) {
+        return res.status(409).json({ error: 'Survey already submitted' });
+      }
+    } else if (survey.repeating?.cadence === 'monthly') {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const existing = await SurveyResponse.findOne({
+        survey: survey._id,
+        user: req.user.userId,
+        createdAt: { $gte: startOfMonth, $lt: startOfNextMonth }
+      });
+      if (existing) {
+        return res.status(409).json({ error: 'Monthly survey already submitted' });
+      }
+    } else if (survey.repeating?.cadence === 'post-training') {
+      if (!sessionId) {
+        return res.status(400).json({ error: 'Training session is required' });
+      }
+
+      const session = await Schedule.findById(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: 'Training session not found' });
+      }
+
+      if (String(session.eventType || '').toLowerCase() !== 'training') {
+        return res.status(400).json({ error: 'Survey is only available for training sessions' });
+      }
+
+      if (session.endTime && session.endTime > new Date()) {
+        return res.status(400).json({ error: 'Training session has not ended yet' });
+      }
+
+      const attendance = await Attendance.findOne({ event: sessionId });
+      if (!attendance) {
+        return res.status(400).json({ error: 'Attendance not recorded for this session' });
+      }
+
+      const isPresent = attendance.present.some(
+        (id) => String(id) === String(req.user.userId)
+      );
+      if (!isPresent) {
+        return res.status(403).json({ error: 'Only attendees can submit this survey' });
+      }
+
+      const existing = await SurveyResponse.findOne({
+        survey: survey._id,
+        user: req.user.userId,
+        session: sessionId
+      });
+      if (existing) {
+        return res.status(409).json({ error: 'Survey already submitted for this session' });
+      }
     }
 
     const responseDoc = await SurveyResponse.create({
       survey: survey._id,
       user: req.user.userId,
+      session: sessionId || null,
       answers: answers.map(answer => ({
         questionId: answer.questionId,
         value: answer.value,

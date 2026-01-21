@@ -71,7 +71,7 @@ export default function Profile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const tabs = ['Profile', 'Teams', 'Schedule', 'Staff', 'Inventory', 'Financials'];
-    const tabsAthlete = ['Profile', 'Schedule', 'Financials', 'Performance'];
+    const tabsAthlete = ['Profile', 'Schedule', 'Surveys', 'Financials', 'Performance'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Surveys', 'Financials', 'Timesheet'];
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
@@ -506,12 +506,9 @@ export default function Profile() {
                 return;
             }
 
-            const response = await fetch('https://server.riyadah.app/api/surveys/visible', {
+            const response = await fetch('https://server.riyadah.app/api/surveys/active/summary', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
-            
-                console.log(response)
 
             if (!response.ok) {
                 const data = await response.json();
@@ -1399,22 +1396,26 @@ export default function Profile() {
 
             {/* Tabs for Coaches */}
             {!loading && user.role && user?.role == "Coach" && (
-
                 <View style={styles.tabs}>
-                    {tabsCoach.map((label, index) => (
-                        <TouchableOpacity
-                            key={label}
-                            style={[
-                                styles.tab,
-                                activeTab === label && styles.activeTab,
-                            ]}
-                            onPress={() => updateTab(label)}
-                        >
-                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
-                                {label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                    >
+                        {tabsCoach.map((label, index) => (
+                            <TouchableOpacity
+                                key={label}
+                                style={[
+                                    styles.tab,
+                                    activeTab === label && styles.activeTab,
+                                ]}
+                                onPress={() => updateTab(label)}
+                            >
+                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
+                                    {label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </View>
             )}
 
@@ -1698,7 +1699,7 @@ export default function Profile() {
                         </View>
 
                         {/* PLAYS IN TEAMS */}
-                        {user.type == "Athlete"&& user.role != "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type == "Athlete" && user.role != "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Text style={styles.title}>
                                 Plays in
                             </Text>
@@ -2647,7 +2648,7 @@ export default function Profile() {
 
             {/* surveysTab */}
             {
-                !loading && user && user.role && user.role == "Coach" && activeTab == "Surveys" && <Animated.ScrollView
+                !loading && user && (user.role == "Coach" || user.type == "Athlete") && activeTab == "Surveys" && <Animated.ScrollView
                     onScroll={Animated.event(
                         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                         { useNativeDriver: false }
@@ -2673,7 +2674,7 @@ export default function Profile() {
                         {!surveysLoading && coachSurveys.length === 0 && (
                             <View style={styles.emptyState}>
                                 <Text style={styles.emptyStateTitle}>No Surveys</Text>
-                                <Text style={styles.emptyStateText}>No surveys are assigned to your teams yet.</Text>
+                                <Text style={styles.emptyStateText}>No active surveys are available right now.</Text>
                             </View>
                         )}
 
@@ -2684,13 +2685,17 @@ export default function Profile() {
                                         key={survey._id}
                                         style={styles.surveyListItem}
                                         onPress={() => router.push({
-                                            pathname: '/coach/surveyDetails',
+                                            pathname: user.role == "Coach" ? '/coach/surveyDetails' : '/surveys/respond',
                                             params: { id: survey._id },
                                         })}
                                     >
                                         <View style={{ flex: 1 }}>
                                             <Text style={styles.surveyListTitle}>{survey.title}</Text>
-                                            <Text style={styles.surveyListMeta}>{survey.questions?.length || 0} questions</Text>
+                                            <Text style={styles.surveyListMeta}>
+                                                {user.role == "Coach"
+                                                    ? `${survey.submissionCount || 0} submissions`
+                                                    : `${survey.status || 'pending'}${survey.pendingCount ? ` (${survey.pendingCount})` : ''}`}
+                                            </Text>
                                         </View>
                                         <Feather name="arrow-right" size={18} color="#FF4400" />
                                     </TouchableOpacity>
@@ -2958,128 +2963,134 @@ export default function Profile() {
                     )}
                     scrollEventThrottle={16}
                 >
-                    <View style={styles.contentContainer}>
-                        {financialsLoading ? (
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <ActivityIndicator
-                                    size="small"
-                                    color="#FF4000"
-                                    style={{ transform: [{ scale: 1.25 }] }}
-                                />
-                            </View>
-                        ) : (
-                            <View>
-                                <View style={styles.balanceSection}>
-                                    {wallet != null && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={styles.balanceTitle}>Balance</Text>
-                                            <Text style={styles.balanceAmount}>{wallet.currency} {wallet.balance}</Text>
-                                        </View>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={styles.balanceTitle}>Available Balance</Text>
-                                            <Text style={styles.balanceAmount}>{wallet.currency} {wallet.availableBalance}</Text>
-                                        </View>
-                                    </View>}
-
-                                    <View style={styles.balanceActions}>
-                                        <TouchableOpacity
-                                            style={styles.balanceButton}
-                                            onPress={() => handleTopUp()}
-                                        >
-                                            <MaterialCommunityIcons name="wallet-plus" size={20} color="#fff" />
-                                            <Text style={styles.balanceButtonText}>Top Up</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.balanceButton}
-                                            onPress={() => router.push('/payments/createPayment')}
-                                        >
-                                            <FontAwesome6 name="money-bill-transfer" size={20} color="#fff" />
-                                            <Text style={styles.balanceButtonText}>Send money</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                    {false ? (
+                        <View style={styles.contentContainer}>
+                            {financialsLoading ? (
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#FF4000"
+                                        style={{ transform: [{ scale: 1.25 }] }}
+                                    />
                                 </View>
+                            ) : (
+                                <View>
+                                    <View style={styles.balanceSection}>
+                                        {wallet != null && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.balanceTitle}>Balance</Text>
+                                                <Text style={styles.balanceAmount}>{wallet.currency} {wallet.balance}</Text>
+                                            </View>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.balanceTitle}>Available Balance</Text>
+                                                <Text style={styles.balanceAmount}>{wallet.currency} {wallet.availableBalance}</Text>
+                                            </View>
+                                        </View>}
 
-                                <View style={styles.sectionHeader}>
-                                    <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
-                                        History
-                                    </Text>
-                                </View>
-
-                                {(payments && payments.length > 0) ? (
-                                    <View>
-                                        {/* <Text style={[styles.title, { marginBottom: 10 }]}>Pending payments</Text> */}
-                                        <View>
-                                            {payments.map((item) => (
-                                                <TouchableOpacity
-                                                    key={item._id}
-                                                    style={styles.inventoryCard}
-                                                    onPress={() => router.push({
-                                                        pathname: '/payments/details',
-                                                        params: { paymentid: item._id },
-                                                    })}>
-                                                    <View style={styles.inventoryHeader}>
-                                                        <View style={styles.inventoryInfo}>
-                                                            {userId == item.payer._id ? (
-                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                                    <MaterialIcons name="arrow-circle-up" size={20} color="#FF4400" />
-                                                                    <Text style={styles.inventoryName}>
-                                                                        {item.beneficiary.name}
-                                                                    </Text>
-                                                                </View>
-                                                            ) : (
-                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                                                    <MaterialIcons name="arrow-circle-down" size={20} color="#009933" />
-                                                                    <Text style={styles.inventoryName}>
-                                                                        {item.payer.name}
-                                                                    </Text>
-                                                                </View>
-                                                            )}
-
-
-                                                            <Text style={styles.inventoryCategory}>{item.type}</Text>
-                                                        </View>
-                                                        <View style={styles.inventoryStats}>
-                                                            <Text style={styles.inventoryStatValue}>
-                                                                {userId == item.payer._id ? '-' : '+'}{item.amount} {item.currency}
-                                                            </Text>
-                                                            <Text style={styles.inventoryStatLabel}>Amount</Text>
-                                                        </View>
-                                                    </View>
-
-                                                    <View style={styles.inventoryDetails}>
-                                                        <View style={styles.inventoryDetailRow}>
-                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                <Octicons name="calendar" size={16} color="black" />
-                                                                <Text style={styles.inventoryDetailValue}>{formatDate(item.createdAt)}</Text>
-                                                            </View>
-                                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
-                                                                {item.status == 'pending' && <Octicons name="unverified" size={16} color="#ffc400" />}
-                                                                {item.status == 'completed' && <Octicons name="verified" size={16} color="#009933" />}
-                                                                {item.status == 'declined' && <Octicons name="x-circle" size={16} color="#FF4000" />}
-                                                                <Text style={[styles.inventoryDetailValue, {
-                                                                    textTransform: 'capitalize',
-                                                                    color: item.status == 'completed' ? '#009933' : item.status == 'pending' ? '#ffc400' : '#FF4000'
-                                                                }]}>
-                                                                    {item.status}
-                                                                </Text>
-                                                            </View>
-                                                        </View>
-                                                    </View>
-                                                </TouchableOpacity>
-                                            ))}
+                                        <View style={styles.balanceActions}>
+                                            <TouchableOpacity
+                                                style={styles.balanceButton}
+                                                onPress={() => handleTopUp()}
+                                            >
+                                                <MaterialCommunityIcons name="wallet-plus" size={20} color="#fff" />
+                                                <Text style={styles.balanceButtonText}>Top Up</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={styles.balanceButton}
+                                                onPress={() => router.push('/payments/createPayment')}
+                                            >
+                                                <FontAwesome6 name="money-bill-transfer" size={20} color="#fff" />
+                                                <Text style={styles.balanceButtonText}>Send money</Text>
+                                            </TouchableOpacity>
                                         </View>
-
                                     </View>
-                                ) : (
-                                    <View style={[styles.emptyState, { paddingVertical: 0, alignItems: 'flex-start' }]}>
-                                        <Text style={[styles.emptyStateText,]}>
-                                            Nothing to show
+
+                                    <View style={styles.sectionHeader}>
+                                        <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
+                                            History
                                         </Text>
                                     </View>
-                                )}
-                            </View>
-                        )}
-                    </View>
+
+                                    {(payments && payments.length > 0) ? (
+                                        <View>
+                                            {/* <Text style={[styles.title, { marginBottom: 10 }]}>Pending payments</Text> */}
+                                            <View>
+                                                {payments.map((item) => (
+                                                    <TouchableOpacity
+                                                        key={item._id}
+                                                        style={styles.inventoryCard}
+                                                        onPress={() => router.push({
+                                                            pathname: '/payments/details',
+                                                            params: { paymentid: item._id },
+                                                        })}>
+                                                        <View style={styles.inventoryHeader}>
+                                                            <View style={styles.inventoryInfo}>
+                                                                {userId == item.payer._id ? (
+                                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                        <MaterialIcons name="arrow-circle-up" size={20} color="#FF4400" />
+                                                                        <Text style={styles.inventoryName}>
+                                                                            {item.beneficiary.name}
+                                                                        </Text>
+                                                                    </View>
+                                                                ) : (
+                                                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                                        <MaterialIcons name="arrow-circle-down" size={20} color="#009933" />
+                                                                        <Text style={styles.inventoryName}>
+                                                                            {item.payer.name}
+                                                                        </Text>
+                                                                    </View>
+                                                                )}
+
+
+                                                                <Text style={styles.inventoryCategory}>{item.type}</Text>
+                                                            </View>
+                                                            <View style={styles.inventoryStats}>
+                                                                <Text style={styles.inventoryStatValue}>
+                                                                    {userId == item.payer._id ? '-' : '+'}{item.amount} {item.currency}
+                                                                </Text>
+                                                                <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                            </View>
+                                                        </View>
+
+                                                        <View style={styles.inventoryDetails}>
+                                                            <View style={styles.inventoryDetailRow}>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                    <Octicons name="calendar" size={16} color="black" />
+                                                                    <Text style={styles.inventoryDetailValue}>{formatDate(item.createdAt)}</Text>
+                                                                </View>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
+                                                                    {item.status == 'pending' && <Octicons name="unverified" size={16} color="#ffc400" />}
+                                                                    {item.status == 'completed' && <Octicons name="verified" size={16} color="#009933" />}
+                                                                    {item.status == 'declined' && <Octicons name="x-circle" size={16} color="#FF4000" />}
+                                                                    <Text style={[styles.inventoryDetailValue, {
+                                                                        textTransform: 'capitalize',
+                                                                        color: item.status == 'completed' ? '#009933' : item.status == 'pending' ? '#ffc400' : '#FF4000'
+                                                                    }]}>
+                                                                        {item.status}
+                                                                    </Text>
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+
+                                        </View>
+                                    ) : (
+                                        <View style={[styles.emptyState, { paddingVertical: 0, alignItems: 'flex-start' }]}>
+                                            <Text style={[styles.emptyStateText,]}>
+                                                Nothing to show
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+                    ) : (
+                        <View style={styles.contentContainer}>
+                            <Text style={{ textAlign: 'center' }}>Financials coming soon</Text>
+                        </View>
+                    )}
                 </Animated.ScrollView>
             }
 
@@ -3223,7 +3234,7 @@ export default function Profile() {
                                     }
                                 </View>
 
-                                {selectedUserTest==null && <Text>No data yet</Text>}
+                                {selectedUserTest == null && <Text>No data yet</Text>}
 
                                 {selectedUserTest && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
                                     <Text style={styles.title}>

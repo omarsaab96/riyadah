@@ -107,7 +107,8 @@ const scheduleSchema = new Schema({
     },
     seriesId: { type: String, index: true },
     occurrenceIndex: { type: Number },
-    notifiedBeforeStart: { type: Boolean, default: false }
+    notifiedBeforeStart: { type: Boolean, default: false },
+    notifiedAfterEnd: { type: Boolean, default: false }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

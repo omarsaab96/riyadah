@@ -13,6 +13,7 @@ router.get('/byEvent/:eventId', async (req, res) => {
     // Find attendance record for this event
     const attendance = await Attendance.findOne({ event: eventId })
       .populate('team', '_id name')
+      .populate('event', 'startTime date endTime')
       .populate('present', '_id name image gender')
       .populate('absent', '_id name image gender');
 
@@ -23,6 +24,7 @@ router.get('/byEvent/:eventId', async (req, res) => {
         data: {
           _id: attendance._id,
           team: attendance.team._id,
+          event: attendance.event,
           members: [...attendance.present, ...attendance.absent],
           present: attendance.present,
           absent: attendance.absent,
@@ -53,6 +55,7 @@ router.get('/byEvent/:eventId', async (req, res) => {
     res.json({
       success: true,
       data: {
+        event: { _id: event._id, startTime: event.startTime, date: event.date, endTime: event.endTime },
         team: team._id,
         members: team.members,
         isExisting: false
@@ -79,6 +82,25 @@ router.post('/', async (req, res) => {
         success: false,
         message: 'Missing required fields: present, teamId, eventId'
       });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
+
+    const startTime = event.startTime || event.date;
+    if (startTime) {
+      const lockTime = new Date(startTime.getTime() + 15 * 60 * 1000);
+      if (new Date() > lockTime) {
+        return res.status(403).json({
+          success: false,
+          message: 'Attendance is locked 15 minutes after event start'
+        });
+      }
     }
 
     // Get team to find all members
