@@ -153,18 +153,8 @@ router.post('/preview', authenticate, requireManager, async (req, res) => {
       seenEmails.add(emailKey);
     });
 
-    const upload = await BulkUpload.create({
-      manager: req.user._id,
-      filename: filename || null,
-      status: 'preview',
-      rows,
-      errors,
-      totalRows: rows.length
-    });
-
     res.json({
       success: true,
-      uploadId: upload._id,
       preview: rows,
       errors
     });
@@ -174,23 +164,59 @@ router.post('/preview', authenticate, requireManager, async (req, res) => {
   }
 });
 
-router.post('/commit/:id', authenticate, requireManager, async (req, res) => {
+router.post('/commit', authenticate, requireManager, async (req, res) => {
   try {
-    const upload = await BulkUpload.findOne({ _id: req.params.id, manager: req.user._id });
-    if (!upload) {
-      return res.status(404).json({ success: false, message: 'Upload not found' });
+    const { fileBase64, filename } = req.body;
+    if (!fileBase64) {
+      return res.status(400).json({ success: false, message: 'File is required' });
     }
 
-    upload.status = 'processing';
-    await upload.save();
+    const buffer = Buffer.from(fileBase64, 'base64');
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    if (!sheetName) {
+      return res.status(400).json({ success: false, message: 'No sheets found in file' });
+    }
 
-    const errors = [...upload.errors];
+    const rows = extractRows(workbook.Sheets[sheetName]);
+
+    const errors = [];
+    const seenEmails = new Set();
+    rows.forEach((row) => {
+      if (!row.name || !row.email) {
+        errors.push({
+          rowNumber: row.rowNumber,
+          message: 'Name and email are required'
+        });
+        return;
+      }
+
+      const emailKey = row.email.toLowerCase();
+      if (seenEmails.has(emailKey)) {
+        errors.push({
+          rowNumber: row.rowNumber,
+          message: 'Duplicate email in file'
+        });
+        return;
+      }
+      seenEmails.add(emailKey);
+    });
+
+    const upload = await BulkUpload.create({
+      manager: req.user._id,
+      filename: filename || null,
+      status: 'processing',
+      rows,
+      errors,
+      totalRows: rows.length
+    });
+
     let successCount = 0;
     let failureCount = 0;
     const credentials = [];
     const errorRows = new Set(errors.map((err) => err.rowNumber));
 
-    for (const row of upload.rows) {
+    for (const row of rows) {
       if (errorRows.has(row.rowNumber)) {
         failureCount += 1;
         continue;

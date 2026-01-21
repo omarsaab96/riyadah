@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -27,7 +27,8 @@ const BulkAthletesScreen = () => {
     const [error, setError] = useState<string | null>(null);
     const [previewRows, setPreviewRows] = useState<any[]>([]);
     const [previewErrors, setPreviewErrors] = useState<any[]>([]);
-    const [uploadId, setUploadId] = useState<string | null>(null);
+    const [fileBase64, setFileBase64] = useState<string | null>(null);
+    const [filename, setFilename] = useState<string | null>(null);
     const [processing, setProcessing] = useState(false);
     const [result, setResult] = useState<any>(null);
 
@@ -66,7 +67,8 @@ const BulkAthletesScreen = () => {
             setResult(null);
             setPreviewRows([]);
             setPreviewErrors([]);
-            setUploadId(null);
+            setFileBase64(null);
+            setFilename(null);
 
             const result = await DocumentPicker.getDocumentAsync({
                 copyToCacheDirectory: true,
@@ -110,7 +112,8 @@ const BulkAthletesScreen = () => {
 
             setPreviewRows(data.preview || []);
             setPreviewErrors(data.errors || []);
-            setUploadId(data.uploadId);
+            setFileBase64(base64);
+            setFilename(asset.name || null);
             setError(null);
         } catch (err: any) {
             console.error('Preview failed', err);
@@ -121,14 +124,21 @@ const BulkAthletesScreen = () => {
     };
 
     const handleCommit = async () => {
-        if (!uploadId) return;
+        if (!fileBase64) return;
 
         try {
             setProcessing(true);
             const token = await SecureStore.getItemAsync('userToken');
-            const response = await fetch(`https://server.riyadah.app/api/bulk-athletes/commit/${uploadId}`, {
+            const response = await fetch('https://server.riyadah.app/api/bulk-athletes/commit', {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${token}` }
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fileBase64: fileBase64,
+                    filename: filename
+                })
             });
             const data = await response.json();
             if (!response.ok) {
@@ -190,25 +200,28 @@ const BulkAthletesScreen = () => {
 
                             {previewRows.length > 0 && (
                                 <View style={styles.previewSection}>
-                                    <Text style={styles.previewTitle}>Preview (first {previewRows.length} rows)</Text>
-                                    {previewRows.map((row) => (
-                                        <View key={row.rowNumber} style={styles.previewRow}>
-                                            <Text style={styles.previewText}>#{row.rowNumber}</Text>
-                                            <Text style={styles.previewText}>{row.name || 'Missing name'}</Text>
-                                            <Text style={styles.previewSubText}>{row.email || 'Missing email'}</Text>
-                                        </View>
-                                    ))}
+                                    <Text style={styles.previewTitle}>Preview</Text>
 
                                     {previewErrors.length > 0 && (
                                         <View style={styles.previewErrors}>
                                             <Text style={styles.previewErrorTitle}>Errors</Text>
                                             {previewErrors.map((err, idx) => (
                                                 <Text key={`${err.rowNumber}-${idx}`} style={styles.previewErrorText}>
-                                                    Row {err.rowNumber}: {err.message}
+                                                    # {err.rowNumber-1}: {err.message}
                                                 </Text>
                                             ))}
                                         </View>
                                     )}
+
+                                    {previewRows.map((row) => (
+                                        <View key={row.rowNumber} style={styles.previewRow}>
+                                            <Text style={styles.previewText}>#{row.rowNumber-1}</Text>
+                                            <Text style={styles.previewText}>{row.name || 'Missing name'}</Text>
+                                            <Text style={styles.previewSubText}>{row.email || 'Missing email'}</Text>
+                                        </View>
+                                    ))}
+
+                                    
 
                                     <TouchableOpacity style={styles.primaryButton} onPress={handleCommit} disabled={processing}>
                                         <Text style={styles.primaryButtonText}>
