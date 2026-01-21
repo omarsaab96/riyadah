@@ -182,7 +182,8 @@ const CreateAthleteScreen = () => {
                 phone: null
             },
             isStaff: [],
-            clubs: selectedClub?._id ? [selectedClub._id] : []
+            clubs: selectedClub?._id ? [selectedClub._id] : [],
+            password:null
         };
 
         try {

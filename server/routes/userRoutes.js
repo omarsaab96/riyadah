@@ -47,7 +47,11 @@ router.post('/', async (req, res) => {
   try {
     const { password, ...rest } = req.body;
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    let hashedPassword = null;
+
+    if(password!==null){
+      hashedPassword = await bcrypt.hash(password, saltRounds);
+    }
 
     const existing = await User.findOne({email:req.body.email});
 
