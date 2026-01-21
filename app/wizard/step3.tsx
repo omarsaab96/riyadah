@@ -17,7 +17,6 @@ const { width } = Dimensions.get('window');
 
 export default function WizardStep3() {
     const router = useRouter();
-    const [keyword, setKeyword] = useState('');
     const { formData, updateFormData } = useRegistration();
     const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : (formData.type === "Athlete" && formData.role === "Coach") && Array.isArray(formData.sport) ? formData.sport : []);
     const [error, setError] = useState<string | null>(null);
@@ -26,18 +25,8 @@ export default function WizardStep3() {
     const [orgLocation, setOrgLocation] = useState<string | null>(formData.organization.location || null);
     const [orgRole, setOrgRole] = useState<string | null>(formData.organization.role || null);
     const [orgSince, setOrgSince] = useState<string | null>(formData.organization.since || null);
-    const [searching, setSearching] = useState(false);
-    const [debounceTimeout, setDebounceTimeout] = useState<any>(null);
-    const [sportTypes, setSportTypes] = useState([
-        { label: 'Football', icon: require('../../assets/football.png'), visible: true },
-        { label: 'Basketball', icon: require('../../assets/basketball.png'), visible: true },
-        { label: 'Gymnastics', icon: require('../../assets/gymnastics.png'), visible: true },
-        // { label: 'Racing', icon: require('../../assets/racing.png'), visible: true },
-        // { label: 'Golf', icon: require('../../assets/golf.png'), visible: true },
-        { label: 'Volleyball', icon: require('../../assets/volleyball.png'), visible: true },
-        { label: 'Swimming', icon: require('../../assets/swimming.png'), visible: true },
-        { label: 'Tennis', icon: require('../../assets/tennis.png'), visible: true }
-    ]);
+    const [sportsLoading, setSportsLoading] = useState(false);
+    const [sportTypes, setSportTypes] = useState<any[]>([]);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -51,6 +40,27 @@ export default function WizardStep3() {
         if (formData.sport) {
             setSelected(formData.sport)
         }
+
+        const fetchSports = async () => {
+            try {
+                setSportsLoading(true);
+                const response = await fetch('https://server.riyadah.app/api/sports');
+                if (response.ok) {
+                    const data = await response.json();
+                    const options = Array.isArray(data.data) ? data.data : data;
+                    setSportTypes(Array.isArray(options) ? options : []);
+                } else {
+                    setSportTypes([]);
+                }
+            } catch (err) {
+                console.error('Failed to fetch sports', err);
+                setSportTypes([]);
+            } finally {
+                setSportsLoading(false);
+            }
+        };
+
+        fetchSports();
     }, []);
 
     const handleNext = () => {
@@ -114,36 +124,6 @@ export default function WizardStep3() {
                 [fieldName]: value
             }
         }));
-    };
-
-    const handleSearchInput = (text: string) => {
-        setKeyword(text);
-        setSearching(true);
-
-        if (text.trim().length < 3) {
-            setSportTypes(prev =>
-                prev.map(sport => ({ ...sport, visible: true }))
-            );
-            setSearching(false);
-            return;
-        }
-
-        if (debounceTimeout) clearTimeout(debounceTimeout);
-
-        const timeout = setTimeout(() => {
-            const lowerKeyword = text.trim().toLowerCase();
-
-            setSportTypes(prev =>
-                prev.map(sport => ({
-                    ...sport,
-                    visible: sport.label.toLowerCase().includes(lowerKeyword)
-                }))
-            );
-
-            setSearching(false);
-        }, 500);
-
-        setDebounceTimeout(timeout);
     };
 
     return (
@@ -248,61 +228,43 @@ export default function WizardStep3() {
                         <Text style={styles.errorText}>{error}</Text>
                     </View>
                 )}
-                {/* <View style={styles.searchContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={keyword}
-                        onChangeText={handleSearchInput}
-                        placeholderTextColor="#888888"
-                        placeholder="Search sports (Min. 3 characters)"
-                    />
-                    {searching && (
-                        <ActivityIndicator
-                            size="small"
-                            color="#FF4000"
-                            style={styles.searchLoader}
-                        />
-                    )}
-                </View> */}
             </View>
 
             <ScrollView>
                 <View style={styles.wizardContainer}>
-                    {(() => {
-                        const visibleSports = sportTypes.filter(sport => sport.visible);
-
-                        if (visibleSports.length === 0) {
-                            return (
-                                <Text style={styles.paragraph}>
-                                    No sports found for '<Text style={{ fontWeight: 'bold' }}>{keyword}</Text>'
-                                </Text>
-                            );
-                        }
-
-                        return visibleSports.map(({ label, icon }) => {
-                            const isSelected = selected.includes(label);
-                            return (
-                                <TouchableOpacity
-                                    key={label}
+                    {sportsLoading && (
+                        <Text style={styles.paragraph}>Loading sports...</Text>
+                    )}
+                    {!sportsLoading && sportTypes.length === 0 && (
+                        <Text style={styles.paragraph}>No sports available.</Text>
+                    )}
+                    {!sportsLoading && sportTypes.map((sport) => {
+                        const isSelected = selected.includes(sport.name);
+                        return (
+                            <TouchableOpacity
+                                key={sport._id || sport.name}
+                                style={[
+                                    styles.accountOption,
+                                    isSelected && styles.accountOptionSelected
+                                ]}
+                                onPress={() => toggleSportSelection(sport.name)}
+                            >
+                                <Image
+                                    source={sport.icon ? { uri: sport.icon } : require('../../assets/athlete.png')}
+                                    style={styles.icon}
+                                    resizeMode="contain"
+                                />
+                                <Text
                                     style={[
-                                        styles.accountOption,
-                                        isSelected && styles.accountOptionSelected
+                                        styles.accountText,
+                                        isSelected && styles.accountTextSelected
                                     ]}
-                                    onPress={() => toggleSportSelection(label)}
                                 >
-                                    <Image source={icon} style={styles.icon} resizeMode="contain" />
-                                    <Text
-                                        style={[
-                                            styles.accountText,
-                                            isSelected && styles.accountTextSelected
-                                        ]}
-                                    >
-                                        {label}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        });
-                    })()}
+                                    {sport.name}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
                 </View>
             </ScrollView>
 
@@ -509,14 +471,6 @@ const styles = StyleSheet.create({
         fontFamily: "Qatar",
         fontSize: 20,
         marginBottom: 10
-    },
-    searchContainer: {
-        position: 'relative'
-    },
-    searchLoader: {
-        position: 'absolute',
-        top: 15,
-        right: 10,
     },
     paragraph: {
         fontSize: 14,

@@ -19,7 +19,8 @@ export default function WizardStep4() {
     const [loadingClubs, setLoadingClubs] = useState(true);
     const [keyword, setKeyword] = useState('');
     const { formData, updateFormData } = useRegistration();
-    const [independent, setIndependent] = useState<boolean>(formData.clubs === [] ? true : false);
+    // const [independent, setIndependent] = useState<boolean>(formData.clubs === [] ? true : false);
+    const [independent, setIndependent] = useState<boolean>(true);
     const [selected, setSelected] = useState<any[]>(formData.clubs === [] ? [] : (formData.clubs || []));
     const [error, setError] = useState<string | null>(null);
     const [searching, setSearching] = useState(false);
@@ -165,7 +166,7 @@ export default function WizardStep4() {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        {formData.type != 'Association' && <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
+                        {formData.type != 'Association' && <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1} disabled={true}>
                             <View style={styles.checkbox}>
                                 {independent && <View style={styles.checked} >
                                     <Image source={require('../../assets/check.png')} style={styles.checkImage} />
@@ -176,6 +177,12 @@ export default function WizardStep4() {
                                 I don't have a club. I am independent
                             </Text>
                         </TouchableOpacity>}
+                        <Text style={styles.hint}>
+                            By default, all athletes are registered as independent.
+                        </Text>
+                        <Text style={styles.hint}>
+                            If you are a member of a club, please contact your club through Riyadah to request being added.
+                        </Text>
 
                         {!independent &&
                             <View style={styles.searchContainer}>
@@ -268,8 +275,8 @@ const styles = StyleSheet.create({
         marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         height: 40,
         position: 'absolute',
         top: 40,
@@ -294,7 +301,7 @@ const styles = StyleSheet.create({
     },
     ghostText: {
         color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
@@ -428,6 +435,12 @@ const styles = StyleSheet.create({
     label: {
         color: '#000000',
         fontFamily: 'Acumin'
+    },
+    hint: {
+        color: '#888',
+        fontFamily: 'Acumin',
+        fontSize: 14,
+        lineHeight:18
     },
     error: {
         marginBottom: 15,

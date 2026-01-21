@@ -111,6 +111,18 @@ export default function ManagerDashboardScreen() {
                             <Text style={styles.fullButtonText}>Survey Manager</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.fullButtonRow, { marginTop: 10 }]}
+                            onPress={() => router.push('/manager/sports')}>
+                            <Text style={styles.fullButtonText}>Sports Manager</Text>
+                            <Feather name="arrow-right" size={20} color="#FF4400" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.fullButtonRow, { marginTop: 10 }]}
+                            onPress={() => router.push('/manager/createAthlete')}>
+                            <Text style={styles.fullButtonText}>Add New Athlete</Text>
+                            <Feather name="arrow-right" size={20} color="#FF4400" />
+                        </TouchableOpacity>
                     </View>
                 </ScrollView>
                 }

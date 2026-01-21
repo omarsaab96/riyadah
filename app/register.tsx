@@ -10,18 +10,18 @@ import { useRegistration } from '../context/registration';
 
 
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -280,7 +280,7 @@ export default function Register() {
               </View>
 
               <Text style={styles.label}>
-                I agree Riyadah's{' '}
+                I agree to Riyadah's{' '}
                 <Text style={styles.link} onPress={() => openLink("https://riyadah.app/terms")}>
                   Terms and Conditions
                 </Text>
