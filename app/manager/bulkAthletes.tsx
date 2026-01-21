@@ -276,7 +276,7 @@ const BulkAthletesScreen = () => {
                                             }))}
                                         >
                                             <Text style={styles.historyToggleText}>
-                                                {showHistoryCredentials[item._id] ? 'Hide credentials' : 'Show credentials'}
+                                                {showHistoryCredentials[item._id] ? 'Hide details' : 'Show details'}
                                             </Text>
                                         </TouchableOpacity>
                                     )}
@@ -284,7 +284,7 @@ const BulkAthletesScreen = () => {
                                         <View style={styles.historyCredentials}>
                                             {item.credentials.map((cred: any) => (
                                                 <Text key={`${item._id}-${cred.rowNumber}`} style={styles.previewText}>
-                                                    Row {cred.rowNumber}: {cred.email} / {cred.password}
+                                                    # {cred.rowNumber-1}: {cred.email}
                                                 </Text>
                                             ))}
                                         </View>

@@ -74,17 +74,28 @@ const extractRows = (sheet) => {
     country: headers.indexOf('country')
   };
 
-  return raw.slice(1).map((row, idx) => ({
-    rowNumber: idx + 2,
-    name: columnIndex.name >= 0 ? String(row[columnIndex.name] || '').trim() : '',
-    email: columnIndex.email >= 0 ? String(row[columnIndex.email] || '').trim() : '',
-    phone: columnIndex.phone >= 0 ? String(row[columnIndex.phone] || '').trim() : '',
-    gender: columnIndex.gender >= 0 ? String(row[columnIndex.gender] || '').trim() : '',
-    sport: columnIndex.sport >= 0 ? String(row[columnIndex.sport] || '').trim() : '',
-    clubName: columnIndex.clubName >= 0 ? String(row[columnIndex.clubName] || '').trim() : '',
-    clubEmail: columnIndex.clubEmail >= 0 ? String(row[columnIndex.clubEmail] || '').trim() : '',
-    country: columnIndex.country >= 0 ? String(row[columnIndex.country] || '').trim() : ''
-  }));
+  const rows = [];
+
+  for (let i = 1; i < raw.length; i += 1) {
+    const row = raw[i] || [];
+    const values = row.map((cell) => String(cell || '').trim());
+    const isEmptyRow = values.every((val) => !val);
+    if (isEmptyRow) break;
+
+    rows.push({
+      rowNumber: i + 1,
+      name: columnIndex.name >= 0 ? String(row[columnIndex.name] || '').trim() : '',
+      email: columnIndex.email >= 0 ? String(row[columnIndex.email] || '').trim() : '',
+      phone: columnIndex.phone >= 0 ? String(row[columnIndex.phone] || '').trim() : '',
+      gender: columnIndex.gender >= 0 ? String(row[columnIndex.gender] || '').trim() : '',
+      sport: columnIndex.sport >= 0 ? String(row[columnIndex.sport] || '').trim() : '',
+      clubName: columnIndex.clubName >= 0 ? String(row[columnIndex.clubName] || '').trim() : '',
+      clubEmail: columnIndex.clubEmail >= 0 ? String(row[columnIndex.clubEmail] || '').trim() : '',
+      country: columnIndex.country >= 0 ? String(row[columnIndex.country] || '').trim() : ''
+    });
+  }
+
+  return rows;
 };
 
 router.get('/template', (req, res) => {
