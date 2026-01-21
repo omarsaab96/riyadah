@@ -42,7 +42,6 @@ const CreateAthleteScreen = () => {
         phone: '',
         gender: '',
         sport: '',
-        type: 'Athlete',
     });
 
     useEffect(() => {
@@ -174,17 +173,23 @@ const CreateAthleteScreen = () => {
 
         const dataToSubmit = {
             ...formData,
+            sport: formData.sport ? [formData.sport] : [],
+            type: 'Athlete',
+            personalAccount: false,
+            accountBadge: false,
+            verified: {
+                email: null,
+                phone: null
+            },
+            isStaff: [],
+            clubs: selectedClub?._id ? [selectedClub._id] : []
         };
-
-        if (selectedClub?._id) {
-            dataToSubmit.club = selectedClub._id;
-        }
 
         try {
             setSaving(true);
             const token = await SecureStore.getItemAsync('userToken');
 
-            const response = await fetch('https://server.riyadah.app/api/athletes', {
+            const response = await fetch('https://server.riyadah.app/api/users', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -202,6 +207,9 @@ const CreateAthleteScreen = () => {
                 throw new Error(errorMsg);
             }
 
+            setFormData(prev => ({
+                ...prev,
+            }));
             setShowConfirmation(true);
         } catch (error) {
             setError(error.message);
@@ -216,7 +224,7 @@ const CreateAthleteScreen = () => {
     };
 
     const handleCopy = () => {
-        const loginInfo = `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`;
+        const loginInfo = `Hello, ${formData.name}!\nUse these credentials to login to your Riyadah account.\nEmail: ${formData.email}\nPassword: ${formData.password}`;
         Clipboard.setStringAsync(loginInfo);
         setCopied(true);
 
@@ -228,7 +236,7 @@ const CreateAthleteScreen = () => {
     const handleShare = async () => {
         try {
             const result = await Share.share({
-                message: `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`,
+                message: `Hello, ${formData.name}!\nUse these credentials to login to your Riyadah account.\nEmail: ${formData.email}\nPassword: ${formData.password}`,
             });
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
@@ -525,6 +533,9 @@ const CreateAthleteScreen = () => {
 
                             <Text style={styles.confirmationSubTitle}>
                                 Email: {formData.email}
+                            </Text>
+                            <Text style={styles.confirmationSubTitle}>
+                                Password: {formData.password}
                             </Text>
 
                             <View style={[styles.profileActions, styles.inlineActions]}>

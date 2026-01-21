@@ -9,7 +9,6 @@ const imageRoutes = require('./routes/imageRoutes');
 const teamsRoutes = require('./routes/teamRoutes');
 const schedulesRoutes = require('./routes/scheduleRoutes');
 const staffRoutes = require('./routes/staffRoutes');
-const athleteRoutes = require('./routes/athleteRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const postRoutes = require('./routes/postRoutes')
@@ -47,7 +46,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/schedules', schedulesRoutes);
 app.use('/api/staff', staffRoutes);
-app.use('/api/athletes', athleteRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/financials', paymentRoutes);
 app.use('/api/posts', postRoutes);
