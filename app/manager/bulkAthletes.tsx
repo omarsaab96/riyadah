@@ -198,7 +198,7 @@ const BulkAthletesScreen = () => {
                                 </Text>
                             </TouchableOpacity>
 
-                            {previewRows.length > 0 && (
+                            {!result && previewRows.length > 0 && (
                                 <View style={styles.previewSection}>
                                     <Text style={styles.previewTitle}>Preview</Text>
 
@@ -242,7 +242,7 @@ const BulkAthletesScreen = () => {
                                             <Text style={styles.previewErrorTitle}>Credentials</Text>
                                             {result.credentials.map((cred: any) => (
                                                 <Text key={`${cred.rowNumber}-${cred.email}`} style={styles.previewText}>
-                                                    Row {cred.rowNumber}: {cred.email} / {cred.password}
+                                                    # {cred.rowNumber-1}: {cred.email} / {cred.password}
                                                 </Text>
                                             ))}
                                         </View>

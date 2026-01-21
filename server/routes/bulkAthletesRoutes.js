@@ -195,7 +195,7 @@ router.post('/commit', authenticate, requireManager, async (req, res) => {
       if (seenEmails.has(emailKey)) {
         errors.push({
           rowNumber: row.rowNumber,
-          message: 'Duplicate email in file'
+          message: 'Duplicated email in file'
         });
         return;
       }
@@ -252,9 +252,6 @@ router.post('/commit', authenticate, requireManager, async (req, res) => {
         clubId = club?._id || null;
       }
 
-      const password = `Riyadah#${Math.random().toString(36).slice(-8)}`;
-      const hashedPassword = await bcrypt.hash(password, 10);
-
       const newUser = new User({
         accountBadge: false,
         achievements: null,
@@ -298,7 +295,7 @@ router.post('/commit', authenticate, requireManager, async (req, res) => {
         name: row.name,
         organization: null,
         parentEmail: null,
-        password: hashedPassword,
+        password: null,
         personalAccount: false,
         phone: row.phone || null,
         role: null,
