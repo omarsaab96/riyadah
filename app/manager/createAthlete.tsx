@@ -198,6 +198,8 @@ const CreateAthleteScreen = () => {
                 body: JSON.stringify(dataToSubmit)
             });
 
+            console.log(response)
+
             const data = await response.json();
 
             if (!response.ok) {

@@ -71,6 +71,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ newUser, token });
   } catch (err) {
+    console.error(err);
     res.status(400).json({ error: err.message });
   }
 });
