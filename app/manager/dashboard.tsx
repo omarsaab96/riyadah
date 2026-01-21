@@ -119,6 +119,12 @@ export default function ManagerDashboardScreen() {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.fullButtonRow, { marginTop: 10 }]}
+                            onPress={() => router.push('/manager/bulkAthletes')}>
+                            <Text style={styles.fullButtonText}>Add Bulk New Athletes</Text>
+                            <Feather name="arrow-right" size={20} color="#FF4400" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.fullButtonRow, { marginTop: 10 }]}
                             onPress={() => router.push('/manager/createAthlete')}>
                             <Text style={styles.fullButtonText}>Add New Athlete</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />

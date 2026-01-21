@@ -227,7 +227,7 @@ const CreateAthleteScreen = () => {
     };
 
     const handleCopy = () => {
-        const loginInfo = `Hello, ${formData.name}!\nUse these credentials to login to your Riyadah account.\nEmail: ${formData.email}\nPassword: ${formData.password}`;
+        const loginInfo = `Hello, ${formData.name}!\nUse these credentials to login to your Riyadah account.\nEmail: ${formData.email}\nPassword: You can set a new password while you login`;
         Clipboard.setStringAsync(loginInfo);
         setCopied(true);
 
@@ -239,7 +239,7 @@ const CreateAthleteScreen = () => {
     const handleShare = async () => {
         try {
             const result = await Share.share({
-                message: `Hello, ${formData.name}!\nUse these credentials to login to your Riyadah account.\nEmail: ${formData.email}\nPassword: ${formData.password}`,
+                message: `Hello, ${formData.name}!\nUse these credentials to login to your Riyadah account.\nEmail: ${formData.email}\nPassword: You can set a new password while you login`,
             });
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
@@ -537,9 +537,9 @@ const CreateAthleteScreen = () => {
                             <Text style={styles.confirmationSubTitle}>
                                 Email: {formData.email}
                             </Text>
-                            <Text style={styles.confirmationSubTitle}>
+                            {/* <Text style={styles.confirmationSubTitle}>
                                 Password: {formData.password}
-                            </Text>
+                            </Text> */}
 
                             <View style={[styles.profileActions, styles.inlineActions]}>
                                 <TouchableOpacity onPress={handleCopy} style={styles.profileButton}>

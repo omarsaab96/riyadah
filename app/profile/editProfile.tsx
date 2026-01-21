@@ -275,7 +275,7 @@ export default function EditProfile() {
                             {user.type != "Parent" &&
                                 <View style={styles.entity}>
                                     <Text style={[styles.title, { marginBottom: 0 }]}>
-                                        CONTACT Info
+                                        Contact Info
                                     </Text>
                                     <Text style={[{ marginBottom: 10, fontSize: 12, color: '#aaa' }]}>
                                         Empty fields will be hidden from your profile

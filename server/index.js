@@ -21,6 +21,7 @@ const walletRoutes = require("./routes/walletRoutes");
 const timesheetRoutes = require("./routes/timesheetRoutes");
 const testRoutes = require("./routes/testRoutes");
 const sportsRoutes = require("./routes/sportsRoutes");
+const bulkAthletesRoutes = require("./routes/bulkAthletesRoutes");
 const Chat = require("./models/Chat");
 const Schedule = require("./models/Schedule");
 const Survey = require("./models/survey");
@@ -57,6 +58,7 @@ app.use('/api/timesheet', timesheetRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/sports', sportsRoutes);
+app.use('/api/bulk-athletes', bulkAthletesRoutes);
 
 app.use('/api/search', searchRoutes);
 app.use('/api/notifications', notificationsRoutes);
