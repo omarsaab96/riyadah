@@ -416,7 +416,7 @@ router.get('/search', async (req, res) => {
       query.role = role;
     }
 
-    const users = await User.find(query).select('-password -__v -createdAt -updatedAt -image');
+    const users = await User.find(query).select('-password -__v -createdAt -updatedAt');
 
     res.json(users);
   } catch (err) {

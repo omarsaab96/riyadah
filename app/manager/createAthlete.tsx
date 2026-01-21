@@ -4,7 +4,6 @@ import { Picker as RNPicker } from '@react-native-picker/picker';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -25,16 +24,16 @@ const { width } = Dimensions.get('window');
 
 const CreateAthleteScreen = () => {
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const scrollViewRef = useRef(null);
-    const dayRef = useRef(null);
-    const monthRef = useRef(null);
-    const yearRef = useRef(null);
     const [error, setError] = useState(null);
-    const [userId, setUserId] = useState(null);
     const [sportOptions, setSportOptions] = useState([]);
     const [sportsLoading, setSportsLoading] = useState(false);
+    const [clubKeyword, setClubKeyword] = useState('');
+    const [clubResults, setClubResults] = useState([]);
+    const [clubSearching, setClubSearching] = useState(false);
+    const [clubDebounceTimeout, setClubDebounceTimeout] = useState(null);
+    const [selectedClub, setSelectedClub] = useState(null);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [copied, setCopied] = useState(false);
     const [formData, setFormData] = useState({
@@ -42,36 +41,11 @@ const CreateAthleteScreen = () => {
         email: '',
         phone: '',
         gender: '',
-        country: '',
-        dob: {
-            day: '',
-            month: '',
-            year: ''
-        },
         sport: '',
-        agreed: false,
         type: 'Athlete',
     });
 
     useEffect(() => {
-        const fetchUser = async () => {
-            setLoading(true);
-            const token = await SecureStore.getItemAsync('userToken');
-            if (token) {
-                const decodedToken = jwtDecode(token);
-                setUserId(decodedToken.userId);
-
-                const response = await fetch(`https://server.riyadah.app/api/users/${decodedToken.userId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    console.error('API error');
-                }
-            }
-            setLoading(false);
-        };
-
         const fetchSports = async () => {
             try {
                 setSportsLoading(true);
@@ -91,7 +65,6 @@ const CreateAthleteScreen = () => {
             }
         };
 
-        fetchUser();
         fetchSports();
     }, []);
 
@@ -99,21 +72,64 @@ const CreateAthleteScreen = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleDobChange = (name, value) => {
-        setFormData(prev => ({
-            ...prev,
-            dob: {
-                ...prev.dob,
-                [name]: value
+    const handleClubSearchInput = (text) => {
+        setClubKeyword(text);
+        if (selectedClub && text.trim() !== selectedClub.name) {
+            setSelectedClub(null);
+        }
+        if (text.trim().length < 3) {
+            setClubResults([]);
+            return;
+        }
+
+        if (clubDebounceTimeout) clearTimeout(clubDebounceTimeout);
+
+        const timeout = setTimeout(() => {
+            if (text.trim().length >= 3) {
+                searchClubs(text);
+            } else {
+                setClubResults([]);
             }
-        }));
+        }, 500);
+
+        setClubDebounceTimeout(timeout);
     };
 
-    const toggleAgreed = () => {
-        setFormData(prev => ({
-            ...prev,
-            agreed: !prev.agreed
-        }));
+    const searchClubs = async (text) => {
+        try {
+            setClubSearching(true);
+            const token = await SecureStore.getItemAsync('userToken');
+            const response = await fetch(`https://server.riyadah.app/api/users/search?keyword=${encodeURIComponent(text)}&type=Club`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setClubResults(Array.isArray(data) ? data : []);
+            } else {
+                setClubResults([]);
+            }
+        } catch (error) {
+            console.error('Error searching clubs:', error);
+            setClubResults([]);
+        } finally {
+            setClubSearching(false);
+        }
+    };
+
+    const handleClubSelect = (club) => {
+        setSelectedClub(club);
+        setClubResults([]);
+        setClubKeyword(club.name);
+        setClubKeyword('');
+    };
+
+    const handleClearClub = () => {
+        setSelectedClub(null);
+        setClubKeyword('');
+        setClubResults([]);
     };
 
     const checkAvailability = async (email) => {
@@ -133,9 +149,8 @@ const CreateAthleteScreen = () => {
             return { success: false, msg: 'Server error' };
         }
     };
+    
     const handleSubmit = async () => {
-        const dobComplete = formData.dob.day && formData.dob.month && formData.dob.year;
-
         if (!formData.name || !formData.email) {
             setError("Please fill in all required fields");
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -159,8 +174,11 @@ const CreateAthleteScreen = () => {
 
         const dataToSubmit = {
             ...formData,
-            club: userId,
         };
+
+        if (selectedClub?._id) {
+            dataToSubmit.club = selectedClub._id;
+        }
 
         try {
             setSaving(true);
@@ -196,8 +214,6 @@ const CreateAthleteScreen = () => {
     const handleCancel = () => {
         router.back();
     };
-
-
 
     const handleCopy = () => {
         const loginInfo = `Hello, ${formData.name}!\nUse this email to login to your Riyadah account.\n${formData.email}`;
@@ -412,6 +428,58 @@ const CreateAthleteScreen = () => {
                                 )}
                             </View>
 
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Club</Text>
+                                <View style={styles.searchContainer}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                                        placeholder="Search by club name (min. 3 characters)"
+                                        placeholderTextColor="#888"
+                                        value={clubKeyword}
+                                        onChangeText={handleClubSearchInput}
+                                    />
+                                    {clubSearching && (
+                                        <ActivityIndicator size="small" color="#FF4000" style={styles.searchLoader} />
+                                    )}
+                                </View>
+
+                                {selectedClub && (
+                                    <TouchableOpacity style={styles.selectedClub} onPress={handleClearClub}>
+                                        <View style={styles.clubRow}>
+                                            <Image
+                                                source={selectedClub.image ? { uri: selectedClub.image } : require('../../assets/club.png')}
+                                                style={styles.clubAvatar}
+                                            />
+                                            <Text style={styles.selectedClubText}>{selectedClub.name}</Text>
+                                        </View>
+                                        <Text style={styles.clearClubText}>Remove</Text>
+                                    </TouchableOpacity>
+                                )}
+
+                                {!selectedClub && clubResults.length > 0 && (
+                                    <View style={styles.resultsContainer}>
+                                        {clubResults.map((club) => (
+                                            <TouchableOpacity
+                                                key={club._id}
+                                                style={styles.clubItem}
+                                                onPress={() => handleClubSelect(club)}
+                                            >
+                                                <View style={styles.clubRow}>
+                                                    <Image
+                                                        source={club.image ? { uri: club.image } : require('../../assets/club.png')}
+                                                        style={styles.clubAvatar}
+                                                    />
+                                                    <View>
+                                                        <Text style={styles.clubName}>{club.name}</Text>
+                                                        {club.email && <Text style={styles.clubEmail}>{club.email}</Text>}
+                                                    </View>
+                                                </View>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
+
                             {/* <View style={styles.formGroup}>
                                 <Text style={styles.label}>Account Type</Text>
                                 <TextInput
@@ -608,6 +676,67 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
         marginBottom: 10,
         color: '#111111'
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    searchLoader: {
+        position: 'absolute',
+        right: 10,
+    },
+    resultsContainer: {
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: '#eee',
+        borderRadius: 10,
+        padding: 5
+    },
+    clubRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10
+    },
+    clubAvatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 8,
+        backgroundColor: '#f0f0f0'
+    },
+    clubItem: {
+        paddingVertical: 8,
+        paddingHorizontal: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f1f1'
+    },
+    clubName: {
+        fontFamily: 'Qatar',
+        fontSize: 16,
+        color: '#111'
+    },
+    clubEmail: {
+        fontFamily: 'Acumin',
+        fontSize: 12,
+        color: '#666'
+    },
+    selectedClub: {
+        marginTop: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#f4f4f4',
+        padding: 10,
+        borderRadius: 8
+    },
+    selectedClubText: {
+        fontFamily: 'Qatar',
+        fontSize: 16,
+        color: '#111'
+    },
+    clearClubText: {
+        fontFamily: 'Acumin',
+        fontSize: 12,
+        color: '#FF4000'
     },
     checkboxContainer: {
         flexDirection: 'row',

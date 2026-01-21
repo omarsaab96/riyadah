@@ -9,7 +9,6 @@ router.post(
   [
     body('name').notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Valid email is required'),
-    body('club').notEmpty().withMessage('Club is required'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -99,7 +98,9 @@ router.post(
         weight: null
       });
 
-      newUser.clubs.push(club);
+      if (club) {
+        newUser.clubs.push(club);
+      }
 
       await newUser.save();
 

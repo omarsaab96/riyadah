@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     Image,
     ScrollView,
@@ -233,7 +234,9 @@ export default function WizardStep3() {
             <ScrollView>
                 <View style={styles.wizardContainer}>
                     {sportsLoading && (
-                        <Text style={styles.paragraph}>Loading sports...</Text>
+                        <Text style={styles.paragraph}>
+                            <ActivityIndicator size="small" color="#FF4000" />
+                        </Text>
                     )}
                     {!sportsLoading && sportTypes.length === 0 && (
                         <Text style={styles.paragraph}>No sports available.</Text>
