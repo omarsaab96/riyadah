@@ -31,6 +31,7 @@ const BulkAthletesScreen = () => {
     const [filename, setFilename] = useState<string | null>(null);
     const [processing, setProcessing] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [showHistoryCredentials, setShowHistoryCredentials] = useState<Record<string, boolean>>({});
 
     const fetchHistory = async () => {
         try {
@@ -239,10 +240,10 @@ const BulkAthletesScreen = () => {
                                     <Text style={styles.resultText}>Failed: {result.failureCount}</Text>
                                     {result.credentials?.length > 0 && (
                                         <View style={styles.credentials}>
-                                            <Text style={styles.previewErrorTitle}>Credentials</Text>
+                                            <Text style={styles.previewErrorTitle}>Created users</Text>
                                             {result.credentials.map((cred: any) => (
                                                 <Text key={`${cred.rowNumber}-${cred.email}`} style={styles.previewText}>
-                                                    # {cred.rowNumber-1}: {cred.email} / {cred.password}
+                                                    # {cred.rowNumber-1}: {cred.email}
                                                 </Text>
                                             ))}
                                         </View>
@@ -266,6 +267,28 @@ const BulkAthletesScreen = () => {
                                     <Text style={styles.historySub}>
                                         Rows: {item.totalRows} | Success: {item.successCount} | Failed: {item.failureCount}
                                     </Text>
+                                    {item.credentials?.length > 0 && (
+                                        <TouchableOpacity
+                                            style={styles.historyToggle}
+                                            onPress={() => setShowHistoryCredentials(prev => ({
+                                                ...prev,
+                                                [item._id]: !prev[item._id]
+                                            }))}
+                                        >
+                                            <Text style={styles.historyToggleText}>
+                                                {showHistoryCredentials[item._id] ? 'Hide credentials' : 'Show credentials'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    {showHistoryCredentials[item._id] && item.credentials?.length > 0 && (
+                                        <View style={styles.historyCredentials}>
+                                            {item.credentials.map((cred: any) => (
+                                                <Text key={`${item._id}-${cred.rowNumber}`} style={styles.previewText}>
+                                                    Row {cred.rowNumber}: {cred.email} / {cred.password}
+                                                </Text>
+                                            ))}
+                                        </View>
+                                    )}
                                 </View>
                             ))}
                         </View>
@@ -446,6 +469,23 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
         marginBottom: 10
+    },
+    historyToggle: {
+        marginTop: 8,
+        alignSelf: 'flex-start',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: '#eee',
+        borderRadius: 8
+    },
+    historyToggleText: {
+        fontFamily: 'Acumin',
+        fontSize: 12,
+        color: '#FF4000'
+    },
+    historyCredentials: {
+        marginTop: 8
     },
     historyTitle: {
         fontFamily: 'Qatar',

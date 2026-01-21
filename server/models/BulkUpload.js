@@ -32,7 +32,16 @@ const bulkUploadSchema = new mongoose.Schema(
     errors: { type: [bulkErrorSchema], default: [] },
     totalRows: { type: Number, default: 0 },
     successCount: { type: Number, default: 0 },
-    failureCount: { type: Number, default: 0 }
+    failureCount: { type: Number, default: 0 },
+    credentials: {
+      type: [
+        {
+          rowNumber: Number,
+          email: String
+        }
+      ],
+      default: []
+    }
   },
   { timestamps: true }
 );

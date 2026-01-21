@@ -107,7 +107,7 @@ router.get('/', authenticate, requireManager, async (req, res) => {
   try {
     const uploads = await BulkUpload.find({ manager: req.user._id })
       .sort({ createdAt: -1 })
-      .select('filename status totalRows successCount failureCount createdAt');
+      .select('filename status totalRows successCount failureCount createdAt credentials errors');
     res.json({ success: true, data: uploads });
   } catch (err) {
     console.error(err);
@@ -329,6 +329,7 @@ router.post('/commit', authenticate, requireManager, async (req, res) => {
     upload.successCount = successCount;
     upload.failureCount = failureCount;
     upload.errors = errors;
+    upload.credentials = credentials;
     await upload.save();
 
     res.json({
