@@ -165,7 +165,7 @@ router.post('/preview', authenticate, requireManager, async (req, res) => {
     res.json({
       success: true,
       uploadId: upload._id,
-      preview: rows.slice(0, 20),
+      preview: rows,
       errors
     });
   } catch (err) {
