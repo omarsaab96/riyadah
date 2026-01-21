@@ -322,7 +322,6 @@ router.post('/commit', authenticate, requireManager, async (req, res) => {
       credentials.push({
         rowNumber: row.rowNumber,
         email: row.email,
-        password
       });
     }
 
