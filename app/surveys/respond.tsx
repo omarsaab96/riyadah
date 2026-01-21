@@ -37,6 +37,10 @@ type SurveyQuestion = {
         max?: number;
         step?: number;
     };
+    conditional?: {
+        questionId?: string;
+        values?: string[];
+    };
 };
 
 type Survey = {
@@ -108,7 +112,25 @@ export default function SurveyRespondScreen() {
         fetchSurvey();
     }, [surveyId]);
 
+    const shouldShowQuestion = (question: SurveyQuestion) => {
+        if (!question.conditional?.questionId) return true;
+        const conditionalValue = answers[question.conditional.questionId];
+        if (conditionalValue === undefined || conditionalValue === null) return false;
+
+        const expectedValues = (question.conditional.values || []).map(value => String(value));
+        if (expectedValues.length === 0) {
+            return Boolean(conditionalValue);
+        }
+
+        if (Array.isArray(conditionalValue)) {
+            return conditionalValue.some(value => expectedValues.includes(String(value)));
+        }
+
+        return expectedValues.includes(String(conditionalValue));
+    };
+
     const isAnswerFilled = (question: SurveyQuestion, value: any) => {
+        if (!shouldShowQuestion(question)) return true;
         if (!question.required) return true;
         if (question.type === 'rating') return value !== undefined && value !== null;
         if (question.type === 'multi') return Array.isArray(value) && value.length > 0;
@@ -139,13 +161,14 @@ export default function SurveyRespondScreen() {
             return;
         }
 
-        const missing = survey.questions.filter(question => !isAnswerFilled(question, answers[question._id]));
+        const visibleQuestions = survey.questions.filter(question => shouldShowQuestion(question));
+        const missing = visibleQuestions.filter(question => !isAnswerFilled(question, answers[question._id]));
         if (missing.length > 0) {
             Alert.alert('Please fill all required fields', 'All required fields are mandatory.');
             return;
         }
 
-        const payloadAnswers = survey.questions
+        const payloadAnswers = visibleQuestions
             .map(question => {
                 const value = answers[question._id];
                 if (value === undefined || value === null) return null;
@@ -222,7 +245,7 @@ export default function SurveyRespondScreen() {
                 <ScrollView>
                     <View style={styles.contentContainer}>
                         {error ? <Text style={styles.errorText}>{error}</Text> : null}
-                        {survey?.questions?.map(question => (
+                        {survey?.questions?.filter(question => shouldShowQuestion(question)).map(question => (
                             <View key={question._id} style={styles.questionBlock}>
                                 <Text style={styles.label}>
                                     {question.text}{question.required ? ' *' : ''}

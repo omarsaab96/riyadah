@@ -42,6 +42,12 @@ const normalizeQuestions = (questions = []) =>
       max: Number(question.scale.max ?? 10),
       step: Number(question.scale.step ?? 1),
     } : undefined,
+    conditional: question.conditional && question.conditional.questionId ? {
+      questionId: question.conditional.questionId,
+      values: Array.isArray(question.conditional.values)
+        ? question.conditional.values.map(value => String(value).trim()).filter(Boolean)
+        : []
+    } : undefined,
   }));
 
 const normalizeRepeating = (repeating = {}) => {

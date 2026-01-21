@@ -1,5 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Picker as RNPicker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
@@ -37,6 +38,10 @@ type SurveyQuestion = {
         max?: number;
         step?: number;
     };
+    conditional?: {
+        questionId?: string | null;
+        values?: string[];
+    };
 };
 
 type Survey = {
@@ -60,6 +65,8 @@ type QuestionForm = {
         max: string;
         step: string;
     };
+    conditionalQuestionId: string;
+    conditionalValues: string;
 };
 
 const defaultQuestion = (): QuestionForm => ({
@@ -68,7 +75,9 @@ const defaultQuestion = (): QuestionForm => ({
     type: 'single',
     required: true,
     options: [''],
-    scale: { min: '0', max: '10', step: '1' }
+    scale: { min: '0', max: '10', step: '1' },
+    conditionalQuestionId: '',
+    conditionalValues: ''
 });
 
 export default function ManagerSurveysScreen() {
@@ -163,7 +172,9 @@ export default function ManagerSurveysScreen() {
                     min: String(question.scale?.min ?? 0),
                     max: String(question.scale?.max ?? 10),
                     step: String(question.scale?.step ?? 1)
-                }
+                },
+                conditionalQuestionId: question.conditional?.questionId ? String(question.conditional.questionId) : '',
+                conditionalValues: question.conditional?.values?.length ? question.conditional.values.join(', ') : ''
             }))
         );
     };
@@ -225,6 +236,19 @@ export default function ManagerSurveysScreen() {
                     max: Number(question.scale.max || 10),
                     step: Number(question.scale.step || 1)
                 };
+            }
+
+            if (question.conditionalQuestionId) {
+                const values = question.conditionalValues
+                    .split(',')
+                    .map(value => value.trim())
+                    .filter(Boolean);
+                if (values.length > 0) {
+                    payload.conditional = {
+                        questionId: question.conditionalQuestionId,
+                        values
+                    };
+                }
             }
 
             return payload;
@@ -611,6 +635,39 @@ export default function ManagerSurveysScreen() {
                                     <Text style={styles.toggleLabel}>Required</Text>
                                 </TouchableOpacity>
 
+                                <Text style={styles.label}>Conditional display</Text>
+                                <View style={styles.conditionalRow}>
+                                    <View style={styles.conditionalPicker}>
+                                        <RNPicker
+                                            selectedValue={question.conditionalQuestionId}
+                                            onValueChange={(value) => updateQuestion(index, { conditionalQuestionId: value })}
+                                            style={styles.picker}
+                                        >
+                                            <RNPicker.Item label="Always show" value="" />
+                                            {questions
+                                                .slice(0, index)
+                                                .filter(item => item._id)
+                                                .map((item, idx) => (
+                                                    <RNPicker.Item
+                                                        key={`${item._id}-${idx}`}
+                                                        label={item.text || `Question ${idx + 1}`}
+                                                        value={String(item._id)}
+                                                    />
+                                                ))}
+                                        </RNPicker>
+                                    </View>
+                                    <TextInput
+                                        style={[styles.input, styles.conditionalInput]}
+                                        value={question.conditionalValues}
+                                        onChangeText={(value) => updateQuestion(index, { conditionalValues: value })}
+                                        placeholder="Show if answer is (comma separated)"
+                                        placeholderTextColor="#888"
+                                    />
+                                </View>
+                                <Text style={styles.hintText}>
+                                    Save the survey to enable conditional logic for new questions.
+                                </Text>
+
                                 {(question.type === 'single' || question.type === 'multi') && (
                                     <View style={styles.optionSection}>
                                         <View style={styles.sectionHeader}>
@@ -883,6 +940,18 @@ const styles = StyleSheet.create({
     },
     optionInput: {
         flex: 1
+    },
+    conditionalRow: {
+        marginBottom: 12
+    },
+    conditionalPicker: {
+        borderRadius: 8,
+        overflow: 'hidden',
+        marginBottom: 10,
+        backgroundColor: '#F4F4F4'
+    },
+    conditionalInput: {
+        marginBottom: 0
     },
     scaleRow: {
         flexDirection: 'row',

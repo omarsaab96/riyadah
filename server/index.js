@@ -27,6 +27,8 @@ const Schedule = require("./models/Schedule");
 const Survey = require("./models/survey");
 const Attendance = require("./models/Attendance");
 const User = require("./models/User");
+const Team = require("./models/Team");
+const SurveyResponse = require("./models/surveyResponse");
 const { sendNotification } = require("./utils/notificationService");
 
 
@@ -245,6 +247,107 @@ const notifyPostTrainingSurveys = async () => {
 };
 
 setInterval(notifyPostTrainingSurveys, 60 * 1000);
+
+let processingMonthlySurveyNotifications = false;
+const monthlySurveyNotified = new Set();
+
+const getMonthlySurveyTargets = async (survey) => {
+    const scope = survey.restrictedTo?.scope || 'none';
+    const refId = survey.restrictedTo?.refId ? String(survey.restrictedTo.refId) : null;
+
+    if (scope === 'none') {
+        return User.find({ type: 'Athlete' }).select('_id expoPushToken');
+    }
+
+    if (scope === 'club' && refId) {
+        const teams = await Team.find({ club: refId }).select('_id');
+        const teamIds = teams.map(team => team._id);
+        return User.find({
+            type: 'Athlete',
+            $or: [
+                { clubs: refId },
+                { memberOf: { $in: teamIds } }
+            ]
+        }).select('_id expoPushToken');
+    }
+
+    if (scope === 'team' && refId) {
+        const team = await Team.findById(refId).select('members');
+        if (!team) return [];
+        return User.find({ _id: { $in: team.members }, type: 'Athlete' }).select('_id expoPushToken');
+    }
+
+    if (scope === 'coach' && refId) {
+        const teams = await Team.find({ coaches: refId }).select('members');
+        const memberIds = new Set();
+        teams.forEach(team => {
+            (team.members || []).forEach(memberId => memberIds.add(String(memberId)));
+        });
+        return User.find({ _id: { $in: Array.from(memberIds) }, type: 'Athlete' }).select('_id expoPushToken');
+    }
+
+    return [];
+};
+
+const notifyMonthlySurveys = async () => {
+    if (processingMonthlySurveyNotifications) return;
+    processingMonthlySurveyNotifications = true;
+
+    try {
+        const surveys = await Survey.find({
+            isActive: true,
+            'repeating.enabled': true,
+            'repeating.cadence': 'monthly'
+        });
+
+        if (surveys.length === 0) {
+            processingMonthlySurveyNotifications = false;
+            return;
+        }
+
+        const now = new Date();
+        const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+        for (const survey of surveys) {
+            const responses = await SurveyResponse.find({
+                survey: survey._id,
+                createdAt: { $gte: startOfMonth, $lt: startOfNextMonth }
+            }).select('user');
+            const respondedIds = new Set(responses.map(res => String(res.user)));
+
+            const targets = await getMonthlySurveyTargets(survey);
+
+            for (const user of targets) {
+                const userId = String(user._id);
+                if (respondedIds.has(userId)) continue;
+
+                const key = `${survey._id}:${userId}:${yearMonth}`;
+                if (monthlySurveyNotified.has(key)) continue;
+
+                try {
+                    await sendNotification(
+                        user,
+                        'Monthly survey',
+                        'Please complete your monthly wellness survey.',
+                        { type: 'survey', surveyId: survey._id },
+                        true
+                    );
+                    monthlySurveyNotified.add(key);
+                } catch (err) {
+                    console.error('Failed to send monthly survey notification:', err.message || err);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error sending monthly surveys:', error);
+    } finally {
+        processingMonthlySurveyNotifications = false;
+    }
+};
+
+setInterval(notifyMonthlySurveys, 24 * 60 * 60 * 1000);
 
 
 const PORT = 5000;

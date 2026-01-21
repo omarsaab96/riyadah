@@ -19,6 +19,10 @@ const surveyQuestionSchema = new mongoose.Schema({
     min: { type: Number, default: 0 },
     max: { type: Number, default: 10 },
     step: { type: Number, default: 1 },
+  },
+  conditional: {
+    questionId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    values: { type: [String], default: [] }
   }
 }, { _id: true });
 
