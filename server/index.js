@@ -30,6 +30,7 @@ const User = require("./models/User");
 const Team = require("./models/Team");
 const SurveyResponse = require("./models/surveyResponse");
 const { sendNotification } = require("./utils/notificationService");
+const { buildNotificationContent } = require("./utils/notificationTemplates");
 
 
 const app = express();
@@ -222,10 +223,15 @@ const notifyPostTrainingSurveys = async () => {
                     const user = await User.findById(attendeeId).select('expoPushToken');
                     if (!user) continue;
                     try {
+                        const content = buildNotificationContent({
+                            type: 'survey',
+                            title: 'Post-training survey',
+                            body: 'Please complete your post-training survey.'
+                        });
                         await sendNotification(
                             user,
-                            'Post-training survey',
-                            'Please complete your post-training survey.',
+                            content.title,
+                            content.body,
                             { type: 'survey', surveyId: survey._id, sessionId: session._id },
                             true
                         );
@@ -327,10 +333,15 @@ const notifyMonthlySurveys = async () => {
                 if (monthlySurveyNotified.has(key)) continue;
 
                 try {
+                    const content = buildNotificationContent({
+                        type: 'survey',
+                        title: 'Monthly survey',
+                        body: 'Please complete your monthly wellness survey.'
+                    });
                     await sendNotification(
                         user,
-                        'Monthly survey',
-                        'Please complete your monthly wellness survey.',
+                        content.title,
+                        content.body,
                         { type: 'survey', surveyId: survey._id },
                         true
                     );

@@ -6,6 +6,7 @@ require('dotenv').config({ path: __dirname + '/../.env' });
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const { sendNotification } = require('../utils/notificationService');
+const { buildNotificationContent } = require('../utils/notificationTemplates');
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -65,10 +66,15 @@ async function sendPaymentReminders() {
   let successCount = 0;
   for (const athlete of athletes) {
     try {
+      const content = buildNotificationContent({
+        type: 'monthly_payment_reminder',
+        title: 'Payment Reminder',
+        body: `Dear ${athlete.name || 'Athlete'}, please note that your club membership fee is due today.`
+      });
       await sendNotification(
         athlete,
-        '💳 Payment Reminder',
-        `Dear ${athlete.name || 'Athlete'}, please note that your club membership fee is due today.`,
+        content.title,
+        content.body,
         { screen:'/profile?tab=Financials', type: 'monthly_payment_reminder', clubs: athlete.clubs },
         true
       );
@@ -99,3 +105,4 @@ async function tick() {
 
 setInterval(() => tick(), TICK_MS);
 console.log('[MonthlyReminder] Worker started — checking every 5 min...');
+

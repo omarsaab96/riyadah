@@ -10,6 +10,7 @@ const User = require('../models/User');
 const Schedule = require('../models/Schedule');
 require('../models/Team');
 const { sendNotification } = require('../utils/notificationService');
+const { buildNotificationContent } = require('../utils/notificationTemplates');
 let isProcessing = false;
 const TICK_MS = 5000;
 const MAX_ATTEMPTS = 5;
@@ -45,10 +46,13 @@ async function notify(job) {
     expoPushToken: { $exists: true, $ne: null },
   }).lean();
 
-  const title = '📅 New Event';
-  const body = `You have a new ${event.eventType} scheduled for ${formatDate(
-    event.date
-  )} at ${formatTime(event.startTime)}.`;
+  const content = buildNotificationContent({
+    type: 'event',
+    title: 'New Event',
+    body: `You have a new ${event.eventType} scheduled for ${formatDate(
+      event.date
+    )} at ${formatTime(event.startTime)}.`
+  });
   const data = {screen:'schedule/details', id: event._id.toString() };
 
   let i = 0;
@@ -56,7 +60,7 @@ async function notify(job) {
     const slice = users.slice(i, i + CONCURRENCY);
     await Promise.allSettled(
       slice.map((u) =>
-        sendNotification(u, title, body, data).catch((e) =>
+        sendNotification(u, content.title, content.body, data).catch((e) =>
           console.error('[eventNotifier] push error', u._id.toString(), e.message)
         )
       )
@@ -126,3 +130,5 @@ async function tick() {
 setInterval(tick, TICK_MS);
 
 console.log('[eventNotifier] Notification worker started...');
+
+

@@ -9,6 +9,7 @@ const Schedule = require('../models/Schedule');
 const Team = require('../models/Team');
 const User = require('../models/User');
 const { sendNotification } = require('../utils/notificationService');
+const { buildNotificationContent } = require('../utils/notificationTemplates');
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -64,13 +65,16 @@ async function sendEventReminders() {
 
       if (!users.length) continue;
 
-      const title = '⏰ Event Reminder';
-      const body = `"${e.title}" starts in 30 minutes!`;
+      const content = buildNotificationContent({
+        type: 'event_reminder',
+        title: 'Event Reminder',
+        body: `"${e.title}" starts in 30 minutes!`
+      });
       const payload = {screen:'schedule/details', id: e._id, type: 'event_reminder' };
 
       for (const user of users) {
         try {
-          await sendNotification(user, title, body, payload, true);
+          await sendNotification(user, content.title, content.body, payload, true);
         } catch (err) {
           console.error(`[30MinutesEventsReminder] Failed to notify ${user._id}:`, err.message);
         }
@@ -101,3 +105,4 @@ async function tick() {
 
 setInterval(() => tick(), TICK_MS);
 console.log('[30MinutesEventsReminder] Worker started, checking every minute...');
+
