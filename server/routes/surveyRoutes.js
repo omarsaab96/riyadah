@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Survey = require('../models/survey');
 const SurveyResponse = require('../models/surveyResponse');
+const SurveyPreviewResponse = require('../models/surveyPreviewResponse');
 const Team = require('../models/Team');
 const User = require('../models/User');
 const Schedule = require('../models/Schedule');
@@ -411,69 +412,72 @@ router.post('/:id/responses', authenticateToken, async (req, res) => {
     const canAccess = await canUserAccessSurvey(req.user.userId, survey);
     if (!canAccess) return res.status(403).json({ error: 'Not authorized to submit this survey' });
 
-    const { answers, sessionId } = req.body;
+    const { answers, sessionId, preview } = req.body;
+    const isPreview = Boolean(preview);
     if (!Array.isArray(answers) || answers.length === 0) {
       return res.status(400).json({ error: 'Answers are required' });
     }
 
-    if (!survey.repeating?.enabled) {
-      const existing = await SurveyResponse.findOne({ survey: survey._id, user: req.user.userId });
-      if (existing) {
-        return res.status(409).json({ error: 'Survey already submitted' });
-      }
-    } else if (survey.repeating?.cadence === 'monthly') {
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      const existing = await SurveyResponse.findOne({
-        survey: survey._id,
-        user: req.user.userId,
-        createdAt: { $gte: startOfMonth, $lt: startOfNextMonth }
-      });
-      if (existing) {
-        return res.status(409).json({ error: 'Monthly survey already submitted' });
-      }
-    } else if (survey.repeating?.cadence === 'post-training') {
-      if (!sessionId) {
-        return res.status(400).json({ error: 'Training session is required' });
-      }
+    if (!isPreview) {
+      if (!survey.repeating?.enabled) {
+        const existing = await SurveyResponse.findOne({ survey: survey._id, user: req.user.userId });
+        if (existing) {
+          return res.status(409).json({ error: 'Survey already submitted' });
+        }
+      } else if (survey.repeating?.cadence === 'monthly') {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        const existing = await SurveyResponse.findOne({
+          survey: survey._id,
+          user: req.user.userId,
+          createdAt: { $gte: startOfMonth, $lt: startOfNextMonth }
+        });
+        if (existing) {
+          return res.status(409).json({ error: 'Monthly survey already submitted' });
+        }
+      } else if (survey.repeating?.cadence === 'post-training') {
+        if (!sessionId) {
+          return res.status(400).json({ error: 'Training session is required' });
+        }
 
-      const session = await Schedule.findById(sessionId);
-      if (!session) {
-        return res.status(404).json({ error: 'Training session not found' });
-      }
+        const session = await Schedule.findById(sessionId);
+        if (!session) {
+          return res.status(404).json({ error: 'Training session not found' });
+        }
 
-      if (String(session.eventType || '').toLowerCase() !== 'training') {
-        return res.status(400).json({ error: 'Survey is only available for training sessions' });
-      }
+        if (String(session.eventType || '').toLowerCase() !== 'training') {
+          return res.status(400).json({ error: 'Survey is only available for training sessions' });
+        }
 
-      if (session.endTime && session.endTime > new Date()) {
-        return res.status(400).json({ error: 'Training session has not ended yet' });
-      }
+        if (session.endTime && session.endTime > new Date()) {
+          return res.status(400).json({ error: 'Training session has not ended yet' });
+        }
 
-      const attendance = await Attendance.findOne({ event: sessionId });
-      if (!attendance) {
-        return res.status(400).json({ error: 'Attendance not recorded for this session' });
-      }
+        const attendance = await Attendance.findOne({ event: sessionId });
+        if (!attendance) {
+          return res.status(400).json({ error: 'Attendance not recorded for this session' });
+        }
 
-      const isPresent = attendance.present.some(
-        (id) => String(id) === String(req.user.userId)
-      );
-      if (!isPresent) {
-        return res.status(403).json({ error: 'Only attendees can submit this survey' });
-      }
+        const isPresent = attendance.present.some(
+          (id) => String(id) === String(req.user.userId)
+        );
+        if (!isPresent) {
+          return res.status(403).json({ error: 'Only attendees can submit this survey' });
+        }
 
-      const existing = await SurveyResponse.findOne({
-        survey: survey._id,
-        user: req.user.userId,
-        session: sessionId
-      });
-      if (existing) {
-        return res.status(409).json({ error: 'Survey already submitted for this session' });
+        const existing = await SurveyResponse.findOne({
+          survey: survey._id,
+          user: req.user.userId,
+          session: sessionId
+        });
+        if (existing) {
+          return res.status(409).json({ error: 'Survey already submitted for this session' });
+        }
       }
     }
 
-    const responseDoc = await SurveyResponse.create({
+    const responseDoc = await (isPreview ? SurveyPreviewResponse : SurveyResponse).create({
       survey: survey._id,
       user: req.user.userId,
       session: sessionId || null,
@@ -483,7 +487,7 @@ router.post('/:id/responses', authenticateToken, async (req, res) => {
       }))
     });
 
-    res.status(201).json({ message: 'Survey submitted', response: responseDoc });
+    res.status(201).json({ message: 'Survey submitted', response: responseDoc, preview: isPreview });
   } catch (error) {
     console.error('Error submitting survey response:', error);
     res.status(500).json({ error: 'Internal server error' });

@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -191,27 +192,29 @@ export default function Login() {
 
         {emailChecked && <View>
           <TouchableOpacity style={{ marginBottom: 40, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <Ionicons name="chevron-back" size={20} color="#FF4400" style={{ maarginTop: 2 }} />
+            <Ionicons name="chevron-back" size={20} color="#FF4400" style={{ transform: [{ translateY: 1 }] }} />
             <Text style={{ color: "#FF4400" }}>{email}</Text>
           </TouchableOpacity>
-          <TextInput
-            style={[styles.input, styles.passwordInput]}
-            placeholder="Password"
-            placeholderTextColor="#A8A8A8"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-          />
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
-          >
-            <MaterialIcons
-              name={showPassword ? "visibility-off" : "visibility"}
-              size={24}
-              color="#707070"
+          <View>
+            <TextInput
+              style={[styles.input, styles.passwordInput]}
+              placeholder="Password"
+              placeholderTextColor="#A8A8A8"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
             />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <MaterialIcons
+                name={showPassword ? "visibility-off" : "visibility"}
+                size={24}
+                color="#707070"
+              />
+            </TouchableOpacity>
+          </View>
         </View>}
 
         {emailChecked && <View>
@@ -422,7 +425,7 @@ const styles = StyleSheet.create({
   eyeIcon: {
     position: 'absolute',
     right: 15,
-    top: 72,
+    top: Platform.OS == 'ios' ? 17 : 17,
     zIndex: 1,
   },
 });

@@ -55,6 +55,7 @@ export default function SurveyRespondScreen() {
     const params = useLocalSearchParams();
     const surveyId = params.id as string;
     const sessionId = params.sessionId as string | undefined;
+    const isPreview = params.preview === '1' || params.preview === 'true';
 
     const [survey, setSurvey] = useState<Survey | null>(null);
     const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -193,7 +194,7 @@ export default function SurveyRespondScreen() {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({ answers: payloadAnswers, sessionId })
+                body: JSON.stringify({ answers: payloadAnswers, sessionId, preview: isPreview })
             });
 
             if (!response.ok) {
@@ -225,7 +226,9 @@ export default function SurveyRespondScreen() {
                 </TouchableOpacity>
 
                 <View style={styles.headerTextBlock}>
+                    {isPreview && <Text style={styles.previewLabel}>Preview mode</Text>}
                     <Text style={styles.pageTitle}>{survey?.title || 'Survey'}</Text>
+                        {isPreview && <Text style={styles.previewHint}>Preview mode. Submissions are saved separately.</Text>}
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                             <ActivityIndicator
@@ -245,6 +248,9 @@ export default function SurveyRespondScreen() {
                 <ScrollView>
                     <View style={styles.contentContainer}>
                         {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                        {survey?.repeating?.enabled && survey?.repeating?.cadence === 'post-training' && !sessionId && (
+                            <Text style={styles.hint}>This survey is available after a training session.</Text>
+                        )}
                         {survey?.questions?.filter(question => shouldShowQuestion(question)).map(question => (
                             <View key={question._id} style={styles.questionBlock}>
                                 <Text style={styles.label}>
@@ -321,9 +327,7 @@ export default function SurveyRespondScreen() {
                                 )}
                             </View>
                         ))}
-                        {survey?.repeating?.enabled && survey?.repeating?.cadence === 'post-training' && !sessionId && (
-                            <Text style={styles.hint}>This survey is available after a training session.</Text>
-                        )}
+
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>}
@@ -411,6 +415,17 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontFamily: 'Qatar',
         fontSize: 28,
+    },
+    previewLabel: {
+        marginTop: 8,
+        alignSelf: 'flex-start',
+        backgroundColor: '#111111',
+        color: '#fff',
+        fontFamily: 'Acumin',
+        fontSize: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12
     },
     label: {
         fontFamily: "Qatar",
@@ -500,6 +515,12 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
         fontSize: 14,
         color: '#888'
+    },
+    previewHint: {
+        marginBottom: 10,
+        fontFamily: 'Acumin',
+        fontSize: 14,
+        color: '#666'
     },
     radioGroup: {
         marginTop: 10,
