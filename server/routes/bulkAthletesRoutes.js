@@ -44,7 +44,7 @@ const authenticate = async (req, res, next) => {
 };
 
 const requireManager = (req, res, next) => {
-  if (req.user?.type !== 'Manager') {
+  if (req.user?.type !== 'Manager' && req.user?.type !== 'superadmin') {
     return res.status(403).json({
       success: false,
       message: 'Unauthorized access'

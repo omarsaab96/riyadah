@@ -60,7 +60,7 @@ export default function RootLayout() {
 
         if (response.ok) {
           const user = await response.json();
-          if (user.type === "Manager") {
+          if (user.type === "Manager" || user.type === "superadmin") {
             router.replace('/manager/dashboard');
           }else{
             router.replace('/landing');

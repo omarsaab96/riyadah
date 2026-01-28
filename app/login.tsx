@@ -5,13 +5,13 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 
@@ -33,7 +33,7 @@ export default function Login() {
     const checkAuth = async () => {
       const token = await SecureStore.getItemAsync('userToken');
       if (token) {
-        if (SecureStore.getItemAsync('user').type === "Manager") {
+        if (SecureStore.getItemAsync('user').type === "Manager" || SecureStore.getItemAsync('user').type === "superadmin") {
           router.replace('/manager/dashboard');
         } else {
           router.replace('/landing');
@@ -77,7 +77,7 @@ export default function Login() {
       setLoading(false)
 
 
-      if (user.type === "Manager") {
+      if (user.type === "Manager" || user.type === "superadmin") {
         router.replace('/manager/dashboard');
       } else {
         router.replace('/landing');
