@@ -157,7 +157,7 @@ export default function SurveyRespondScreen() {
             return;
         }
 
-        if (survey.repeating?.enabled && survey.repeating?.cadence === 'post-training' && !sessionId) {
+        if (!isPreview && survey.repeating?.enabled && survey.repeating?.cadence === 'post-training' && !sessionId) {
             Alert.alert('Session required', 'This survey is only available after a training session.');
             return;
         }
@@ -228,7 +228,7 @@ export default function SurveyRespondScreen() {
                 <View style={styles.headerTextBlock}>
                     {isPreview && <Text style={styles.previewLabel}>Preview mode</Text>}
                     <Text style={styles.pageTitle}>{survey?.title || 'Survey'}</Text>
-                        {isPreview && <Text style={styles.previewHint}>Preview mode. Submissions are saved separately.</Text>}
+                    {/* {isPreview && <Text style={styles.previewHint}>Preview mode. Submissions are saved separately.</Text>} */}
                     {loading &&
                         <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
                             <ActivityIndicator
