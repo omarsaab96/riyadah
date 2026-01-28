@@ -21,6 +21,7 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "@salmonco/react-native-radar-chart": "^0.0.26",
+    "@shopify/react-native-skia": "v2.0.0-next.4",
     "@types/react-native-svg-charts": "^5.0.16",
     "axios": "^1.10.0",
     "expo": "~53.0.25",
