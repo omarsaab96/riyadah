@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 5,
     flexDirection: 'row',
-    alignItems: 'flex-start'
+    alignItems: 'stretch'
   },
   errorIcon: {
     width: 3,
@@ -570,7 +570,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     borderRadius: 5,
     marginRight: 10,
-    marginTop: 3
   },
   errorText: {
     color: 'red',

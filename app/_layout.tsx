@@ -8,7 +8,6 @@ import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
 import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
-import { Alert } from 'react-native';
 import 'react-native-get-random-values';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -29,17 +28,11 @@ export default function RootLayout() {
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
+        if (!Updates.isEnabled) return;
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
           await Updates.fetchUpdateAsync();
-          Alert.alert(
-            'Update Available',
-            'A new version of Riyadah is ready. Restart to update?',
-            [
-              { text: 'Later' },
-              { text: 'Restart', onPress: () => Updates.reloadAsync() }
-            ]
-          );
+          await Updates.reloadAsync();
         }
       } catch (error) {
         console.log('Error checking for updates:', error);

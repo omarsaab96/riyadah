@@ -81,8 +81,8 @@ export default function UploadAvatar() {
             const base64Length = base64.length;
             const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
 
-            if (sizeInMB > 2) {
-                setError("Image too large. Max 2MB");
+            if (sizeInMB > 5) {
+                setError("Image size too large "+sizeInMB.toFixed(2)+" MB. Max 5 MB");
                 setUploading(false);
                 return;
             }
@@ -170,7 +170,7 @@ export default function UploadAvatar() {
                     </View>
 
                     <Text style={styles.ghostText}>
-                        {(user?.type == "Club" || user?.type == "Association") ? 'Logo' : 'Avatar'}
+                        {(user?.type == "Club" || user?.type == "Association") ? 'Logo' : 'Avata'}
                     </Text>
                 </View>
 
@@ -389,15 +389,14 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         borderRadius: 5,
         flexDirection: 'row',
-        alignItems: 'flex-start'
+        alignItems: 'stretch'
     },
     errorIcon: {
         width: 3,
-        height: 15,
+        // height: 15,
         backgroundColor: 'red',
         borderRadius: 5,
         marginRight: 10,
-        marginTop: 3
     },
     errorText: {
         color: 'red',

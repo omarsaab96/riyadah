@@ -15,7 +15,9 @@
     "newArchEnabled": false,
     "updates": {
       "enabled": true,
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/6ad7cb3c-f873-489a-8120-c3e2da4bf98f",
+      "checkAutomatically": "ON_LOAD"
     },
     "ios": {
       "bundleIdentifier": "app.omarsaab96.riyadah",
@@ -92,6 +94,9 @@
       },
       "REVENUECAT_IOS": "appl_BKrhCsqwkBqSmIgcnyeAlYorukq",
       "REVENUECAT_ANDROID": "goog_qiQzoKrtCxfqFKQwHDYltBiIUKV"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
