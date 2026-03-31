@@ -14,6 +14,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import { useLanguage } from "../../context/language";
 
 const { width } = Dimensions.get('window');
 
@@ -23,6 +24,7 @@ export default function TimeSheetScreen() {
   const lon2 = params.long;
   const lat2 = params.lat;
   const router = useRouter();
+  const { isRTL, t, language } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [staff, setStaff] = useState<any>(null);
   const [timesheet, setTimeSheet] = useState<any>(null);
@@ -89,7 +91,7 @@ export default function TimeSheetScreen() {
     const date = new Date(dateString);
 
     const day = date.getDate().toString().padStart(2, '0'); // 01–31
-    const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+    const month = date.toLocaleString(language === 'ar' ? 'ar' : 'en-US', { month: 'short' });
     const year = date.getFullYear();
 
     return `${day} ${month} ${year}`;
@@ -100,7 +102,7 @@ export default function TimeSheetScreen() {
     const date = new Date(dateString);
 
     const day = date.getDate().toString().padStart(2, '0'); // 01–31
-    const month = date.toLocaleString('en-US', { month: 'short' }); // Jan–Dec
+    const month = date.toLocaleString(language === 'ar' ? 'ar' : 'en-US', { month: 'short' });
     const year = date.getFullYear();
 
     let hours = date.getHours();
@@ -156,14 +158,14 @@ export default function TimeSheetScreen() {
           style={styles.backBtn}
         >
           <Ionicons name="chevron-back" size={20} color="#ffffff" />
-          <Text style={styles.backBtnText}>Back to staff</Text>
+          <Text style={styles.backBtnText}>{t('timesheet.backToStaff')}</Text>
         </TouchableOpacity>
 
-        <View style={styles.headerTextBlock}>
-          <Text style={styles.pageTitle}>Timesheet</Text>
+        <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+          <Text style={styles.pageTitle}>{t('timesheet.title')}</Text>
 
           {!loading && staff &&
-            <Text style={styles.pageDesc}>{staff.userRef.name || "Staff Member"}</Text>
+            <Text style={styles.pageDesc}>{staff.userRef.name || t('timesheet.defaultStaffName')}</Text>
           }
 
           {loading &&
@@ -177,7 +179,7 @@ export default function TimeSheetScreen() {
           }
         </View>
 
-        <Text style={styles.ghostText}>TimeS</Text>
+        <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('timesheet.ghost')}</Text>
 
         {!loading && staff &&
           <View style={styles.profileImage}>
@@ -203,7 +205,7 @@ export default function TimeSheetScreen() {
       </View>
 
       {!staff && !loading && <View style={styles.centered}>
-        <Text>No staff member found.</Text>
+        <Text>{t('timesheet.noStaff')}</Text>
       </View>}
 
       {staff && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
@@ -213,13 +215,13 @@ export default function TimeSheetScreen() {
           {!loading && timesheet && <View style={{ marginTop: 30 }}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
-                History
+                {t('timesheet.history')}
               </Text>
             </View>
 
             {timesheet.length === 0 && (
               <Text style={{ color: '#888', textAlign: 'center' }}>
-                No timesheet records yet.
+                {t('timesheet.noRecords')}
               </Text>
             )}
 
@@ -244,12 +246,12 @@ export default function TimeSheetScreen() {
                       {checkIfLocationIsRight(item.location.latitude, item.location.longitude) ? (
                         <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                           <FontAwesome name="check" size={14} color="#009933" />
-                          <Text>Location match</Text>
+                          <Text>{t('timesheet.locationMatch')}</Text>
                         </View>
                       ) : (
                         <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                           <FontAwesome name="close" size={14} color="#FF4400" />
-                          <Text>Location does not match</Text>
+                          <Text>{t('timesheet.locationMismatch')}</Text>
                         </View>
                       )}
                     </Text>)}
@@ -257,11 +259,11 @@ export default function TimeSheetScreen() {
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
-                      In: {formatTimeOnly(item.checkIn)}
+                      {t('timesheet.in')}: {formatTimeOnly(item.checkIn)}
                     </Text>
 
                     <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
-                      Out: {item.checkOut ? formatTimeOnly(item.checkOut) : 'Not checked out yet'}
+                      {t('timesheet.out')}: {item.checkOut ? formatTimeOnly(item.checkOut) : t('timesheet.notCheckedOut')}
                     </Text>
                   </View>
 
@@ -293,6 +295,10 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     width: width - 40,
+  },
+  headerTextBlockRtl: {
+    left: undefined,
+    right: 20,
   },
   pageTitle: {
     color: '#ffffff',
@@ -422,6 +428,14 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: -5,
     opacity: 0.2
+  },
+  ghostTextRtl: {
+    right: undefined,
+    left: -5,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   sectionHeader: {
     flexDirection: 'row',

@@ -14,11 +14,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function ChangePassword() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [oldPassword, setOldPassword] = useState("");
@@ -68,7 +70,7 @@ export default function ChangePassword() {
     const handleNext = async () => {
 
         if (oldPassword.trim() == "") {
-            setError("Please enter your current password");
+            setError(t('account.currentPasswordRequired'));
             return;
         }
 
@@ -95,11 +97,11 @@ export default function ChangePassword() {
                 setError(null)
             } else {
                 setOldPasswordVerified(false)
-                setError('Current password is wrong')
+                setError(t('account.currentPasswordWrong'))
             }
         } catch (error) {
             setOldPasswordVerified(false);
-            setError('Something went wrong.');
+            setError(t('account.genericError'));
         } finally {
             setCheckingCurrentPassword(false);
         }
@@ -108,17 +110,17 @@ export default function ChangePassword() {
     const handleSave = async () => {
 
         if (newPassword != newPassword2) {
-            setError("Passwords do not match");
+            setError(t('account.passwordsMismatch'));
             return;
         }
 
         if (oldPassword == newPassword) {
-            setError("New password cannot be the same as the old one");
+            setError(t('account.passwordSameAsOld'));
             return;
         }
 
         if (!isValidPassword(newPassword)) {
-            setError("Password must be at least 6 characters");
+            setError(t('account.passwordTooShort'));
             return;
         }
 
@@ -163,14 +165,14 @@ export default function ChangePassword() {
                         onPress={() => {
                             router.back()
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back</Text>
+                        <Text style={styles.backBtnText}>{t('account.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Change password</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('account.changePassword')}</Text>
                         {!loading && user && <Text style={styles.pageDesc}>{user?.name}</Text>}
 
                         {loading &&
@@ -184,7 +186,7 @@ export default function ChangePassword() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Pass</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('account.passwordGhost')}</Text>
 
                     {/* {user && !loading && <View style={styles.profileImage}>
                         {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
@@ -220,25 +222,25 @@ export default function ChangePassword() {
                         {!oldPasswordVerified &&
                             <View>
                                 <View style={styles.entity}>
-                                    <Text style={styles.title}>
-                                        Current Password
+                                    <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                        {t('account.currentPassword')}
                                     </Text>
                                     <TextInput
-                                        style={[styles.input, styles.passwordInput]}
-                                        placeholder="Password"
+                                        style={[styles.input, styles.passwordInput, isRTL && styles.rtlText]}
+                                        placeholder={t('account.password')}
                                         placeholderTextColor="#A8A8A8"
                                         value={oldPassword}
                                         onChangeText={setOldPassword}
                                         secureTextEntry
                                     />
                                 </View>
-                                <View style={[styles.profileActions, styles.inlineActions]}>
+                                <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                     <TouchableOpacity onPress={() => { handleCancel() }} style={styles.profileButton}>
-                                        <Text style={styles.profileButtonText}>Cancel</Text>
+                                        <Text style={styles.profileButtonText}>{t('account.cancel')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={() => { handleNext() }} style={[styles.profileButton, styles.savebtn]}>
                                         <Text style={styles.profileButtonText}>
-                                            {!checkingCurrentPassword && 'Next'}
+                                            {!checkingCurrentPassword && t('account.next')}
                                         </Text>
                                         {checkingCurrentPassword && (
                                             <ActivityIndicator
@@ -252,12 +254,12 @@ export default function ChangePassword() {
 
                         {oldPasswordVerified && <View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
-                                    New Password
+                                <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                    {t('account.newPassword')}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, styles.passwordInput]}
-                                    placeholder="Password"
+                                    style={[styles.input, styles.passwordInput, isRTL && styles.rtlText]}
+                                    placeholder={t('account.password')}
                                     placeholderTextColor="#A8A8A8"
                                     value={newPassword}
                                     onChangeText={setNewPassword}
@@ -265,12 +267,12 @@ export default function ChangePassword() {
                                 />
                             </View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
-                                    Repeat New Password
+                                <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                    {t('account.confirmPassword')}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, styles.passwordInput]}
-                                    placeholder="Password"
+                                    style={[styles.input, styles.passwordInput, isRTL && styles.rtlText]}
+                                    placeholder={t('account.password')}
                                     placeholderTextColor="#A8A8A8"
                                     value={newPassword2}
                                     onChangeText={setNewPassword2}
@@ -278,13 +280,13 @@ export default function ChangePassword() {
                                 />
                             </View>
 
-                            <View style={[styles.profileActions, styles.inlineActions]}>
+                            <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                 <TouchableOpacity onPress={() => { handleCancel() }} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    <Text style={styles.profileButtonText}>{t('account.cancel')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => { handleSave() }} style={[styles.profileButton, styles.savebtn]}>
                                     <Text style={styles.profileButtonText}>
-                                        {saving ? 'Saving' : 'Save'}
+                                        {saving ? t('account.saving') : t('account.save')}
                                     </Text>
                                     {saving && (
                                         <ActivityIndicator
@@ -355,6 +357,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -395,6 +401,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     profileImage: {
         position: 'absolute',
         bottom: 0,
@@ -418,6 +428,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         columnGap: 15
+    },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     profileButton: {
         borderRadius: 5,
@@ -492,6 +505,15 @@ const styles = StyleSheet.create({
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     backBtnText: {
         color: '#FFF',

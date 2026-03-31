@@ -12,12 +12,14 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
 
 export default function WizardStep3() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const { formData, updateFormData } = useRegistration();
     const [selected, setSelected] = useState<string[]>(formData.type === "Club" && Array.isArray(formData.sport) ? formData.sport : (formData.type === "Athlete" && formData.role === "Coach") && Array.isArray(formData.sport) ? formData.sport : []);
     const [error, setError] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export default function WizardStep3() {
                 router.push('/wizard/step4');
             }
         } else {
-            setError('Kindly select a sport type');
+            setError(t('wizard.selectSportType'));
         }
     };
 
@@ -135,16 +137,16 @@ export default function WizardStep3() {
                     style={styles.logo}
                     resizeMode="contain"
                 />
-                <View style={styles.headerTextBlock}>
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                     <Text style={styles.pageTitle}>
-                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'Sport type' : 'Organization'}
+                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? t('wizard.sportType') : t('wizard.organization')}
                     </Text>
-                    <Text style={styles.pageDesc}>
-                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'What do you do?' : 'What organization do you work for?'}
+                    <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>
+                        {(formData.type !== "Scout" && formData.type !== "Sponsor") ? t('wizard.whatDoYouDo') : t('wizard.organizationQuestion')}
                     </Text>
                 </View>
-                <Text style={styles.ghostText}>
-                    {(formData.type !== "Scout" && formData.type !== "Sponsor") ? 'Sport' : 'Organi'}
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
+                    {(formData.type !== "Scout" && formData.type !== "Sponsor") ? t('wizard.sportGhost') : t('wizard.organizationGhost')}
                 </Text>
             </View>
 
@@ -165,8 +167,8 @@ export default function WizardStep3() {
                                     </View>
                                 )}
                             </View>
-                            <Text style={styles.label}>
-                                I don't have an organization. I am independent
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>
+                                {t('wizard.noOrganization')}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -174,39 +176,39 @@ export default function WizardStep3() {
                     {!independent && (
                         <View style={styles.form}>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>Organization name</Text>
+                                <Text style={[styles.title, isRTL && styles.rtlText]}>{t('wizard.organizationName')}</Text>
                                 <TextInput
-                                    style={styles.input}
-                                    placeholder="Organization name"
+                                    style={[styles.input, isRTL && styles.rtlText]}
+                                    placeholder={t('wizard.organizationName')}
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.name}
                                     onChangeText={setOrgName}
                                 />
                             </View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>Organization Location</Text>
+                                <Text style={[styles.title, isRTL && styles.rtlText]}>{t('wizard.organizationLocation')}</Text>
                                 <TextInput
-                                    style={styles.input}
-                                    placeholder="Organization Location"
+                                    style={[styles.input, isRTL && styles.rtlText]}
+                                    placeholder={t('wizard.organizationLocation')}
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.location}
                                     onChangeText={setOrgLocation}
                                 />
                             </View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>Your role in the organization</Text>
+                                <Text style={[styles.title, isRTL && styles.rtlText]}>{t('wizard.organizationRole')}</Text>
                                 <TextInput
-                                    style={styles.input}
-                                    placeholder="Your role"
+                                    style={[styles.input, isRTL && styles.rtlText]}
+                                    placeholder={t('wizard.organizationRole')}
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization?.role}
                                     onChangeText={setOrgRole}
                                 />
                             </View>
                             <View style={styles.entity}>
-                                <Text style={styles.title}>In what year did you start working here?</Text>
+                                <Text style={[styles.title, isRTL && styles.rtlText]}>{t('wizard.organizationSince')}</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, isRTL && styles.rtlText]}
                                     placeholder="YYYY"
                                     placeholderTextColor="#A8A8A8"
                                     value={formData.organization.since}
@@ -217,7 +219,7 @@ export default function WizardStep3() {
                     )}
 
                     <View style={styles.form}>
-                        <Text style={styles.title}>What sports are you interested in?</Text>
+                        <Text style={[styles.title, isRTL && styles.rtlText]}>{t('wizard.sportsInterested')}</Text>
                     </View>
                 </View>
             )}
@@ -239,7 +241,7 @@ export default function WizardStep3() {
                         </Text>
                     )}
                     {!sportsLoading && sportTypes.length === 0 && (
-                        <Text style={styles.paragraph}>No sports available.</Text>
+                        <Text style={[styles.paragraph, isRTL && styles.rtlText]}>{t('wizard.noSportsAvailable')}</Text>
                     )}
                     {!sportsLoading && sportTypes.map((sport) => {
                         const isSelected = selected.includes(sport.name);
@@ -260,7 +262,8 @@ export default function WizardStep3() {
                                 <Text
                                     style={[
                                         styles.accountText,
-                                        isSelected && styles.accountTextSelected
+                                        isSelected && styles.accountTextSelected,
+                                        isRTL && styles.rtlText
                                     ]}
                                 >
                                     {sport.name}
@@ -275,7 +278,7 @@ export default function WizardStep3() {
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
                     {/* <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>NEXT</Text>
+                        <Text style={styles.loginText}>{t('wizard.next')}</Text>
                     </View>
                     {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
@@ -309,6 +312,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -327,6 +334,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -435,6 +446,10 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Acumin',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     checkboxContainer: {
         flexDirection: 'row',

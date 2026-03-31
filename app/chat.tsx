@@ -18,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import io from 'socket.io-client';
+import { useLanguage } from '../context/language';
 
 interface Message {
     _id?: string;
@@ -36,6 +37,7 @@ interface Chat {
 
 export default function ChatPage() {
     const insets = useSafeAreaInsets();
+    const { isRTL, t } = useLanguage();
 
     const router = useRouter();
     const { chatId } = useLocalSearchParams();
@@ -125,7 +127,7 @@ export default function ChatPage() {
 
         } catch (error) {
             console.error(error);
-            alert('Failed to load chat');
+            alert(t('chat.failedLoad'));
         }
         finally {
             setLoading(false);
@@ -158,7 +160,7 @@ export default function ChatPage() {
             if (data.chatId === chatId) {
                 setMessages((prevMessages) => {
                     const withoutPending = prevMessages.filter(
-                        (msg) => msg.tempId == data.message.tempId
+                        (msg) => msg.tempId !== data.message.tempId
                     );
                     return [data.message, ...withoutPending];
                 });
@@ -201,16 +203,24 @@ export default function ChatPage() {
 
         } catch (error) {
             console.error(error);
-            alert('Failed to send message');
+            alert(t('chat.failedSend'));
         }
     };
 
     const renderMessage = ({ item }: { item: Message }) => {
         const isMine = item.senderId === userId;
+        const messageTextStyle = isMine
+            ? styles.ltrText
+            : isRTL
+                ? styles.rtlText
+                : styles.ltrText;
 
         return (
-            <View style={[styles.messageContainer, isMine ? styles.myMessage : styles.otherMessage]}>
-                <Text style={styles.messageText}>{item.text}</Text>
+            <View style={[
+                styles.messageContainer,
+                isMine ? styles.myMessage : styles.otherMessage,
+            ]}>
+                <Text style={[styles.messageText, messageTextStyle]}>{item.text}</Text>
             </View>
         );
     };
@@ -239,23 +249,17 @@ export default function ChatPage() {
                             onPress={() => {
                                 router.back()
                             }}
-                            style={styles.backBtn}
+                            style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                         >
-                            <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                            <Text style={styles.backBtnText}>Back</Text>
+                            <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+                            <Text style={styles.backBtnText}>{t('chat.back')}</Text>
                         </TouchableOpacity>
 
                         {chat && chat.participants && (() => {
                             const otherParticipant = chat.participants.find(p => p._id !== userId);
                             return (
                                 <TouchableOpacity
-                                    style={{
-                                        position: 'absolute',
-                                        left: '50%',
-                                        transform: [{ translateX: -25 }],
-                                        bottom: 10,
-                                        zIndex: 1
-                                    }}
+                                    style={styles.profileTrigger}
                                     onPress={() => {
                                         router.push({
                                             pathname: '/profile/public',
@@ -298,13 +302,7 @@ export default function ChatPage() {
 
                         {(!chat || !chat.participants) &&
                             <View
-                                style={{
-                                    position: 'absolute',
-                                    left: '50%',
-                                    transform: [{ translateX: -10 }],
-                                    bottom: 20,
-                                    zIndex: 1
-                                }}
+                                style={styles.headerLoader}
                             >
                                 <ActivityIndicator size={'large'} color={'#fff'} />
                             </View>
@@ -322,23 +320,25 @@ export default function ChatPage() {
                         }}
                         ListFooterComponent={
                             <View style={styles.chatHeader}>
-                                <Text style={styles.disclaimer}>By chatting through Riyadah app, you agree to the terms and conditions and privacy policy</Text>
+                                <Text style={[styles.disclaimer, isRTL ? styles.rtlText : styles.ltrText]}>
+                                    {t('chat.termsDisclaimer')}
+                                </Text>
                             </View>
                         }
                     />
 
-                    <View style={[styles.inputContainer,Platform.OS === "ios" &&{paddingBottom:50}]}>
+                    <View style={[styles.inputContainer, isRTL && styles.inputContainerRtl, Platform.OS === "ios" && { paddingBottom: 50 }]}>
                         <TextInput
                             ref={inputRef}
-                            placeholder="Type a message..."
+                            placeholder={t('chat.typeMessage')}
                             placeholderTextColor='#888'
                             value={text}
                             onChangeText={setText}
-                            style={styles.input}
+                            style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
                             multiline
                         />
-                        <TouchableOpacity disabled={loading} onPress={handleSendMessage} style={[styles.sendButton, loading && { backgroundColor: 'transparent' }]}>
-                            {!loading && <Ionicons name="send" size={24} color="#fff" />}
+                        <TouchableOpacity disabled={loading} onPress={handleSendMessage} style={[styles.sendButton, isRTL && styles.sendButtonRtl, loading && { backgroundColor: 'transparent' }]}>
+                            {!loading && <Ionicons name={isRTL ? "send-outline" : "send"} size={24} color="#fff" style={isRTL && styles.sendIconRtl} />}
                             {loading && <ActivityIndicator size="small" color="#FF4000" />}
                         </TouchableOpacity>
                     </View>
@@ -374,6 +374,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignContent: 'center',
         // borderWidth: 1
+    },
+    backBtnRtl: {
+        flexDirection: 'row-reverse',
     },
     backBtnText: {
         color: '#FFF',
@@ -417,6 +420,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#f4f4f4',
         alignItems: 'center',
     },
+    inputContainerRtl: {
+        flexDirection: 'row-reverse',
+    },
     input: {
         flex: 1,
         maxHeight: 100,
@@ -432,6 +438,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         borderRadius: 20,
         padding: 10,
+    },
+    sendButtonRtl: {
+        marginLeft: 0,
+        marginRight: 10,
+    },
+    sendIconRtl: {
+        transform: [{ scaleX: -1 }],
     },
     profileImage: {
         width: 60,
@@ -457,5 +470,25 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         maxWidth: 300,
         textAlign: 'center'
-    }
+    },
+    profileTrigger: {
+        position: 'absolute',
+        alignSelf: 'center',
+        bottom: 10,
+        zIndex: 1,
+    },
+    headerLoader: {
+        position: 'absolute',
+        alignSelf: 'center',
+        bottom: 20,
+        zIndex: 1,
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
 });

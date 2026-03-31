@@ -17,6 +17,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 
 const { width } = Dimensions.get('window');
@@ -27,6 +28,7 @@ interface CreateInventoryProps {
 
 export default function CreateInventory({ clubId }: CreateInventoryProps) {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -73,11 +75,11 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
 
     const handleCreate = async () => {
         if (!userId) {
-            Alert.alert('Error', 'User ID is required.');
+            Alert.alert(t('inventory.errorTitle'), t('inventory.userRequired'));
             return;
         }
         if (!formData.itemName.trim() || !formData.category.trim()) {
-            Alert.alert('Validation', 'Item Name and Category are required.');
+            Alert.alert(t('inventory.validationTitle'), t('inventory.requiredFields'));
             return;
         }
 
@@ -112,11 +114,11 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                     params: { tab: 'Inventory' }
                 })
             } else {
-                throw new Error(data.message || 'Failed to create inventory item');
+                throw new Error(data.message || t('inventory.failedCreate'));
             }
         } catch (error) {
             console.error('Create Inventory Error:', error);
-            Alert.alert('Error', error.message || 'An error occurred. Please try again.');
+            Alert.alert(t('inventory.errorTitle'), error.message || t('inventory.genericCreateError'));
         } finally {
             setSaving(false);
         }
@@ -149,12 +151,12 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                         style={styles.backBtn}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to Inventory</Text>
+                        <Text style={styles.backBtnText}>{t('inventory.backToInventory')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>New Inventory Item</Text>
-                        {!loading && <Text style={styles.pageDesc}>Add a new item to your club's inventory</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('inventory.newItem')}</Text>
+                        {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('inventory.newItemDesc')}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -167,7 +169,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Invento</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('inventory.ghost')}</Text>
                 </View>
 
                 <ScrollView>
@@ -177,18 +179,18 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                     </View>}
                     <View style={styles.contentContainer}>
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Item Name *</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.itemName')} *</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholderTextColor={"#888"}
-                                placeholder="Enter item name"
+                                placeholder={t('inventory.enterItemName')}
                                 value={formData.itemName}
                                 onChangeText={(text) => handleChange('itemName', text)}
                             />
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Category *</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.category')} *</Text>
                             {/* <TextInput
                                 style={styles.input}
                                 placeholder="Enter category"
@@ -202,19 +204,19 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                                     onValueChange={(value) => handleChange('category', value)}
                                 >
                                     {/* <Picker.Item label="Select a category..." value="" enabled={false} /> */}
-                                    <Picker.Item label="Equipment" value="Equipment" />
-                                    <Picker.Item label="Uniform" value="Uniform" />
-                                    <Picker.Item label="Accessories" value="Accessories" />
-                                    <Picker.Item label="Medical supplies" value="Medical supplies" />
+                                    <Picker.Item label={t('inventory.equipment')} value="Equipment" />
+                                    <Picker.Item label={t('inventory.uniform')} value="Uniform" />
+                                    <Picker.Item label={t('inventory.accessories')} value="Accessories" />
+                                    <Picker.Item label={t('inventory.medicalSupplies')} value="Medical supplies" />
                                 </Picker>
                             </View>
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Quantity</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.quantity')}</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Enter quantity"
+                                placeholder={t('inventory.enterQuantity')}
                                 placeholderTextColor={"#888"}
                                 keyboardType="numeric"
                                 value={formData.quantity}
@@ -223,11 +225,11 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Unit Price</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.unitPrice')}</Text>
                             <View style={{ flexDirection: 'row', columnGap: 10 }}>
                                 <TextInput
                                     style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                    placeholder="Amount"
+                                    placeholder={t('inventory.amount')}
                                     keyboardType="numeric"
                                     placeholderTextColor={"#888"}
                                     value={formData.unitPrice?.split(' ')[0] || ''}
@@ -255,9 +257,9 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                         </View>
 
                         <View style={styles.formGroup}>
-                            <Text style={styles.label}>Description</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.description')}</Text>
                             <TextInput style={styles.textarea}
-                                placeholder="Enter description"
+                                placeholder={t('inventory.enterDescription')}
                                 placeholderTextColor="#A8A8A8"
                                 value={formData.description || ""}
                                 onChangeText={(text) => handleChange('description', text)}
@@ -267,16 +269,16 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                             />
                         </View>
 
-                        <View style={[styles.profileActions, styles.inlineActions]}>
+                        <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
+                                <Text style={styles.profileButtonText}>{t('inventory.cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={handleCreate}
                                 style={[styles.profileButton, styles.savebtn]}
                                 disabled={saving}
                             >
-                                <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
+                                <Text style={styles.profileButtonText}>{saving ? t('inventory.saving') : t('inventory.save')}</Text>
                                 {saving && (
                                     <ActivityIndicator
                                         size="small"
@@ -323,6 +325,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -341,6 +347,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     profileActions: {
         borderTopWidth: 1,
@@ -362,6 +372,10 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         columnGap: 15
     },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
+        justifyContent: 'flex-start'
+    },
     saveLoaderContainer: {
         marginLeft: 10
     },
@@ -378,6 +392,10 @@ const styles = StyleSheet.create({
     },
     savebtn: {
         flexDirection: 'row'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl'
     },
     label: {
         fontFamily: "Qatar",

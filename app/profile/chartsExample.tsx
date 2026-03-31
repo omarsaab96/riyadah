@@ -1,9 +1,11 @@
 import * as d3Shape from "d3-shape";
+import { useLanguage } from '@/context/language';
 import React, { useMemo, useRef, useState } from "react";
 import { PanResponder, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 
 export default function DynamicLineChart({data = [],labels = []}) {
+    const { isRTL } = useLanguage();
     const [chartWidth, setChartWidth] = useState(0);
     const height = 200;
 
@@ -188,6 +190,7 @@ export default function DynamicLineChart({data = [],labels = []}) {
                 {labels.map((label, i) => {
                     const x = i * barWidth + barWidth / 2;
                     const isActive = i === activeIndex;
+                    const labelLeft = isRTL ? Math.max(0, chartWidth - x - 25) : x - 25;
 
                     return (
                         <Text
@@ -195,7 +198,7 @@ export default function DynamicLineChart({data = [],labels = []}) {
                             style={[
                                 styles.label,
                                 {
-                                    left: x - 25,
+                                    left: labelLeft,
                                     color: isActive ? '#FF4400' : "#9CA3AF",
                                     fontWeight: isActive ? "800" : "400",
                                     fontSize: isActive ? 13 : 12,

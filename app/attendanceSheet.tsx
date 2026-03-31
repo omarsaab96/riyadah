@@ -1,10 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../context/language';
 const { width } = Dimensions.get('window');
 
 const AttendanceSheet = () => {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -65,12 +67,12 @@ const AttendanceSheet = () => {
                     setPresentAthletes(initialAttendance);
                 } else {
                     setAthletes([]);
-                    Alert.alert('Error', data.message || 'Failed to fetch attendance data');
+                    Alert.alert(t('messages.errorTitle'), data.message || t('attendance.failedFetch'));
                 }
 
             } catch (err) {
                 console.error('Error fetching athletes:', err);
-                Alert.alert('Error', 'Failed to connect to server');
+                Alert.alert(t('messages.errorTitle'), t('attendance.failedConnect'));
             } finally {
                 setLoading(false);
             }
@@ -81,7 +83,7 @@ const AttendanceSheet = () => {
 
     const handleSubmit = async () => {
         if (isLocked) {
-            Alert.alert('Attendance locked', 'Attendance can no longer be edited.');
+            Alert.alert(t('attendance.lockedTitle'), t('attendance.lockedMessage'));
             return;
         }
         const attendedAthletes = Object.keys(presentAthletes).filter(id => presentAthletes[id]);
@@ -114,11 +116,11 @@ const AttendanceSheet = () => {
                 }, 1000);
             
             } else {
-                Alert.alert('Error', data.message || 'Failed to submit attendance');
+                Alert.alert(t('messages.errorTitle'), data.message || t('attendance.failedSubmit'));
             }
         } catch (err) {
             console.error('Error submitting attendance:', err);
-            Alert.alert('Error', 'Failed to submit attendance. Please check your connection.');
+            Alert.alert(t('messages.errorTitle'), t('attendance.failedSubmitConnection'));
         } finally {
             setSaving(false);
         }
@@ -150,22 +152,23 @@ const AttendanceSheet = () => {
         return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     };
 
-    return (
+    const directionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
+    return (
         <View style={styles.container}>
             <View style={styles.pageHeader}>
                 <Image
                     source={require('../assets/logo_white.png')}
-                    style={styles.logo}
+                    style={[styles.logo, isRTL && styles.logoRtl]}
                     resizeMode="contain"
                 />
 
-                <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Attendance sheet</Text>
-                    {!loading && <Text style={styles.pageDesc}>{team.name || ""}</Text>}
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                    <Text style={[styles.pageTitle, directionStyle]}>{t('attendance.title')}</Text>
+                    {!loading && <Text style={[styles.pageDesc, directionStyle]}>{team.name || ""}</Text>}
 
                     {loading &&
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                        <View style={[styles.headerLoaderRow, isRTL && styles.headerLoaderRowRtl]}>
                             <ActivityIndicator
                                 size="small"
                                 color="#fff"
@@ -175,7 +178,7 @@ const AttendanceSheet = () => {
                     }
                 </View>
 
-                <Text style={styles.ghostText}>Attend</Text>
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('attendance.ghost')}</Text>
             </View>
 
             {!loading && !submitted && <ScrollView>
@@ -183,12 +186,12 @@ const AttendanceSheet = () => {
                     {lockTime && (
                         <View style={styles.lockBanner}>
                             <Text style={styles.lockText}>
-                                {isLocked ? 'Attendance locked' : `Editing closes in ${formatTime(timeLeft)}`}
+                                {isLocked ? t('attendance.lockedTitle') : t('attendance.editingClosesIn').replace('{time}', formatTime(timeLeft))}
                             </Text>
                         </View>
                     )}
-                    <Text style={styles.label}>Who attended?</Text>
-                    <Text style={styles.hint}>Selected athletes are the ones that were present.</Text>
+                    <Text style={[styles.label, directionStyle]}>{t('attendance.whoAttended')}</Text>
+                    <Text style={[styles.hint, directionStyle]}>{t('attendance.selectedHint')}</Text>
 
                     {athletes.map(athlete => (
                         <TouchableOpacity
@@ -200,7 +203,7 @@ const AttendanceSheet = () => {
                                     [athlete._id]: !prev[athlete._id]
                                 }))
                             }}
-                            style={styles.checkboxContainer}
+                            style={[styles.checkboxContainer, isRTL ? styles.checkboxContainerRtl : styles.checkboxContainerLtr]}
                             activeOpacity={1}
                         >
                             <View style={styles.checkbox}>
@@ -210,9 +213,10 @@ const AttendanceSheet = () => {
                                     </View>
                                 )}
                             </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={[styles.athleteRow, isRTL && styles.athleteRowRtl]}>
                                 <View style={[
                                     styles.profileImageContainer,
+                                    isRTL && styles.profileImageContainerRtl,
                                     (athlete.image == null || athlete.image == "") && { backgroundColor: '#FF4000' }
                                 ]}>
                                     {(athlete.image == null || athlete.image == "") && athlete.gender == "Male" && <Image
@@ -231,7 +235,7 @@ const AttendanceSheet = () => {
                                         resizeMode="contain"
                                     />}
                                 </View>
-                                <Text style={styles.name}>{athlete.name}</Text>
+                                <Text style={[styles.name, directionStyle]}>{athlete.name}</Text>
                             </View>
                         </TouchableOpacity>
                     ))}
@@ -245,7 +249,7 @@ const AttendanceSheet = () => {
                     {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={[styles.loginButton, isLocked && styles.loginButtonDisabled]}>
                         <Text style={styles.loginText}>
-                            {isLocked ? 'Attendance Locked' : saving ? 'Submitting' : 'Submit Attendance sheet'}
+                            {isLocked ? t('attendance.submitLocked') : saving ? t('attendance.submitting') : t('attendance.submit')}
                         </Text>
                         {saving && (
                             <ActivityIndicator
@@ -279,13 +283,11 @@ const AttendanceSheet = () => {
                     </View>
 
                     <Text style={styles.confirmationTitle}>
-                        Attendance sheet submitted successfully!
+                        {t('attendance.submitted')}
                     </Text>
                 </View>
             </View>}
         </View >
-
-
     );
 };
 
@@ -326,11 +328,19 @@ const styles = StyleSheet.create({
         left: 20,
         zIndex: 1,
     },
+    logoRtl: {
+        left: undefined,
+        right: 20,
+    },
     headerTextBlock: {
         position: 'absolute',
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -352,6 +362,10 @@ const styles = StyleSheet.create({
         opacity: 0.2,
         textTransform:'uppercase'
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     label: {
         fontFamily: "Qatar",
         fontSize: 20,
@@ -364,13 +378,25 @@ const styles = StyleSheet.create({
         color: '#000000'
     },
     checkboxContainer: {
-        flexDirection: 'row-reverse',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 5,
         backgroundColor: '#F4F4F4',
         padding: 5,
         borderRadius: 10
+    },
+    checkboxContainerLtr: {
+        flexDirection: 'row',
+    },
+    checkboxContainerRtl: {
+        flexDirection: 'row-reverse',
+    },
+    athleteRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    athleteRowRtl: {
+        flexDirection: 'row-reverse',
     },
     checkbox: {
         width: 16,
@@ -462,6 +488,10 @@ const styles = StyleSheet.create({
         height: 40,
         marginRight: 10,
     },
+    profileImageContainerRtl: {
+        marginRight: 0,
+        marginLeft: 10,
+    },
     profileImageAvatar: {
         width: undefined,
         height: '100%',
@@ -485,5 +515,21 @@ const styles = StyleSheet.create({
         fontFamily: 'Qatar',
         fontSize: 20,
         textAlign:'center'
+    },
+    headerLoaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5,
+    },
+    headerLoaderRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });

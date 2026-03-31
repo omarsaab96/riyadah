@@ -24,6 +24,7 @@ import {
     View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -59,7 +60,7 @@ const UserAvatar = ({ user, style = {} }) => {
 };
 
 // Comment Footer Component
-const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }) => {
+const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment, isRTL, t }) => {
   const [newComment, setNewComment] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -88,18 +89,19 @@ const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }
     <BottomSheetFooter {...footerProps}>
       <View style={[
         styles.commentInputContainer,
+        isRTL && styles.commentInputContainerRtl,
         keyboardVisible && styles.commentInputContainerKeyboardVisible
       ]}>
         <UserAvatar user={user} />
         <BottomSheetTextInput
-          style={styles.commentInput}
+          style={[styles.commentInput, isRTL && styles.rtlText]}
           value={newComment}
           onChangeText={setNewComment}
-          placeholder="Write a comment..."
+          placeholder={t('landing.writeComment')}
           placeholderTextColor="#888"
         />
         <TouchableOpacity
-          style={styles.commentSubmit}
+          style={[styles.commentSubmit, isRTL && styles.commentSubmitRtl]}
           onPress={handleSubmit}
           disabled={!newComment.trim() || submittingComment}
         >
@@ -333,11 +335,11 @@ const MediaRenderer = ({ post }) => {
 };
 
 // Post Header Component
-const PostHeader = ({ post, onMoreOptions, formatDate }) => (
-  <View style={styles.postHeader}>
+const PostHeader = ({ post, onMoreOptions, formatDate, isRTL, t }) => (
+  <View style={[styles.postHeader, isRTL && styles.postHeaderRtl]}>
     <UserAvatar user={post.created_by} />
     <View style={styles.postHeaderInfo}>
-      <Text style={styles.postUserName}>{post.created_by?.name || 'Unknown User'}</Text>
+      <Text style={[styles.postUserName, isRTL && styles.rtlText]}>{post.created_by?.name || t('messages.unknownUser')}</Text>
       <Text style={styles.postDate}>{formatDate(post.date)}</Text>
     </View>
     <TouchableOpacity onPress={() => onMoreOptions(post)} style={styles.postOptions}>
@@ -347,11 +349,11 @@ const PostHeader = ({ post, onMoreOptions, formatDate }) => (
 );
 
 // Post Actions Component
-const PostActions = ({ post, userId, onLike, onComment, onShare, liking }) => {
+const PostActions = ({ post, userId, onLike, onComment, onShare, liking, isRTL }) => {
   const isLiked = userId && post.likes?.some(like => like._id === userId);
 
   return (
-    <View style={styles.postStats}>
+    <View style={[styles.postStats, isRTL && styles.postStatsRtl]}>
       <TouchableOpacity onPress={onLike} style={styles.postActionBtn}>
         {liking ? (
           <ActivityIndicator size="small" color="#FF4000" style={styles.likeIndicator} />
@@ -378,8 +380,8 @@ const PostActions = ({ post, userId, onLike, onComment, onShare, liking }) => {
 };
 
 // Bottom Navigation Component
-const BottomNavigation = ({ router }) => (
-  <View style={styles.navBar}>
+const BottomNavigation = ({ router, isRTL }) => (
+  <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
     <TouchableOpacity onPress={() => router.replace('/settings')}>
       <Image source={require('../../assets/settings.png')} style={styles.icon} />
     </TouchableOpacity>
@@ -399,7 +401,7 @@ const BottomNavigation = ({ router }) => (
 );
 
 // Comments List Component
-const CommentsList = ({ comments, loadingComments, formatDate }) => {
+const CommentsList = ({ comments, loadingComments, formatDate, isRTL, t }) => {
   if (loadingComments) {
     return (
       <View style={styles.commentLoading}>
@@ -411,7 +413,7 @@ const CommentsList = ({ comments, loadingComments, formatDate }) => {
   if (!comments || comments.length === 0) {
     return (
       <View style={styles.noComments}>
-        <Text style={styles.noCommentsText}>No comments yet</Text>
+        <Text style={[styles.noCommentsText, isRTL && styles.rtlText]}>{t('landing.noComments')}</Text>
       </View>
     );
   }
@@ -419,14 +421,14 @@ const CommentsList = ({ comments, loadingComments, formatDate }) => {
   return (
     <>
       {comments.map((item) => (
-        <View key={item._id} style={styles.commentItem}>
+        <View key={item._id} style={[styles.commentItem, isRTL && styles.commentItemRtl]}>
           <UserAvatar user={item.user} />
           <View style={styles.commentContent}>
-            <View style={styles.commentHeader}>
-              <Text style={styles.commentAuthor}>{item.user?.name || 'Unknown User'}</Text>
+            <View style={[styles.commentHeader, isRTL && styles.commentHeaderRtl]}>
+              <Text style={[styles.commentAuthor, isRTL && styles.rtlText]}>{item.user?.name || t('messages.unknownUser')}</Text>
               <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
             </View>
-            <Text style={styles.commentText}>{item.content}</Text>
+            <Text style={[styles.commentText, isRTL && styles.rtlText]}>{item.content}</Text>
           </View>
         </View>
       ))}
@@ -443,20 +445,22 @@ const MoreOptionsSheet = ({
   onDelete,
   onConfirmDelete,
   onCancelDelete,
-  router
+  router,
+  t,
+  isRTL
 }) => (
   <BottomSheetView style={styles.moreOptionsContainer}>
     <View style={styles.moreOptionsContent}>
       {post.created_by._id === userId ? (
         <TouchableOpacity onPress={() => { onClose(); router.replace('/profile'); }} style={styles.profileButton}>
-          <Text style={styles.profileButtonText}>Go to your profile</Text>
+          <Text style={styles.profileButtonText}>{t('landing.yourProfile')}</Text>
         </TouchableOpacity>
       ) : (
         <TouchableOpacity onPress={() => {
           onClose();
           router.push({ pathname: '/profile/public', params: { id: post.created_by._id } });
         }} style={styles.profileButton}>
-          <Text style={styles.profileButtonText}>Go to {post.created_by.name}'s profile</Text>
+          <Text style={styles.profileButtonText}>{t('landing.userProfile', { name: post.created_by.name })}</Text>
         </TouchableOpacity>
       )}
 
@@ -464,18 +468,18 @@ const MoreOptionsSheet = ({
         <View>
           {!deleteConfirmation && (
             <TouchableOpacity onPress={onDelete} style={[styles.profileButton, styles.deleteButton]}>
-              <Text style={[styles.profileButtonText, styles.deleteButtonText]}>Delete post</Text>
+              <Text style={[styles.profileButtonText, styles.deleteButtonText]}>{t('landing.deletePost')}</Text>
             </TouchableOpacity>
           )}
           {deleteConfirmation && (
-            <View style={[styles.profileButton, styles.confirmationContainer]}>
-              <Text style={[styles.profileButtonText, styles.deleteButtonText]}>Are you sure?</Text>
-              <View style={styles.confirmationButtons}>
+            <View style={[styles.profileButton, styles.confirmationContainer, isRTL && styles.confirmationContainerRtl]}>
+              <Text style={[styles.profileButtonText, styles.deleteButtonText]}>{t('landing.areYouSure')}</Text>
+              <View style={[styles.confirmationButtons, isRTL && styles.confirmationButtonsRtl]}>
                 <TouchableOpacity onPress={onConfirmDelete} style={styles.confirmationButton}>
-                  <Text style={styles.confirmationButtonText}>Yes, delete</Text>
+                  <Text style={styles.confirmationButtonText}>{t('landing.yesDelete')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onCancelDelete} style={styles.confirmationButton}>
-                  <Text style={styles.confirmationButtonText}>No</Text>
+                  <Text style={styles.confirmationButtonText}>{t('landing.no')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -484,7 +488,7 @@ const MoreOptionsSheet = ({
       )}
 
       <TouchableOpacity onPress={onClose} style={[styles.profileButton, styles.cancelButton]}>
-        <Text style={[styles.profileButtonText, styles.cancelButtonText]}>Cancel</Text>
+        <Text style={[styles.profileButtonText, styles.cancelButtonText]}>{t('landing.cancel')}</Text>
       </TouchableOpacity>
     </View>
   </BottomSheetView>
@@ -494,6 +498,7 @@ const MoreOptionsSheet = ({
 export default function PostScreen() {
   const { postId } = useLocalSearchParams();
   const router = useRouter();
+  const { isRTL, t, language } = useLanguage();
 
   // State management
   const [post, setPost] = useState(null);
@@ -541,11 +546,11 @@ export default function PostScreen() {
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
     const diffInHours = Math.floor(diffInMinutes / 60);
 
-    if (diffInMinutes < 1) return 'now';
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInMinutes < 1) return t('messages.now');
+    if (diffInMinutes < 60) return t('messages.minutesAgo', { count: diffInMinutes });
+    if (diffInHours < 24) return t('messages.hoursAgo', { count: diffInHours });
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString(language === 'ar' ? 'ar' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
   // API functions
@@ -746,7 +751,7 @@ export default function PostScreen() {
   if (!post || typeof post !== 'object' || !post.created_by) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Invalid post data</Text>
+        <Text>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -770,13 +775,15 @@ export default function PostScreen() {
                   post={post}
                   onMoreOptions={handleMoreOptions}
                   formatDate={formatDate}
+                  isRTL={isRTL}
+                  t={t}
                 />
 
                 <View style={styles.post}>
                   <View style={styles.postContent}>
-                    {post.title && <Text style={styles.postTitle}>{post.title}</Text>}
+                    {post.title && <Text style={[styles.postTitle, isRTL && styles.rtlText]}>{post.title}</Text>}
                     {post.content?.trim() !== '' && (
-                      <Text style={styles.postText}>{post.content}</Text>
+                      <Text style={[styles.postText, isRTL && styles.rtlText]}>{post.content}</Text>
                     )}
                     <MediaRenderer post={post} />
                   </View>
@@ -788,6 +795,7 @@ export default function PostScreen() {
                     onComment={handleComment}
                     onShare={handleShare}
                     liking={liking}
+                    isRTL={isRTL}
                   />
                 </View>
               </View>
@@ -819,7 +827,7 @@ export default function PostScreen() {
           />
         </View>
 
-        <View style={styles.navBar}>
+        <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
           <TouchableOpacity onPress={() => router.replace('/settings')}>
             <Image source={require('../../assets/settings.png')} style={styles.icon} />
           </TouchableOpacity>
@@ -859,14 +867,16 @@ export default function PostScreen() {
                 user={user}
                 submittingComment={submittingComment}
                 onSubmitComment={handleSubmitComment}
+                isRTL={isRTL}
+                t={t}
               />
             )}
             keyboardBehavior="extend"
             keyboardBlurBehavior="restore"
           >
             <BottomSheetView style={styles.commentsSheet}>
-              <View style={styles.commentModalHeader}>
-                <Text style={styles.commentModalTitle}>Comments</Text>
+              <View style={[styles.commentModalHeader, isRTL && styles.commentModalHeaderRtl]}>
+                <Text style={[styles.commentModalTitle, isRTL && styles.rtlText]}>{t('landing.comments')}</Text>
                 <TouchableOpacity onPress={handleCloseModalPress} style={styles.commentModalClose}>
                   <Ionicons name="close" size={24} color="#888" />
                 </TouchableOpacity>
@@ -880,6 +890,8 @@ export default function PostScreen() {
                   comments={comments}
                   loadingComments={loadingComments}
                   formatDate={formatDate}
+                  isRTL={isRTL}
+                  t={t}
                 />
               </BottomSheetScrollView>
             </BottomSheetView>
@@ -905,6 +917,8 @@ export default function PostScreen() {
               onConfirmDelete={handleConfirmDeletePost}
               onCancelDelete={handleCancelDeletePost}
               router={router}
+              t={t}
+              isRTL={isRTL}
             />
           </BottomSheet>
         )
@@ -985,6 +999,9 @@ const styles = StyleSheet.create({
     // Android shadow
     elevation: 5,
   },
+  navBarRtl: {
+    flexDirection: 'row-reverse',
+  },
   icon: {
     width: 24,
     height: 24,
@@ -1059,6 +1076,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  postHeaderRtl: {
+    flexDirection: 'row-reverse',
+  },
   post: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -1069,6 +1089,9 @@ const styles = StyleSheet.create({
   },
   postStats: {
     width: 30,
+  },
+  postStatsRtl: {
+    alignItems: 'center',
   },
   postActionBtn: {
     alignItems: 'center',
@@ -1284,6 +1307,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f5f5f5',
   },
+  commentItemRtl: {
+    flexDirection: 'row-reverse',
+  },
   commentAvatar: {
     width: 40,
     height: 40,
@@ -1330,6 +1356,9 @@ const styles = StyleSheet.create({
     borderTopColor: '#eee',
     backgroundColor: 'white'
   },
+  commentInputContainerRtl: {
+    flexDirection: 'row-reverse',
+  },
   commentInputAvatar: {
     width: 36,
     height: 36,
@@ -1345,9 +1374,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
   commentSubmit: {
     marginLeft: 10,
     padding: 8,
+  },
+  commentSubmitRtl: {
+    marginLeft: 0,
+    marginRight: 10,
   },
   profileImage: {
     width: 36,
@@ -1547,6 +1584,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     alignItems: 'center'
   },
+  commentHeaderRtl: {
+    flexDirection: 'row-reverse',
+  },
   moreOptionsContainer: {
     flex: 1, 
     paddingBottom: 50
@@ -1566,10 +1606,19 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     marginTop: 10
   },
+  confirmationContainerRtl: {
+    flexDirection: 'row-reverse',
+  },
   confirmationButtons: {
     flexDirection: 'row', 
     columnGap: 30, 
     alignItems: 'center'
+  },
+  confirmationButtonsRtl: {
+    flexDirection: 'row-reverse',
+  },
+  commentModalHeaderRtl: {
+    flexDirection: 'row-reverse',
   },
   confirmationButton: {
     backgroundColor: 'transparent', 

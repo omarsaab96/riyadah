@@ -17,6 +17,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -52,6 +53,7 @@ type Survey = {
 
 export default function SurveyRespondScreen() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const params = useLocalSearchParams();
     const surveyId = params.id as string;
     const sessionId = params.sessionId as string | undefined;
@@ -63,6 +65,7 @@ export default function SurveyRespondScreen() {
     const [saving, setSaving] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     const buildInitialAnswers = (questions: SurveyQuestion[]) => {
         const initial: Record<string, any> = {};
@@ -83,7 +86,7 @@ export default function SurveyRespondScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('surveyRespond.userNotAuthenticated'));
                 setLoading(false);
                 return;
             }
@@ -94,7 +97,7 @@ export default function SurveyRespondScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to load survey');
+                setError(errorData.error || t('surveyRespond.failedToLoad'));
                 setLoading(false);
                 return;
             }
@@ -103,7 +106,7 @@ export default function SurveyRespondScreen() {
             setSurvey(data.survey);
             setAnswers(buildInitialAnswers(data.survey?.questions || []));
         } catch (err) {
-            setError('Failed to load survey');
+            setError(t('surveyRespond.failedToLoad'));
         } finally {
             setLoading(false);
         }
@@ -153,19 +156,19 @@ export default function SurveyRespondScreen() {
 
     const handleSubmit = async () => {
         if (!survey) {
-            Alert.alert('Survey unavailable', 'No survey was found to submit.');
+            Alert.alert(t('surveyRespond.unavailableTitle'), t('surveyRespond.unavailableMessage'));
             return;
         }
 
         if (!isPreview && survey.repeating?.enabled && survey.repeating?.cadence === 'post-training' && !sessionId) {
-            Alert.alert('Session required', 'This survey is only available after a training session.');
+            Alert.alert(t('surveyRespond.sessionRequiredTitle'), t('surveyRespond.sessionRequiredMessage'));
             return;
         }
 
         const visibleQuestions = survey.questions.filter(question => shouldShowQuestion(question));
         const missing = visibleQuestions.filter(question => !isAnswerFilled(question, answers[question._id]));
         if (missing.length > 0) {
-            Alert.alert('Please fill all required fields', 'All required fields are mandatory.');
+            Alert.alert(t('surveyRespond.requiredFieldsTitle'), t('surveyRespond.requiredFieldsMessage'));
             return;
         }
 
@@ -183,7 +186,7 @@ export default function SurveyRespondScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('surveyRespond.userNotAuthenticated'));
                 setSaving(false);
                 return;
             }
@@ -199,14 +202,14 @@ export default function SurveyRespondScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to submit survey');
+                setError(errorData.error || t('surveyRespond.failedToSubmit'));
                 setSaving(false);
                 return;
             }
 
             setSubmitted(true);
         } catch (err) {
-            Alert.alert('Error', 'Failed to submit survey.');
+            Alert.alert(t('surveyRespond.errorTitle'), t('surveyRespond.failedToSubmitMessage'));
         } finally {
             setSaving(false);
         }
@@ -220,17 +223,17 @@ export default function SurveyRespondScreen() {
                     style={styles.logo}
                     resizeMode="contain"
                 />
-                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={20} color="#fff" />
-                    <Text style={styles.backText}>Back</Text>
+                <TouchableOpacity style={[styles.backButton, isRTL && styles.backButtonRtl]} onPress={() => router.back()}>
+                    <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={20} color="#fff" />
+                    <Text style={[styles.backText, textDirectionStyle]}>{t('surveyRespond.back')}</Text>
                 </TouchableOpacity>
 
-                <View style={styles.headerTextBlock}>
-                    {isPreview && <Text style={styles.previewLabel}>Preview mode</Text>}
-                    <Text style={styles.pageTitle}>{survey?.title || 'Survey'}</Text>
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                    {isPreview && <Text style={[styles.previewLabel, textDirectionStyle]}>{t('surveyRespond.previewMode')}</Text>}
+                    <Text style={[styles.pageTitle, textDirectionStyle]}>{survey?.title || t('surveyRespond.titleFallback')}</Text>
                     {/* {isPreview && <Text style={styles.previewHint}>Preview mode. Submissions are saved separately.</Text>} */}
                     {loading &&
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                        <View style={[styles.headerLoaderRow, isRTL && styles.headerLoaderRowRtl]}>
                             <ActivityIndicator
                                 size="small"
                                 color="#fff"
@@ -247,16 +250,16 @@ export default function SurveyRespondScreen() {
             >
                 <ScrollView>
                     <View style={styles.contentContainer}>
-                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                        {error ? <Text style={[styles.errorText, textDirectionStyle]}>{error}</Text> : null}
                         {survey?.repeating?.enabled && survey?.repeating?.cadence === 'post-training' && !sessionId && (
-                            <Text style={styles.hint}>This survey is available after a training session.</Text>
+                            <Text style={[styles.hint, textDirectionStyle]}>{t('surveyRespond.afterTrainingHint')}</Text>
                         )}
                         {survey?.questions?.filter(question => shouldShowQuestion(question)).map(question => (
                             <View key={question._id} style={styles.questionBlock}>
-                                <Text style={styles.label}>
+                                <Text style={[styles.label, textDirectionStyle]}>
                                     {question.text}{question.required ? ' *' : ''}
                                 </Text>
-                                {!!question.description && <Text style={styles.hint}>{question.description}</Text>}
+                                {!!question.description && <Text style={[styles.hint, textDirectionStyle]}>{question.description}</Text>}
 
                                 {question.type === 'rating' && (
                                     <View style={styles.rangeSliderContainer}>
@@ -271,7 +274,7 @@ export default function SurveyRespondScreen() {
                                             maximumTrackTintColor="#111111"
                                             thumbTintColor="#FF4000"
                                         />
-                                        <Text style={{ textAlign: 'center', fontSize: 16, marginTop: 10 }}>
+                                        <Text style={styles.sliderValue}>
                                             {answers[question._id] ?? question.scale?.min ?? 0}
                                         </Text>
                                     </View>
@@ -282,13 +285,13 @@ export default function SurveyRespondScreen() {
                                         {(question.options || []).map(option => (
                                             <TouchableOpacity
                                                 key={option.value}
-                                                style={styles.radioButtonContainer}
+                                                style={[styles.radioButtonContainer, isRTL && styles.radioButtonContainerRtl]}
                                                 onPress={() => setAnswers(prev => ({ ...prev, [question._id]: option.value }))}
                                             >
-                                                <View style={styles.outerCircle}>
+                                                <View style={[styles.outerCircle, isRTL && styles.outerCircleRtl]}>
                                                     {answers[question._id] === option.value && <View style={styles.innerCircle} />}
                                                 </View>
-                                                <Text style={styles.optionText}>{option.label}</Text>
+                                                <Text style={[styles.optionText, textDirectionStyle]}>{option.label}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -299,15 +302,15 @@ export default function SurveyRespondScreen() {
                                         {(question.options || []).map(option => (
                                             <TouchableOpacity
                                                 key={option.value}
-                                                style={styles.radioButtonContainer}
+                                                style={[styles.radioButtonContainer, isRTL && styles.radioButtonContainerRtl]}
                                                 onPress={() => handleMultiToggle(question._id, option.value)}
                                             >
-                                                <View style={styles.checkboxOuter}>
+                                                <View style={[styles.checkboxOuter, isRTL && styles.checkboxOuterRtl]}>
                                                     {Array.isArray(answers[question._id]) && answers[question._id].includes(option.value) && (
                                                         <View style={styles.checkboxInner} />
                                                     )}
                                                 </View>
-                                                <Text style={styles.optionText}>{option.label}</Text>
+                                                <Text style={[styles.optionText, textDirectionStyle]}>{option.label}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -315,8 +318,11 @@ export default function SurveyRespondScreen() {
 
                                 {(question.type === 'text' || question.type === 'long-text') && (
                                     <TextInput
-                                        style={question.type === 'long-text' ? styles.textarea : styles.input}
-                                        placeholder={question.type === 'long-text' ? 'Type your response' : 'Answer'}
+                                        style={[
+                                            question.type === 'long-text' ? styles.textarea : styles.input,
+                                            textDirectionStyle
+                                        ]}
+                                        placeholder={question.type === 'long-text' ? t('surveyRespond.typeYourResponse') : t('surveyRespond.answer')}
                                         placeholderTextColor="#A8A8A8"
                                         value={answers[question._id] || ''}
                                         onChangeText={(value) => setAnswers(prev => ({ ...prev, [question._id]: value }))}
@@ -337,7 +343,7 @@ export default function SurveyRespondScreen() {
                     <TouchableOpacity style={styles.fullButtonRow} onPress={handleSubmit}>
                         <View style={styles.loginButton}>
                             <Text style={styles.loginText}>
-                                {saving ? 'Submitting' : 'Submit'}
+                                {saving ? t('surveyRespond.submitting') : t('surveyRespond.submit')}
                             </Text>
                             {saving && (
                                 <ActivityIndicator
@@ -356,9 +362,9 @@ export default function SurveyRespondScreen() {
                     <View style={styles.checkCircle}>
                         <Ionicons name="checkmark" size={24} color="#fff" />
                     </View>
-                    <Text style={styles.confirmationTitle}>Survey submitted successfully!</Text>
+                    <Text style={[styles.confirmationTitle, textDirectionStyle]}>{t('surveyRespond.submittedSuccessfully')}</Text>
                     <TouchableOpacity style={styles.primaryButton} onPress={() => router.back()}>
-                        <Text style={styles.primaryButtonText}>Back</Text>
+                        <Text style={styles.primaryButtonText}>{t('surveyRespond.back')}</Text>
                     </TouchableOpacity>
                 </View>
             )}
@@ -400,6 +406,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 5,
     },
+    backButtonRtl: {
+        right: undefined,
+        left: 20,
+        flexDirection: 'row-reverse',
+    },
     backText: {
         color: '#fff',
         fontFamily: 'Acumin',
@@ -410,6 +421,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -427,9 +442,26 @@ const styles = StyleSheet.create({
         paddingVertical: 4,
         borderRadius: 12
     },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl'
+    },
+    headerLoaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5
+    },
+    headerLoaderRowRtl: {
+        flexDirection: 'row-reverse',
+    },
     label: {
         fontFamily: "Qatar",
         fontSize: 20,
+        color:'#111'
     },
     questionBlock: {
         marginBottom: 20
@@ -444,6 +476,12 @@ const styles = StyleSheet.create({
     rangeSlider: {
         flex: 1,
         height: 40
+    },
+    sliderValue: {
+        textAlign: 'center',
+        fontSize: 16,
+        marginTop: 10,
+        color:'#111'
     },
     textarea: {
         fontSize: 14,
@@ -531,6 +569,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    radioButtonContainerRtl: {
+        flexDirection: 'row-reverse',
+    },
     checkboxOuter: {
         height: 22,
         width: 22,
@@ -540,6 +581,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 6,
+    },
+    checkboxOuterRtl: {
+        marginRight: 0,
+        marginLeft: 6,
     },
     checkboxInner: {
         height: 12,
@@ -557,6 +602,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: 6,
     },
+    outerCircleRtl: {
+        marginRight: 0,
+        marginLeft: 6,
+    },
     innerCircle: {
         height: 12,
         width: 12,
@@ -565,6 +614,7 @@ const styles = StyleSheet.create({
     },
     optionText: {
         fontSize: 15,
+        color: '#111'
     },
     checkCircle: {
         backgroundColor: '#009933',

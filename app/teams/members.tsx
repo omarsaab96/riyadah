@@ -20,11 +20,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function Members() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -170,7 +172,7 @@ export default function Members() {
 
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('Authentication token missing');
+                setError(t('teamManage.authMissing'));
                 setAddingMember(prev => prev.filter(id => id !== athlete._id));
                 return;
             }
@@ -195,11 +197,11 @@ export default function Members() {
             } else {
                 setAddingMember(prev => prev.filter(id => id !== athlete._id));
                 console.error(data.message);
-                setError(data.message || 'Failed to add member.');
+                setError(data.message || t('teamManage.failedAddMember'));
             }
         } catch (err) {
             console.error('Error adding member:', err);
-            setError('Something went wrong while adding the member.');
+            setError(t('teamManage.addMemberError'));
         }
     };
 
@@ -209,7 +211,7 @@ export default function Members() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                throw new Error('Authentication token missing');
+                throw new Error(t('teamManage.authMissing'));
             }
 
             const res = await fetch(`https://server.riyadah.app/api/teams/${team._id}/remove-members`, {
@@ -234,7 +236,7 @@ export default function Members() {
                 console.error(data.message || 'Failed to remove member');
             }
         } catch (err) {
-            setError('Error removing member')
+            setError(t('teamManage.removeMemberError'))
             console.log('Error removing member:', err);
         } finally {
             setLoadingRemove(prev => prev.filter(_id => _id !== memberid));
@@ -278,18 +280,18 @@ export default function Members() {
                         onPress={() => {
                             router.back()
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back</Text>
+                        <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>{t('teamManage.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Team Members</Text>
-                        {!loading && <Text style={styles.pageDesc}>Manage members of {team?.name}</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamManage.membersTitle')}</Text>
+                        {!loading && <Text style={[styles.pageDesc, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamManage.membersDesc').replace('{name}', team?.name || '')}</Text>}
 
                         {loading &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                            <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#fff"
@@ -299,10 +301,10 @@ export default function Members() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>membe</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('teamManage.membersGhost')}</Text>
 
                     {!loading &&
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                             {team?.image != null && <Image
                                 source={{ uri: team?.image }}
                                 style={styles.profileImageAvatar}
@@ -321,29 +323,30 @@ export default function Members() {
 
                         {team && user && <View style={styles.profileSection}>
                             <View style={{ marginBottom: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                                    <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
+                                <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRtl]}>
+                                    <Text style={[styles.title, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.memberCount').replace('{count}', String(team.members.length)).replace('{suffix}', team.members.length == 1 ? '' : 's')}</Text>
 
                                     {user._id == userId && !editMode &&
                                         <TouchableOpacity style={styles.editToggle} onPress={() => { setKeyword(''); setEditMode(true) }}>
                                             <Entypo name="edit" size={16} color="#FF4000" />
-                                            <Text style={styles.editToggleText}>Edit</Text>
+                                            <Text style={styles.editToggleText}>{t('teamManage.edit')}</Text>
                                         </TouchableOpacity>}
 
                                     {user._id == userId && editMode &&
                                         <TouchableOpacity style={styles.editToggle} onPress={() => { setEditMode(false) }}>
                                             <AntDesign name="check" size={16} color="#FF4000" />
-                                            <Text style={styles.editToggleText}>Done</Text>
+                                            <Text style={styles.editToggleText}>{t('teamManage.done')}</Text>
                                         </TouchableOpacity>}
                                 </View>
 
                                 {editMode && <View style={{ marginBottom: 10 }}>
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Add athletes by name or email (min. 3 characters)"
+                                        placeholder={t('teamManage.addMemberPlaceholder')}
                                         placeholderTextColor="#A8A8A8"
                                         value={keyword}
                                         onChangeText={handleSearchInput}
+                                        style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
                                     />
                                     {searching &&
                                         <ActivityIndicator
@@ -391,10 +394,10 @@ export default function Members() {
 
                                                                     )}
                                                                 </View>
-                                                                <View style={styles.searchResultItemInfo}>
+                                                                <View style={[styles.searchResultItemInfo, isRTL && styles.searchResultItemInfoRtl]}>
                                                                     <View>
-                                                                        <Text style={styles.searchResultItemName}>{athlete.name}</Text>
-                                                                        <Text style={[styles.searchResultItemDescription, athlete.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{athlete.sport || 'no sport'}</Text>
+                                                                        <Text style={[styles.searchResultItemName, isRTL ? styles.rtlText : styles.ltrText]}>{athlete.name}</Text>
+                                                                        <Text style={[styles.searchResultItemDescription, athlete.sport == null && { opacity: 0.5, fontStyle: 'italic' }, isRTL ? styles.rtlText : styles.ltrText]}>{athlete.sport || t('teamManage.noSport')}</Text>
                                                                     </View>
                                                                     {addingMember.includes(athlete._id) ? (
                                                                         <ActivityIndicator
@@ -410,7 +413,7 @@ export default function Members() {
                                                                                 ]
                                                                             }
                                                                         >
-                                                                            {alreadyMember ? 'Already a member' : '+ Add As Member'}
+                                                                            {alreadyMember ? t('teamManage.alreadyMember') : t('teamManage.addAsMember')}
                                                                         </Text>
                                                                     )}
 
@@ -423,8 +426,8 @@ export default function Members() {
 
                                             {searchResults.length == 0 && !searching &&
                                                 <View>
-                                                    <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
-                                                        No results
+                                                    <Text style={[styles.searchNoResultText, { marginBottom: 15 }, isRTL ? styles.rtlText : styles.ltrText]}>
+                                                        {t('teamManage.noResults')}
                                                     </Text>
                                                 </View>
                                             }
@@ -434,7 +437,7 @@ export default function Members() {
 
                                 {team.members && team.members.length > 0 ? (
                                     <View style={{ marginBottom: 20 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                        <View style={[styles.peopleGrid, isRTL && styles.peopleGridRtl]}>
                                             {team.members.map((member) => {
                                                 const animVal = getAnimatedValue(member._id);
                                                 const animatedWidth = animVal.interpolate({
@@ -499,9 +502,9 @@ export default function Members() {
                                                                                 justifyContent: 'center'
                                                                             }}>
                                                                                 <Text style={{ color: '#FF4000', fontFamily: 'Qatar', fontSize: 22, marginBottom: 30 }}>
-                                                                                    Sure?
+                                                                                    {t('teamManage.sure')}
                                                                                 </Text>
-                                                                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                                                                <View style={[styles.confirmRow, isRTL && styles.confirmRowRtl]}>
                                                                                     <TouchableOpacity onPress={() => handleRemoveMember(member._id)}>
                                                                                         <Text
                                                                                             style={{
@@ -513,7 +516,7 @@ export default function Members() {
                                                                                                 borderRadius: 5,
                                                                                             }}
                                                                                         >
-                                                                                            Yes
+                                                                                            {t('teamManage.yes')}
                                                                                         </Text>
                                                                                     </TouchableOpacity>
                                                                                     <TouchableOpacity
@@ -532,7 +535,7 @@ export default function Members() {
                                                                                                 borderRadius: 5,
                                                                                             }}
                                                                                         >
-                                                                                            No
+                                                                                            {t('teamManage.no')}
                                                                                         </Text>
                                                                                     </TouchableOpacity>
                                                                                 </View>
@@ -608,7 +611,7 @@ export default function Members() {
                                                                     </View>
                                                                 )}
                                                             </View>
-                                                            <Text style={{color:'black',fontSize:14,fontFamily:'Acumin'}}>{member?.name?.trim()}</Text>
+                                                            <Text style={[styles.personName, isRTL ? styles.rtlText : styles.ltrText]}>{member?.name?.trim()}</Text>
                                                         </TouchableOpacity>
                                                     </View>
                                                 );
@@ -617,7 +620,7 @@ export default function Members() {
                                     </View>
 
                                 ) : (
-                                    <Text style={styles.paragraph}>No members</Text>
+                                    <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.noMembers')}</Text>
                                 )}
                             </View>
                         </View>}
@@ -688,6 +691,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
     backBtnText: {
         color: '#FFF',
         fontSize:18,
@@ -698,6 +706,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -804,6 +816,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     error: {
         marginBottom: 15,
         backgroundColor: '#fce3e3',
@@ -859,6 +875,10 @@ const styles = StyleSheet.create({
         height: '70%',
         maxWidth: 200,
         overflow: 'hidden',
+    },
+    profileImageRtl: {
+        right: undefined,
+        left: -5,
     },
     profileImageAvatar: {
         height: '100%',
@@ -951,6 +971,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1
     },
+    searchResultItemInfoRtl: {
+        flexDirection: 'row-reverse',
+    },
     searchResultItemLink: {
         color: '#FF4000'
     },
@@ -987,5 +1010,51 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         zIndex: 2,
+    },
+    loaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5,
+    },
+    loaderRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    sectionHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
+    peopleGrid: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 15,
+    },
+    peopleGridRtl: {
+        flexDirection: 'row-reverse',
+    },
+    confirmRow: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    confirmRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    personName: {
+        color: 'black',
+        fontSize: 14,
+        fontFamily: 'Acumin',
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     }
 });

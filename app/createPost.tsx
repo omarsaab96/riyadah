@@ -16,8 +16,10 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../context/language';
 
 const CreatePostScreen = () => {
+    const { isRTL, t } = useLanguage();
     const [content, setContent] = useState('');
     const [media, setMedia] = useState([]);
     const [userId, setUserId] = useState<string | null>(null);
@@ -56,7 +58,7 @@ const CreatePostScreen = () => {
     const pickMedia = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
-            alert('Permission to access media library is required!');
+            alert(t('createPost.mediaPermission'));
             return;
         }
 
@@ -182,7 +184,7 @@ const CreatePostScreen = () => {
 
             {user && <>
                 <View style={styles.newPostContainer}>
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}>
 
                         <View style={[
                             styles.avatarContainer,
@@ -207,9 +209,9 @@ const CreatePostScreen = () => {
 
 
                         <TextInput
-                            style={styles.textInput}
+                            style={[styles.textInput, isRTL && styles.rtlText]}
                             multiline
-                            placeholder="What's on your mind?"
+                            placeholder={t('createPost.placeholder')}
                             placeholderTextColor="#A8A8A8"
                             value={content}
                             onChangeText={setContent}
@@ -251,13 +253,13 @@ const CreatePostScreen = () => {
                     <View style={styles.actions}>
                         <TouchableOpacity onPress={pickMedia} style={styles.actionBtn}>
                             <Ionicons name="images" size={22} color="#000000" />
-                            <Text style={styles.actionText}>Photo/Video</Text>
+                            <Text style={styles.actionText}>{t('createPost.photoVideo')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
                 <TouchableOpacity onPress={handlePost} style={styles.postButton}>
-                    <Text style={styles.postText}>Post</Text>
+                    <Text style={styles.postText}>{posting ? t('createPost.posting') : t('createPost.post')}</Text>
                 </TouchableOpacity>
             </>}
 
@@ -374,5 +376,9 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         textAlignVertical: 'top',
         color:'black'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });

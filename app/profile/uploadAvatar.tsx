@@ -16,11 +16,13 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
-const router = useRouter();
 
 export default function UploadAvatar() {
+    const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState(null);
@@ -63,7 +65,7 @@ export default function UploadAvatar() {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (!permissionResult.granted) {
-            alert("Permission to access media library is required!");
+            alert(t('createPost.mediaPermission'));
             return;
         }
 
@@ -82,7 +84,7 @@ export default function UploadAvatar() {
             const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
 
             if (sizeInMB > 5) {
-                setError("Image size too large "+sizeInMB.toFixed(2)+" MB. Max 5 MB");
+                setError(t('profileEditor.imageTooLarge', { size: sizeInMB.toFixed(2) }));
                 setUploading(false);
                 return;
             }
@@ -104,12 +106,12 @@ export default function UploadAvatar() {
                     updateField('image', data.image);
                 } else {
                     console.error("Failed to remove background:", data);
-                    alert("Background removal failed.");
+                    alert(t('profileEditor.removingBackground'));
                 }
 
             } catch (err) {
                 console.error("Error removing background:", err);
-                alert("An error occurred while removing background.");
+                alert(t('profileEditor.removingBackground'));
             } finally {
                 setUploading(false);
             }
@@ -155,12 +157,12 @@ export default function UploadAvatar() {
                         resizeMode="contain"
                     />
 
-                    <View style={styles.headerTextBlock}>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                         <Text style={styles.pageTitle}>
-                            {(user?.type == "Club" || user?.type == "Association") ? 'Upload logo' : 'Upload Avatar'}
+                            {(user?.type == "Club" || user?.type == "Association") ? t('profileEditor.uploadLogo') : t('profileEditor.uploadAvatarTitle')}
                         </Text>
-                        {!loading && <Text style={styles.pageDesc}>
-                            {(user?.type == "Club" || user?.type == "Association") ? 'Change your logo' : 'Change your profile picture'}
+                        {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>
+                            {(user?.type == "Club" || user?.type == "Association") ? t('profileEditor.changeLogo') : t('profileEditor.changeProfilePicture')}
                         </Text>}
                         {loading && (
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -169,8 +171,8 @@ export default function UploadAvatar() {
                         )}
                     </View>
 
-                    <Text style={styles.ghostText}>
-                        {(user?.type == "Club" || user?.type == "Association") ? 'Logo' : 'Avata'}
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
+                        {(user?.type == "Club" || user?.type == "Association") ? t('profileEditor.logoGhost') : t('profileEditor.avatarGhost')}
                     </Text>
                 </View>
 
@@ -187,7 +189,7 @@ export default function UploadAvatar() {
                             {uploading && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5, marginBottom: 20 }}>
                                     <ActivityIndicator size="small" color="#FF4000" />
-                                    <Text style={[styles.uploadHint, { marginLeft: 10, paddingTop: 5 }]}>Removing background...</Text>
+                                    <Text style={[styles.uploadHint, { marginLeft: 10, paddingTop: 5 }, isRTL && styles.rtlText]}>{t('profileEditor.removingBackground')}</Text>
                                 </View>
                             )}
 
@@ -199,26 +201,26 @@ export default function UploadAvatar() {
                                                 source={{ uri: localImg || user.image }}
                                                 style={[styles.avatarPreview, , { backgroundColor: '#FF4000' }]}
                                             />
-                                            <Text style={styles.uploadHint}>Tap to change image</Text>
+                                            <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('profileEditor.tapChangeImage')}</Text>
                                         </View>
                                     ) : (
                                         <>
                                             <View style={styles.emptyImage}>
                                                 <MaterialIcons name="add" size={40} color="#FF4000" />
                                             </View>
-                                            <Text style={styles.uploadHint}>Tap to upload new image</Text>
+                                            <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('profileEditor.tapUploadImage')}</Text>
                                         </>
                                     )}
                                 </TouchableOpacity>
                             )}
 
                             {!uploading && (
-                                <View style={[styles.profileActions, styles.inlineActions]}>
+                                <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                     <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                        <Text style={styles.profileButtonText}>Cancel</Text>
+                                        <Text style={styles.profileButtonText}>{t('profileEditor.cancel')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
-                                        <Text style={styles.profileButtonText}>{saving ? 'saving':'save'}</Text>
+                                        <Text style={styles.profileButtonText}>{saving ? t('profileEditor.savingLower') : t('profileEditor.saveLower')}</Text>
                                         {saving && <ActivityIndicator size="small" color="#111" style={styles.saveLoaderContainer} />}
                                     </TouchableOpacity>
                                 </View>
@@ -228,7 +230,7 @@ export default function UploadAvatar() {
                     </ScrollView>
                 )}
 
-                <View style={styles.navBar}>
+                <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                     <TouchableOpacity onPress={() => router.replace('/settings')}>
                         <Image source={require('../../assets/settings.png')} style={styles.icon} />
                     </TouchableOpacity>
@@ -278,6 +280,14 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -312,6 +322,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         columnGap: 15
+    },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     profileButton: {
         borderRadius: 5,
@@ -350,6 +363,9 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 5,
     },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
+    },
     icon: {
         width: 24,
         height: 24,
@@ -368,6 +384,10 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
         marginBottom: 10,
         color:'#111111'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     emptyImage: {
         height: 200,

@@ -17,10 +17,12 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function skillsTestingScreen() {
+    const { isRTL, t, language } = useLanguage();
     const [userId, setUserId] = useState<string | null>(null);
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
@@ -54,6 +56,12 @@ export default function skillsTestingScreen() {
 
     const [testedSkills, setTestedSkills] = useState([]);
     const [previouslyTestedSkills, setPreviouslyTestedSkills] = useState({});
+    const getSectionLabel = (key: 'athlete' | 'club' | 'association' | 'coach', count: number) => {
+        if (key === 'athlete') return `${count} ${count === 1 ? t('search.athlete') : t('search.athletes')}`;
+        if (key === 'club') return `${count} ${count === 1 ? t('search.club') : t('search.clubs')}`;
+        if (key === 'association') return `${count} ${count === 1 ? t('search.federation') : t('search.federations')}`;
+        return `${count} ${count === 1 ? t('search.coach') : t('search.coaches')}`;
+    };
 
     useEffect(() => {
         fetchUser();
@@ -68,7 +76,7 @@ export default function skillsTestingScreen() {
         const token = await SecureStore.getItemAsync('userToken');
 
         if (!token) {
-            console.log("No token found");
+            console.log(t('skillsTesting.noToken'));
             setSearching(false);
             return;
         }
@@ -193,7 +201,7 @@ export default function skillsTestingScreen() {
                 setSelectedUser(userData);
 
                 if (userData.type != "Athlete") {
-                    setError("Selected user is not an athlete.");
+                    setError(t('skillsTesting.selectedUserNotAthlete'));
                 } else {
                     setError("");
 
@@ -330,15 +338,15 @@ export default function skillsTestingScreen() {
             </View>
 
             {selectedAccount == '' && <View style={styles.searchContainer}>
-                <Text style={{marginBottom:5,fontFamily:'Qatar',fontSize:14}}>
-                    Tested subject
+                <Text style={{marginBottom:5,fontFamily:'Qatar',fontSize:14, textAlign: isRTL ? 'right' : 'left'}}>
+                    {t('skillsTesting.testedSubject')}
                 </Text>
                 <TextInput
-                    style={[styles.input, Platform.OS === 'ios' && { padding: 15 }]}
+                    style={[styles.input, Platform.OS === 'ios' && { padding: 15 }, isRTL && styles.rtlText]}
                     value={keyword}
                     onChangeText={handleSearchInput}
                     placeholderTextColor={'#888888'}
-                    placeholder="Search (Min. 3 characters)"
+                    placeholder={t('skillsTesting.searchPlaceholder')}
                 />
 
                 {searching &&
@@ -458,12 +466,12 @@ export default function skillsTestingScreen() {
                     {(activeTab === 'All' || activeTab === 'Athletes') && searchResults.users?.athlete?.length > 0 && (
                         <View style={styles.searchResultsContainer}>
                             <Text style={styles.sectionTitle}>
-                                {searchResults.users.athlete.length} {searchResults.users.athlete.length == 1 ? 'Athlete' : 'Athletes'}
+                                {getSectionLabel('athlete', searchResults.users.athlete.length)}
                             </Text>
                             {searchResults.users.athlete.map(user => (
                                 <TouchableOpacity
                                     key={user._id}
-                                    style={styles.searchResultsItem}
+                                    style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                     onPress={() => handleAccountSelected(user._id)}
                                 >
                                     <View style={[
@@ -487,8 +495,8 @@ export default function skillsTestingScreen() {
                                         />}
                                     </View>
                                     <View style={{ justifyContent: 'center' }}>
-                                        <Text style={styles.name}>{user.name}</Text>
-                                        {user.sport && <Text style={styles.role}>{user.sport}</Text>}
+                                        <Text style={[styles.name, isRTL && styles.rtlText]}>{user.name}</Text>
+                                        {user.sport && <Text style={[styles.role, isRTL && styles.rtlText]}>{user.sport}</Text>}
                                     </View>
 
                                 </TouchableOpacity>
@@ -499,12 +507,12 @@ export default function skillsTestingScreen() {
                     {(activeTab === 'All' || activeTab === 'Clubs') && searchResults.users?.club?.length > 0 && (
                         <View style={styles.searchResultsContainer}>
                             <Text style={styles.sectionTitle}>
-                                {searchResults.users.club.length} {searchResults.users.club.length == 1 ? 'Club' : 'Clubs'}
+                                {getSectionLabel('club', searchResults.users.club.length)}
                             </Text>
                             {searchResults.users.club.map(user => (
                                 <TouchableOpacity
                                     key={user._id}
-                                    style={styles.searchResultsItem}
+                                    style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                     onPress={() => handleAccountSelected(user._id)}
                                 >
                                     <View style={[
@@ -523,8 +531,8 @@ export default function skillsTestingScreen() {
                                         />}
                                     </View>
                                     <View style={{ justifyContent: 'center' }}>
-                                        <Text style={styles.name}>{user.name}</Text>
-                                        {user.sport && <Text style={styles.role}>
+                                        <Text style={[styles.name, isRTL && styles.rtlText]}>{user.name}</Text>
+                                        {user.sport && <Text style={[styles.role, isRTL && styles.rtlText]}>
                                             {user.sport.map(s => s).join(", ")}
                                         </Text>}
                                     </View>
@@ -536,12 +544,12 @@ export default function skillsTestingScreen() {
                     {(activeTab === 'All' || activeTab === 'Federations') && searchResults.users?.association?.length > 0 && (
                         <View style={styles.searchResultsContainer}>
                             <Text style={styles.sectionTitle}>
-                                {searchResults.users.association.length} {searchResults.users.association.length == 1 ? 'Federation' : 'Federations'}
+                                {getSectionLabel('association', searchResults.users.association.length)}
                             </Text>
                             {searchResults.users.association.map(user => (
                                 <TouchableOpacity
                                     key={user._id}
-                                    style={styles.searchResultsItem}
+                                    style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                     onPress={() => handleAccountSelected(user._id)}
                                 >
                                     <View style={[
@@ -560,8 +568,8 @@ export default function skillsTestingScreen() {
                                         />}
                                     </View>
                                     <View style={{ justifyContent: 'center' }}>
-                                        <Text style={styles.name}>{user.name}</Text>
-                                        {user.sport && <Text style={styles.role}>
+                                        <Text style={[styles.name, isRTL && styles.rtlText]}>{user.name}</Text>
+                                        {user.sport && <Text style={[styles.role, isRTL && styles.rtlText]}>
                                             {user.sport.map(s => s).join(", ")}
                                         </Text>}
                                     </View>
@@ -573,12 +581,12 @@ export default function skillsTestingScreen() {
                     {(activeTab === 'All' || activeTab === 'Coaches') && searchResults.users?.coaches?.length > 0 && (
                         <View style={styles.searchResultsContainer}>
                             <Text style={styles.sectionTitle}>
-                                {searchResults.users.coaches.length} {searchResults.users.coaches.length == 1 ? 'Coach' : 'Coaches'}
+                                {getSectionLabel('coach', searchResults.users.coaches.length)}
                             </Text>
                             {searchResults.users.coaches.map(user => (
                                 <TouchableOpacity
                                     key={user._id}
-                                    style={styles.searchResultsItem}
+                                    style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                     onPress={() => handleAccountSelected(user._id)}
                                 >
                                     <View style={[
@@ -602,8 +610,8 @@ export default function skillsTestingScreen() {
                                         />}
                                     </View>
                                     <View style={{ justifyContent: 'center' }}>
-                                        <Text style={styles.name}>{user.name}</Text>
-                                        {user.sport && <Text style={styles.role}>{user.sport}</Text>}
+                                        <Text style={[styles.name, isRTL && styles.rtlText]}>{user.name}</Text>
+                                        {user.sport && <Text style={[styles.role, isRTL && styles.rtlText]}>{user.sport}</Text>}
                                     </View>
 
                                 </TouchableOpacity>
@@ -618,18 +626,18 @@ export default function skillsTestingScreen() {
                         <Text style={styles.errorText}>{error}</Text>
                     </View>}
 
-                    <TouchableOpacity onPress={() => { handleCancelAccountSelection() }} style={{marginBottom: 30,flexDirection:'row',alignItems:'center',gap:10  }}>
-                        <Ionicons name="arrow-back" size={20} color="black" />
-                        <Text style={{fontFamily:'Qatar'}}>
-                            Back to search
+                    <TouchableOpacity onPress={() => { handleCancelAccountSelection() }} style={{marginBottom: 30,flexDirection: isRTL ? 'row-reverse' : 'row',alignItems:'center',gap:10  }}>
+                        <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={20} color="black" />
+                        <Text style={{fontFamily:'Qatar', textAlign: isRTL ? 'right' : 'left'}}>
+                            {t('skillsTesting.backToSearch')}
                         </Text>
                     </TouchableOpacity>
 
-                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
-                        <Text style={styles.label}>Selected user</Text>
-                        <Text style={styles.selectedUserEmail}>{selectedAccount}</Text>
+                    <View style={{flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                        <Text style={[styles.label, isRTL && styles.rtlText]}>{t('skillsTesting.selectedUser')}</Text>
+                        <Text style={[styles.selectedUserEmail, isRTL && styles.rtlText]}>{selectedAccount}</Text>
                     </View>
-                    <View style={styles.selectedUserContainer}>
+                    <View style={[styles.selectedUserContainer, isRTL && styles.selectedUserContainerRtl]}>
                         <Image
                             source={
                                 selectedUser.image != null
@@ -640,24 +648,24 @@ export default function skillsTestingScreen() {
                             resizeMode="contain"
                         />
                         <View style={styles.selectedUserInfo}>
-                            <Text style={styles.selectedUserName}>{selectedUser.name}</Text>
-                            <Text style={styles.selectedUserEmail}>{selectedUser.email}</Text>
-                            <Text style={styles.selectedUserEmail}>{selectedUser.type} {selectedUser.role && " | " + selectedUser.role} | {selectedUser.sport}</Text>
+                            <Text style={[styles.selectedUserName, isRTL && styles.rtlText]}>{selectedUser.name}</Text>
+                            <Text style={[styles.selectedUserEmail, isRTL && styles.rtlText]}>{selectedUser.email}</Text>
+                            <Text style={[styles.selectedUserEmail, isRTL && styles.rtlText]}>{[selectedUser.type, selectedUser.role, selectedUser.sport].filter(Boolean).join(' | ')}</Text>
                         </View>
                     </View>
 
                     {selectedUserTest != null ? (<View style={{ marginTop: 20 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text>Last updated: {new Date(selectedUserTest.lastTested).toLocaleDateString()}</Text>
+                        <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <Text style={isRTL ? styles.rtlText : undefined}>{t('skillsTesting.lastUpdated', { date: new Date(selectedUserTest.lastTested).toLocaleDateString(language === 'ar' ? 'ar' : 'en-US') })}</Text>
 
                             {/* OPEN ADD RESULTS */}
                             {!addNewResultsModalVisible && <TouchableOpacity onPress={handleOpenAddResults} style={styles.addbtn}>
-                                <Text style={{ fontWeight: "bold",color:'#fff' }}>Add new result</Text>
+                                <Text style={{ fontWeight: "bold",color:'#fff' }}>{t('skillsTesting.addNewResult')}</Text>
                             </TouchableOpacity>}
 
                             {/* CLOSE */}
                             {addNewResultsModalVisible && <TouchableOpacity onPress={() => setAddNewResultsModalVisible(false)} style={styles.addbtn}>
-                                <Text style={{ fontWeight: "bold",color:'#fff' }}>Cancel</Text>
+                                <Text style={{ fontWeight: "bold",color:'#fff' }}>{t('skillsTesting.cancel')}</Text>
                             </TouchableOpacity>}
                         </View>
 
@@ -666,7 +674,7 @@ export default function skillsTestingScreen() {
                             <View style={{ padding: 10, marginTop: 10, marginBottom: 20, backgroundColor: "#f4f4f4", borderRadius: 10 }}>
 
                                 <Text style={{ fontWeight: "bold", marginBottom: 10 }}>
-                                    New Test Results
+                                    {t('skillsTesting.newTestResults')}
                                 </Text>
 
                                 {testedSkills.map((skill, index) => (
@@ -680,7 +688,7 @@ export default function skillsTestingScreen() {
                                     >
                                         {/* Skill input */}
                                         <TextInput
-                                            placeholder="Skill"
+                                            placeholder={t('skillsTesting.skill')}
                                             value={skill.testedSkill}
                                             onChangeText={(text) => {
                                                 const updated = [...testedSkills];
@@ -698,7 +706,7 @@ export default function skillsTestingScreen() {
 
                                         {/* Score input */}
                                         <TextInput
-                                            placeholder="Score"
+                                            placeholder={t('skillsTesting.score')}
                                             value={skill.score}
                                             onChangeText={(text) => {
                                                 const updated = [...testedSkills];
@@ -727,7 +735,7 @@ export default function skillsTestingScreen() {
                                     {/* Add new row */}
                                     <TouchableOpacity onPress={addSkillRow} style={styles.addbtn}>
                                         <Text style={{ fontWeight: "bold",color:'#fff' }}>
-                                            + Add Another Skill
+                                            {t('skillsTesting.addAnotherSkill')}
                                         </Text>
                                     </TouchableOpacity>
 
@@ -739,7 +747,7 @@ export default function skillsTestingScreen() {
                                     >
                                         {loadingSubmittingTest && <ActivityIndicator size="small" color="#fff" />}
                                         <Text style={{ fontWeight: "bold", color: "#fff" }}>
-                                            {loadingSubmittingTest ? "Submitting..." : "Submit Results"}
+                                            {loadingSubmittingTest ? t('skillsTesting.submitting') : t('skillsTesting.submitResults')}
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
@@ -773,12 +781,12 @@ export default function skillsTestingScreen() {
                                 </View>
                             ))
                         ) : (
-                            <Text>No skills tested yet.</Text>
+                            <Text>{t('skillsTesting.noSkills')}</Text>
                         )}
 
                     </View>
                     ) : (
-                        <Text style={{ marginTop: 20 }}>No test data found for this user.</Text>
+                        <Text style={{ marginTop: 20 }}>{t('skillsTesting.noUserData')}</Text>
                     )}
 
                 </View>}
@@ -890,6 +898,9 @@ const styles = StyleSheet.create({
         padding: 5,
         borderRadius: 10
     },
+    searchResultsItemRtl: {
+        flexDirection: 'row-reverse',
+    },
     avatarContainer: {
         width: 50,
         height: 50,
@@ -994,6 +1005,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 20,
     },
+    selectedUserContainerRtl: {
+        flexDirection: 'row-reverse',
+    },
     selectedUserInfo: {
         flex: 1,
     },
@@ -1019,5 +1033,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 5,
         color: '#444'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });

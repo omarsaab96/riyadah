@@ -13,15 +13,18 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function Notifications() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [notifications, setNotifications] = useState([]);
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -164,13 +167,13 @@ export default function Notifications() {
         const diffInHours = Math.floor(diffInMinutes / 60);
 
         if (diffInMinutes < 1) {
-            return 'now';
+            return t('notifications.now');
         } else if (diffInMinutes < 60) {
-            return `${diffInMinutes}m ago`;
+            return t('notifications.minutesAgo').replace('{count}', String(diffInMinutes));
         } else if (diffInHours < 24) {
-            return `${diffInHours}h ago`;
+            return t('notifications.hoursAgo').replace('{count}', String(diffInHours));
         } else {
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString(isRTL ? 'ar' : 'en-US', { month: 'short', day: 'numeric' });
         }
     };
 
@@ -183,13 +186,15 @@ export default function Notifications() {
                     resizeMode="contain"
                 />
 
-                <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Notifications</Text>
-                    {notifications && !loading && <Text style={styles.pageDesc}>
-                        You have {notifications.filter(n => !n.read).length} unread notification{notifications.filter(n => !n.read).length == 1 ? '' : 's'}
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                    <Text style={[styles.pageTitle, textDirectionStyle]}>{t('notifications.title')}</Text>
+                    {notifications && !loading && <Text style={[styles.pageDesc, textDirectionStyle]}>
+                        {notifications.filter(n => !n.read).length == 1
+                            ? t('notifications.unreadSingle')
+                            : t('notifications.unreadPlural').replace('{count}', String(notifications.filter(n => !n.read).length))}
                     </Text>}
                     {loading &&
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                        <View style={[styles.headerLoaderRow, isRTL && styles.headerLoaderRowRtl]}>
                             <ActivityIndicator
                                 size="small"
                                 color="#fff"
@@ -200,44 +205,45 @@ export default function Notifications() {
 
                 </View>
 
-                <Text style={styles.ghostText}>Notifi</Text>
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('notifications.ghost')}</Text>
             </View>
 
             {!loading && <ScrollView>
                 <View style={styles.contentContainer}>
                     {notifications.length == 0 ?
                         (
-                            <Text style={styles.emptyNotifications}>No notifications</Text>
+                            <Text style={[styles.emptyNotifications, textDirectionStyle]}>{t('notifications.empty')}</Text>
                         ) : (
                             <>
                                 <TouchableOpacity
                                     style={[
                                         styles.btn,
+                                        isRTL && styles.btnRtl,
                                         notifications.filter(n => !n.read).length === 0 ? { opacity: 0.3 } : {}
                                     ]}
                                     onPress={() => { handleMarkAllRead() }}
                                     disabled={notifications.filter(n => !n.read).length === 0 ? true : false}
                                 >
                                     <Entypo name="notifications-off" size={18} color="black" />
-                                    <Text style={styles.btnText}>Mark all as read</Text>
+                                    <Text style={styles.btnText}>{t('notifications.markAllRead')}</Text>
                                 </TouchableOpacity>
                                 <View>
                                     {notifications.map((notif, index) => (
                                         <View key={index} style={styles.notification}>
-                                            <View style={styles.notificationContent}>
-                                                {!notif.read && <View style={styles.notificationUnread} />}
-                                                <Text style={styles.notificationDate}>{timeAgo(notif.date)}</Text>
+                                            <View style={[styles.notificationContent, isRTL && styles.notificationContentRtl]}>
+                                                {!notif.read && <View style={[styles.notificationUnread, isRTL && styles.notificationUnreadRtl]} />}
+                                                <Text style={[styles.notificationDate, textDirectionStyle]}>{timeAgo(notif.date)}</Text>
                                             </View>
-                                            <Text style={styles.notificationText}>
+                                            <Text style={[styles.notificationText, textDirectionStyle]}>
                                                 {notif.message}
                                             </Text>
-                                            <View style={{ flexDirection: 'row', gap: 20 }}>
+                                            <View style={[styles.actionsRow, isRTL && styles.actionsRowRtl]}>
                                                 {!notif.read && <TouchableOpacity onPress={() => handleMarkAsRead(notif._id)}>
-                                                    <Text style={styles.notificationBtnTxt}>Mark as read</Text>
+                                                    <Text style={styles.notificationBtnTxt}>{t('notifications.markRead')}</Text>
                                                 </TouchableOpacity>}
 
                                                 <TouchableOpacity onPress={() => handleDelete(notif._id)}>
-                                                    <Text style={styles.notificationBtnTxt}>Delete</Text>
+                                                    <Text style={styles.notificationBtnTxt}>{t('notifications.delete')}</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -252,7 +258,7 @@ export default function Notifications() {
             </ScrollView>
             }
 
-            <View style={styles.navBar}>
+            <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
@@ -306,10 +312,30 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
         fontSize: 30,
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl'
+    },
+    headerLoaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5
+    },
+    headerLoaderRowRtl: {
+        flexDirection: 'row-reverse',
     },
     pageDesc: {
         color: '#ffffff',
@@ -327,6 +353,9 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         marginBottom: 0
     },
+    notificationContentRtl: {
+        flexDirection: 'row-reverse',
+    },
     notificationText: {
         fontFamily: "Acumin",
         fontSize: 14,
@@ -343,6 +372,10 @@ const styles = StyleSheet.create({
         marginTop: 6,
         marginRight: 5
     },
+    notificationUnreadRtl: {
+        marginRight: 0,
+        marginLeft: 5
+    },
     ghostText: {
         color: '#ffffff',
         fontSize: 100,
@@ -352,6 +385,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2,
         textTransform:'uppercase'
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -394,6 +431,9 @@ const styles = StyleSheet.create({
         // Android shadow
         elevation: 5,
     },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
+    },
     icon: {
         width: 24,
         height: 24,
@@ -412,6 +452,13 @@ const styles = StyleSheet.create({
     notificationBtnTxt: {
         color: '#FF4000'
     },
+    actionsRow: {
+        flexDirection: 'row',
+        gap: 20
+    },
+    actionsRowRtl: {
+        flexDirection: 'row-reverse',
+    },
     notificationDate: {
         fontSize: 12,
         color: '#65676b',
@@ -423,6 +470,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 5,
         marginBottom: 15
+    },
+    btnRtl: {
+        flexDirection: 'row-reverse',
+        justifyContent: 'flex-start',
     },
     btnText: {
         color: 'black',

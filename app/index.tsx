@@ -11,13 +11,15 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../context/language';
 
 
 const { width } = Dimensions.get('window');
-const router = useRouter();
 
 
 export default function Home() {
+    const router = useRouter();
+    const { isRTL, t } = useLanguage();
     useEffect(() => {
         const checkAuth = async () => {
             const token = await SecureStore.getItemAsync('userToken');
@@ -33,11 +35,11 @@ export default function Home() {
         <SafeAreaView style={styles.container}>
 
             {/* Logo */}
-            <Image
-                source={require('../assets/logo_orangeBlack.png')}
-                style={styles.logo}
-                resizeMode="contain"
-            />
+                <Image
+                    source={require('../assets/logo_orangeBlack.png')}
+                    style={[styles.logo, isRTL && styles.logoRtl]}
+                    resizeMode="contain"
+                />
 
             {/* Hero Section */}
             <View style={styles.heroContainer}>
@@ -50,9 +52,9 @@ export default function Home() {
 
             <View style={styles.fixedBottomSection}>
                 <View style={styles.textBlock}>
-                    <Text style={styles.headline}>SET GOALS,{'\n'}CRUSH THEM,{'\n'}REPEAT.</Text>
-                    <Text style={styles.subtext}>
-                        Connect, compete, and thrive with athletes & fans in your city and beyond.
+                    <Text style={[styles.headline, isRTL ? styles.rtlText : styles.ltrText]}>{t('home.headline')}</Text>
+                    <Text style={[styles.subtext, isRTL ? styles.rtlText : styles.ltrText]}>
+                        {t('home.subtext')}
                     </Text>
                 </View>
 
@@ -61,7 +63,7 @@ export default function Home() {
                     <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.push('/login')}>
                         {/* <Image source={require('../assets/buttonBefore.png')} style={styles.sideRect} /> */}
                         <View style={styles.loginButton}>
-                            <Text style={styles.loginText}>LOGIN</Text>
+                            <Text style={styles.loginText}>{t('home.login')}</Text>
                         </View>
                         {/* <Image source={require('../assets/buttonAfter.png')} style={styles.sideRectAfter} /> */}
                     </TouchableOpacity>
@@ -69,7 +71,7 @@ export default function Home() {
                     <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.push('/register')}>
                         {/* <Image source={require('../assets/buttonBeforeLight.png')} style={styles.sideRect} /> */}
                         <View style={styles.createAccountButton}>
-                            <Text style={styles.createAccountText}>CREATE ACCOUNT</Text>
+                            <Text style={styles.createAccountText}>{t('home.createAccount')}</Text>
                         </View>
                         {/* <Image source={require('../assets/buttonAfterLight.png')} style={styles.sideRectAfter} /> */}
                     </TouchableOpacity>
@@ -93,6 +95,10 @@ const styles = StyleSheet.create({
         top: Platform.OS == "ios" ? 60 : 40,
         left: 20,
         zIndex: 1,
+    },
+    logoRtl: {
+        left: undefined,
+        right: 20,
     },
     heroContainer: {
         position: 'relative',
@@ -181,6 +187,14 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#fff',
         fontFamily: 'Qatar',
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });
 

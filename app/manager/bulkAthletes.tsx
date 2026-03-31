@@ -17,11 +17,13 @@ import {
     View
 } from 'react-native';
 import RNFS from 'react-native-fs';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 const BulkAthletesScreen = () => {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [history, setHistory] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -45,11 +47,11 @@ const BulkAthletesScreen = () => {
                 setHistory(data.data || []);
                 setError(null);
             } else {
-                setError(data.message || 'Failed to load history');
+                setError(data.message || t('manager.noBulkUploads'));
             }
         } catch (err) {
             console.error('Failed to load history', err);
-            setError('Failed to load history');
+            setError(t('manager.noBulkUploads'));
         } finally {
             setLoadingHistory(false);
         }
@@ -86,7 +88,7 @@ const BulkAthletesScreen = () => {
             const asset = result.assets[0];
             const fileUri = asset.fileCopyUri || asset.uri;
             if (!fileUri) {
-                Alert.alert('Error', 'Unable to read the selected file.');
+                Alert.alert(t('inventory.errorTitle'), 'Unable to read the selected file.');
                 return;
             }
 
@@ -163,11 +165,11 @@ const BulkAthletesScreen = () => {
                 <View style={styles.pageHeader}>
                     <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back</Text>
+                        <Text style={styles.backBtnText}>{t('manager.back')}</Text>
                     </TouchableOpacity>
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Bulk Athletes</Text>
-                        <Text style={styles.pageDesc}>Upload Excel sheets to create accounts</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('manager.bulkAthletes')}</Text>
+                        <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('manager.bulkAthletesDesc')}</Text>
                     </View>
                     <Text style={styles.ghostText}>Bulk</Text>
                 </View>
@@ -182,30 +184,30 @@ const BulkAthletesScreen = () => {
                         )}
 
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Template</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.template')}</Text>
                             <TouchableOpacity style={styles.secondaryButton} onPress={handleDownloadTemplate}>
-                                <Text style={styles.secondaryButtonText}>Download Excel Template</Text>
+                                <Text style={styles.secondaryButtonText}>{t('manager.downloadTemplate')}</Text>
                             </TouchableOpacity>
                             <Text style={styles.helperText}>
-                                Columns: Name, Email, Phone, Gender, Sport, Club Name, Club Email, Country.
+                                {t('manager.templateHint')}
                             </Text>
                         </View>
 
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>New Bulk Upload</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.newBulkUpload')}</Text>
                             <TouchableOpacity style={styles.primaryButton} onPress={handlePickFile} disabled={processing}>
                                 <Text style={styles.primaryButtonText}>
-                                    {processing ? 'Processing...' : 'Upload Excel File'}
+                                    {processing ? t('manager.processing') : t('manager.uploadExcel')}
                                 </Text>
                             </TouchableOpacity>
 
                             {!result && previewRows.length > 0 && (
                                 <View style={styles.previewSection}>
-                                    <Text style={styles.previewTitle}>Preview</Text>
+                                    <Text style={styles.previewTitle}>{t('manager.preview')}</Text>
 
                                     {previewErrors.length > 0 && (
                                         <View style={styles.previewErrors}>
-                                            <Text style={styles.previewErrorTitle}>Errors</Text>
+                                            <Text style={styles.previewErrorTitle}>{t('manager.errors')}</Text>
                                             {previewErrors.map((err, idx) => (
                                                 <Text key={`${err.rowNumber}-${idx}`} style={styles.previewErrorText}>
                                                     # {err.rowNumber-1}: {err.message}
@@ -217,8 +219,8 @@ const BulkAthletesScreen = () => {
                                     {previewRows.map((row) => (
                                         <View key={row.rowNumber} style={styles.previewRow}>
                                             <Text style={styles.previewText}>#{row.rowNumber-1}</Text>
-                                            <Text style={styles.previewText}>{row.name || 'Missing name'}</Text>
-                                            <Text style={styles.previewSubText}>{row.email || 'Missing email'}</Text>
+                                            <Text style={styles.previewText}>{row.name || t('manager.missingName')}</Text>
+                                            <Text style={styles.previewSubText}>{row.email || t('manager.missingEmail')}</Text>
                                         </View>
                                     ))}
 
@@ -226,7 +228,7 @@ const BulkAthletesScreen = () => {
 
                                     <TouchableOpacity style={styles.primaryButton} onPress={handleCommit} disabled={processing}>
                                         <Text style={styles.primaryButtonText}>
-                                            {processing ? 'Creating...' : 'Submit Bulk Creation'}
+                                            {processing ? t('manager.creating') : t('manager.submitBulk')}
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
@@ -234,13 +236,13 @@ const BulkAthletesScreen = () => {
 
                             {result && (
                                 <View style={styles.resultSection}>
-                                    <Text style={styles.sectionTitle}>Result</Text>
-                                    <Text style={styles.resultText}>Total rows: {result.totalRows}</Text>
-                                    <Text style={styles.resultText}>Created: {result.successCount}</Text>
-                                    <Text style={styles.resultText}>Failed: {result.failureCount}</Text>
+                                    <Text style={styles.sectionTitle}>{t('manager.result')}</Text>
+                                    <Text style={styles.resultText}>{t('manager.totalRows', { count: result.totalRows })}</Text>
+                                    <Text style={styles.resultText}>{t('manager.created', { count: result.successCount })}</Text>
+                                    <Text style={styles.resultText}>{t('manager.failed', { count: result.failureCount })}</Text>
                                     {result.credentials?.length > 0 && (
                                         <View style={styles.credentials}>
-                                            <Text style={styles.previewErrorTitle}>Created users</Text>
+                                            <Text style={styles.previewErrorTitle}>{t('manager.createdUsers')}</Text>
                                             {result.credentials.map((cred: any) => (
                                                 <Text key={`${cred.rowNumber}-${cred.email}`} style={styles.previewText}>
                                                     # {cred.rowNumber-1}: {cred.email}
@@ -253,10 +255,10 @@ const BulkAthletesScreen = () => {
                         </View>
 
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>History</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.history')}</Text>
                             {loadingHistory && <ActivityIndicator size="small" color="#FF4000" />}
                             {!loadingHistory && history.length === 0 && (
-                                <Text style={styles.emptyText}>No bulk uploads yet.</Text>
+                                <Text style={styles.emptyText}>{t('manager.noBulkUploads')}</Text>
                             )}
                             {!loadingHistory && history.map((item) => (
                                 <View key={item._id} style={styles.historyItem}>
@@ -314,6 +316,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -333,6 +339,10 @@ const styles = StyleSheet.create({
         bottom: 10,
         right: -5,
         opacity: 0.2
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     backBtn: {
         position: 'absolute',

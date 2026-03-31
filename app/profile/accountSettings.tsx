@@ -16,11 +16,13 @@ import {
     View
 } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function AccountSettings() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [emailAddress, setEmailAddress] = useState("");
@@ -76,15 +78,15 @@ export default function AccountSettings() {
 
     const handleSave = async () => {
         if (!isValidEmail(emailAddress)) {
-            setError("Invalid email address")
+            setError(t('account.invalidEmail'))
             return;
         }
         if (!isValidPhoneNumber("" + phoneNumber, countryCode)) {
-            setError("Invalid phone number");
+            setError(t('account.invalidPhone'));
             return;
         }
         if ((emailAddress == user.email) && ("+" + callingCode + phoneNumber == user.phone)) {
-            setError('Nothing changed');
+            setError(t('account.nothingChanged'));
             return;
         }
         const token = await SecureStore.getItemAsync('userToken');
@@ -120,7 +122,7 @@ export default function AccountSettings() {
                     setSaving(false)
                 }
             } catch (err) {
-                setError('Something went wrong during email update')
+                setError(t('account.emailUpdateFailed'))
             }
         }
         if ("+" + callingCode + phoneNumber != user.phone) {
@@ -144,10 +146,10 @@ export default function AccountSettings() {
                     router.replace('/settings')
                 } else {
                     setSaving(false)
-                    setError("Failed to update phone");
+                    setError(t('account.failedUpdatePhone'));
                 }
             } catch (err) {
-                setError('Something went wrong during phone update')
+                setError(t('account.phoneUpdateFailed'))
             }
         }
 
@@ -171,14 +173,14 @@ export default function AccountSettings() {
                         onPress={() => {
                             router.back()
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back</Text>
+                        <Text style={styles.backBtnText}>{t('account.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Account settings</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('account.accountSettings')}</Text>
                         {!loading && user && <Text style={styles.pageDesc}>{user?.name}</Text>}
 
                         {loading &&
@@ -192,7 +194,7 @@ export default function AccountSettings() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Accou</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('account.accountGhost')}</Text>
 
                     {/* {user && !loading && <View style={styles.profileImage}>
                         {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
@@ -227,25 +229,25 @@ export default function AccountSettings() {
 
 
                         <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Email
+                            <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                {t('account.emailAddress')}
                             </Text>
                             <TextInput
-                                style={[styles.input,{marginBottom:5}]}
-                                placeholder="Email"
+                                style={[styles.input,{marginBottom:5}, isRTL && styles.rtlText]}
+                                placeholder={t('account.emailAddress')}
                                 placeholderTextColor="#A8A8A8"
                                 value={emailAddress}
                                 onChangeText={setEmailAddress}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                             />
-                            <Text style={styles.hint}>You use this email to login</Text>
+                            <Text style={[styles.hint, isRTL && styles.rtlText]}>You use this email to login</Text>
 
                         </View>
 
                         <View style={styles.entity}>
-                            <Text style={styles.title}>
-                                Phone
+                            <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                {t('account.phoneNumber')}
                             </Text>
                             <View style={styles.phoneContainer}>
                                 <View style={styles.phonePicker}>
@@ -266,7 +268,7 @@ export default function AccountSettings() {
                                 </View>
                                 <TextInput
                                     style={[styles.input, styles.phoneInput]}
-                                    placeholder="Phone number"
+                                    placeholder={t('account.phoneNumber')}
                                     keyboardType="phone-pad"
                                     value={phoneNumber}
                                     onChangeText={setPhoneNumber}
@@ -274,15 +276,15 @@ export default function AccountSettings() {
                             </View>
                         </View>
 
-                        <Text style={styles.hint}>You'll be asked to verify your email and/or phone number if you update them</Text>
+                        <Text style={[styles.hint, isRTL && styles.rtlText]}>You'll be asked to verify your email and/or phone number if you update them</Text>
 
-                        <View style={[styles.profileActions, styles.inlineActions]}>
+                        <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                             <TouchableOpacity onPress={() => { handleCancel() }} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
+                                <Text style={styles.profileButtonText}>{t('account.cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => { handleSave() }} style={[styles.profileButton, styles.savebtn]}>
                                 <Text style={styles.profileButtonText}>
-                                    {saving ? 'Saving' : 'Save'}
+                                    {saving ? t('account.saving') : t('account.save')}
                                 </Text>
                                 {saving && (
                                     <ActivityIndicator
@@ -349,6 +351,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -396,6 +402,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     profileImage: {
         position: 'absolute',
         bottom: 0,
@@ -419,6 +429,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         columnGap: 15
+    },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     profileButton: {
         borderRadius: 5,
@@ -493,6 +506,15 @@ const styles = StyleSheet.create({
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     backBtnText: {
         color: '#FFF',

@@ -16,10 +16,12 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function SearchScreen() {
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState<string | null>(null);
     const [user, setUser] = useState(null);
     const [searching, setSearching] = useState(false);
@@ -35,6 +37,30 @@ export default function SearchScreen() {
     const categories = ['All', 'Users', 'Teams', 'Events', 'Posts']
     const sport = ['All', 'Football', 'Basketball', 'Tennis', 'Swimming', 'Gymnastics']
     const genders = ['All', 'Male', 'Female']
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
+    const translateOption = (value: string) => ({
+        All: t('search.all'),
+        Athlete: t('search.athlete'),
+        Athletes: t('search.athletes'),
+        Club: t('search.club'),
+        Clubs: t('search.clubs'),
+        Federation: t('search.federation'),
+        Federations: t('search.federations'),
+        Coach: t('search.coach'),
+        Coaches: t('search.coaches'),
+        Association: t('search.federations'),
+        Users: t('search.users'),
+        Teams: t('search.teams'),
+        Events: t('search.events'),
+        Posts: t('search.posts'),
+        Football: t('search.football'),
+        Basketball: t('search.basketball'),
+        Tennis: t('search.tennis'),
+        Swimming: t('search.swimming'),
+        Gymnastics: t('search.gymnastics'),
+        Male: t('search.male'),
+        Female: t('search.female'),
+    }[value] || value);
 
     const [activeTab, setActiveTab] = useState('All');
     const [selectedRole, setSelectedRole] = useState('All');
@@ -198,11 +224,11 @@ export default function SearchScreen() {
 
             <View style={styles.searchContainer}>
                 <TextInput
-                    style={[styles.input, Platform.OS === 'ios' && { padding: 15 }]}
+                    style={[styles.input, Platform.OS === 'ios' && { padding: 15 }, textDirectionStyle]}
                     value={keyword}
                     onChangeText={handleSearchInput}
                     placeholderTextColor={'#888888'}
-                    placeholder="Search (Min. 3 characters)"
+                    placeholder={t('search.placeholder')}
                 />
 
                 {searching &&
@@ -215,21 +241,21 @@ export default function SearchScreen() {
             </View>
 
             <View style={styles.filters}>
-                <Text style={styles.filterTitle} onPress={() => { setShowFilters(prev => !prev) }}>Filters</Text>
+                <Text style={[styles.filterTitle, textDirectionStyle]} onPress={() => { setShowFilters(prev => !prev) }}>{t('search.filters')}</Text>
                 {showFilters && <View style={{ marginTop: 20 }} >
                     <View style={styles.filter}>
-                        <Text style={styles.filterLabel}>Search by position</Text>
+                        <Text style={[styles.filterLabel, textDirectionStyle]}>{t('search.searchByPosition')}</Text>
                         <TextInput
-                            style={[styles.input, {backgroundColor:'#fff'}, Platform.OS === 'ios' && {padding: 15 }]}
+                            style={[styles.input, styles.whiteInput, Platform.OS === 'ios' && {padding: 15 }, textDirectionStyle]}
                             value={position}
                             onChangeText={setPosition}
                             placeholderTextColor={'#888888'}
-                            placeholder="Enter position"
+                            placeholder={t('search.enterPosition')}
                         />
                     </View>
                     <View style={styles.filter}>
-                        <Text style={styles.filterLabel}>Search in</Text>
-                        <View style={styles.tabs}>
+                        <Text style={[styles.filterLabel, textDirectionStyle]}>{t('search.searchIn')}</Text>
+                        <View style={[styles.tabs, isRTL && styles.tabsRtl]}>
                             {categories.map(c => (
                                 <TouchableOpacity
                                     key={c}
@@ -240,8 +266,8 @@ export default function SearchScreen() {
                                         selectedCategory === c && styles.activeFilterButton
                                     ]}
                                 >
-                                    <Text style={[styles.filterText, selectedCategory === c && styles.activeFilterText]}>
-                                        {c}
+                                    <Text style={[styles.filterText, selectedCategory === c && styles.activeFilterText, textDirectionStyle]}>
+                                        {translateOption(c)}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
@@ -249,8 +275,8 @@ export default function SearchScreen() {
                     </View>
 
                     <View style={styles.filter}>
-                        <Text style={styles.filterLabel}>Search for</Text>
-                        <View style={styles.tabs}>
+                        <Text style={[styles.filterLabel, textDirectionStyle]}>{t('search.searchFor')}</Text>
+                        <View style={[styles.tabs, isRTL && styles.tabsRtl]}>
                             {roles.map(r => (
                                 <TouchableOpacity
                                     key={r}
@@ -261,8 +287,8 @@ export default function SearchScreen() {
                                         selectedRole === r && styles.activeFilterButton
                                     ]}
                                 >
-                                    <Text style={[styles.filterText, selectedRole === r && styles.activeFilterText]}>
-                                        {r}
+                                    <Text style={[styles.filterText, selectedRole === r && styles.activeFilterText, textDirectionStyle]}>
+                                        {translateOption(r)}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
@@ -270,8 +296,8 @@ export default function SearchScreen() {
                     </View>
 
                     {(selectedCategory == "All" || selectedCategory == "Users") && <View style={styles.filter}>
-                        <Text style={styles.filterLabel}>Gender</Text>
-                        <View style={styles.tabs}>
+                        <Text style={[styles.filterLabel, textDirectionStyle]}>{t('search.gender')}</Text>
+                        <View style={[styles.tabs, isRTL && styles.tabsRtl]}>
                             {genders.map(g => (
                                 <TouchableOpacity
                                     key={g}
@@ -282,8 +308,8 @@ export default function SearchScreen() {
                                         selectedGender === g && styles.activeFilterButton
                                     ]}
                                 >
-                                    <Text style={[styles.filterText, selectedGender === g && styles.activeFilterText]}>
-                                        {g}
+                                    <Text style={[styles.filterText, selectedGender === g && styles.activeFilterText, textDirectionStyle]}>
+                                        {translateOption(g)}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
@@ -291,8 +317,8 @@ export default function SearchScreen() {
                     </View>}
 
                     <View style={styles.filter}>
-                        <Text style={styles.filterLabel}>Sport</Text>
-                        <View style={styles.tabs}>
+                        <Text style={[styles.filterLabel, textDirectionStyle]}>{t('search.sport')}</Text>
+                        <View style={[styles.tabs, isRTL && styles.tabsRtl]}>
                             {sport.map(s => (
                                 <TouchableOpacity
                                     key={s}
@@ -303,8 +329,8 @@ export default function SearchScreen() {
                                         selectedSport === s && styles.activeFilterButton
                                     ]}
                                 >
-                                    <Text style={[styles.filterText, selectedSport === s && styles.activeFilterText]}>
-                                        {s}
+                                    <Text style={[styles.filterText, selectedSport === s && styles.activeFilterText, textDirectionStyle]}>
+                                        {translateOption(s)}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
@@ -312,7 +338,7 @@ export default function SearchScreen() {
                     </View>
 
                     <TouchableOpacity onPress={handleSearch} style={styles.filterBtn}>
-                        <Text style={styles.filterBtnText}>Filter</Text>
+                        <Text style={styles.filterBtnText}>{t('search.filter')}</Text>
                     </TouchableOpacity>
                 </View>}
             </View>
@@ -320,13 +346,13 @@ export default function SearchScreen() {
             <ScrollView>
                 {(activeTab === 'All' || activeTab === 'Athletes') && searchResults.users?.athlete?.length > 0 && (
                     <View style={styles.searchResultsContainer}>
-                        <Text style={styles.sectionTitle}>
-                            {searchResults.users.athlete.length} {searchResults.users.athlete.length == 1 ? 'Athlete' : 'Athletes'}
+                        <Text style={[styles.sectionTitle, textDirectionStyle]}>
+                            {searchResults.users.athlete.length} {searchResults.users.athlete.length == 1 ? t('search.athlete') : t('search.athletes')}
                         </Text>
                         {searchResults.users.athlete.map(user => (
                             <TouchableOpacity
                                 key={user._id}
-                                style={styles.searchResultsItem}
+                                style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                 onPress={() => router.push({
                                     pathname: '/profile/public',
                                     params: { id: user._id },
@@ -334,6 +360,7 @@ export default function SearchScreen() {
                             >
                                 <View style={[
                                     styles.avatarContainer,
+                                    isRTL && styles.avatarContainerRtl,
                                     (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
                                 ]}>
                                     {(user.image == null || user.image == "") && user.gender == "Male" && <Image
@@ -353,8 +380,8 @@ export default function SearchScreen() {
                                     />}
                                 </View>
                                 <View style={{ justifyContent: 'center' }}>
-                                    <Text style={styles.name}>{user.name}</Text>
-                                    {user.sport && <Text style={styles.role}>{user.sport}</Text>}
+                                    <Text style={[styles.name, textDirectionStyle]}>{user.name}</Text>
+                                    {user.sport && <Text style={[styles.role, textDirectionStyle]}>{user.sport}</Text>}
                                 </View>
 
                             </TouchableOpacity>
@@ -364,13 +391,13 @@ export default function SearchScreen() {
 
                 {(activeTab === 'All' || activeTab === 'Clubs') && searchResults.users?.club?.length > 0 && (
                     <View style={styles.searchResultsContainer}>
-                        <Text style={styles.sectionTitle}>
-                            {searchResults.users.club.length} {searchResults.users.club.length == 1 ? 'Club' : 'Clubs'}
+                        <Text style={[styles.sectionTitle, textDirectionStyle]}>
+                            {searchResults.users.club.length} {searchResults.users.club.length == 1 ? t('search.club') : t('search.clubs')}
                         </Text>
                         {searchResults.users.club.map(user => (
                             <TouchableOpacity
                                 key={user._id}
-                                style={styles.searchResultsItem}
+                                style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                 onPress={() => router.push({
                                     pathname: '/profile/public',
                                     params: { id: user._id },
@@ -378,6 +405,7 @@ export default function SearchScreen() {
                             >
                                 <View style={[
                                     styles.avatarContainer,
+                                    isRTL && styles.avatarContainerRtl,
                                     (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
                                 ]}>
                                     {(user.image == null || user.image == "") && <Image
@@ -392,8 +420,8 @@ export default function SearchScreen() {
                                     />}
                                 </View>
                                 <View style={{ justifyContent: 'center' }}>
-                                    <Text style={styles.name}>{user.name}</Text>
-                                    {user.sport && <Text style={styles.role}>
+                                    <Text style={[styles.name, textDirectionStyle]}>{user.name}</Text>
+                                    {user.sport && <Text style={[styles.role, textDirectionStyle]}>
                                         {user.sport.map(s => s).join(", ")}
                                     </Text>}
                                 </View>
@@ -404,13 +432,13 @@ export default function SearchScreen() {
 
                 {(activeTab === 'All' || activeTab === 'Federations') && searchResults.users?.association?.length > 0 && (
                     <View style={styles.searchResultsContainer}>
-                        <Text style={styles.sectionTitle}>
-                            {searchResults.users.association.length} {searchResults.users.association.length == 1 ? 'Federation' : 'Federations'}
+                        <Text style={[styles.sectionTitle, textDirectionStyle]}>
+                            {searchResults.users.association.length} {searchResults.users.association.length == 1 ? t('search.federation') : t('search.federations')}
                         </Text>
                         {searchResults.users.association.map(user => (
                             <TouchableOpacity
                                 key={user._id}
-                                style={styles.searchResultsItem}
+                                style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                 onPress={() => router.push({
                                     pathname: '/profile/public',
                                     params: { id: user._id },
@@ -418,6 +446,7 @@ export default function SearchScreen() {
                             >
                                 <View style={[
                                     styles.avatarContainer,
+                                    isRTL && styles.avatarContainerRtl,
                                     (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
                                 ]}>
                                     {(user.image == null || user.image == "") && <Image
@@ -432,8 +461,8 @@ export default function SearchScreen() {
                                     />}
                                 </View>
                                 <View style={{ justifyContent: 'center' }}>
-                                    <Text style={styles.name}>{user.name}</Text>
-                                    {user.sport && <Text style={styles.role}>
+                                    <Text style={[styles.name, textDirectionStyle]}>{user.name}</Text>
+                                    {user.sport && <Text style={[styles.role, textDirectionStyle]}>
                                         {user.sport.map(s => s).join(", ")}
                                     </Text>}
                                 </View>
@@ -444,13 +473,13 @@ export default function SearchScreen() {
 
                 {(activeTab === 'All' || activeTab === 'Coaches') && searchResults.users?.coaches?.length > 0 && (
                     <View style={styles.searchResultsContainer}>
-                        <Text style={styles.sectionTitle}>
-                            {searchResults.users.coaches.length} {searchResults.users.coaches.length == 1 ? 'Coach' : 'Coaches'}
+                        <Text style={[styles.sectionTitle, textDirectionStyle]}>
+                            {searchResults.users.coaches.length} {searchResults.users.coaches.length == 1 ? t('search.coach') : t('search.coaches')}
                         </Text>
                         {searchResults.users.coaches.map(user => (
                             <TouchableOpacity
                                 key={user._id}
-                                style={styles.searchResultsItem}
+                                style={[styles.searchResultsItem, isRTL && styles.searchResultsItemRtl]}
                                 onPress={() => router.push({
                                     pathname: '/profile/public',
                                     params: { id: user._id },
@@ -458,6 +487,7 @@ export default function SearchScreen() {
                             >
                                 <View style={[
                                     styles.avatarContainer,
+                                    isRTL && styles.avatarContainerRtl,
                                     (user.image == null || user.image == "") && { backgroundColor: '#ff4000' }
                                 ]}>
                                     {(user.image == null || user.image == "") && user.gender == "Male" && <Image
@@ -477,8 +507,8 @@ export default function SearchScreen() {
                                     />}
                                 </View>
                                 <View style={{ justifyContent: 'center' }}>
-                                    <Text style={styles.name}>{user.name}</Text>
-                                    {user.sport && <Text style={styles.role}>{user.sport}</Text>}
+                                    <Text style={[styles.name, textDirectionStyle]}>{user.name}</Text>
+                                    {user.sport && <Text style={[styles.role, textDirectionStyle]}>{user.sport}</Text>}
                                 </View>
 
                             </TouchableOpacity>
@@ -487,7 +517,7 @@ export default function SearchScreen() {
                 )}
 
             </ScrollView>
-            <View style={styles.navBar}>
+            <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
@@ -550,6 +580,9 @@ const styles = StyleSheet.create({
         // Android shadow
         elevation: 5,
     },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
+    },
     icon: {
         width: 24,
         height: 24,
@@ -564,6 +597,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginBottom: 16,
     },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl'
+    },
     input: {
         fontSize: 14,
         paddingHorizontal: 15,
@@ -571,6 +612,9 @@ const styles = StyleSheet.create({
         color: 'black',
         borderRadius: 10,
         fontFamily: 'Acumin',
+    },
+    whiteInput: {
+        backgroundColor:'#fff'
     },
     searchLoader: {
         position: 'absolute',
@@ -592,6 +636,9 @@ const styles = StyleSheet.create({
         padding: 5,
         borderRadius: 10
     },
+    searchResultsItemRtl: {
+        flexDirection: 'row-reverse',
+    },
     avatarContainer: {
         width: 50,
         height: 50,
@@ -601,6 +648,13 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         marginRight: 15,
         overflow: 'hidden',
+    },
+    avatarContainerRtl: {
+        marginRight: 0,
+        marginLeft: 15,
+    },
+    tabsRtl: {
+        flexDirection: 'row-reverse',
     },
     avatar: {
         width: undefined,

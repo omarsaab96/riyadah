@@ -15,11 +15,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function ForgotPassword() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userEmail, setUserEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [newPassword2, setNewPassword2] = useState("");
@@ -113,7 +115,7 @@ export default function ForgotPassword() {
     const handleNext = async () => {
 
         if (userEmail.trim() == "" || !isValidEmail(userEmail)) {
-            setError("Please enter a valid email address");
+            setError(t('account.validEmailRequired'));
             return;
         }
 
@@ -137,11 +139,11 @@ export default function ForgotPassword() {
                 handleSendEmailOTP();
             } else {
                 setCheckedEmail(false)
-                setError('No account found')
+                setError(t('account.noAccountFound'))
             }
         } catch (error) {
             setCheckedEmail(false);
-            setError('Something went wrong.');
+            setError(t('account.genericError'));
         } finally {
             setCheckingEmail(false);
         }
@@ -170,7 +172,7 @@ export default function ForgotPassword() {
         } else {
             setEmailOTPSent(false)
             console.error(res)
-            setError("Failed to send email OTP");
+            setError(t('account.emailOtpFailed'));
         }
     }
 
@@ -212,12 +214,12 @@ export default function ForgotPassword() {
     const handleSave = async () => {
 
         if (newPassword != newPassword2) {
-            setError("Passwords do not match");
+            setError(t('account.passwordsMismatch'));
             return;
         }
 
         if (!isValidPassword(newPassword)) {
-            setError("Password must be at least 6 characters");
+            setError(t('account.passwordTooShort'));
             return;
         }
 
@@ -260,15 +262,15 @@ export default function ForgotPassword() {
                         onPress={() => {
                             router.back()
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back</Text>
+                        <Text style={styles.backBtnText}>{t('account.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Forgot password</Text>
-                        {!loading && <Text style={styles.pageDesc}>Reset your account's password</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('account.forgotPassword')}</Text>
+                        {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('account.resetPasswordDesc')}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -281,7 +283,7 @@ export default function ForgotPassword() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Forgo</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('account.forgotGhost')}</Text>
                 </View>
 
                 {!loading && <ScrollView>
@@ -294,12 +296,12 @@ export default function ForgotPassword() {
                         {!checkedEmail &&
                             <View>
                                 <View style={styles.entity}>
-                                    <Text style={styles.title}>
-                                        Email
+                                    <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                        {t('account.emailAddressLabel')}
                                     </Text>
                                     <TextInput
-                                        style={[styles.input, { marginBottom: 5 }]}
-                                        placeholder="Email"
+                                        style={[styles.input, { marginBottom: 5 }, isRTL && styles.rtlText]}
+                                        placeholder={t('account.emailAddress')}
                                         placeholderTextColor="#A8A8A8"
                                         value={userEmail}
                                         onChangeText={setUserEmail}
@@ -307,13 +309,13 @@ export default function ForgotPassword() {
                                         autoCapitalize="none"
                                     />
                                 </View>
-                                <View style={[styles.profileActions, styles.inlineActions]}>
+                                <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                     <TouchableOpacity onPress={() => { handleCancel() }} style={styles.profileButton}>
-                                        <Text style={styles.profileButtonText}>Cancel</Text>
+                                        <Text style={styles.profileButtonText}>{t('account.cancel')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={() => { handleNext() }} style={[styles.profileButton, styles.savebtn]}>
                                         <Text style={styles.profileButtonText}>
-                                            {!checkingEmail && 'Next'}
+                                            {!checkingEmail && t('account.next')}
                                         </Text>
                                         {checkingEmail && (
                                             <ActivityIndicator
@@ -328,7 +330,7 @@ export default function ForgotPassword() {
 
                         {checkedEmail && emailOTPSent &&
                             <View>
-                                <Text style={{ textAlign: 'center', marginBottom: 10, color: 'black', fontSize: 14 }}>We sent you a code on</Text>
+                                <Text style={[styles.centerText, isRTL && styles.rtlText]}>{t('account.otpSentHint')}</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                                     <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 14 }}>
                                         {userEmail}
@@ -355,16 +357,16 @@ export default function ForgotPassword() {
 
                                 <View style={{ flexDirection: 'row', alignItems: "center", justifyContent: 'space-between' }}>
                                     {secondsLeft > 0 ? (
-                                        <Text style={{ color: "#aaa" }}>Get a new code {secondsLeft}s</Text>
+                                        <Text style={{ color: "#aaa" }}>{t('account.getNewCode')} {secondsLeft}s</Text>
                                     ) : (
                                         <TouchableOpacity onPress={handleResendEmailOTP}>
-                                            <Text style={{ color: "#FF4000" }}>Get a new code</Text>
+                                            <Text style={{ color: "#FF4000" }}>{t('account.getNewCode')}</Text>
                                         </TouchableOpacity>
                                     )}
                                     <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
                                         <TouchableOpacity onPress={handleVerifyEmailOTP} disabled={verifyingEmailOTP} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
                                             <Text style={styles.profileButtonText}>
-                                                {verifyingEmailOTP ? 'Verifying' : 'Verify'}
+                                                {verifyingEmailOTP ? t('account.verifying') : t('account.verify')}
                                             </Text>
                                             {verifyingEmailOTP && <ActivityIndicator size="small" color={'black'} />}
                                         </TouchableOpacity>
@@ -377,11 +379,11 @@ export default function ForgotPassword() {
                         <View>
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    New Password
+                                    {t('account.newPassword')}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, styles.passwordInput]}
-                                    placeholder="Password"
+                                    style={[styles.input, styles.passwordInput, isRTL && styles.rtlText]}
+                                    placeholder={t('account.password')}
                                     placeholderTextColor="#A8A8A8"
                                     value={newPassword}
                                     onChangeText={setNewPassword}
@@ -390,11 +392,11 @@ export default function ForgotPassword() {
                             </View>
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    Repeat New Password
+                                    {t('account.confirmPassword')}
                                 </Text>
                                 <TextInput
-                                    style={[styles.input, styles.passwordInput]}
-                                    placeholder="Password"
+                                    style={[styles.input, styles.passwordInput, isRTL && styles.rtlText]}
+                                    placeholder={t('account.password')}
                                     placeholderTextColor="#A8A8A8"
                                     value={newPassword2}
                                     onChangeText={setNewPassword2}
@@ -402,13 +404,13 @@ export default function ForgotPassword() {
                                 />
                             </View>
 
-                            <View style={[styles.profileActions, styles.inlineActions]}>
+                            <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                 <TouchableOpacity onPress={() => { handleCancel() }} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    <Text style={styles.profileButtonText}>{t('account.cancel')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => { handleSave() }} style={[styles.profileButton, styles.savebtn]}>
                                     <Text style={styles.profileButtonText}>
-                                        {saving ? 'Resetting password' : 'Reset password'}
+                                        {saving ? t('account.saving') : t('account.resetPassword')}
                                     </Text>
                                     {saving && (
                                         <ActivityIndicator
@@ -479,6 +481,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -519,6 +525,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     profileImage: {
         position: 'absolute',
         bottom: 0,
@@ -542,6 +552,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         columnGap: 15
+    },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     profileButton: {
         borderRadius: 5,
@@ -616,6 +629,21 @@ const styles = StyleSheet.create({
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
+    centerText: {
+        textAlign: 'center',
+        marginBottom: 10,
+        color: 'black',
+        fontSize: 14,
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     backBtnText: {
         color: '#FFF',

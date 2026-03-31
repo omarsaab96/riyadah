@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -48,6 +49,7 @@ const formatAnswer = (value: any) => {
 
 export default function SurveyDetailsScreen() {
     const router = useRouter();
+    const { isRTL, t, language } = useLanguage();
     const params = useLocalSearchParams();
     const surveyId = params.id as string;
 
@@ -76,7 +78,7 @@ export default function SurveyDetailsScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('coachSurvey.userNotAuthenticated'));
                 setLoading(false);
                 return;
             }
@@ -87,7 +89,7 @@ export default function SurveyDetailsScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to load survey');
+                setError(errorData.error || t('coachSurvey.failedSurvey'));
                 setLoading(false);
                 return;
             }
@@ -95,7 +97,7 @@ export default function SurveyDetailsScreen() {
             const data = await response.json();
             setSurvey(data.survey);
         } catch (err) {
-            setError('Failed to load survey');
+            setError(t('coachSurvey.failedSurvey'));
         } finally {
             setLoading(false);
         }
@@ -107,7 +109,7 @@ export default function SurveyDetailsScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('coachSurvey.userNotAuthenticated'));
                 setLoadingResponses(false);
                 return;
             }
@@ -124,7 +126,7 @@ export default function SurveyDetailsScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to load submissions');
+                setError(errorData.error || t('coachSurvey.failedResponses'));
                 setLoadingResponses(false);
                 return;
             }
@@ -133,7 +135,7 @@ export default function SurveyDetailsScreen() {
             setResponses(data.responses || []);
             setCount(data.count || 0);
         } catch (err) {
-            setError('Failed to load submissions');
+            setError(t('coachSurvey.failedResponses'));
         } finally {
             setLoadingResponses(false);
         }
@@ -169,13 +171,13 @@ export default function SurveyDetailsScreen() {
                     />
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                         <Ionicons name="arrow-back" size={20} color="#fff" />
-                        <Text style={styles.backText}>Back</Text>
+                        <Text style={styles.backText}>{t('manager.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>{survey?.title || 'Survey details'}</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{survey?.title || t('coachSurvey.title')}</Text>
                         {!loading && (
-                            <Text style={styles.pageDesc}>{count} submission{count === 1 ? '' : 's'}</Text>
+                            <Text style={styles.pageDesc}>{t('coachSurvey.submissionCount', { count, suffix: count === 1 ? '' : 's' })}</Text>
                         )}
                     </View>
                 </View>
@@ -192,50 +194,50 @@ export default function SurveyDetailsScreen() {
                         {loading && <ActivityIndicator size="small" color="#FF4000" />}
 
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Filters</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('coachSurvey.filters')}</Text>
                             <TouchableOpacity onPress={handleClearFilters}>
-                                <Text style={styles.linkText}>Clear</Text>
+                                <Text style={styles.linkText}>{t('coachSurvey.clear')}</Text>
                             </TouchableOpacity>
                         </View>
 
-                        <Text style={styles.label}>User ID</Text>
+                        <Text style={styles.label}>{t('coachSurvey.userId')}</Text>
                         <TextInput
                             style={styles.input}
                             value={filterUserId}
                             onChangeText={setFilterUserId}
-                            placeholder="Filter by user ID"
+                            placeholder={t('coachSurvey.filterUserId')}
                             placeholderTextColor="#888"
                         />
 
-                        <Text style={styles.label}>From (YYYY-MM-DD)</Text>
+                        <Text style={styles.label}>{t('coachSurvey.from')}</Text>
                         <TextInput
                             style={styles.input}
                             value={filterFrom}
                             onChangeText={setFilterFrom}
-                            placeholder="2025-01-01"
+                            placeholder={t('coachSurvey.dataHintFrom')}
                             placeholderTextColor="#888"
                         />
 
-                        <Text style={styles.label}>To (YYYY-MM-DD)</Text>
+                        <Text style={styles.label}>{t('coachSurvey.to')}</Text>
                         <TextInput
                             style={styles.input}
                             value={filterTo}
                             onChangeText={setFilterTo}
-                            placeholder="2025-01-31"
+                            placeholder={t('coachSurvey.dataHintTo')}
                             placeholderTextColor="#888"
                         />
 
                         <TouchableOpacity style={styles.primaryButton} onPress={handleApplyFilters}>
-                            <Text style={styles.primaryButtonText}>Apply filters</Text>
+                            <Text style={styles.primaryButtonText}>{t('coachSurvey.applyFilters')}</Text>
                         </TouchableOpacity>
 
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Submissions</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('coachSurvey.submissions')}</Text>
                             {loadingResponses && <ActivityIndicator size="small" color="#FF4000" />}
                         </View>
 
                         {!loadingResponses && responses.length === 0 && (
-                            <Text style={styles.hintText}>No submissions found.</Text>
+                            <Text style={[styles.hintText, isRTL && styles.rtlText]}>{t('coachSurvey.noSubmissions')}</Text>
                         )}
 
                         {responses.map(response => {
@@ -243,19 +245,19 @@ export default function SurveyDetailsScreen() {
                             return (
                                 <View key={response._id} style={styles.card}>
                                     <Text style={styles.cardTitle}>
-                                        {user?.name || 'Unknown user'}
+                                        {user?.name || t('coachSurvey.unknownUser')}
                                     </Text>
                                     <Text style={styles.cardMeta}>
                                         {user?.email || user?._id || response.user}
                                     </Text>
                                     <Text style={styles.cardMeta}>
-                                        {new Date(response.createdAt).toLocaleString()}
+                                        {new Date(response.createdAt).toLocaleString(language === 'ar' ? 'ar' : undefined)}
                                     </Text>
                                     <View style={styles.answerList}>
                                         {response.answers.map((answer, index) => (
                                             <View key={`${response._id}-answer-${index}`} style={styles.answerRow}>
                                                 <Text style={styles.answerQuestion}>
-                                                    {questionMap.get(answer.questionId) || 'Question'}
+                                                    {questionMap.get(answer.questionId) || t('coachSurvey.question')}
                                                 </Text>
                                                 <Text style={styles.answerValue}>{formatAnswer(answer.value)}</Text>
                                             </View>
@@ -311,6 +313,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -411,6 +417,10 @@ const styles = StyleSheet.create({
         color: '#666',
         fontSize: 14,
         marginBottom: 20
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     error: {
         marginBottom: 15,

@@ -18,6 +18,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -82,6 +83,7 @@ const defaultQuestion = (): QuestionForm => ({
 
 export default function ManagerSurveysScreen() {
     const router = useRouter();
+    const { isRTL, t, language } = useLanguage();
     const [surveys, setSurveys] = useState<Survey[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -99,13 +101,27 @@ export default function ManagerSurveysScreen() {
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [searching, setSearching] = useState(false);
     const [questions, setQuestions] = useState<QuestionForm[]>([defaultQuestion()]);
+    const getCadenceLabel = (value: 'monthly' | 'post-training') => value === 'monthly' ? (language === 'ar' ? 'شهري' : 'Monthly') : (language === 'ar' ? 'بعد التدريب' : 'Post-training');
+    const getRestrictionLabel = (value: 'none' | 'club' | 'coach' | 'team') => {
+        if (value === 'none') return language === 'ar' ? 'بدون' : 'None';
+        if (value === 'club') return language === 'ar' ? 'نادي' : 'Club';
+        if (value === 'coach') return language === 'ar' ? 'مدرب' : 'Coach';
+        return language === 'ar' ? 'فريق' : 'Team';
+    };
+    const getQuestionTypeLabel = (value: QuestionForm['type']) => {
+        if (value === 'single') return language === 'ar' ? 'اختيار واحد' : 'Single choice';
+        if (value === 'multi') return language === 'ar' ? 'اختيارات متعددة' : 'Multiple choice';
+        if (value === 'rating') return language === 'ar' ? 'تقييم' : 'Rating';
+        if (value === 'text') return language === 'ar' ? 'نص قصير' : 'Short text';
+        return language === 'ar' ? 'نص طويل' : 'Long text';
+    };
 
     const fetchSurveys = async () => {
         setLoading(true);
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('managerSurvey.userNotAuthenticated'));
                 setLoading(false);
                 return;
             }
@@ -116,7 +132,7 @@ export default function ManagerSurveysScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to load surveys');
+                setError(errorData.error || t('managerSurvey.failedLoad'));
                 setLoading(false);
                 return;
             }
@@ -124,7 +140,7 @@ export default function ManagerSurveysScreen() {
             const data = await response.json();
             setSurveys(data.surveys || []);
         } catch (err) {
-            setError('Failed to load surveys');
+            setError(t('managerSurvey.failedLoad'));
         } finally {
             setLoading(false);
         }
@@ -257,24 +273,24 @@ export default function ManagerSurveysScreen() {
 
     const validateForm = () => {
         if (!title.trim()) {
-            setError('Survey title is required.');
+            setError(t('managerSurvey.titleRequired'));
             return false;
         }
         if (isRepeating && repeatCadence !== 'monthly' && repeatCadence !== 'post-training') {
-            setError('Repeating cadence is required.');
+            setError(t('managerSurvey.cadenceRequired'));
             return false;
         }
         if (restrictionScope !== 'none' && !restrictionRefId) {
-            setError('Restriction selection is required.');
+            setError(t('managerSurvey.restrictionRequired'));
             return false;
         }
         for (const question of questions) {
             if (!question.text.trim()) {
-                setError('All questions need text.');
+                setError(t('managerSurvey.questionsNeedText'));
                 return false;
             }
             if ((question.type === 'single' || question.type === 'multi') && question.options.every(option => !option.trim())) {
-                setError('Choice questions need at least one option.');
+                setError(t('managerSurvey.choicesNeedOption'));
                 return false;
             }
         }
@@ -289,7 +305,7 @@ export default function ManagerSurveysScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('managerSurvey.userNotAuthenticated'));
                 setSaving(false);
                 return;
             }
@@ -320,7 +336,7 @@ export default function ManagerSurveysScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to save survey');
+                setError(errorData.error || t('managerSurvey.failedSave'));
                 setSaving(false);
                 return;
             }
@@ -328,23 +344,23 @@ export default function ManagerSurveysScreen() {
             await fetchSurveys();
             resetForm();
         } catch (err) {
-            setError('Failed to save survey');
+            setError(t('managerSurvey.failedSave'));
         } finally {
             setSaving(false);
         }
     };
 
     const handleDeleteSurvey = async (surveyId: string) => {
-        Alert.alert('Delete survey', 'Are you sure you want to delete this survey?', [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('managerSurvey.deleteTitle'), t('managerSurvey.deleteMessage'), [
+            { text: t('managerAthlete.cancel'), style: 'cancel' },
             {
-                text: 'Delete',
+                text: t('managerSurvey.delete'),
                 style: 'destructive',
                 onPress: async () => {
                     try {
                         const token = await SecureStore.getItemAsync('userToken');
                         if (!token) {
-                            setError('User not authenticated');
+                            setError(t('managerSurvey.userNotAuthenticated'));
                             return;
                         }
 
@@ -355,7 +371,7 @@ export default function ManagerSurveysScreen() {
 
                         if (!response.ok) {
                             const errorData = await response.json();
-                            setError(errorData.error || 'Failed to delete survey');
+                            setError(errorData.error || t('managerSurvey.failedDelete'));
                             return;
                         }
 
@@ -364,7 +380,7 @@ export default function ManagerSurveysScreen() {
                             resetForm();
                         }
                     } catch (err) {
-                        setError('Failed to delete survey');
+                        setError(t('managerSurvey.failedDelete'));
                     }
                 }
             }
@@ -390,7 +406,7 @@ export default function ManagerSurveysScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('managerSurvey.userNotAuthenticated'));
                 setSearching(false);
                 return;
             }
@@ -416,7 +432,7 @@ export default function ManagerSurveysScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to search');
+                setError(errorData.error || t('managerSurvey.failedSearch'));
                 setSearchResults([]);
                 setSearching(false);
                 return;
@@ -429,7 +445,7 @@ export default function ManagerSurveysScreen() {
                 setSearchResults(data || []);
             }
         } catch (err) {
-            setError('Failed to search');
+            setError(t('managerSurvey.failedSearch'));
             setSearchResults([]);
         } finally {
             setSearching(false);
@@ -455,13 +471,13 @@ export default function ManagerSurveysScreen() {
                         style={styles.logo}
                         resizeMode="contain"
                     />
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Ionicons name="arrow-back" size={20} color="#fff" />
-                        <Text style={styles.backText}>Back</Text>
+                    <TouchableOpacity style={[styles.backButton, isRTL && styles.backButtonRtl]} onPress={() => router.back()}>
+                        <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={20} color="#fff" />
+                        <Text style={styles.backText}>{t('managerAthlete.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Survey Manager</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={[styles.pageTitle, isRTL && styles.rtlText]}>{t('managerSurvey.title')}</Text>
                     </View>
                 </View>
 
@@ -475,20 +491,20 @@ export default function ManagerSurveysScreen() {
                         ) : null}
 
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>{editingSurveyId ? 'Edit Survey' : 'Create Survey'}</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{editingSurveyId ? t('managerSurvey.editSurvey') : t('managerSurvey.createSurvey')}</Text>
                             {editingSurveyId ? (
                                 <TouchableOpacity onPress={resetForm}>
-                                    <Text style={styles.linkText}>New survey</Text>
+                                    <Text style={styles.linkText}>{t('managerSurvey.newSurvey')}</Text>
                                 </TouchableOpacity>
                             ) : null}
                         </View>
 
-                        <Text style={styles.label}>Survey title</Text>
+                        <Text style={styles.label}>{t('managerSurvey.surveyTitle')}</Text>
                         <TextInput
                             style={styles.input}
                             value={title}
                             onChangeText={setTitle}
-                            placeholder="Survey title"
+                            placeholder={t('managerSurvey.surveyTitle')}
                             placeholderTextColor="#888"
                         />
 
@@ -496,32 +512,32 @@ export default function ManagerSurveysScreen() {
                             <View style={[styles.toggleBox, isActive && styles.toggleBoxActive]}>
                                 {isActive && <Feather name="check" size={16} color="#fff" />}
                             </View>
-                            <Text style={styles.toggleLabel}>Set as active survey</Text>
+                            <Text style={styles.toggleLabel}>{t('managerSurvey.setActive')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.toggleRow} onPress={() => setIsRepeating(prev => !prev)}>
                             <View style={[styles.toggleBox, isRepeating && styles.toggleBoxActive]}>
                                 {isRepeating && <Feather name="check" size={16} color="#fff" />}
                             </View>
-                            <Text style={styles.toggleLabel}>Repeating survey</Text>
+                            <Text style={styles.toggleLabel}>{t('managerSurvey.repeatingSurvey')}</Text>
                         </TouchableOpacity>
 
                         {isRepeating && (
-                            <View style={styles.inlineRow}>
+                            <View style={[styles.inlineRow, isRTL && styles.inlineRowRtl]}>
                                 {['monthly', 'post-training'].map(item => (
                                     <TouchableOpacity
                                         key={item}
                                         style={[styles.chip, repeatCadence === item && styles.activeChip]}
                                         onPress={() => setRepeatCadence(item as 'monthly' | 'post-training')}
                                     >
-                                        <Text style={[styles.chipText, repeatCadence === item && styles.activeChipText]}>{item}</Text>
+                                        <Text style={[styles.chipText, isRTL && styles.rtlText, repeatCadence === item && styles.activeChipText]}>{getCadenceLabel(item as 'monthly' | 'post-training')}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
                         )}
 
-                        <Text style={styles.label}>Restriction</Text>
-                        <View style={styles.inlineRow}>
+                        <Text style={styles.label}>{t('managerSurvey.restriction')}</Text>
+                        <View style={[styles.inlineRow, isRTL && styles.inlineRowRtl]}>
                             {['none', 'club', 'coach', 'team'].map(item => (
                                 <TouchableOpacity
                                     key={item}
@@ -534,33 +550,33 @@ export default function ManagerSurveysScreen() {
                                         setSearchResults([]);
                                     }}
                                 >
-                                    <Text style={[styles.chipText, restrictionScope === item && styles.activeChipText]}>{item}</Text>
+                                    <Text style={[styles.chipText, isRTL && styles.rtlText, restrictionScope === item && styles.activeChipText]}>{getRestrictionLabel(item as 'none' | 'club' | 'coach' | 'team')}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
                         {restrictionScope !== 'none' && (
                             <View style={styles.restrictionBox}>
-                                <Text style={styles.hintText}>Search {restrictionScope} (min 3 characters)</Text>
+                                <Text style={[styles.hintText, isRTL && styles.rtlText]}>{t('managerSurvey.searchRestriction', { scope: getRestrictionLabel(restrictionScope) })}</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, isRTL && styles.rtlText]}
                                     value={searchKeyword}
                                     onChangeText={handleRestrictionSearchInput}
-                                    placeholder={`Search ${restrictionScope}`}
+                                    placeholder={t('managerSurvey.searchScope', { scope: getRestrictionLabel(restrictionScope) })}
                                     placeholderTextColor="#888"
                                 />
                                 {searching && <ActivityIndicator size="small" color="#FF4400" />}
 
                                 {restrictionRefId ? (
-                                    <View style={styles.selectedRestriction}>
-                                        <Text style={styles.selectedRestrictionText}>
-                                            Selected: {restrictionLabel || restrictionRefId}
+                                    <View style={[styles.selectedRestriction, isRTL && styles.selectedRestrictionRtl]}>
+                                        <Text style={[styles.selectedRestrictionText, isRTL && styles.rtlText]}>
+                                            {t('managerSurvey.selectedRestriction', { label: restrictionLabel || restrictionRefId })}
                                         </Text>
                                         <TouchableOpacity onPress={() => {
                                             setRestrictionRefId('');
                                             setRestrictionLabel('');
                                         }}>
-                                            <Text style={styles.linkText}>Clear</Text>
+                                            <Text style={styles.linkText}>{t('managerSurvey.clear')}</Text>
                                         </TouchableOpacity>
                                     </View>
                                 ) : null}
@@ -570,13 +586,13 @@ export default function ManagerSurveysScreen() {
                                         {searchResults.map(item => (
                                             <TouchableOpacity
                                                 key={item._id}
-                                                style={styles.searchResultItem}
+                                                style={[styles.searchResultItem, isRTL && styles.searchResultItemRtl]}
                                                 onPress={() => handleSelectRestriction(item)}
                                             >
-                                                <Text style={styles.searchResultText}>
+                                                <Text style={[styles.searchResultText, isRTL && styles.rtlText]}>
                                                     {item.name || item.email || item._id}
                                                 </Text>
-                                                <Text style={styles.searchResultSub}>{item._id}</Text>
+                                                <Text style={[styles.searchResultSub, isRTL && styles.rtlText]}>{item._id}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -585,16 +601,16 @@ export default function ManagerSurveysScreen() {
                         )}
 
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Questions</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('managerSurvey.questions')}</Text>
                             <TouchableOpacity onPress={addQuestion}>
-                                <Text style={styles.linkText}>Add question</Text>
+                                <Text style={styles.linkText}>{t('managerSurvey.addQuestion')}</Text>
                             </TouchableOpacity>
                         </View>
 
                         {questions.map((question, index) => (
                             <View key={`${question._id || 'q'}-${index}`} style={styles.questionCard}>
                                 <View style={styles.questionHeader}>
-                                    <Text style={styles.questionTitle}>Question {index + 1}</Text>
+                                    <Text style={styles.questionTitle}>{t('managerSurvey.question', { index: index + 1 })}</Text>
                                     <TouchableOpacity onPress={() => removeQuestion(index)}>
                                         <Feather name="trash-2" size={18} color="#FF4400" />
                                     </TouchableOpacity>
@@ -604,26 +620,26 @@ export default function ManagerSurveysScreen() {
                                     style={styles.input}
                                     value={question.text}
                                     onChangeText={(value) => updateQuestion(index, { text: value })}
-                                    placeholder="Question text"
+                                    placeholder={t('managerSurvey.questionText')}
                                     placeholderTextColor="#888"
                                 />
                                 <TextInput
                                     style={styles.input}
                                     value={question.description}
                                     onChangeText={(value) => updateQuestion(index, { description: value })}
-                                    placeholder="Helper text (optional)"
+                                    placeholder={t('managerSurvey.helperText')}
                                     placeholderTextColor="#888"
                                 />
 
-                                <Text style={styles.label}>Question type</Text>
-                                <View style={styles.inlineRow}>
+                                <Text style={styles.label}>{t('managerSurvey.questionType')}</Text>
+                                <View style={[styles.inlineRow, isRTL && styles.inlineRowRtl]}>
                                     {['single', 'multi', 'rating', 'text', 'long-text'].map(item => (
                                         <TouchableOpacity
                                             key={item}
                                             style={[styles.chip, question.type === item && styles.activeChip]}
                                             onPress={() => updateQuestion(index, { type: item as QuestionForm['type'] })}
                                         >
-                                            <Text style={[styles.chipText, question.type === item && styles.activeChipText]}>{item}</Text>
+                                            <Text style={[styles.chipText, isRTL && styles.rtlText, question.type === item && styles.activeChipText]}>{getQuestionTypeLabel(item as QuestionForm['type'])}</Text>
                                         </TouchableOpacity>
                                     ))}
                                 </View>
@@ -632,10 +648,10 @@ export default function ManagerSurveysScreen() {
                                     <View style={[styles.toggleBox, question.required && styles.toggleBoxActive]}>
                                         {question.required && <Feather name="check" size={16} color="#fff" />}
                                     </View>
-                                    <Text style={styles.toggleLabel}>Required</Text>
+                                    <Text style={styles.toggleLabel}>{t('managerSurvey.required')}</Text>
                                 </TouchableOpacity>
 
-                                <Text style={styles.label}>Conditional display</Text>
+                                <Text style={styles.label}>{t('managerSurvey.conditionalDisplay')}</Text>
                                 <View style={styles.conditionalRow}>
                                     <View style={styles.conditionalPicker}>
                                         <RNPicker
@@ -643,7 +659,7 @@ export default function ManagerSurveysScreen() {
                                             onValueChange={(value) => updateQuestion(index, { conditionalQuestionId: value })}
                                             style={styles.picker}
                                         >
-                                            <RNPicker.Item label="Always show" value="" />
+                                            <RNPicker.Item label={t('managerSurvey.alwaysShow')} value="" />
                                             {questions
                                                 .slice(0, index)
                                                 .filter(item => item._id)
@@ -660,20 +676,20 @@ export default function ManagerSurveysScreen() {
                                         style={[styles.input, styles.conditionalInput]}
                                         value={question.conditionalValues}
                                         onChangeText={(value) => updateQuestion(index, { conditionalValues: value })}
-                                        placeholder="Show if answer is (comma separated)"
+                                        placeholder={t('managerSurvey.conditionalAnswer')}
                                         placeholderTextColor="#888"
                                     />
                                 </View>
                                 <Text style={styles.hintText}>
-                                    Save the survey to enable conditional logic for new questions.
+                                    {t('managerSurvey.conditionalHint')}
                                 </Text>
 
                                 {(question.type === 'single' || question.type === 'multi') && (
                                     <View style={styles.optionSection}>
                                         <View style={styles.sectionHeader}>
-                                            <Text style={styles.sectionTitle}>Options</Text>
+                                            <Text style={styles.sectionTitle}>{t('managerSurvey.options')}</Text>
                                             <TouchableOpacity onPress={() => addOption(index)}>
-                                                <Text style={styles.linkText}>Add option</Text>
+                                                <Text style={styles.linkText}>{t('managerSurvey.addOption')}</Text>
                                             </TouchableOpacity>
                                         </View>
                                         {question.options.map((option, optionIndex) => (
@@ -682,7 +698,7 @@ export default function ManagerSurveysScreen() {
                                                     style={[styles.input, styles.optionInput]}
                                                     value={option}
                                                     onChangeText={(value) => updateOption(index, optionIndex, value)}
-                                                    placeholder={`Option ${optionIndex + 1}`}
+                                                    placeholder={t('managerSurvey.option', { index: optionIndex + 1 })}
                                                     placeholderTextColor="#888"
                                                 />
                                                 <TouchableOpacity onPress={() => removeOption(index, optionIndex)}>
@@ -695,13 +711,13 @@ export default function ManagerSurveysScreen() {
 
                                 {question.type === 'rating' && (
                                     <View>
-                                        <Text style={styles.label}>Scale settings</Text>
+                                        <Text style={styles.label}>{t('managerSurvey.scaleSettings')}</Text>
                                         <View style={styles.scaleRow}>
                                             <TextInput
                                                 style={[styles.input, styles.scaleInput]}
                                                 value={question.scale.min}
                                                 onChangeText={(value) => updateQuestion(index, { scale: { ...question.scale, min: value } })}
-                                                placeholder="Min"
+                                                placeholder={t('managerSurvey.min')}
                                                 placeholderTextColor="#888"
                                                 keyboardType="numeric"
                                             />
@@ -709,7 +725,7 @@ export default function ManagerSurveysScreen() {
                                                 style={[styles.input, styles.scaleInput]}
                                                 value={question.scale.max}
                                                 onChangeText={(value) => updateQuestion(index, { scale: { ...question.scale, max: value } })}
-                                                placeholder="Max"
+                                                placeholder={t('managerSurvey.max')}
                                                 placeholderTextColor="#888"
                                                 keyboardType="numeric"
                                             />
@@ -717,7 +733,7 @@ export default function ManagerSurveysScreen() {
                                                 style={[styles.input, styles.scaleInput]}
                                                 value={question.scale.step}
                                                 onChangeText={(value) => updateQuestion(index, { scale: { ...question.scale, step: value } })}
-                                                placeholder="Step"
+                                                placeholder={t('managerSurvey.step')}
                                                 placeholderTextColor="#888"
                                                 keyboardType="numeric"
                                             />
@@ -729,16 +745,16 @@ export default function ManagerSurveysScreen() {
 
                         <TouchableOpacity style={styles.primaryButton} onPress={handleSaveSurvey} disabled={saving}>
                             {saving && <ActivityIndicator size="small" color="#fff" />}
-                            <Text style={styles.primaryButtonText}>{saving ? 'Saving...' : editingSurveyId ? 'Update survey' : 'Create survey'}</Text>
+                            <Text style={styles.primaryButtonText}>{saving ? t('managerAthlete.saving') : editingSurveyId ? t('managerSurvey.update') : t('managerSurvey.create')}</Text>
                         </TouchableOpacity>
 
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Existing surveys</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('managerSurvey.existingSurveys')}</Text>
                             {loading && <ActivityIndicator size="small" color="#FF4400" />}
                         </View>
 
                         {surveys.length === 0 && !loading ? (
-                            <Text style={styles.hintText}>No surveys created yet.</Text>
+                            <Text style={styles.hintText}>{t('managerSurvey.noSurveys')}</Text>
                         ) : null}
 
                         {surveys.map(survey => (
@@ -746,37 +762,37 @@ export default function ManagerSurveysScreen() {
                                 <View style={styles.surveyHeader}>
                                     <View style={{ flex: 1 }}>
                                         <Text style={styles.surveyTitle}>{survey.title}</Text>
-                                        <Text style={styles.surveyMeta}>
-                                            {survey.questions?.length || 0} questions
-                                            {survey.repeating?.enabled && survey.repeating?.cadence ? ` - ${survey.repeating.cadence}` : ''}
-                                            {survey.restrictedTo?.scope && survey.restrictedTo?.scope !== 'none' ? ` - ${survey.restrictedTo.scope}` : ''}
+                                        <Text style={[styles.surveyMeta, isRTL && styles.rtlText]}>
+                                            {t('managerSurvey.questionsCount', { count: survey.questions?.length || 0 })}
+                                            {survey.repeating?.enabled && survey.repeating?.cadence ? ` - ${getCadenceLabel(survey.repeating.cadence)}` : ''}
+                                            {survey.restrictedTo?.scope && survey.restrictedTo?.scope !== 'none' ? ` - ${getRestrictionLabel(survey.restrictedTo.scope)}` : ''}
                                         </Text>
                                     </View>
                                     {survey.isActive && (
                                         <View style={styles.activeBadge}>
-                                            <Text style={styles.activeBadgeText}>Active</Text>
+                                            <Text style={styles.activeBadgeText}>{t('managerSurvey.active')}</Text>
                                         </View>
                                     )}
                                 </View>
 
                                 <View style={styles.actionRow}>
                                     <TouchableOpacity style={styles.secondaryButton} onPress={() => startEditing(survey)}>
-                                        <Text style={styles.secondaryButtonText}>Edit</Text>
+                                        <Text style={styles.secondaryButtonText}>{t('managerSurvey.editSurvey')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={styles.secondaryButton}
                                         onPress={() => router.push({ pathname: '/manager/surveyDetails', params: { id: survey._id } })}
                                     >
-                                        <Text style={styles.secondaryButtonText}>Submissions</Text>
+                                        <Text style={styles.secondaryButtonText}>{t('managerSurvey.submissions')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={styles.secondaryButton}
                                         onPress={() => router.push({ pathname: '/surveys/respond', params: { id: survey._id, preview: '1' } })}
                                     >
-                                        <Text style={styles.secondaryButtonText}>Preview</Text>
+                                        <Text style={styles.secondaryButtonText}>{t('managerSurvey.preview')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.secondaryButton} onPress={() => handleDeleteSurvey(survey._id)}>
-                                        <Text style={[styles.secondaryButtonText, { color: '#FF4400' }]}>Delete</Text>
+                                        <Text style={[styles.secondaryButtonText, { color: '#FF4400' }]}>{t('managerSurvey.delete')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -818,6 +834,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 5,
     },
+    backButtonRtl: {
+        right: undefined,
+        left: 20,
+        flexDirection: 'row-reverse',
+    },
     backText: {
         color: '#fff',
         fontFamily: 'Acumin',
@@ -828,6 +849,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -849,6 +874,10 @@ const styles = StyleSheet.create({
         fontFamily: 'Qatar',
         fontSize: 18,
         color: '#111111'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     linkText: {
         fontFamily: 'Acumin',
@@ -875,6 +904,9 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 8,
         marginBottom: 10
+    },
+    inlineRowRtl: {
+        flexDirection: 'row-reverse',
     },
     chip: {
         paddingVertical: 6,
@@ -1047,6 +1079,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 10
     },
+    selectedRestrictionRtl: {
+        flexDirection: 'row-reverse',
+    },
     selectedRestrictionText: {
         fontFamily: 'Acumin',
         fontSize: 12,
@@ -1063,6 +1098,9 @@ const styles = StyleSheet.create({
         padding: 10,
         borderBottomWidth: 1,
         borderColor: '#e0e0e0'
+    },
+    searchResultItemRtl: {
+        alignItems: 'flex-end',
     },
     searchResultText: {
         fontFamily: 'Acumin',

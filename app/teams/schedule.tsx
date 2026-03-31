@@ -16,11 +16,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function Schedule() {
     const router = useRouter();
+    const { isRTL, t, language } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -152,12 +154,12 @@ export default function Schedule() {
                         style={styles.backBtn}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to teams</Text>
+                        <Text style={styles.backBtnText}>{t('teamSchedule.backToTeams')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Team Events</Text>
-                        {!loading && team?.name && <Text style={styles.pageDesc}>Manage upcoming events</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('teamSchedule.title')}</Text>
+                        {!loading && team?.name && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('teamSchedule.desc')}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -170,7 +172,7 @@ export default function Schedule() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Events</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('teamSchedule.ghost')}</Text>
 
                     {!loading &&
                         <View style={styles.profileImage}>
@@ -196,14 +198,14 @@ export default function Schedule() {
                             {/* events */}
                             <View style={{ marginBottom: 20 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                    <Text style={styles.title}>Upcoming events</Text>
+                                    <Text style={[styles.title, isRTL && styles.rtlText]}>{t('teamSchedule.upcomingEvents')}</Text>
                                 </View>
 
                                 {schedule && schedule.length > 0 ? (
                                     schedule.map((event) => {
                                         const eventDate = new Date(event.date);
-                                        const formattedTime = new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                        const endTime = new Date(event.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        const formattedTime = new Date(event.startTime).toLocaleTimeString(language === 'ar' ? 'ar' : undefined, { hour: '2-digit', minute: '2-digit' });
+                                        const endTime = new Date(event.endTime).toLocaleTimeString(language === 'ar' ? 'ar' : undefined, { hour: '2-digit', minute: '2-digit' });
 
                                         return (
                                             <TouchableOpacity
@@ -224,12 +226,12 @@ export default function Schedule() {
                                                     </Text>
                                                     <Text style={styles.eventLocation}>
                                                         {event.locationType === 'online'
-                                                            ? 'Online Event'
-                                                            : event.venue?.name || 'Location TBD'}
+                                                            ? t('teamSchedule.onlineEvent')
+                                                            : event.venue?.name || t('teamSchedule.locationTbd')}
                                                     </Text>
                                                     {event.eventType === 'match' && event.opponent && (
                                                         <View style={styles.opponentContainer}>
-                                                            <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                            <Text style={styles.opponentText}>{t('teamSchedule.versus', { name: event.opponent.name })}</Text>
                                                         </View>
                                                     )}
                                                 </View>
@@ -246,7 +248,7 @@ export default function Schedule() {
                                         );
                                     })
                                 ) : (
-                                    <Text style={styles.paragraph}>No events</Text>
+                                    <Text style={[styles.paragraph, isRTL && styles.rtlText]}>{t('teamSchedule.noEvents')}</Text>
                                 )}
                             </View>
 
@@ -331,6 +333,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -436,6 +442,14 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     error: {
         marginBottom: 15,

@@ -20,10 +20,12 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function AddPayment() {
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const router = useRouter();
@@ -45,6 +47,13 @@ export default function AddPayment() {
     const [isPaid, setIsPaid] = useState(false);
     const [paymentType, setPaymentType] = useState('Club registration fees');
     const [paymentTypeOther, setPaymentTypeOther] = useState('');
+    const paymentTypeOptions = [
+        { label: t('payments.registrationFees'), value: 'Club registration fees' },
+        { label: t('payments.monthlyFees'), value: 'Monthly subscription fees' },
+        { label: t('payments.equipmentPurchase'), value: 'Equipment purchase' },
+        { label: t('payments.salary'), value: 'Salary' },
+        { label: t('payments.other'), value: 'Other' },
+    ];
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -142,12 +151,12 @@ export default function AddPayment() {
                 console.log('API Response:', data);
                 setSearchResults(data);
             } else {
-                Alert.alert('Error', 'Failed to search users');
+                Alert.alert(t('messages.errorTitle'), t('payments.failedSearchUsers'));
                 setSearchResults([]);
             }
         } catch (error) {
             console.error('Error searching users:', error);
-            Alert.alert('Error', 'Failed to search users');
+            Alert.alert(t('messages.errorTitle'), t('payments.failedSearchUsers'));
             setSearchResults([]);
         } finally {
             setSearching(false);
@@ -189,7 +198,7 @@ export default function AddPayment() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('payments.userNotAuthenticated'));
                 setSaving(false);
                 return;
             }
@@ -205,7 +214,7 @@ export default function AddPayment() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.message || 'Failed to save payment');
+                setError(errorData.message || t('payments.failedSave'));
                 setSaving(false);
                 return;
             }
@@ -217,7 +226,7 @@ export default function AddPayment() {
 
         } catch (error) {
             console.error('Error saving payment:', error);
-            setError('Something went wrong. Please try again.');
+            setError(t('payments.unexpectedSave'));
             setSaving(false);
         }
     };
@@ -257,18 +266,18 @@ export default function AddPayment() {
                                 params: { tab: 'Financials' }
                             })
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to financials</Text>
+                        <Text style={styles.backBtnText}>{t('payments.backToFinancials')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>New Payment</Text>
-                        {!loading && <Text style={styles.pageDesc}>Create a new payment for your club</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('payments.newPayment')}</Text>
+                        {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('payments.createPaymentDesc')}</Text>}
 
                         {loading &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                            <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#fff"
@@ -278,7 +287,7 @@ export default function AddPayment() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Payme</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>Payme</Text>
                 </View>
 
                 <ScrollView>
@@ -289,7 +298,7 @@ export default function AddPayment() {
                         </View>}
 
                         {!selectedUser && <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Select beneficiary</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('payments.selectBeneficiary')}</Text>
                             <View style={styles.formGroup}>
                                 <View style={styles.searchContainer}>
                                     <View style={{
@@ -297,8 +306,8 @@ export default function AddPayment() {
                                         flexDirection: 'row'
                                     }}>
                                         <TextInput
-                                            style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                            placeholder="Search by name or email (min. 3 characters)"
+                                            style={[styles.input, { flex: 1, marginBottom: 0 }, isRTL && styles.rtlText]}
+                                            placeholder={t('payments.searchBeneficiary')}
                                             placeholderTextColor="#A8A8A8"
                                             value={keyword}
                                             onChangeText={handleSearchInput}
@@ -331,13 +340,13 @@ export default function AddPayment() {
                                                         style={[styles.userAvatar]}
                                                         resizeMode="contain"
                                                     />
-                                                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <View style={[styles.userMetaRow, isRTL && styles.userMetaRowRtl]}>
                                                         <View>
-                                                            <Text style={styles.userName}>{item.name}</Text>
-                                                            <Text style={styles.userEmail}>{item.email}</Text>
+                                                            <Text style={[styles.userName, isRTL && styles.rtlText]}>{item.name}</Text>
+                                                            <Text style={[styles.userEmail, isRTL && styles.rtlText]}>{item.email}</Text>
                                                         </View>
                                                         <View>
-                                                            <Text style={{ color: '#FF4000' }}>Select</Text>
+                                                            <Text style={{ color: '#FF4000' }}>{t('payments.select')}</Text>
                                                         </View>
                                                     </View>
                                                 </TouchableOpacity>
@@ -348,12 +357,12 @@ export default function AddPayment() {
 
                                 {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && keyword.trim().length >= 3 && (
                                     <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
-                                        <Text style={{ fontFamily: 'Acumin', fontWeight: 'bold' }}>
-                                            No results.
+                                        <Text style={[styles.noResultsTitle, isRTL && styles.rtlText]}>
+                                            {t('payments.noResults')}
                                         </Text>
 
-                                        <Text style={{ fontFamily: 'Acumin', marginBottom: 10 }}>
-                                            Looks like the user you are looking for does not have an account on Riyadah.
+                                        <Text style={[styles.noResultsHint, isRTL && styles.rtlText]}>
+                                            {t('payments.noResultsHint')}
                                         </Text>
                                     </View>
                                 )}
@@ -362,9 +371,9 @@ export default function AddPayment() {
 
                         {selectedUser && <View>
 
-                            <Text style={styles.label}>Selected user</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('payments.selectedUser')}</Text>
 
-                            <View style={styles.selectedUserContainer}>
+                            <View style={[styles.selectedUserContainer, isRTL && styles.selectedUserContainerRtl]}>
                                 <Image
                                     source={
                                         selectedUser.image != null
@@ -375,11 +384,11 @@ export default function AddPayment() {
                                     resizeMode="contain"
                                 />
                                 <View style={styles.selectedUserInfo}>
-                                    <Text style={styles.selectedUserName}>{selectedUser.name}</Text>
-                                    <Text style={styles.selectedUserEmail}>{selectedUser.email}</Text>
+                                    <Text style={[styles.selectedUserName, isRTL && styles.rtlText]}>{selectedUser.name}</Text>
+                                    <Text style={[styles.selectedUserEmail, isRTL && styles.rtlText]}>{selectedUser.email}</Text>
                                 </View>
                                 <TouchableOpacity
-                                    style={styles.clearSelectionButton}
+                                    style={[styles.clearSelectionButton, isRTL && styles.clearSelectionButtonRtl]}
                                     onPress={handleClearSelection}
                                 >
                                     <MaterialIcons name="close" size={20} color="#FF4000" />
@@ -387,15 +396,15 @@ export default function AddPayment() {
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Amount</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('payments.amount')}</Text>
 
-                                <View style={{ flexDirection: 'row', columnGap: 10 }}>
+                                <View style={[styles.amountRow, isRTL && styles.amountRowRtl]}>
                                     <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        placeholder="e.g. 50"
+                                        style={[styles.input, { flex: 1 }, isRTL && styles.rtlText]}
+                                        placeholder={t('payments.amountPlaceholder')}
                                         placeholderTextColor={"#888"}
                                         keyboardType="numeric"
-                                        value={paymentAmount}
+                                        value={paymentAmount?.toString() ?? ''}
                                         onChangeText={(text)=>{setPaymentAmount(parseInt(text))}}
                                     />
                                     <View style={[styles.pickerContainer, { flex: 1 }]}>
@@ -415,27 +424,25 @@ export default function AddPayment() {
                             </View>
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Payment type</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('payments.paymentType')}</Text>
                                 <View style={[styles.pickerContainer, { flex: 1 }]}>
                                     <Picker
                                         style={styles.picker}
                                         onValueChange={setPaymentType}
                                         selectedValue={paymentType}
                                     >
-                                        <Picker.Item label="Club registration fees" value="Club registration fees" />
-                                        <Picker.Item label="Monthly subscription fees" value="Monthly subscription fees" />
-                                        <Picker.Item label="Equipment purchase" value="Equipment purchase" />
-                                        <Picker.Item label="Salary" value="Salary" />
-                                        <Picker.Item label="Other" value="Other" />
+                                        {paymentTypeOptions.map((option) => (
+                                            <Picker.Item key={option.value} label={option.label} value={option.value} />
+                                        ))}
                                     </Picker>
                                 </View>
                                 {paymentType == "Other" && <View style={styles.inputContainer}>
                                     <TextInput
-                                        style={[styles.input,{marginBottom:0}]}
+                                        style={[styles.input,{marginBottom:0}, isRTL && styles.rtlText]}
                                         placeholderTextColor={"#888"}
                                         value={paymentTypeOther}
                                         onChangeText={setPaymentTypeOther}
-                                        placeholder="Specify payment type"
+                                        placeholder={t('payments.specifyPaymentType')}
                                     />
                                 </View>}
                             </View>
@@ -443,13 +450,13 @@ export default function AddPayment() {
 
 
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>Note</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('payments.note')}</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, isRTL && styles.rtlText]}
                                     placeholderTextColor={"#888"}
                                     value={paymentNote}
                                     onChangeText={(val) => setPaymentNote(val)}
-                                    placeholder="Comment or note ..."
+                                    placeholder={t('payments.notePlaceholder')}
                                 />
                             </View>
 
@@ -516,13 +523,13 @@ export default function AddPayment() {
                                 />
                             )}
 
-                            <View style={[styles.profileActions, styles.inlineActions]}>
+                            <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                 <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    <Text style={styles.profileButtonText}>{t('payments.cancel')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
                                     <Text style={styles.profileButtonText}>
-                                        {saving ? 'Paying' : 'pay'}
+                                        {saving ? t('payments.paying') : t('payments.pay')}
                                     </Text>
                                     {saving && (
                                         <ActivityIndicator
@@ -604,6 +611,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -636,6 +647,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     error: {
         marginBottom: 15,
@@ -696,6 +711,15 @@ const styles = StyleSheet.create({
         color: '#666',
         fontSize: 14,
     },
+    userMetaRow: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    userMetaRowRtl: {
+        flexDirection: 'row-reverse',
+    },
     userAvatar: {
         width: 40,
         height: 40,
@@ -723,6 +747,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 20,
     },
+    selectedUserContainerRtl: {
+        flexDirection: 'row-reverse',
+    },
     selectedUserInfo: {
         flex: 1,
     },
@@ -739,6 +766,10 @@ const styles = StyleSheet.create({
     },
     clearSelectionButton: {
         marginLeft: 10,
+    },
+    clearSelectionButtonRtl: {
+        marginLeft: 0,
+        marginRight: 10,
     },
     dateInput: {
         flexDirection: 'row',
@@ -795,6 +826,9 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         columnGap: 15
     },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
+    },
     saveLoaderContainer: {
         marginLeft: 10
     },
@@ -821,9 +855,41 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
         fontFamily: 'Qatar'
+    },
+    loaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5,
+    },
+    loaderRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    amountRow: {
+        flexDirection: 'row',
+        columnGap: 10,
+    },
+    amountRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    noResultsTitle: {
+        fontFamily: 'Acumin',
+        fontWeight: 'bold',
+    },
+    noResultsHint: {
+        fontFamily: 'Acumin',
+        marginBottom: 10,
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });

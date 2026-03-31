@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../../context/language';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
@@ -12,6 +13,7 @@ const genders = [
 
 export default function WizardStep5() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const { formData, updateFormData, resetFormData } = useRegistration();
     const [bio, setBio] = useState<string | null>(formData.bio || null);
     const [adminEmail, setAdminEmail] = useState<string | null>(formData.admin.email || null);
@@ -46,17 +48,17 @@ export default function WizardStep5() {
 
     const handleNext = async () => {
         if (!selectedGender && formData.type != "Club" && formData.type != "Association") {
-            setError('Kindly select a gender')
+            setError(t('wizard.genderRequired'))
             return;
         }
 
         if (!adminName && (formData.type == "Club" || formData.type == "Association")) {
-            setError('Kindly fill admin name')
+            setError(t('wizard.adminNameRequired'))
             return;
         }
 
         if (!adminEmail && (formData.type == "Club" || formData.type == "Association")) {
-            setError('Kindly fill admin email')
+            setError(t('wizard.adminEmailRequired'))
             return;
         }
 
@@ -128,7 +130,7 @@ export default function WizardStep5() {
             router.replace('/landing');
         } catch (err) {
             console.error('User creation failed:', err);
-            setRegisterError('Something went wrong. Please try again.');
+            setRegisterError(t('wizard.registrationError'));
         } finally {
             setLoading(false);
         }
@@ -147,20 +149,20 @@ export default function WizardStep5() {
                     resizeMode="contain"
                 />
 
-                <View style={styles.headerTextBlock}>
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                     <Text style={styles.pageTitle}>
                         {!loading
                             ? (registrationError ?
-                                'Error'
+                                t('messages.errorTitle')
                                 :
-                                formData.type == "Club" ? 'About Club' : 'About You')
-                            : 'Creating account'}
+                                formData.type == "Club" ? t('wizard.aboutClub') : t('wizard.aboutYou'))
+                            : t('wizard.creatingAccount')}
                     </Text>
 
 
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {!loading && registrationError == null && <Text style={styles.pageDesc}>
-                            {formData.type == "Club" ? 'Tell us more about your club' : 'Tell us more about you'}
+                        {!loading && registrationError == null && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>
+                            {formData.type == "Club" ? t('wizard.tellUsMoreClub') : t('wizard.tellUsMoreYou')}
                         </Text>}
 
                         {loading && !registrationError && (
@@ -172,15 +174,15 @@ export default function WizardStep5() {
                         )}
 
                         {!loading && registrationError && (
-                            <Text style={styles.pageDesc}>Sorry for the inconvenience</Text>
+                            <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('wizard.sorryInconvenience')}</Text>
                         )}
                     </View>
 
                 </View>
 
-                <Text style={styles.ghostText}>
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
                     {!loading
-                        ? (registrationError ? 'Error' : 'About')
+                        ? (registrationError ? t('messages.errorTitle') : 'About')
                         : null}
                 </Text>
 
@@ -199,7 +201,7 @@ export default function WizardStep5() {
                 </View>}
 
                 {(formData.type != "Club" && formData.type != "Association") && <View style={styles.inputEntity}>
-                    <Text style={styles.label}>Gender</Text>
+                    <Text style={[styles.label, isRTL && styles.rtlText]}>{t('wizard.gender')}</Text>
                     <View style={styles.wizardContainer}>
                         {genders.map(({ label, icon }, idx) => (
                             <TouchableOpacity
@@ -211,8 +213,8 @@ export default function WizardStep5() {
                                 onPress={() => setSelectedGender(label)}
                             >
                                 <Image source={icon} style={styles.icon} resizeMode="contain" />
-                                <Text style={[styles.accountText, selectedGender === label && styles.accountTextSelected]}>
-                                    {label}
+                                <Text style={[styles.accountText, selectedGender === label && styles.accountTextSelected, isRTL && styles.rtlText]}>
+                                    {label === 'Male' ? t('search.male') : t('search.female')}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -223,23 +225,23 @@ export default function WizardStep5() {
 
                 {(formData.type == "Club" || formData.type == "Association") &&
                     <View style={styles.inputEntity}>
-                        <Text style={styles.label}>Admin</Text>
+                        <Text style={[styles.label, isRTL && styles.rtlText]}>{t('wizard.admin')}</Text>
                         <TextInput
-                            style={styles.input}
-                            placeholder="Admin name"
+                            style={[styles.input, isRTL && styles.rtlText]}
+                            placeholder={t('wizard.adminName')}
                             placeholderTextColor="#A8A8A8"
                             value={adminName}
                             onChangeText={setAdminName}
                         />
                         <TextInput
-                            style={styles.input}
-                            placeholder="Admin email"
+                            style={[styles.input, isRTL && styles.rtlText]}
+                            placeholder={t('wizard.adminEmail')}
                             placeholderTextColor="#A8A8A8"
                             value={adminEmail}
                             onChangeText={setAdminEmail}
                         />
-                        <Text style={styles.hint}>
-                            The system will check if the admin has an account on Riyadah
+                        <Text style={[styles.hint, isRTL && styles.rtlText]}>
+                            {t('wizard.adminHint')}
                         </Text>
                     </View>
                 }
@@ -247,14 +249,14 @@ export default function WizardStep5() {
                 {/* {formData.type != "Parent" && */}
                     <View style={styles.inputEntity}>
                         {(formData.type == "Club" || formData.type == "Association") ? (
-                            <Text style={styles.label}>Summary</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('wizard.summary')}</Text>
                         ) : (
-                            <Text style={styles.label}>BIO</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('wizard.bio')}</Text>
                         )}
 
                         <TextInput
-                            style={styles.textarea}
-                            placeholder={(formData.type == "Club" || formData.type == "Association") ? `Describe the ${formData.type.toLowerCase()}` : "Describe yourself"}
+                            style={[styles.textarea, isRTL && styles.rtlText]}
+                            placeholder={(formData.type == "Club" || formData.type == "Association") ? (formData.type === 'Club' ? t('wizard.describeClub') : t('wizard.describeAssociation')) : t('wizard.describeYourself')}
                             placeholderTextColor="#A8A8A8"
                             value={bio}
                             onChangeText={setBio}
@@ -270,7 +272,7 @@ export default function WizardStep5() {
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
                     {/* <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>NEXT</Text>
+                        <Text style={styles.loginText}>{t('wizard.next')}</Text>
                     </View>
                     {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
@@ -280,7 +282,7 @@ export default function WizardStep5() {
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleRetry}>
                     {/* <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>Try again</Text>
+                        <Text style={styles.loginText}>{t('wizard.tryAgain')}</Text>
                     </View>
                     {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
@@ -314,6 +316,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -333,6 +339,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2,
         textTransform:'uppercase'
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -474,5 +484,9 @@ const styles = StyleSheet.create({
         color: '#A8A8A8',
         fontFamily: 'Acumin',
         fontSize: 12
-    }
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
 });

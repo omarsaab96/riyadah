@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../../context/language';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
@@ -15,6 +16,7 @@ const { width } = Dimensions.get('window');
 
 export default function WizardStep4() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [featuredClubs, setFeaturedClubs] = useState<{ label: string; icon: any }[]>([]);
     const [loadingClubs, setLoadingClubs] = useState(true);
     const [keyword, setKeyword] = useState('');
@@ -73,7 +75,7 @@ export default function WizardStep4() {
 
     const handleNext = () => {
         if (!independent && selected.length === 0) {
-            setError('Kindly select a club')
+            setError(t('wizard.selectClubRequired'))
             return;
         }
 
@@ -138,17 +140,17 @@ export default function WizardStep4() {
                     resizeMode="contain"
                 />
 
-                <View style={styles.headerTextBlock}>
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                     <Text style={styles.pageTitle}>
-                        {formData.type == 'Association' ? 'Add clubs' : 'Select your club'}
+                        {formData.type == 'Association' ? t('wizard.addClubs') : t('wizard.selectClub')}
                     </Text>
-                    <Text style={styles.pageDesc}>
-                        {formData.type == 'Association' ? 'What clubs fit under your association?' : 'What club do you play with?'}
+                    <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>
+                        {formData.type == 'Association' ? t('wizard.associationClubsQuestion') : t('wizard.athleteClubQuestion')}
                     </Text>
                 </View>
 
-                <Text style={styles.ghostText}>
-                    Club{formData.type == 'Association' ? 's' : ''}
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
+                    {formData.type == 'Association' ? t('wizard.clubsGhost') : t('wizard.clubGhost')}
                 </Text>
             </View>
 
@@ -173,15 +175,15 @@ export default function WizardStep4() {
                                 </View>}
                             </View>
 
-                            <Text style={styles.label}>
-                                I don't have a club. I am independent
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>
+                                {t('wizard.noClubIndependent')}
                             </Text>
                         </TouchableOpacity>}
-                        <Text style={styles.hint}>
-                            By default, all athletes are registered as independent.
+                        <Text style={[styles.hint, isRTL && styles.rtlText]}>
+                            {t('wizard.athleteIndependentHint')}
                         </Text>
-                        <Text style={styles.hint}>
-                            If you are a member of a club, please contact your club through Riyadah to request being added.
+                        <Text style={[styles.hint, isRTL && styles.rtlText]}>
+                            {t('wizard.athleteClubContactHint')}
                         </Text>
 
                         {!independent &&
@@ -191,7 +193,7 @@ export default function WizardStep4() {
                                     value={keyword}
                                     onChangeText={handleSearchInput}
                                     placeholderTextColor="#888888"
-                                    placeholder="Search clubs (Min. 3 characters)"
+                                    placeholder={t('wizard.searchClubs')}
                                 />
                                 {searching && (
                                     <ActivityIndicator
@@ -215,8 +217,8 @@ export default function WizardStep4() {
 
                                 if (visibleClubs.length === 0 && keyword.trim().length >= 3) {
                                     return (
-                                        <Text style={styles.paragraph}>
-                                            No clubs found for '<Text style={{ fontWeight: 'bold' }}>{keyword}</Text>'
+                                        <Text style={[styles.paragraph, isRTL && styles.rtlText]}>
+                                            {t('wizard.noClubsFound', { keyword })}
                                         </Text>
                                     );
                                 }
@@ -236,7 +238,8 @@ export default function WizardStep4() {
                                             <Text
                                                 style={[
                                                     styles.accountText,
-                                                    isSelected && styles.accountTextSelected
+                                                    isSelected && styles.accountTextSelected,
+                                                    isRTL && styles.rtlText
                                                 ]}
                                             >
                                                 {club.label}
@@ -255,7 +258,7 @@ export default function WizardStep4() {
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
                     {/* <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>NEXT</Text>
+                        <Text style={styles.loginText}>{t('wizard.next')}</Text>
                     </View>
                     {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
@@ -289,6 +292,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -310,6 +317,11 @@ const styles = StyleSheet.create({
         width: '100%',
         textAlign: 'right',
         textTransform: 'uppercase'
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+        textAlign: 'left',
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -441,6 +453,10 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
         fontSize: 14,
         lineHeight:18
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     error: {
         marginBottom: 15,

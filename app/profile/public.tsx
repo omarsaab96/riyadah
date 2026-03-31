@@ -22,10 +22,12 @@ import {
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function PublicProfile() {
+    const { isRTL, t } = useLanguage();
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -46,6 +48,16 @@ export default function PublicProfile() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const tabs = ['Profile', 'Teams', 'Schedule'];
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
+    const translateTabLabel = (label: string) => {
+        const tabKeyMap: Record<string, any> = {
+            Profile: 'profile.profile',
+            Teams: 'profile.teams',
+            Schedule: 'profile.schedule',
+        };
+
+        return tabKeyMap[label] ? t(tabKeyMap[label]) : label;
+    };
 
     const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth()); // 0-11
     const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -345,14 +357,14 @@ export default function PublicProfile() {
                     style={styles.backBtn}
                 >
                     <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                    <Text style={styles.backBtnText}>Back</Text>
+                    <Text style={[styles.backBtnText, textDirectionStyle]}>{t('auth.back')}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.headerTextBlock}>
                     {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
 
-                    <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
-                    {!loading && <Text style={styles.pageDesc}>
+                    <Text style={[styles.pageTitle, textDirectionStyle]}>{user?.name || t('profile.defaultTitle')}</Text>
+                    {!loading && <Text style={[styles.pageDesc, textDirectionStyle]}>
                         {user?.type} {user.role ? `/ ${user.role}` : ''}
                     </Text>}
 
@@ -367,7 +379,7 @@ export default function PublicProfile() {
                     }
                 </View>
 
-                {!loading && <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>}
+                {!loading && <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{user.name.substring(0, 6)}</Text>}
 
                 {!loading && (
                     <View style={styles.profileImage}>
@@ -415,8 +427,8 @@ export default function PublicProfile() {
                             ]}
                             onPress={() => updateTab(label)}
                         >
-                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
-                                {label}
+                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive, textDirectionStyle]}>
+                                {translateTabLabel(label)}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -435,8 +447,8 @@ export default function PublicProfile() {
                     <View style={styles.contentContainer}>
                         {user.type == "Club" && user.admin?.email != null && (
                             <View style={styles.adminDiv}>
-                                <Text style={[styles.title, styles.contactTitle]}>
-                                    Admin
+                                <Text style={[styles.title, styles.contactTitle, textDirectionStyle]}>
+                                    {t('profile.admin')}
                                 </Text>
 
                                 {adminUser ? (
@@ -482,8 +494,8 @@ export default function PublicProfile() {
                                     || user.contactInfo?.location?.longitude != null || user.contactInfo?.description != null) ? (
                                     <View>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                                            <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
-                                                CONTACT
+                                            <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }, textDirectionStyle]}>
+                                                {t('profile.contact')}
                                             </Text>
                                             <TouchableOpacity style={styles.dmLink} onPress={() => { createChat(user._id) }}>
                                                 {
@@ -496,7 +508,7 @@ export default function PublicProfile() {
                                                                 source={require('../../assets/dm.png')}
                                                                 resizeMode="contain"
                                                             />
-                                                            <Text style={{ color: 'black' }}>Send DM</Text>
+                                                            <Text style={[styles.dmButtonText, textDirectionStyle]}>{t('profile.sendDm')}</Text>
                                                         </View>
                                                     )
                                                 }
@@ -506,7 +518,7 @@ export default function PublicProfile() {
                                         <View>
                                             {user.contactInfo?.description != null && user.type == "Club" && (
                                                 <View style={styles.contactDescription}>
-                                                    <Text>{user.contactInfo?.description}</Text>
+                                                    <Text style={textDirectionStyle}>{user.contactInfo?.description}</Text>
                                                 </View>
                                             )}
                                             <View style={styles.contactInfo}>
@@ -608,7 +620,7 @@ export default function PublicProfile() {
                                                                 console.error(error);
                                                             }
                                                         }}>
-                                                        <Text style={styles.locationLinkText}>Get Directions</Text>
+                                                        <Text style={styles.locationLinkText}>{t('profile.getDirections')}</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             )}
@@ -617,8 +629,8 @@ export default function PublicProfile() {
                                 ) : (
                                     <View>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                                            <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
-                                                CONTACT
+                                            <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }, textDirectionStyle]}>
+                                                {t('profile.contact')}
                                             </Text>
                                             <TouchableOpacity style={styles.dmLink} onPress={() => { createChat(user._id) }}>
                                                 {
@@ -631,7 +643,7 @@ export default function PublicProfile() {
                                                                 source={require('../../assets/dm.png')}
                                                                 resizeMode="contain"
                                                             />
-                                                            <Text style={{ color: 'black' }}>Send DM</Text>
+                                                            <Text style={[styles.dmButtonText, textDirectionStyle]}>{t('profile.sendDm')}</Text>
                                                         </View>
                                                     )
                                                 }
@@ -639,8 +651,8 @@ export default function PublicProfile() {
                                             </TouchableOpacity>
                                         </View>
                                         <View>
-                                            <Text style={[styles.emptyContactInfo, { marginBottom: 5 }]}>
-                                                No contact info
+                                            <Text style={[styles.emptyContactInfo, { marginBottom: 5 }, textDirectionStyle]}>
+                                                {t('profile.noContactInfo')}
                                             </Text>
                                         </View>
                                     </View>
@@ -651,15 +663,15 @@ export default function PublicProfile() {
                         {/* BIO */}
                         {user.type != "Parent" && (
                             <View style={styles.profileSection}>
-                                <Text style={styles.title}>
-                                    {user.type != "Club" ? 'Bio' : 'Summary'}
+                                <Text style={[styles.title, textDirectionStyle]}>
+                                    {user.type != "Club" ? t('profile.bio') : t('profile.summary')}
                                 </Text>
                                 {user.bio ? (
-                                    <Text style={styles.paragraph}>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>
                                         {user.bio}
                                     </Text>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                 )}
                             </View>
                         )}
@@ -667,87 +679,87 @@ export default function PublicProfile() {
                         {/* SPORT */}
                         {user.type != "Parent" && (
                             <View style={styles.profileSection}>
-                                <Text style={styles.title}>
+                                <Text style={[styles.title, textDirectionStyle]}>
                                     {user.type === "Scout" || user.type === "Sponsor"
-                                        ? 'Interested in'
-                                        : `Sport${user.sport?.length > 1 ? 's' : ''}`
+                                        ? t('profile.interestedIn')
+                                        : user.sport?.length > 1 ? t('profile.sports') : t('profile.sport')
                                     }
                                 </Text>
                                 {user.sport && user.sport.length > 0 ? (
-                                    <Text style={styles.paragraph}>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>
                                         {user.sport.toString()}
                                     </Text>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                 )}
                             </View>
                         )}
 
                         <View style={styles.profileSection}>
                             {/* COUNTRY */}
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Country
+                            <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                                <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.country')}
                                 </Text>
                                 {user.country ? (
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{ marginRight: 8 }}>
+                                    <View style={[styles.inlineInfoRow, isRTL && styles.inlineInfoRowRtl]}>
+                                        <View style={isRTL ? { marginLeft: 8 } : { marginRight: 8 }}>
                                             <CountryFlag isoCode={user.country} size={14} />
                                         </View>
-                                        <Text style={styles.paragraph}>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>
                                             {user.country}
                                         </Text>
                                     </View>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                 )}
                             </View>
 
                             {/* PLAYS IN TEAMS */}
-                            {user.type == "Athlete"&& user.role != "Coach"  && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Plays in
+                            {user.type == "Athlete"&& user.role != "Coach"  && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                                <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.playsIn')}
                                 </Text>
                                 {user.memberOf.length > 0 ? (
                                     <View>
-                                        <Text style={styles.paragraph}>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>
                                             {user.memberOf.map(team => team.name).join(", ")}
                                         </Text>
                                     </View>
                                 ) : (
-                                    <Text style={styles.paragraph}>0 teams</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>0 {t('profile.teamsCount')}</Text>
                                 )}
                             </View>}
 
                             {/* COACH OF TEAMS */}
-                            {user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Coach of
+                            {user.role == "Coach" && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                                <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.coachOf')}
                                 </Text>
                                 {userCoachOf.length > 0 ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length == 1 ? 'team' : 'teams'}</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>{userCoachOf.length} {userCoachOf.length == 1 ? t('profile.team') : t('profile.teamsCount')}</Text>
                                     </View>
                                 ) : (
-                                    <Text style={styles.paragraph}>0 teams</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>0 {t('profile.teamsCount')}</Text>
                                 )}
                             </View>}
 
                             {/* CLUB */}
                             {user.type == "Athlete" && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={styles.title}>
-                                        Club
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.club')}
                                     </Text>
                                     {user.club ? (
                                         <View>
-                                            {user.isStaff.length == 0 && <Text style={styles.paragraph}>{user.club}</Text>}
+                                            {user.isStaff.length == 0 && <Text style={[styles.paragraph, textDirectionStyle]}>{user.club}</Text>}
                                             {user.isStaff.length > 0 && user.isStaff.map((staff, index) => (
-                                                <Text key={index} style={styles.paragraph}>{staff.name}</Text>
+                                                <Text key={index} style={[styles.paragraph, textDirectionStyle]}>{staff.name}</Text>
                                             ))}
                                         </View>
                                     ) : (
-                                        <Text style={styles.paragraph}>-</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                     )}
                                 </View>
                             )}
@@ -755,15 +767,15 @@ export default function PublicProfile() {
                             {/* Organization */}
                             {(user.type == "Scout" || user.type == "Sponsor") && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={styles.title}>
-                                        Organization
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.organization')}
                                     </Text>
                                     {!user.organization?.independent ? (
                                         <View>
-                                            <Text style={styles.paragraph}>{user.organization?.name}</Text>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>{user.organization?.name}</Text>
                                         </View>
                                     ) : (
-                                        <Text style={styles.paragraph}>Independent</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>{t('profile.independent')}</Text>
                                     )}
                                 </View>
                             )}
@@ -771,17 +783,17 @@ export default function PublicProfile() {
                             {/* NUMBER OF SPORTS */}
                             {user.type == "Club" && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={styles.title}>
-                                        Total number of sports
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.totalSports')}
                                     </Text>
                                     {user.sport ? (
                                         <View>
-                                            <Text style={styles.paragraph}>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>
                                                 {user.sport.length}
                                             </Text>
                                         </View>
                                     ) : (
-                                        <Text style={styles.paragraph}>-</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                     )}
                                 </View>
                             )}
@@ -789,17 +801,17 @@ export default function PublicProfile() {
                             {/* NUMBER OF TEAMS */}
                             {user.type == "Club" && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={styles.title}>
-                                        Total number of teams
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.totalTeams')}
                                     </Text>
                                     {user.club ? (
                                         <View>
-                                            <Text style={styles.paragraph}>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>
                                                 {user.club.length}
                                             </Text>
                                         </View>
                                     ) : (
-                                        <Text style={styles.paragraph}>-</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                     )}
                                 </View>
                             )}
@@ -807,34 +819,34 @@ export default function PublicProfile() {
                             {/* NUMBER OF MEMBERS */}
                             {user.type == "Club" && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={styles.title}>
-                                        Total number of members
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.totalMembers')}
                                     </Text>
                                     {user.children ? (
                                         <View>
-                                            <Text style={styles.paragraph}>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>
                                                 {user.children.length}
                                             </Text>
                                         </View>
                                     ) : (
-                                        <Text style={styles.paragraph}>-</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                     )}
                                 </View>
                             )}
 
                             {/* DOB */}
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    {user.type == "Club" ? 'Established' : 'Date of Birth'}
+                                <Text style={[styles.title, textDirectionStyle]}>
+                                    {user.type == "Club" ? t('profile.established') : t('profile.dateOfBirth')}
                                 </Text>
                                 {(user.dob?.day && user.dob?.month && user.dob?.year) ? (
                                     <View>
-                                        {(user.type == "Club" || user.type == "Association") && <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.year}</Text>}
-                                        {(user.type != "Club" && user.type != "Association") && <Text style={styles.paragraph}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>}
+                                        {(user.type == "Club" || user.type == "Association") && <Text style={[styles.paragraph, textDirectionStyle]}>{months[user.dob.month - 1]} {user.dob.year}</Text>}
+                                        {(user.type != "Club" && user.type != "Association") && <Text style={[styles.paragraph, textDirectionStyle]}>{months[user.dob.month - 1]} {user.dob.day}, {user.dob.year}</Text>}
                                     </View>
                                 ) : (
                                     <View>
-                                        <Text style={styles.paragraph}>-</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                     </View>
                                 )}
                             </View>
@@ -842,14 +854,14 @@ export default function PublicProfile() {
                             {/* HEIGHT */}
                             {user.type == "Athlete" && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={styles.title}>
-                                        Height
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.height')}
                                     </Text>
                                     <View>
                                         {user.height ? (
-                                            <Text style={styles.paragraph}>{user.height} cm</Text>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>{user.height} cm</Text>
                                         ) : (
-                                            <Text style={styles.paragraph}>-</Text>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                         )}
                                     </View>
                                 </View>
@@ -858,14 +870,14 @@ export default function PublicProfile() {
                             {/* WEIGHT */}
                             {user.type == "Athlete" && (
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <Text style={styles.title}>
-                                        Weight
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.weight')}
                                     </Text>
                                     <View>
                                         {user.weight ? (
-                                            <Text style={styles.paragraph}>{user.weight} kg</Text>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>{user.weight} kg</Text>
                                         ) : (
-                                            <Text style={styles.paragraph}>-</Text>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                         )}
                                     </View>
                                 </View>
@@ -875,16 +887,16 @@ export default function PublicProfile() {
                         {/* HIGHLIGHTS */}
                         {user.type != "Scout" && user.type != "Sponsor" && (
                             <View style={styles.profileSection}>
-                                {user.type != "Parent" && <Text style={styles.title}>
-                                    Highlights
+                                {user.type != "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.highlights')}
                                 </Text>}
-                                {user.type == "Parent" && <Text style={styles.title}>
-                                    Children's Highlights
+                                {user.type == "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.childrenHighlights')}
                                 </Text>}
                                 {user.highlights ? (
-                                    <Text style={styles.paragraph}>{user.highlights}</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>{user.highlights}</Text>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                 )}
                             </View>
                         )}
@@ -892,16 +904,16 @@ export default function PublicProfile() {
                         {/* STATS */}
                         {user.type != "Scout" && user.type != "Sponsor" && (
                             <View style={styles.profileSection}>
-                                {user.type != "Parent" && <Text style={styles.title}>
-                                    Stats
+                                {user.type != "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.stats')}
                                 </Text>}
-                                {user.type == "Parent" && <Text style={styles.title}>
-                                    Children's Stats
+                                {user.type == "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.childrenStats')}
                                 </Text>}
                                 {user.stats ? (
-                                    <Text style={styles.paragraph}>{user.stats}</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>{user.stats}</Text>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                 )}
                             </View>
                         )}
@@ -909,16 +921,16 @@ export default function PublicProfile() {
                         {/* ACHIEVEMENTS */}
                         {user.type != "Club" && user.type != "Scout" && user.type != "Sponsor" && (
                             <View style={styles.profileSection}>
-                                {user.type != "Parent" && <Text style={styles.title}>
-                                    Achievements
+                                {user.type != "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.achievements')}
                                 </Text>}
-                                {user.type == "Parent" && <Text style={styles.title}>
-                                    Children's Achievements
+                                {user.type == "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.childrenAchievements')}
                                 </Text>}
                                 {user.achievements ? (
-                                    <Text style={styles.paragraph}>{user.achievements}</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>{user.achievements}</Text>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                 )}
                             </View>
                         )}
@@ -926,16 +938,16 @@ export default function PublicProfile() {
                         {/* EVENTS */}
                         {user.type != "Scout" && user.type != "Sponsor" && (
                             <View style={styles.profileSection}>
-                                {user.type != "Parent" && <Text style={styles.title}>
-                                    Upcoming Events
+                                {user.type != "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.upcomingEvents')}
                                 </Text>}
-                                {user.type == "Parent" && <Text style={styles.title}>
-                                    Children's Upcoming Events
+                                {user.type == "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                                    {t('profile.childrenUpcomingEvents')}
                                 </Text>}
                                 {user.events ? (
-                                    <Text style={styles.paragraph}>{user.events}</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>{user.events}</Text>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                                 )}
                             </View>
                         )}
@@ -980,7 +992,7 @@ export default function PublicProfile() {
                         {/* ACIONS */}
                         <View style={[styles.profileSection, styles.profileActions]}>
                             <TouchableOpacity onPress={handleShareProfile} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Share Profile</Text>
+                                <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('profile.shareProfile')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -1008,7 +1020,7 @@ export default function PublicProfile() {
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>Club Teams</Text>
+                                <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubTeams')}</Text>
                             </View>
 
                             {teams && teams.length > 0 ? (
@@ -1020,8 +1032,8 @@ export default function PublicProfile() {
                                 ))
                             ) : (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyStateTitle}>No Teams Yet</Text>
-                                    <Text style={styles.emptyStateText}>This club hasn't created any teams yet</Text>
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noTeamsYet')}</Text>
+                                    <Text style={[styles.emptyStateText, textDirectionStyle]}>{t('profile.noClubTeamsYet')}</Text>
                                 </View>
                             )}
                         </View>
@@ -1050,7 +1062,7 @@ export default function PublicProfile() {
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>Club Schedule</Text>
+                                <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubSchedule')}</Text>
                             </View>
 
                             {schedule.length > 0 ? (
@@ -1162,7 +1174,7 @@ export default function PublicProfile() {
                                                 </View>
 
                                                 <View>
-                                                    <Text style={styles.subSectionTitle}>Events of the day - {selectedDate.getDate()} {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}</Text>
+                                                    <Text style={[styles.subSectionTitle, textDirectionStyle]}>{t('profile.eventsOfDay')} - {selectedDate.getDate()} {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}</Text>
                                                     {selectedDayEvents.length > 0 ? (
                                                         selectedDayEvents.map((event) => {
                                                             const eventDate = new Date(event.date);
@@ -1187,18 +1199,18 @@ export default function PublicProfile() {
                                                                         </Text>
                                                                     </View>
                                                                     <View style={styles.eventDetails}>
-                                                                        <Text style={styles.eventTitle}>{event.title}</Text>
-                                                                        <Text style={styles.eventTime}>
+                                                                        <Text style={[styles.eventTitle, textDirectionStyle]}>{event.title}</Text>
+                                                                        <Text style={[styles.eventTime, textDirectionStyle]}>
                                                                             {formattedTime} - {endTime}
                                                                         </Text>
-                                                                        <Text style={styles.eventLocation}>
+                                                                        <Text style={[styles.eventLocation, textDirectionStyle]}>
                                                                             {event.locationType === 'online'
-                                                                                ? 'Online Event'
-                                                                                : event.venue?.name || 'Location TBD'}
+                                                                                ? t('profile.onlineEvent')
+                                                                                : event.venue?.name || t('profile.locationTbd')}
                                                                         </Text>
                                                                         {event.eventType === 'match' && event.opponent && (
                                                                             <View style={styles.opponentContainer}>
-                                                                                <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                                                <Text style={[styles.opponentText, textDirectionStyle]}>{t('profile.versus')} {event.opponent.name}</Text>
                                                                             </View>
                                                                         )}
                                                                     </View>
@@ -1215,7 +1227,7 @@ export default function PublicProfile() {
                                                             );
                                                         })
                                                     ) : (
-                                                        <Text style={styles.noEventsText}>No events for this day.</Text>
+                                                        <Text style={[styles.noEventsText, textDirectionStyle]}>{t('profile.noEventsToday')}</Text>
                                                     )}
 
                                                     {/* <View style={{ marginTop: 30 }}>
@@ -1271,20 +1283,12 @@ export default function PublicProfile() {
                                 </View>
                             ) : (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyStateTitle}>No Scheduled Events</Text>
-                                    <Text style={styles.emptyStateText}>
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noScheduledEvents')}</Text>
+                                    <Text style={[styles.emptyStateText, textDirectionStyle]}>
                                         {userId === user._id
-                                            ? "Add your first event to get started"
-                                            : "This club hasn't scheduled any events yet"}
+                                            ? t('profile.createEvent')
+                                            : t('profile.noScheduledEvents')}
                                     </Text>
-                                    {userId === user._id && (
-                                        <TouchableOpacity
-                                            style={styles.emptyStateButton}
-                                            onPress={() => router.push('/schedule/createEvent')}
-                                        >
-                                            <Text style={styles.emptyStateButtonText}>Create Event</Text>
-                                        </TouchableOpacity>
-                                    )}
                                 </View>
                             )}
                         </View>
@@ -1313,7 +1317,7 @@ export default function PublicProfile() {
                         ) : staff && staff.data?.length > 0 ? (
                             <View>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>Club Staff</Text>
+                                    <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubStaff')}</Text>
                                 </View>
                                 <View>
                                     {staff && staff.data?.map((member, index) => (
@@ -1322,7 +1326,7 @@ export default function PublicProfile() {
                                             style={styles.staffCard}
                                             onPress={() => router.push(`/staff/details?id=${member._id}`)}
                                         >
-                                            <View style={styles.staffHeader}>
+                                            <View style={[styles.staffHeader, isRTL && styles.teamHeaderRtl]}>
                                                 {member.image ? (
                                                     <Image
                                                         source={{ uri: member.image }}
@@ -1335,27 +1339,27 @@ export default function PublicProfile() {
                                                     </View>
                                                 )}
                                                 <View style={styles.staffInfo}>
-                                                    <Text style={styles.staffName}>{member.name}</Text>
-                                                    <Text style={styles.staffRole}>{member.role || 'Staff Member'}</Text>
+                                                    <Text style={[styles.staffName, textDirectionStyle]}>{member.name}</Text>
+                                                    <Text style={[styles.staffRole, textDirectionStyle]}>{member.role || t('profile.staff')}</Text>
                                                 </View>
                                                 <View style={styles.staffStats}>
                                                     <Text style={styles.staffStatValue}>
                                                         {member.teams?.length || 0}
                                                     </Text>
                                                     <Text style={styles.staffStatLabel}>
-                                                        {member.teams?.length === 1 ? 'Team' : 'Teams'}
+                                                        {member.teams?.length === 1 ? t('profile.team') : t('profile.teamsCount')}
                                                     </Text>
                                                 </View>
                                             </View>
 
-                                            <View style={styles.staffContact}>
+                                            <View style={[styles.staffContact, isRTL && styles.coachSectionRtl]}>
                                                 {member.phone && (
                                                     <TouchableOpacity
                                                         style={styles.contactButton}
                                                         onPress={() => Linking.openURL(`tel:${member.phone}`)}
                                                     >
                                                         <FontAwesome5 name="phone" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>Call</Text>
+                                                        <Text style={styles.contactButtonText}>{t('profile.call')}</Text>
                                                     </TouchableOpacity>
                                                 )}
                                                 {member.email && (
@@ -1364,7 +1368,7 @@ export default function PublicProfile() {
                                                         onPress={() => Linking.openURL(`mailto:${member.email}`)}
                                                     >
                                                         <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>Email</Text>
+                                                        <Text style={styles.contactButtonText}>{t('profile.email')}</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
@@ -1375,12 +1379,12 @@ export default function PublicProfile() {
                         ) : (
                             <View>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>Club Staff</Text>
+                                    <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubStaff')}</Text>
                                 </View>
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyStateTitle}>No Staff Members</Text>
-                                    <Text style={styles.emptyStateText}>
-                                        This club hasn't added any staff members yet
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noStaffMembers')}</Text>
+                                    <Text style={[styles.emptyStateText, textDirectionStyle]}>
+                                        {t('profile.noClubStaffYet')}
                                     </Text>
                                 </View>
                             </View>
@@ -1410,13 +1414,13 @@ export default function PublicProfile() {
                         ) : (
                             <View>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>Club Inventory</Text>
+                                    <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubInventory')}</Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.addButton}
                                             onPress={() => router.push('/inventory/createInventory')}
                                         >
-                                            <Text style={styles.addButtonText}>+ Add Item</Text>
+                                            <Text style={styles.addButtonText}>{t('profile.addItem')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -1428,29 +1432,29 @@ export default function PublicProfile() {
                                             style={styles.inventoryCard}
                                             onPress={() => router.push(`/inventory/${item._id}`)}
                                         >
-                                            <View style={styles.inventoryHeader}>
+                                            <View style={[styles.inventoryHeader, isRTL && styles.teamHeaderRtl]}>
                                                 <View style={[styles.inventoryIcon, styles.defaultInventoryIcon]}>
                                                     <FontAwesome5 name="box-open" size={24} color="#fff" />
                                                 </View>
                                                 <View style={styles.inventoryInfo}>
-                                                    <Text style={styles.inventoryName}>{item.itemName}</Text>
-                                                    <Text style={styles.inventoryCategory}>{item.category}</Text>
+                                                    <Text style={[styles.inventoryName, textDirectionStyle]}>{item.itemName}</Text>
+                                                    <Text style={[styles.inventoryCategory, textDirectionStyle]}>{item.category}</Text>
                                                 </View>
                                                 <View style={styles.inventoryStats}>
                                                     <Text style={styles.inventoryStatValue}>{item.quantity}</Text>
-                                                    <Text style={styles.inventoryStatLabel}>In Stock</Text>
+                                                    <Text style={styles.inventoryStatLabel}>{t('profile.inStock')}</Text>
                                                 </View>
                                             </View>
 
                                             <View style={styles.inventoryDetails}>
                                                 <View style={styles.inventoryDetailRow}>
-                                                    <Text style={styles.inventoryDetailLabel}>Unit Price:</Text>
-                                                    <Text style={styles.inventoryDetailValue}>${item.unitPrice?.toFixed(2) || '0.00'}</Text>
+                                                    <Text style={[styles.inventoryDetailLabel, textDirectionStyle]}>{t('profile.unitPrice')}</Text>
+                                                    <Text style={[styles.inventoryDetailValue, textDirectionStyle]}>${item.unitPrice?.toFixed(2) || '0.00'}</Text>
                                                 </View>
                                                 {item.description && (
                                                     <View style={styles.inventoryDetailRow}>
-                                                        <Text style={styles.inventoryDetailLabel}>Description:</Text>
-                                                        <Text style={styles.inventoryDetailValue} numberOfLines={1}>{item.description}</Text>
+                                                        <Text style={[styles.inventoryDetailLabel, textDirectionStyle]}>{t('profile.description')}</Text>
+                                                        <Text style={[styles.inventoryDetailValue, textDirectionStyle]} numberOfLines={1}>{item.description}</Text>
                                                     </View>
                                                 )}
                                             </View>
@@ -1458,9 +1462,9 @@ export default function PublicProfile() {
                                     ))
                                 ) : (
                                     <View style={styles.emptyState}>
-                                        <Text style={styles.emptyStateTitle}>No Items</Text>
-                                        <Text style={styles.emptyStateText}>
-                                            This club hasn't added any inventory items yet
+                                        <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noItems')}</Text>
+                                        <Text style={[styles.emptyStateText, textDirectionStyle]}>
+                                            {t('profile.noClubInventoryYet')}
                                         </Text>
                                     </View>
                                 )}
@@ -1470,7 +1474,7 @@ export default function PublicProfile() {
                 </Animated.ScrollView>
             }
 
-            <View style={styles.navBar}>
+            <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
@@ -1496,7 +1500,9 @@ export default function PublicProfile() {
 }
 
 const TeamCard = ({ team }) => {
+    const { isRTL, t } = useLanguage();
     const router = useRouter();
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     return (
         <TouchableOpacity
@@ -1507,7 +1513,7 @@ const TeamCard = ({ team }) => {
                 params: { id: team._id },
             })}
         >
-            <View style={styles.teamHeader}>
+            <View style={[styles.teamHeader, isRTL && styles.teamHeaderRtl]}>
                 {team.image ? (
                     <Image
                         source={{ uri: team.image }}
@@ -1520,18 +1526,18 @@ const TeamCard = ({ team }) => {
                     </View>
                 )}
                 <View style={styles.teamInfo}>
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamSport}>{team.sport}</Text>
+                    <Text style={[styles.teamName, textDirectionStyle]}>{team.name}</Text>
+                    <Text style={[styles.teamSport, textDirectionStyle]}>{team.sport}</Text>
                 </View>
                 <View style={styles.teamStats}>
                     <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
-                    <Text style={styles.teamStatLabel}>Members</Text>
+                    <Text style={styles.teamStatLabel}>{t('profile.members')}</Text>
                 </View>
             </View>
 
             {team.coaches.length > 0 && (
-                <View style={styles.coachSection}>
-                    <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
+                <View style={[styles.coachSection, isRTL && styles.coachSectionRtl]}>
+                    <Text style={[styles.coachLabel, textDirectionStyle]}>{team.coaches.length == 1 ? t('profile.coach') : t('profile.coaches')}</Text>
 
                     <View style={styles.coachInfoDiv}>
                         {team.coaches.map((coach, index) => (
@@ -1540,7 +1546,7 @@ const TeamCard = ({ team }) => {
                                     pathname: '/profile/public',
                                     params: { id: coach._id },
                                 })}
-                                key={index} style={styles.coachInfo}>
+                                key={index} style={[styles.coachInfo, isRTL && styles.coachInfoRtl]}>
                                 {coach.image ? (
                                     <Image
                                         source={{ uri: coach.image }}
@@ -1553,7 +1559,7 @@ const TeamCard = ({ team }) => {
                                         resizeMode="contain"
                                     />
                                 )}
-                                <Text style={styles.coachName}>{coach.name}</Text>
+                                <Text style={[styles.coachName, textDirectionStyle]}>{coach.name}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -1613,6 +1619,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#eeeeee',
         padding: 5,
         borderRadius: 20,
+    },
+    coachInfoRtl: {
+        flexDirection: 'row-reverse',
     },
     coachName: {
         fontFamily: 'Acumin',
@@ -1710,6 +1719,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: 'black'
     },
+    dmButtonText: {
+        color: 'black',
+    },
     ghostText: {
         color: '#ffffff',
         fontSize:100,textTransform:'uppercase',
@@ -1718,6 +1730,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     profileImage: {
         position: 'absolute',
@@ -1773,6 +1789,9 @@ const styles = StyleSheet.create({
 
         // Android shadow
         elevation: 5,
+    },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
     },
     icon: {
         width: 24,
@@ -1847,6 +1866,21 @@ const styles = StyleSheet.create({
     },
     contactTitle: {
         marginBottom: 10
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    infoRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    inlineInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    inlineInfoRowRtl: {
+        flexDirection: 'row-reverse',
     },
     dmBtnImg: {
         width: 15,
@@ -1981,6 +2015,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 15,
     },
+    teamHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
     teamLogo: {
         width: 50,
         height: 50,
@@ -2031,6 +2068,9 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         borderTopWidth: 1,
         borderTopColor: '#eeeeee',
+    },
+    coachSectionRtl: {
+        flexDirection: 'row-reverse',
     },
     coachLabel: {
         fontFamily: 'Acumin',
@@ -2413,6 +2453,14 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 18,
         fontFamily: 'Qatar'
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });
 

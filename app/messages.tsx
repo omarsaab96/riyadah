@@ -19,10 +19,12 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import io from "socket.io-client";
+import { useLanguage } from '../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function Messages() {
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState<string | null>(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -46,6 +48,7 @@ export default function Messages() {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchResults, setSearchResults] = useState([]);
     const [chatListSocket, setChatListSocket] = useState<any>(null);
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     const snapPoints = useMemo(() => ["50%", "85%"], []);
 
@@ -261,7 +264,7 @@ export default function Messages() {
             refreshChats()
         } catch (err) {
             console.error(err);
-            alert('Something went wrong. Please try again.');
+            alert(t('messages.somethingWentWrong'));
         }
     };
 
@@ -278,13 +281,13 @@ export default function Messages() {
         const diffInHours = Math.floor(diffInMinutes / 60);
 
         if (diffInMinutes < 1) {
-            return 'now';
+            return t('messages.now');
         } else if (diffInMinutes < 60) {
-            return `${diffInMinutes}m ago`;
+            return t('messages.minutesAgo').replace('{count}', String(diffInMinutes));
         } else if (diffInHours < 24) {
-            return `${diffInHours}h ago`;
+            return t('messages.hoursAgo').replace('{count}', String(diffInHours));
         } else {
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString(isRTL ? 'ar' : 'en-US', { month: 'short', day: 'numeric' });
         }
     };
 
@@ -305,10 +308,10 @@ export default function Messages() {
             }}
             style={styles.chatContainer}
         >
-            <View style={styles.chatContent}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={[styles.chatContent, isRTL && styles.chatContentRtl]}>
+                <View style={[styles.chatLead, isRTL && styles.chatLeadRtl]}>
                     {!item.otherParticipant?.image ? (
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                             {item.otherParticipant?.gender === "Male" && (
                                 <Image source={require('../assets/avatar.png')} style={styles.profileImageAvatar} resizeMode="contain" />
                             )}
@@ -320,23 +323,24 @@ export default function Messages() {
                             )}
                         </View>
                     ) : (
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                             <Image source={{ uri: item.otherParticipant.image }} style={styles.avatar} resizeMode="contain" />
                         </View>
                     )}
 
                     <View style={styles.chatInfo}>
-                        <View style={styles.chatHeader}>
-                            <Text style={styles.chatUserName}>{item.otherParticipant?.name || "Unknown User"}</Text>
-                            <Text style={styles.chatDate}>{formatDate(item.lastMessage?.timestamp)}</Text>
+                        <View style={[styles.chatHeader, isRTL && styles.chatHeaderRtl]}>
+                            <Text style={[styles.chatUserName, textDirectionStyle]}>{item.otherParticipant?.name || t('messages.unknownUser')}</Text>
+                            <Text style={[styles.chatDate, textDirectionStyle]}>{formatDate(item.lastMessage?.timestamp)}</Text>
                         </View>
                         <Text style={[
                             styles.lastReply,
+                            textDirectionStyle,
                             !item.lastMessage?.text && { fontStyle: 'italic', color: '#888' }
-                        ]}>{item.lastMessage?.text || "No messages yet"}</Text>
+                        ]}>{item.lastMessage?.text || t('messages.noMessages')}</Text>
                     </View>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={[styles.chatTail, isRTL && styles.chatTailRtl]}>
                     {item.unreadMessages && item.unreadMessages?.filter(m => m.senderId != userId) && item.unreadMessages?.filter(m => m.senderId != userId).length > 0 &&
                         <Text style={styles.unreadBadge}>
                             {item.unreadMessages?.filter(m => m.senderId != userId).length}
@@ -384,7 +388,7 @@ export default function Messages() {
     const createChat = async (participantId: string) => {
 
         if (!participantId) {
-            Alert.alert('Error', 'Please select a user to start a chat with');
+            Alert.alert(t('messages.errorTitle'), t('messages.selectUser'));
             return;
         }
 
@@ -408,10 +412,10 @@ export default function Messages() {
                 handleCloseModalPress();
                 router.push(`/chat?chatId=${data._id}`)
             } else {
-                Alert.alert('Error', data.message || 'Failed to create chat');
+                Alert.alert(t('messages.errorTitle'), data.message || t('messages.failedCreateChat'));
             }
         } catch (err) {
-            Alert.alert('Error', err.message);
+            Alert.alert(t('messages.errorTitle'), err.message);
         } finally {
             setLoading(false);
         }
@@ -432,9 +436,9 @@ export default function Messages() {
                         keyExtractor={item => `${item._id}-${item.lastMessage?.timestamp || ''}`}
                         ListHeaderComponent={
                             <View style={styles.header}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 30 }}>
+                                <View style={[styles.headerRow, isRTL && styles.headerRowRtl]}>
                                     <Image source={require('../assets/logo_orangeBlack.png')} style={styles.logo} resizeMode="contain" />
-                                    <View style={styles.headerActions}>
+                                    <View style={[styles.headerActions, isRTL && styles.headerActionsRtl]}>
                                         <TouchableOpacity
                                             onPress={handleCreateNewChat}
                                             style={loading
@@ -451,12 +455,12 @@ export default function Messages() {
 
                                     </View>
                                 </View>
-                                <Text style={styles.pageTitle}>Chats</Text>
+                                <Text style={[styles.pageTitle, textDirectionStyle]}>{t('messages.title')}</Text>
                             </View>
                         }
                         ListEmptyComponent={() => (
                             <View style={{ padding: 20, }}>
-                                {!loading && <Text style={{ color: 'black' }}>No chats yet</Text>}
+                                {!loading && <Text style={[styles.emptyText, textDirectionStyle]}>{t('messages.noChats')}</Text>}
                             </View>
                         )}
                         onEndReached={() => { if (hasMore && !loading) loadChats(); }}
@@ -466,7 +470,7 @@ export default function Messages() {
                     />
                 </View>
 
-                <View style={styles.navBar}>
+                <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                     <TouchableOpacity onPress={() => router.replace('/settings')}>
                         <Image source={require('../assets/settings.png')} style={styles.icon} />
                     </TouchableOpacity>
@@ -500,18 +504,18 @@ export default function Messages() {
                                 <View>
                                     {deleteConfirmation === '' && (
                                         <TouchableOpacity onPress={() => handleDeleteChat(selectedChat._id)} style={[styles.profileButton, { marginTop: 10 }]}>
-                                            <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete chat</Text>
+                                            <Text style={[styles.profileButtonText, { color: '#FF4000' }, textDirectionStyle]}>{t('messages.deleteChat')}</Text>
                                         </TouchableOpacity>
                                     )}
                                     {deleteConfirmation === selectedChat._id && (
-                                        <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
-                                            <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
-                                            <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
+                                        <View style={[styles.profileButton, styles.confirmRow, isRTL && styles.confirmRowRtl]}>
+                                            <Text style={[styles.profileButtonText, { color: '#FF4000' }, textDirectionStyle]}>{t('messages.areYouSure')}</Text>
+                                            <View style={[styles.confirmActions, isRTL && styles.confirmActionsRtl]}>
                                                 <TouchableOpacity onPress={() => handleConfirmDeleteChat(selectedChat._id)} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                    <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
+                                                    <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>{t('messages.yesDelete')}</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity onPress={handleCancelDeleteChat} style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                    <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
+                                                    <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>{t('messages.no')}</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -519,7 +523,7 @@ export default function Messages() {
                                 </View>
 
                                 <TouchableOpacity onPress={handleCloseModalPress} style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
-                                    <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
+                                    <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>{t('messages.cancel')}</Text>
                                 </TouchableOpacity>
                             </View>
                         </BottomSheetView>
@@ -536,10 +540,10 @@ export default function Messages() {
                     backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />}
                     keyboardBehavior="interactive"
                     keyboardBlurBehavior="restore"
-                >
+                    >
                     <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
-                        <View style={styles.commentModalHeader}>
-                            <Text style={styles.commentModalTitle}>New message</Text>
+                        <View style={[styles.commentModalHeader, isRTL && styles.commentModalHeaderRtl]}>
+                            <Text style={[styles.commentModalTitle, textDirectionStyle]}>{t('messages.newMessage')}</Text>
                             <TouchableOpacity
                                 style={styles.commentModalClose}
                                 onPress={handleCloseModalPress}
@@ -549,8 +553,8 @@ export default function Messages() {
                         </View>
                         <View style={styles.searchInputContainer}>
                             <BottomSheetTextInput
-                                style={[styles.searchInput, Platform.OS == "ios" && { padding: 15 }]}
-                                placeholder="Search users (Min. 3 chars)"
+                                style={[styles.searchInput, Platform.OS == "ios" && { padding: 15 }, textDirectionStyle]}
+                                placeholder={t('messages.searchUsers')}
                                 placeholderTextColor="#A8A8A8"
                                 value={keyword}
                                 onChangeText={handleSearchInput}
@@ -577,13 +581,13 @@ export default function Messages() {
                         ) : (
                             participants.length === 0 ? (
                                 <View style={styles.noComments}>
-                                    <Text style={styles.noCommentsText}>No users yet</Text>
+                                    <Text style={[styles.noCommentsText, textDirectionStyle]}>{t('messages.noUsersYet')}</Text>
                                 </View>
                             ) : (
                                 participants.map((item) => (
                                     <TouchableOpacity key={item._id} onPress={() => { handleSelectParticipant(item._id) }}>
-                                        <View style={styles.commentItem}>
-                                            <View style={styles.profileImage}>
+                                        <View style={[styles.commentItem, isRTL && styles.commentItemRtl]}>
+                                            <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                                                 {/* Default avatars */}
                                                 {(item?.image == null || item?.image === '') && item?.type === 'Club' && (
                                                     <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
@@ -601,10 +605,10 @@ export default function Messages() {
                                             <View style={styles.commentContent}>
                                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <View>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                            <Text style={styles.commentAuthor}>{item.name}</Text>
+                                                        <View style={[styles.commentAuthorRow, isRTL && styles.commentAuthorRowRtl]}>
+                                                            <Text style={[styles.commentAuthor, textDirectionStyle]}>{item.name}</Text>
                                                         </View>
-                                                        <Text style={styles.commentText}>{item.type}</Text>
+                                                        <Text style={[styles.commentText, textDirectionStyle]}>{item.type}</Text>
                                                     </View>
                                                 </View>
                                             </View>
@@ -622,13 +626,13 @@ export default function Messages() {
                     >
                         {searchResults.length === 0 ? (
                             <View style={styles.noComments}>
-                                <Text style={styles.noCommentsText}>No users found</Text>
+                                <Text style={[styles.noCommentsText, textDirectionStyle]}>{t('messages.noUsersFound')}</Text>
                             </View>
                         ) : (
                             searchResults.map((item) => (
                                 <TouchableOpacity key={item._id} onPress={() => { handleSelectParticipant(item._id) }}>
-                                    <View style={styles.commentItem}>
-                                        <View style={styles.profileImage}>
+                                    <View style={[styles.commentItem, isRTL && styles.commentItemRtl]}>
+                                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                                             {/* Default avatars */}
                                             {(item?.image == null || item?.image === '') && item?.type === 'Club' && (
                                                 <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
@@ -646,10 +650,10 @@ export default function Messages() {
                                         <View style={styles.commentContent}>
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <View>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <Text style={styles.commentAuthor}>{item.name}</Text>
+                                                    <View style={[styles.commentAuthorRow, isRTL && styles.commentAuthorRowRtl]}>
+                                                        <Text style={[styles.commentAuthor, textDirectionStyle]}>{item.name}</Text>
                                                     </View>
-                                                    <Text style={styles.commentText}>{item.type}</Text>
+                                                    <Text style={[styles.commentText, textDirectionStyle]}>{item.type}</Text>
                                                 </View>
                                             </View>
                                         </View>
@@ -672,9 +676,26 @@ const styles = StyleSheet.create({
         backgroundColor: '#f4f4f4',
         height: '100%',
     },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl'
+    },
     header: {
         paddingVertical: 15,
         paddingHorizontal: 20,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 30
+    },
+    headerRowRtl: {
+        flexDirection: 'row-reverse',
     },
     pageTitle: {
         fontFamily: 'Qatar',
@@ -700,6 +721,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         columnGap: 20,
         alignItems: 'center'
+    },
+    headerActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     profileButton: {
         borderRadius: 5,
@@ -742,6 +766,9 @@ const styles = StyleSheet.create({
 
         // Android shadow
         elevation: 5,
+    },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
     },
     icon: {
         width: 24,
@@ -824,6 +851,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 10
     },
+    chatHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
     chatUserName: {
         fontWeight: 'bold',
         color: 'black'
@@ -867,6 +897,24 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         // borderWidth:1
         position: 'relative'
+    },
+    chatContentRtl: {
+        flexDirection: 'row-reverse',
+    },
+    chatLead: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    chatLeadRtl: {
+        flexDirection: 'row-reverse',
+    },
+    chatTail: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10
+    },
+    chatTailRtl: {
+        flexDirection: 'row-reverse',
     },
     chatInfo: {
         // flex:1
@@ -1064,10 +1112,30 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
     },
+    commentModalHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
     commentModalTitle: {
         fontSize: 18,
         fontFamily:'Qatar',
         color: '#333',
+    },
+    confirmRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 10
+    },
+    confirmRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    confirmActions: {
+        flexDirection: 'row',
+        columnGap: 30,
+        alignItems: 'center'
+    },
+    confirmActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     commentModalClose: {
         padding: 5,
@@ -1088,6 +1156,9 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#f5f5f5',
     },
+    commentItemRtl: {
+        flexDirection: 'row-reverse',
+    },
     commentAvatar: {
         width: 40,
         height: 40,
@@ -1103,6 +1174,13 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 3,
         marginRight: 15
+    },
+    commentAuthorRow: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    commentAuthorRowRtl: {
+        flexDirection: 'row-reverse',
     },
     commentText: {
         fontSize: 14,
@@ -1122,6 +1200,9 @@ const styles = StyleSheet.create({
     noCommentsText: {
         fontSize: 16,
         color: '#888',
+    },
+    emptyText: {
+        color: 'black'
     },
     commentInputContainer: {
         flexDirection: 'row',
@@ -1159,6 +1240,10 @@ const styles = StyleSheet.create({
         marginRight: 10,
         backgroundColor: '#FF4000',
         overflow: 'hidden',
+    },
+    profileImageRtl: {
+        marginRight: 0,
+        marginLeft: 10,
     },
     profileImageAvatar: {
         height: '100%',

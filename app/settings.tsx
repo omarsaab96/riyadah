@@ -17,17 +17,20 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../context/language';
 
 
 const { width } = Dimensions.get('window');
-const router = useRouter();
 
 
 export default function Profile() {
+    const router = useRouter();
+    const { isRTL, language, setLanguage, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [verificationLoading, setVerificationLoading] = useState(true);
     const year = new Date().getFullYear();
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -110,40 +113,40 @@ export default function Profile() {
                     resizeMode="contain"
                 />
 
-                <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Settings</Text>
-                    <Text style={styles.pageDesc}>Account settings</Text>
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                    <Text style={[styles.pageTitle, textDirectionStyle]}>{t('settings.title')}</Text>
+                    <Text style={[styles.pageDesc, textDirectionStyle]}>{t('settings.subtitle')}</Text>
                 </View>
 
-                <Text style={styles.ghostText}>Settin</Text>
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('settings.ghost')}</Text>
             </View>
 
             <ScrollView>
                 <View style={styles.contentContainer}>
                     <View style={styles.settings}>
                         <TouchableOpacity onPress={handleAccountSettings} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Account settings</Text>
+                            <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('settings.accountSettings')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleChangePassword} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Change password</Text>
+                            <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('settings.changePassword')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleAccountBadge} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Riyadah badge</Text>
+                            <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('settings.badge')}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={handleAccountVerification} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }]}>
-                            <Text style={styles.profileButtonText}>Account Verification</Text>
+                        <TouchableOpacity onPress={handleAccountVerification} style={[styles.profileButton, styles.verificationButton, isRTL && styles.verificationButtonRtl]}>
+                            <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('settings.verification')}</Text>
                             {verificationLoading ? (
                                 <ActivityIndicator size='small' color={'black'} />
                             ) : (
                                 (user && user.verified && user.verified.email && user.verified.phone) ? (
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                    <View style={[styles.statusRow, isRTL && styles.statusRowRtl]}>
                                         <Octicons name="verified" size={16} color="#009933" />
-                                        <Text style={{ color: "#009933" }}>Verified</Text>
+                                        <Text style={[styles.verifiedText, textDirectionStyle]}>{t('common.verified')}</Text>
                                     </View>
                                 ) : (
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                    <View style={[styles.statusRow, isRTL && styles.statusRowRtl]}>
                                         <Octicons name="unverified" size={16} color="#ffc400" />
-                                        <Text style={{ color: "#ffc400" }}>Pending</Text>
+                                        <Text style={[styles.pendingText, textDirectionStyle]}>{t('common.pending')}</Text>
                                     </View>
                                 )
                             )}
@@ -153,31 +156,49 @@ export default function Profile() {
                         </TouchableOpacity> */}
                     </View>
 
+                    <View style={styles.languageSection}>
+                        <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('settings.language')}</Text>
+                        <Text style={[styles.sectionHint, textDirectionStyle]}>{t('settings.languageHint')}</Text>
+                        <View style={[styles.languageOptions, isRTL && styles.languageOptionsRtl]}>
+                            <TouchableOpacity
+                                onPress={() => setLanguage('en')}
+                                style={[styles.languageChip, language === 'en' && styles.languageChipActive]}
+                            >
+                                <Text style={[styles.languageChipText, language === 'en' && styles.languageChipTextActive]}>{t('common.english')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setLanguage('ar')}
+                                style={[styles.languageChip, language === 'ar' && styles.languageChipActive]}
+                            >
+                                <Text style={[styles.languageChipText, language === 'ar' && styles.languageChipTextActive]}>{t('common.arabic')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
                     <View style={styles.footer}>
                         <View style={styles.settings}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 }}>
-                                <View style={{ gap: 5 }}>
-                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/terms")} style={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+                            <View style={styles.footerSection}>
+                                <View style={styles.footerLinks}>
+                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/terms")} style={[styles.footerLinkRow, isRTL && styles.footerLinkRowRtl]}>
                                         <Feather name="external-link" size={12} color="#FF4000" />
-                                        <Text style={styles.footerLink}>Terms and conditions</Text>
+                                        <Text style={[styles.footerLink, textDirectionStyle]}>{t('settings.terms')}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/privacy")} style={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/privacy")} style={[styles.footerLinkRow, isRTL && styles.footerLinkRowRtl]}>
                                         <Feather name="external-link" size={12} color="#FF4000" />
-                                        <Text style={styles.footerLink}>Privacy policy</Text>
+                                        <Text style={[styles.footerLink, textDirectionStyle]}>{t('settings.privacy')}</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/")} style={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
+                                    <TouchableOpacity onPress={() => openLink("https://riyadah.app/")} style={[styles.footerLinkRow, isRTL && styles.footerLinkRowRtl]}>
                                         <Feather name="external-link" size={12} color="#FF4000" />
-                                        <Text style={styles.footerLink}>Visit Riyadah website</Text>
+                                        <Text style={[styles.footerLink, textDirectionStyle]}>{t('settings.website')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
 
                             <TouchableOpacity onPress={handleDeactivateAccount} style={[styles.profileButton, styles.deactivateBtn]}>
-                                <Text style={[styles.profileButtonText, styles.deactivateBtnText]}>Deactivate account</Text>
+                                <Text style={[styles.profileButtonText, styles.deactivateBtnText, textDirectionStyle]}>{t('settings.deactivate')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleLogout} style={[styles.profileButton, styles.logoutBtn]}>
-                                {/* <MaterialIcons name="logout" size={20} color="black" /> */}
-                                <Text style={[styles.profileButtonText, { fontSize: 14, width:'100%', textAlign:'center' }]}>Logout</Text>
+                                <Text style={[styles.profileButtonText, styles.logoutText]}>{t('settings.logout')}</Text>
                             </TouchableOpacity>
 
                             <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v{Constants.expoConfig.version}</Text>
@@ -187,7 +208,7 @@ export default function Profile() {
                 </View>
             </ScrollView>
 
-            <View style={styles.navBar}>
+            <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../assets/settings.png')} style={styles.activeIcon} />
                 </TouchableOpacity>
@@ -241,6 +262,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: 20,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -251,6 +276,14 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Acumin'
     },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl'
+    },
     ghostText: {
         color: '#ffffff',
         fontSize: 100,
@@ -259,7 +292,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2,
-        textTransform:'uppercase'
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     navBar: {
         position: 'absolute',
@@ -285,6 +321,9 @@ const styles = StyleSheet.create({
         // Android shadow
         elevation: 5,
     },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
+    },
     icon: {
         width: 24,
         height: 24,
@@ -305,10 +344,78 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
     },
     profileButtonText: {
-        textTransform:'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
+    },
+    verificationButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 10
+    },
+    verificationButtonRtl: {
+        flexDirection: 'row-reverse',
+    },
+    statusRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5
+    },
+    statusRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    verifiedText: {
+        color: "#009933"
+    },
+    pendingText: {
+        color: "#ffc400"
+    },
+    languageSection: {
+        marginTop: 30,
+        padding: 16,
+        borderRadius: 16,
+        backgroundColor: '#f8f8f8',
+    },
+    sectionTitle: {
+        color: '#150000',
+        fontFamily: 'Qatar',
+        fontSize: 18,
+        marginBottom: 4,
+    },
+    sectionHint: {
+        color: '#666666',
+        fontFamily: 'Acumin',
+        fontSize: 13,
+        marginBottom: 12,
+    },
+    languageOptions: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    languageOptionsRtl: {
+        flexDirection: 'row-reverse',
+    },
+    languageChip: {
+        flex: 1,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        paddingVertical: 12,
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+    },
+    languageChipActive: {
+        backgroundColor: '#FF4000',
+        borderColor: '#FF4000',
+    },
+    languageChipText: {
+        color: '#150000',
+        fontFamily: 'Qatar',
+        fontSize: 15,
+    },
+    languageChipTextActive: {
+        color: '#ffffff',
     },
     deactivateBtn: {
         flexDirection: 'row',
@@ -347,10 +454,32 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         backgroundColor: '#ffffff',
     },
+    footerSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 15
+    },
+    footerLinks: {
+        gap: 5
+    },
+    footerLinkRow: {
+        flexDirection: 'row',
+        gap: 2,
+        alignItems: 'center'
+    },
+    footerLinkRowRtl: {
+        flexDirection: 'row-reverse',
+    },
     footerLink: {
         color: '#FF4000',
         fontFamily: 'Acumin',
         fontSize: 12
+    },
+    logoutText: {
+        fontSize: 14,
+        width: '100%',
+        textAlign: 'center'
     },
     disclaimer: {
         textAlign: 'center',

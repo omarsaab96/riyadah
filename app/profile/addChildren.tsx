@@ -14,13 +14,15 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 
 const { width } = Dimensions.get('window');
-const router = useRouter();
 
 
 export default function AddChildren() {
+    const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -163,7 +165,7 @@ export default function AddChildren() {
                 updatedChildren.push(child);
                 setError('')
             } else {
-                setError(`${child.name} is already added as a child`);
+                setError(t('profileEditor.childAlreadyAdded', { name: child.name }));
             }
 
             setChildren(updatedChildren)
@@ -189,9 +191,9 @@ export default function AddChildren() {
                             resizeMode="contain"
                         />
 
-                        <View style={styles.headerTextBlock}>
-                            <Text style={styles.pageTitle}>Add Children</Text>
-                            {!loading && <Text style={styles.pageDesc}>Search for an athlete to add as your child</Text>}
+                        <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                            <Text style={styles.pageTitle}>{t('profileEditor.addChildrenTitle')}</Text>
+                            {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('profileEditor.addChildrenDesc')}</Text>}
 
                             {loading &&
                                 <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -204,7 +206,7 @@ export default function AddChildren() {
                             }
                         </View>
 
-                        <Text style={styles.ghostText}>Childr</Text>
+                        <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('profileEditor.childrenGhost')}</Text>
                     </View>
 
                     {user && !loading && <ScrollView>
@@ -217,7 +219,7 @@ export default function AddChildren() {
                             {user?.type == "Parent" && <View style={styles.entity}>
                                 <View style={styles.noChildrenView}>
                                     <Text style={[styles.title, { marginBottom: 0 }]}>
-                                        Children ({children?.length || 0})
+                                        {t('profileEditor.childrenCount', { count: children?.length || 0 })}
                                     </Text>
                                 </View>
                                 {children?.length > 0 ? (<View style={styles.childrenList}>
@@ -228,7 +230,7 @@ export default function AddChildren() {
                                     ))}
                                 </View>) : (
                                     <View>
-                                        <Text style={styles.noChildrenText}>No children added yet</Text>
+                                        <Text style={[styles.noChildrenText, isRTL && styles.rtlText]}>{t('profileEditor.noChildrenYet')}</Text>
                                     </View>
                                 )}
                             </View>}
@@ -236,14 +238,14 @@ export default function AddChildren() {
                             <View style={styles.entity}>
                                 <View>
                                     <Text style={styles.title}>
-                                        Search
+                                        {t('profileEditor.search')}
                                     </Text>
                                     <View style={{
                                         marginBottom: 16,
                                     }}>
                                         <TextInput
-                                            style={styles.input}
-                                            placeholder="Athlete name or email (min. 3 characters)"
+                                            style={[styles.input, isRTL && styles.rtlText]}
+                                            placeholder={t('profileEditor.searchAthletePlaceholder')}
                                             placeholderTextColor="#A8A8A8"
                                             value={keyword}
                                             onChangeText={handleSearchInput}
@@ -278,8 +280,8 @@ export default function AddChildren() {
                                                             </View>
                                                             <View style={styles.searchResultItemInfo}>
                                                                 <View>
-                                                                    <Text style={styles.searchResultItemName}>{athlete.name}</Text>
-                                                                    <Text style={styles.searchResultItemDescription}>{athlete.sport}</Text>
+                                                                    <Text style={[styles.searchResultItemName, isRTL && styles.rtlText]}>{athlete.name}</Text>
+                                                                    <Text style={[styles.searchResultItemDescription, isRTL && styles.rtlText]}>{athlete.sport}</Text>
                                                                 </View>
                                                                 <Text
                                                                     style={
@@ -289,7 +291,7 @@ export default function AddChildren() {
                                                                         ]
                                                                     }
                                                                 >
-                                                                    {alreadyAdded ? 'Already a child' : '+ Add As Child'}
+                                                                    {alreadyAdded ? t('profileEditor.alreadyChild') : t('profileEditor.addAsChild')}
                                                                 </Text>
                                                             </View>
                                                         </TouchableOpacity>
@@ -301,11 +303,11 @@ export default function AddChildren() {
                                         {searchResults.length == 0 && !searching && user.type == "Parent" &&
                                             <View>
                                                 <Text style={styles.searchNoResultText}>
-                                                    No results.{'\n'}Can't find your child's account?
+                                                    {t('profileEditor.noResultsChild')}
                                                 </Text>
 
                                                 <TouchableOpacity style={styles.createChildAccountBtn} onPress={handleCreateNewAthlete}>
-                                                    <Text style={styles.createChildAccountBtnText}>Create a New Account</Text>
+                                                    <Text style={styles.createChildAccountBtnText}>{t('profileEditor.createNewAccount')}</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         }
@@ -321,12 +323,12 @@ export default function AddChildren() {
                                 )}
                             </View>
 
-                            <View style={[styles.profileActions, styles.inlineActions]}>
+                            <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                 <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    <Text style={styles.profileButtonText}>{t('profileEditor.cancel')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
-                                    <Text style={styles.profileButtonText}>Save</Text>
+                                    <Text style={styles.profileButtonText}>{t('profileEditor.save')}</Text>
                                     {saving && (
                                         <ActivityIndicator
                                             size="small"
@@ -344,7 +346,7 @@ export default function AddChildren() {
                 </View >
             </KeyboardAvoidingView>
 
-            <View style={styles.navBar}>
+            <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
@@ -396,6 +398,14 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     pageTitle: {
         color: '#ffffff',
@@ -536,6 +546,9 @@ const styles = StyleSheet.create({
         // Android shadow
         elevation: 5,
     },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
+    },
     icon: {
         width: 24,
         height: 24,
@@ -554,6 +567,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         columnGap: 15
+    },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     profileButton: {
         borderRadius: 5,
@@ -714,6 +730,10 @@ const styles = StyleSheet.create({
     },
     createChildAccountBtnText: {
         color: '#FF4000'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     error: {
         marginBottom: 15,

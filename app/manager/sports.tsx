@@ -17,11 +17,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 const SportsManagerScreen = () => {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [sports, setSports] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -44,11 +46,11 @@ const SportsManagerScreen = () => {
                 setSports(data.data || []);
                 setError(null);
             } else {
-                setError(data.message || 'Failed to load sports');
+                setError(data.message || t('manager.failedLoadSports'));
             }
         } catch (err) {
             console.error('Failed to load sports', err);
-            setError('Failed to load sports');
+            setError(t('manager.failedLoadSports'));
         } finally {
             setLoading(false);
         }
@@ -61,7 +63,7 @@ const SportsManagerScreen = () => {
     const pickIcon = async () => {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permissionResult.granted) {
-            Alert.alert('Permission required', 'Please allow access to your photos.');
+            Alert.alert(t('manager.permissionRequired'), t('manager.allowPhotos'));
             return null;
         }
 
@@ -85,7 +87,7 @@ const SportsManagerScreen = () => {
 
     const handleCreate = async () => {
         if (!newName.trim()) {
-            setError('Sport name is required');
+            setError(t('manager.sportNameRequired'));
             return;
         }
 
@@ -106,7 +108,7 @@ const SportsManagerScreen = () => {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to create sport');
+                throw new Error(data.message || t('manager.failedCreateSport'));
             }
 
             setNewName('');
@@ -114,7 +116,7 @@ const SportsManagerScreen = () => {
             setError(null);
             await fetchSports();
         } catch (err: any) {
-            setError(err.message || 'Failed to create sport');
+            setError(err.message || t('manager.failedCreateSport'));
         } finally {
             setSaving(false);
         }
@@ -122,7 +124,7 @@ const SportsManagerScreen = () => {
 
     const handleUpdateName = async (sportId: string) => {
         if (!editName.trim()) {
-            setError('Sport name is required');
+            setError(t('manager.sportNameRequired'));
             return;
         }
 
@@ -140,7 +142,7 @@ const SportsManagerScreen = () => {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to update sport');
+                throw new Error(data.message || t('manager.failedUpdateSport'));
             }
 
             setEditingId(null);
@@ -148,7 +150,7 @@ const SportsManagerScreen = () => {
             setError(null);
             await fetchSports();
         } catch (err: any) {
-            setError(err.message || 'Failed to update sport');
+            setError(err.message || t('manager.failedUpdateSport'));
         } finally {
             setSaving(false);
         }
@@ -169,23 +171,23 @@ const SportsManagerScreen = () => {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to update visibility');
+                throw new Error(data.message || t('manager.failedUpdateVisibility'));
             }
 
             setError(null);
             await fetchSports();
         } catch (err: any) {
-            setError(err.message || 'Failed to update visibility');
+            setError(err.message || t('manager.failedUpdateVisibility'));
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = (sportId: string) => {
-        Alert.alert('Delete sport', 'Are you sure you want to delete this sport?', [
-            { text: 'Cancel', style: 'cancel' },
+        Alert.alert(t('manager.deleteSportTitle'), t('manager.deleteSportMessage'), [
+            { text: t('inventory.cancel'), style: 'cancel' },
             {
-                text: 'Delete',
+                text: t('manager.delete'),
                 style: 'destructive',
                 onPress: async () => {
                     try {
@@ -197,12 +199,12 @@ const SportsManagerScreen = () => {
                         });
                         const data = await response.json();
                         if (!response.ok) {
-                            throw new Error(data.message || 'Failed to delete sport');
+                            throw new Error(data.message || t('manager.failedDeleteSport'));
                         }
                         setError(null);
                         await fetchSports();
                     } catch (err: any) {
-                        setError(err.message || 'Failed to delete sport');
+                        setError(err.message || t('manager.failedDeleteSport'));
                     } finally {
                         setSaving(false);
                     }
@@ -229,13 +231,13 @@ const SportsManagerScreen = () => {
 
             const data = await response.json();
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to upload icon');
+                throw new Error(data.message || t('manager.failedUploadIcon'));
             }
 
             setError(null);
             await fetchSports();
         } catch (err: any) {
-            setError(err.message || 'Failed to upload icon');
+            setError(err.message || t('manager.failedUploadIcon'));
         } finally {
             setUploadingId(null);
         }
@@ -260,15 +262,15 @@ const SportsManagerScreen = () => {
                         style={styles.backBtn}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to dashboard</Text>
+                        <Text style={styles.backBtnText}>{t('manager.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Sports Manager</Text>
-                        <Text style={styles.pageDesc}>Create, edit, and manage sports</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('manager.sportsManager')}</Text>
+                        <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('manager.sportsDesc')}</Text>
                     </View>
 
-                    <Text style={styles.ghostText}>Sports</Text>
+                    <Text style={styles.ghostText}>{t('manager.sportsManager')}</Text>
                 </View>
 
                 <ScrollView>
@@ -281,10 +283,10 @@ const SportsManagerScreen = () => {
                         )}
 
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Add New Sport</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.addNewSport')}</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Sport name"
+                                placeholder={t('manager.sportName')}
                                 placeholderTextColor="#888"
                                 value={newName}
                                 onChangeText={setNewName}
@@ -299,22 +301,22 @@ const SportsManagerScreen = () => {
                                     )}
                                 </View>
                                 <TouchableOpacity style={styles.secondaryButton} onPress={handlePickNewIcon}>
-                                    <Text style={styles.secondaryButtonText}>Upload Icon</Text>
+                                    <Text style={styles.secondaryButtonText}>{t('manager.uploadIcon')}</Text>
                                 </TouchableOpacity>
                             </View>
 
                             <TouchableOpacity style={styles.primaryButton} onPress={handleCreate} disabled={saving}>
-                                <Text style={styles.primaryButtonText}>{saving ? 'Saving...' : 'Create Sport'}</Text>
+                                <Text style={styles.primaryButtonText}>{saving ? t('inventory.saving') : t('manager.createSport')}</Text>
                             </TouchableOpacity>
                         </View>
 
                         <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>All Sports</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.allSports')}</Text>
                             {loading && (
                                 <ActivityIndicator size="small" color="#FF4000" />
                             )}
                             {!loading && sports.length === 0 && (
-                                <Text style={styles.emptyText}>No sports found.</Text>
+                                <Text style={styles.emptyText}>{t('manager.noSportsFound')}</Text>
                             )}
                             {!loading && sports.map((sport) => (
                                 <View key={sport._id} style={styles.sportCard}>
@@ -334,7 +336,7 @@ const SportsManagerScreen = () => {
                                         )}
                                     </View>
                                     <Text style={styles.cardSubTitle}>
-                                        {sport.isVisible ? 'Visible' : 'Hidden'}
+                                        {sport.isVisible ? t('manager.visible') : t('manager.hidden')}
                                     </Text>
                                     <View style={styles.cardActions}>
                                         {editingId === sport._id ? (
@@ -342,7 +344,7 @@ const SportsManagerScreen = () => {
                                                 style={styles.actionButton}
                                                 onPress={() => handleUpdateName(sport._id)}
                                             >
-                                                <Text style={styles.actionButtonText}>Save</Text>
+                                                <Text style={styles.actionButtonText}>{t('manager.save')}</Text>
                                             </TouchableOpacity>
                                         ) : (
                                             <TouchableOpacity
@@ -352,28 +354,28 @@ const SportsManagerScreen = () => {
                                                     setEditName(sport.name);
                                                 }}
                                             >
-                                                <Text style={styles.actionButtonText}>Edit</Text>
+                                                <Text style={styles.actionButtonText}>{t('manager.edit')}</Text>
                                             </TouchableOpacity>
                                         )}
                                         <TouchableOpacity
                                             style={styles.actionButton}
                                             onPress={() => handleToggleVisibility(sport)}
                                         >
-                                            <Text style={styles.actionButtonText}>{sport.isVisible ? 'Hide' : 'Show'}</Text>
+                                            <Text style={styles.actionButtonText}>{sport.isVisible ? t('manager.hide') : t('manager.show')}</Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={styles.actionButton}
                                             onPress={() => handleChangeIcon(sport._id)}
                                         >
                                             <Text style={styles.actionButtonText}>
-                                                {uploadingId === sport._id ? 'Uploading...' : 'Icon'}
+                                                {uploadingId === sport._id ? t('manager.sendingNotification') : t('manager.icon')}
                                             </Text>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={[styles.actionButton, styles.dangerButton]}
                                             onPress={() => handleDelete(sport._id)}
                                         >
-                                            <Text style={[styles.actionButtonText, styles.dangerText]}>Delete</Text>
+                                            <Text style={[styles.actionButtonText, styles.dangerText]}>{t('manager.delete')}</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -401,6 +403,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -420,6 +426,10 @@ const styles = StyleSheet.create({
         bottom: 10,
         right: -5,
         opacity: 0.2
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     backBtn: {
         position: 'absolute',

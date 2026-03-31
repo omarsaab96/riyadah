@@ -27,10 +27,11 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
+import { useLanguage } from '../context/language';
 
 const { width } = Dimensions.get('window');
 
-const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }) => {
+const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment, isRTL, t }) => {
     const [newComment, setNewComment] = useState('');
     const [keyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -54,8 +55,8 @@ const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }
 
     return (
         <BottomSheetFooter {...footerProps}>
-            <View style={[styles.commentInputContainer, keyboardVisible && { paddingBottom: 10 }]}>
-                <View style={styles.profileImage}>
+            <View style={[styles.commentInputContainer, isRTL && styles.commentInputContainerRtl, keyboardVisible && { paddingBottom: 10 }]}>
+                <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                     {(user?.image == null || user?.image == "") && (user?.type == "Club" || user?.type == "Association") && <Image
                         source={require('../assets/clublogo.png')}
                         style={styles.profileImageAvatar}
@@ -78,14 +79,14 @@ const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }
                     />}
                 </View>
                 <BottomSheetTextInput
-                    style={styles.commentInput}
+                    style={[styles.commentInput, isRTL ? styles.rtlText : styles.ltrText]}
                     value={newComment}
                     onChangeText={setNewComment}
-                    placeholder="Write a comment..."
+                    placeholder={t('landing.writeComment')}
                     placeholderTextColor="#888"
                 />
                 <TouchableOpacity
-                    style={styles.commentSubmit}
+                    style={[styles.commentSubmit, isRTL && styles.commentSubmitRtl]}
                     onPress={handlePress}
                     disabled={!newComment.trim() || submittingComment}
                 >
@@ -105,6 +106,7 @@ const CommentFooter = ({ footerProps, user, submittingComment, onSubmitComment }
 };
 
 export default function Landing() {
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState<string | null>(null);
     const [user, setUser] = useState(null);
     const [liking, setLiking] = useState('');
@@ -137,6 +139,7 @@ export default function Landing() {
 
     // variables
     const snapPoints = useMemo(() => ["50%", "90%"], []);
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     const handlePresentModalPress = useCallback(() => {
         bottomSheetRef.current?.snapToIndex(0);
@@ -423,9 +426,9 @@ export default function Landing() {
 
         return (
             <View style={styles.postContainer}>
-                <View style={styles.postHeader}>
+                <View style={[styles.postHeader, isRTL && styles.postHeaderRtl]}>
                     {(item.created_by.image == null || item.created_by.image == "") ? (
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                             {item.created_by.gender == "Male" && <Image
                                 source={require('../assets/avatar.png')}
                                 style={styles.profileImageAvatar}
@@ -443,7 +446,7 @@ export default function Landing() {
                             />}
                         </View>
                     ) : (
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                             <Image
                                 source={{ uri: item.created_by.image }}
                                 style={styles.avatar}
@@ -453,25 +456,25 @@ export default function Landing() {
                     )}
 
                     <View style={styles.postHeaderInfo}>
-                        <Text style={styles.postUserName}>{item.created_by.name}</Text>
-                        <Text style={styles.postDate}>{formatDate(item.date)}</Text>
+                        <Text style={[styles.postUserName, textDirectionStyle]}>{item.created_by.name}</Text>
+                        <Text style={[styles.postDate, textDirectionStyle]}>{formatDate(item.date)}</Text>
                     </View>
 
-                    <TouchableOpacity onPress={() => handleMoreOptions(item)} style={[styles.postOptions, {}]}>
+                    <TouchableOpacity onPress={() => handleMoreOptions(item)} style={[styles.postOptions, isRTL && styles.postOptionsRtl]}>
                         <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.post}>
+                <View style={[styles.post, isRTL && styles.postRtl]}>
                     <View style={styles.postContent}>
                         <TouchableOpacity
                             style={styles.postContent}
                             onPress={() => router.push(`/posts/${item._id}`)}
                         >
-                            {item.title && <Text style={styles.postTitle}>{item.title}</Text>}
+                            {item.title && <Text style={[styles.postTitle, textDirectionStyle]}>{item.title}</Text>}
 
                             {item.content?.trim() !== '' && (
-                                <Text style={styles.postText}>{item.content}</Text>
+                                <Text style={[styles.postText, textDirectionStyle]}>{item.content}</Text>
                             )}
 
                             {/* Render images */}
@@ -712,7 +715,7 @@ export default function Landing() {
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.postStats}>
+                    <View style={[styles.postStats, isRTL && styles.postStatsRtl]}>
                         <TouchableOpacity onPress={() => handleLike(item._id)} style={styles.postActionBtn}>
                             <View>
                                 {/* {liking == item._id ? (
@@ -730,14 +733,14 @@ export default function Landing() {
                                 {/* )} */}
 
                             </View>
-                            <Text style={styles.postActionText}>
+                            <Text style={[styles.postActionText, textDirectionStyle]}>
                                 {item.likes?.length}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => handleComment(item._id)} style={styles.postActionBtn}>
                             <View style={styles.postActionBtn}>
                                 <FontAwesome name="comment-o" size={24} color="#888888" />
-                                <Text style={styles.postActionText}>{item.comments?.length}</Text>
+                                <Text style={[styles.postActionText, textDirectionStyle]}>{item.comments?.length}</Text>
                             </View>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => handleShare(item._id)} style={[styles.postActionBtn, { marginBottom: 14 }]}>
@@ -1196,7 +1199,7 @@ export default function Landing() {
                         ListHeaderComponent={
                             <>
                                 <View style={styles.header}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }} >
+                                    <View style={[styles.headerRow, isRTL && styles.headerRowRtl]} >
                                         <Image
                                             source={require('../assets/logo_orangeBlack.png')}
                                             style={styles.logo}
@@ -1234,9 +1237,9 @@ export default function Landing() {
 
                                         return (
                                             <View key={index} style={styles.postContainer}>
-                                                <View style={styles.postHeader}>
+                                                <View style={[styles.postHeader, isRTL && styles.postHeaderRtl]}>
                                                     {(newPost.created_by.image == null || newPost.created_by.image == "") ? (
-                                                        <View style={styles.profileImage}>
+                                                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                                                             {newPost.created_by.gender == "Male" && <Image
                                                                 source={require('../assets/avatar.png')}
                                                                 style={styles.profileImageAvatar}
@@ -1254,7 +1257,7 @@ export default function Landing() {
                                                             />}
                                                         </View>
                                                     ) : (
-                                                        <View style={styles.profileImage}>
+                                                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                                                             <Image
                                                                 source={{ uri: newPost.created_by.image }}
                                                                 style={styles.avatar}
@@ -1265,20 +1268,20 @@ export default function Landing() {
                                                     )}
 
                                                     <View style={styles.postHeaderInfo}>
-                                                        <Text style={styles.postUserName}>{newPost.created_by.name}</Text>
-                                                        <Text style={styles.postDate}>{formatDate(newPost.date)}</Text>
+                                                        <Text style={[styles.postUserName, textDirectionStyle]}>{newPost.created_by.name}</Text>
+                                                        <Text style={[styles.postDate, textDirectionStyle]}>{formatDate(newPost.date)}</Text>
                                                     </View>
 
-                                                    <TouchableOpacity onPress={() => handleMoreOptions(newPost)} style={[styles.postOptions, {}]}>
+                                                    <TouchableOpacity onPress={() => handleMoreOptions(newPost)} style={[styles.postOptions, isRTL && styles.postOptionsRtl]}>
                                                         <Ionicons name="ellipsis-horizontal" size={24} color="#888888" />
                                                     </TouchableOpacity>
                                                 </View>
 
-                                                <View style={styles.post}>
+                                                <View style={[styles.post, isRTL && styles.postRtl]}>
                                                     <View style={styles.postContent}>
-                                                        {newPost.title && <Text style={styles.postTitle}>{newPost.title}</Text>}
+                                                        {newPost.title && <Text style={[styles.postTitle, textDirectionStyle]}>{newPost.title}</Text>}
                                                         {newPost.content?.trim() !== '' && (
-                                                            <Text style={styles.postText}>{newPost.content}</Text>
+                                                            <Text style={[styles.postText, textDirectionStyle]}>{newPost.content}</Text>
                                                         )}
 
                                                         {/* Render images */}
@@ -1519,7 +1522,7 @@ export default function Landing() {
                                                         })()}
                                                     </View>
 
-                                                    <View style={styles.postStats}>
+                                                    <View style={[styles.postStats, isRTL && styles.postStatsRtl]}>
                                                         <TouchableOpacity onPress={() => handleLike(newPost._id)} style={styles.postActionBtn}>
                                                             <View>
                                                                 <FontAwesome
@@ -1529,14 +1532,14 @@ export default function Landing() {
                                                                 />
 
                                                             </View>
-                                                            <Text style={styles.postActionText}>
+                                                            <Text style={[styles.postActionText, textDirectionStyle]}>
                                                                 {newPost.likes?.length}
                                                             </Text>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity onPress={() => handleComment(newPost._id)} style={styles.postActionBtn}>
                                                             <View style={styles.postActionBtn}>
                                                                 <FontAwesome name="comment-o" size={24} color="#888888" />
-                                                                <Text style={styles.postActionText}>{newPost.comments?.length}</Text>
+                                                                <Text style={[styles.postActionText, textDirectionStyle]}>{newPost.comments?.length}</Text>
                                                             </View>
                                                         </TouchableOpacity>
                                                         <TouchableOpacity onPress={() => handleShare(newPost._id)} style={[styles.postActionBtn, { marginBottom: 14 }]}>
@@ -1555,7 +1558,7 @@ export default function Landing() {
                         }
                         ListEmptyComponent={() => (
                             <View style={{ padding: 20, }}>
-                                {!loading && <Text style={{ color: 'black' }}>No posts yet</Text>}
+                                {!loading && <Text style={[styles.emptyText, textDirectionStyle]}>{t('landing.noPosts')}</Text>}
                             </View>
                         )}
                         onEndReached={() => {
@@ -1582,7 +1585,7 @@ export default function Landing() {
 
                 </View>
 
-                <View style={styles.navBar}>
+                <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                     <TouchableOpacity onPress={() => router.replace('/settings')}>
                         <Image source={require('../assets/settings.png')} style={styles.icon} />
                     </TouchableOpacity>
@@ -1617,10 +1620,12 @@ export default function Landing() {
                         backdropComponent={renderBackdrop}
                         footerComponent={(footerProps) => (
                             <CommentFooter
-                                footerProps={footerProps} // pass footer props separately
+                                footerProps={footerProps}
                                 user={user}
                                 submittingComment={submittingComment}
                                 onSubmitComment={handleSubmitComment}
+                                isRTL={isRTL}
+                                t={t}
                             />
                         )}
                         keyboardBehavior="extend"
@@ -1628,8 +1633,8 @@ export default function Landing() {
 
                     >
                         <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
-                            <View style={[styles.commentModalHeader, {}]}>
-                                <Text style={styles.commentModalTitle}>Comments</Text>
+                            <View style={[styles.commentModalHeader, isRTL && styles.commentModalHeaderRtl]}>
+                                <Text style={[styles.commentModalTitle, textDirectionStyle]}>{t('landing.comments')}</Text>
                                 <TouchableOpacity
                                     style={styles.commentModalClose}
                                     onPress={handleCloseModalPress}
@@ -1651,12 +1656,12 @@ export default function Landing() {
                             ) : (
                                 comments.length === 0 ? (
                                     <View style={styles.noComments}>
-                                        <Text style={styles.noCommentsText}>No comments yet</Text>
+                                        <Text style={[styles.noCommentsText, textDirectionStyle]}>{t('landing.noComments')}</Text>
                                     </View>
                                 ) : (
                                     comments.map((item) => (
-                                        <View key={item._id} style={styles.commentItem}>
-                                            <View style={styles.profileImage}>
+                                        <View key={item._id} style={[styles.commentItem, isRTL && styles.commentItemRtl]}>
+                                            <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                                                 {/* Default avatars */}
                                                 {(item.user?.image == null || item.user?.image === '') && item.user?.type === 'Club' && (
                                                     <Image source={require('../assets/clublogo.png')} style={styles.profileImageAvatar} resizeMode="contain" />
@@ -1671,14 +1676,14 @@ export default function Landing() {
                                                     <Image source={{ uri: item.user.image }} style={styles.profileImageAvatar} resizeMode="contain" />
                                                 )}
                                             </View>
-                                            <View style={styles.commentContent}>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <View style={styles.commentContent}>
+                                                <View style={[styles.commentRow, isRTL && styles.commentRowRtl]}>
                                                     <View>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                            <Text style={styles.commentAuthor}>{item.user.name}</Text>
-                                                            <Text style={styles.commentDate}>{formatDate(item.date)}</Text>
+                                                        <View style={[styles.commentAuthorRow, isRTL && styles.commentAuthorRowRtl]}>
+                                                            <Text style={[styles.commentAuthor, textDirectionStyle]}>{item.user.name}</Text>
+                                                            <Text style={[styles.commentDate, textDirectionStyle]}>{formatDate(item.date)}</Text>
                                                         </View>
-                                                        <Text style={styles.commentText}>{item.content}</Text>
+                                                        <Text style={[styles.commentText, textDirectionStyle]}>{item.content}</Text>
                                                     </View>
                                                 </View>
                                             </View>
@@ -1701,8 +1706,8 @@ export default function Landing() {
                         keyboardBlurBehavior="restore"
                     >
                         <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
-                            <View style={[styles.commentModalHeader, { borderBottomWidth: 0 }]}>
-                                <Text style={styles.commentModalTitle}>New Post</Text>
+                            <View style={[styles.commentModalHeader, isRTL && styles.commentModalHeaderRtl, { borderBottomWidth: 0 }]}>
+                                <Text style={[styles.commentModalTitle, textDirectionStyle]}>{t('landing.newPost')}</Text>
                                 <TouchableOpacity
                                     style={styles.commentModalClose}
                                     onPress={handleCloseModalPress}
@@ -1712,7 +1717,7 @@ export default function Landing() {
                             </View>
                             <View style={{ paddingHorizontal: 10 }}>
                                 <View style={styles.newPostContainer}>
-                                    <View style={{ flexDirection: 'row' }}>
+                                    <View style={[styles.newPostRow, isRTL && styles.newPostRowRtl]}>
 
                                         <View style={[
                                             styles.avatarContainer,
@@ -1742,9 +1747,9 @@ export default function Landing() {
 
 
                                         <BottomSheetTextInput
-                                            style={styles.textInput}
+                                            style={[styles.textInput, textDirectionStyle]}
                                             multiline
-                                            placeholder="What's on your mind?"
+                                            placeholder={t('landing.whatsOnYourMind')}
                                             placeholderTextColor="#A8A8A8"
                                             value={content}
                                             onChangeText={setContent}
@@ -1783,21 +1788,21 @@ export default function Landing() {
                                         ))}
                                     </View>
 
-                                    <View style={styles.actions}>
-                                        <TouchableOpacity onPress={pickMedia} style={styles.actionBtn}>
+                                    <View style={[styles.actions, isRTL && styles.actionsRtl]}>
+                                        <TouchableOpacity onPress={pickMedia} style={[styles.actionBtn, isRTL && styles.actionBtnRtl]}>
                                             <Ionicons name="images" size={22} color="#000000" />
-                                            <Text style={styles.actionText}>Photo/Video</Text>
+                                            <Text style={[styles.actionText, isRTL && styles.actionTextRtl]}>{t('landing.photoVideo')}</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                <View style={[styles.postActionsRow, isRTL && styles.postActionsRowRtl]}>
                                     <TouchableOpacity onPress={handleCloseModalPress} style={[styles.postButton, styles.postSec]}>
-                                        <Text style={styles.postSecBtnText}>Cancel</Text>
+                                        <Text style={styles.postSecBtnText}>{t('landing.cancel')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={handlePost} style={[styles.postButton, { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }]} disabled={posting}>
                                         {posting && <ActivityIndicator size={'small'} color={'#fff'} />}
-                                        <Text style={styles.postBtnText}>Post{posting ? 'ing' : ''}</Text>
+                                        <Text style={styles.postBtnText}>{posting ? t('landing.posting') : t('landing.post')}</Text>
                                     </TouchableOpacity>
                                 </View>
 
@@ -1825,7 +1830,7 @@ export default function Landing() {
                                 }
                                 }
                                 style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Go to your profile</Text>
+                                <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('landing.yourProfile')}</Text>
                             </TouchableOpacity>
                         ) : (
                             <TouchableOpacity
@@ -1837,7 +1842,7 @@ export default function Landing() {
                                     })
                                 }}
                                 style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Go to {selectedPost.created_by.name} 's profile</Text>
+                                <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('landing.userProfile').replace('{name}', selectedPost.created_by.name)}</Text>
                             </TouchableOpacity>
                         )
                         }
@@ -1845,20 +1850,20 @@ export default function Landing() {
                         {selectedPost && selectedPost.created_by._id == userId && (
                             <View>
                                 {deleteConfirmation == '' && <TouchableOpacity onPress={() => { handleDeletePost(selectedPost._id) }} style={[styles.profileButton, { marginTop: 10 }]}>
-                                    <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Delete post</Text>
+                                    <Text style={[styles.profileButtonText, { color: '#FF4000' }, textDirectionStyle]}>{t('landing.deletePost')}</Text>
                                 </TouchableOpacity>}
                                 {deleteConfirmation == selectedPost._id &&
-                                    <View style={[styles.profileButton, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
-                                        <Text style={[styles.profileButtonText, { color: '#FF4000' }]}>Are you sure?</Text>
-                                        <View style={{ flexDirection: 'row', columnGap: 30, alignItems: 'center' }}>
+                                    <View style={[styles.profileButton, styles.confirmRow, isRTL && styles.confirmRowRtl, { marginTop: 10 }]}>
+                                        <Text style={[styles.profileButtonText, { color: '#FF4000' }, textDirectionStyle]}>{t('landing.areYouSure')}</Text>
+                                        <View style={[styles.confirmActions, isRTL && styles.confirmActionsRtl]}>
                                             <TouchableOpacity onPress={() => handleConfirmDeletePost(selectedPost._id)}
                                                 style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>Yes, delete</Text>
+                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>{t('landing.yesDelete')}</Text>
                                             </TouchableOpacity>
 
                                             <TouchableOpacity onPress={() => handleCancelDeletePost(selectedPost._id)}
                                                 style={[styles.profileButton, { backgroundColor: 'transparent', padding: 0 }]}>
-                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>No</Text>
+                                                <Text style={[styles.profileButtonText, { textAlign: 'center' }]}>{t('landing.no')}</Text>
                                             </TouchableOpacity>
                                         </View>
                                     </View>}
@@ -1870,7 +1875,7 @@ export default function Landing() {
                             setSelectedPost(null);
                         }
                         } style={[styles.profileButton, { marginTop: 20, backgroundColor: '#111111' }]}>
-                            <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>Cancel</Text>
+                            <Text style={[styles.profileButtonText, { textAlign: 'center', color: '#fff' }]}>{t('landing.cancel')}</Text>
                         </TouchableOpacity>
                     </View>
                 </BottomSheetView>
@@ -1888,6 +1893,14 @@ const styles = StyleSheet.create({
     header: {
         paddingVertical: 15,
         paddingHorizontal: 20,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    headerRowRtl: {
+        flexDirection: 'row-reverse',
     },
     logo: {
         width: 120,
@@ -1908,6 +1921,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         columnGap: 20,
         alignItems: 'center'
+    },
+    emptyText: {
+        color: 'black',
+        paddingHorizontal: 10,
     },
     profileButton: {
         borderRadius: 5,
@@ -1951,6 +1968,9 @@ const styles = StyleSheet.create({
 
         // Android shadow
         elevation: 5,
+    },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
     },
     icon: {
         width: 24,
@@ -2026,16 +2046,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 12,
     },
+    postHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
     post: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         justifyContent: 'space-between'
+    },
+    postRtl: {
+        flexDirection: 'row-reverse',
     },
     postContent: {
         width: width - 100,
     },
     postStats: {
         width: 30,
+    },
+    postStatsRtl: {
+        alignItems: 'center',
     },
     postActionBtn: {
         alignItems: 'center',
@@ -2076,6 +2105,9 @@ const styles = StyleSheet.create({
     },
     postOptions: {
         padding: 5,
+    },
+    postOptionsRtl: {
+        transform: [{ scaleX: -1 }],
     },
     postTitle: {
         fontWeight: 'bold',
@@ -2228,6 +2260,9 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
     },
+    commentModalHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
     commentModalTitle: {
         fontSize: 18,
         fontFamily: 'Qatar',
@@ -2251,6 +2286,17 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#f5f5f5',
     },
+    commentItemRtl: {
+        flexDirection: 'row-reverse',
+    },
+    commentRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    commentRowRtl: {
+        flexDirection: 'row-reverse',
+    },
     commentAvatar: {
         width: 40,
         height: 40,
@@ -2267,6 +2313,13 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 3,
         marginRight: 15
+    },
+    commentAuthorRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    commentAuthorRowRtl: {
+        flexDirection: 'row-reverse',
     },
     commentText: {
         fontSize: 16,
@@ -2297,6 +2350,9 @@ const styles = StyleSheet.create({
         borderTopColor: '#eee',
         backgroundColor: 'white'
     },
+    commentInputContainerRtl: {
+        flexDirection: 'row-reverse',
+    },
     commentInputAvatar: {
         width: 36,
         height: 36,
@@ -2316,6 +2372,10 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         padding: 8,
     },
+    commentSubmitRtl: {
+        marginLeft: 0,
+        marginRight: 10,
+    },
     profileImage: {
         width: 36,
         height: 36,
@@ -2323,6 +2383,10 @@ const styles = StyleSheet.create({
         marginRight: 10,
         backgroundColor: '#FF4000',
         overflow: 'hidden',
+    },
+    profileImageRtl: {
+        marginRight: 0,
+        marginLeft: 10,
     },
     profileImageAvatar: {
         height: '100%',
@@ -2344,6 +2408,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'flex-end',
         borderRadius: 25,
+    },
+    newPostRow: {
+        flexDirection: 'row',
+    },
+    newPostRowRtl: {
+        flexDirection: 'row-reverse',
     },
     textInput: {
         fontSize: 16,
@@ -2382,6 +2452,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    actionsRtl: {
+        flexDirection: 'row-reverse',
+    },
     actionBtn: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -2390,11 +2463,42 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         backgroundColor: 'rgba(0,0,0,0.05)',
     },
+    actionBtnRtl: {
+        flexDirection: 'row-reverse',
+    },
     actionText: {
         fontSize: 14,
         marginLeft: 5,
         color: '#150000',
         fontFamily: 'Qatar',
+    },
+    actionTextRtl: {
+        marginLeft: 0,
+        marginRight: 5,
+    },
+    postActionsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    postActionsRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    confirmRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    confirmRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    confirmActions: {
+        flexDirection: 'row',
+        columnGap: 30,
+        alignItems: 'center',
+    },
+    confirmActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     postButton: {
         backgroundColor: '#000000',
@@ -2423,5 +2527,13 @@ const styles = StyleSheet.create({
         lineHeight: 22,
         color: '#050505',
         fontFamily: 'Acumin'
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });

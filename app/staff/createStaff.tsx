@@ -22,11 +22,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 const CreateStaffScreen = () => {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const scrollViewRef = useRef();
@@ -83,11 +85,11 @@ const CreateStaffScreen = () => {
                 if (response.ok) {
                     setTeams(data.data);
                 } else {
-                    Alert.alert('Error', 'Failed to load teams');
+                    Alert.alert(t('messages.errorTitle'), t('staffForm.failedLoadTeams'));
                 }
             } catch (error) {
                 console.error('Error fetching teams:', error);
-                Alert.alert('Error', 'Failed to load teams');
+                Alert.alert(t('messages.errorTitle'), t('staffForm.failedLoadTeams'));
             } finally {
                 setLoading(false);
             }
@@ -175,7 +177,7 @@ const CreateStaffScreen = () => {
 
     const handleSubmit = async () => {
         if (!formData.name || !formData.email || !formData.role) {
-            setError("Please fill in all required fields");
+            setError(t('staffForm.fillRequired'));
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
             return;
         } else {
@@ -220,7 +222,7 @@ const CreateStaffScreen = () => {
                 // Handle validation errors from server
                 const errorMsg = data.errors?.map(e => `${e.path}: ${e.msg}`).join('\n') ||
                     data.message ||
-                    'Failed to create staff';
+                    t('staffForm.failedCreate');
                 throw new Error(errorMsg);
             }
 
@@ -288,12 +290,12 @@ const CreateStaffScreen = () => {
                 const data = await response.json();
                 setSearchResults(data);
             } else {
-                Alert.alert('Error', 'Failed to search users');
+                Alert.alert(t('messages.errorTitle'), t('staffForm.failedSearchUsers'));
                 setSearchResults([]);
             }
         } catch (error) {
             console.error('Error searching users:', error);
-            Alert.alert('Error', 'Failed to search users');
+            Alert.alert(t('messages.errorTitle'), t('staffForm.failedSearchUsers'));
             setSearchResults([]);
         } finally {
             setSearching(false);
@@ -423,18 +425,18 @@ const CreateStaffScreen = () => {
                                 params: { tab: 'Staff' }
                             })
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to staff</Text>
+                        <Text style={styles.backBtnText}>{t('staffForm.backToStaff')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>New Staff</Text>
-                        <Text style={styles.pageDesc}>Add a staff member for your club</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('staffForm.newStaff')}</Text>
+                        <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('staffForm.addStaffDesc')}</Text>
                     </View>
 
-                    <Text style={styles.ghostText}>Staff</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('staffForm.ghost')}</Text>
                 </View>
 
                 <ScrollView ref={scrollViewRef}>
@@ -446,7 +448,7 @@ const CreateStaffScreen = () => {
 
                         {/* User Search Section */}
                         {showSearchSection && <View style={styles.formGroup}>
-                            <Text style={styles.label}>Check for Existing Account</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.searchSection')}</Text>
 
                             {!selectedUser && <View style={styles.searchContainer}>
                                 <View style={{
@@ -454,8 +456,8 @@ const CreateStaffScreen = () => {
                                     flexDirection: 'row'
                                 }}>
                                     <TextInput
-                                        style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                        placeholder="Search by name or email (min. 3 characters)"
+                                        style={[styles.input, { flex: 1, marginBottom: 0 }, isRTL && styles.rtlText]}
+                                        placeholder={t('staffForm.searchPlaceholder')}
                                         placeholderTextColor="#A8A8A8"
                                         value={keyword}
                                         onChangeText={handleSearchInput}
@@ -489,32 +491,32 @@ const CreateStaffScreen = () => {
                                                     style={[styles.userAvatar]}
                                                     resizeMode="contain"
                                                 />
-                                                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <View style={[styles.userMetaRow, isRTL && styles.userMetaRowRtl]}>
                                                     <View>
-                                                        <Text style={styles.userName}>{item.name}</Text>
-                                                        <Text style={styles.userEmail}>{item.email}</Text>
+                                                        <Text style={[styles.userName, isRTL && styles.rtlText]}>{item.name}</Text>
+                                                        <Text style={[styles.userEmail, isRTL && styles.rtlText]}>{item.email}</Text>
                                                     </View>
                                                     <View>
-                                                        <Text style={{ color: '#FF4000' }}>Add as staff</Text>
+                                                        <Text style={{ color: '#FF4000' }}>{t('staffForm.addAsStaff')}</Text>
                                                     </View>
                                                 </View>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
 
-                                    <Text style={{ fontFamily: 'Acumin', marginTop: 10, fontWeight: 'bold', color: 'black' }}>
-                                        Can't find the account you are looking for?
+                                    <Text style={[styles.helperTitle, isRTL && styles.rtlText]}>
+                                        {t('staffForm.cantFind')}
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Acumin', marginBottom: 10, color: 'black' }}>
-                                        Don't worry you can still create a new staff by clicking on the button below.
+                                    <Text style={[styles.helperText, isRTL && styles.rtlText]}>
+                                        {t('staffForm.createWithoutAccountHint')}
                                     </Text>
 
                                     <TouchableOpacity
                                         style={styles.addStaffAccountBtn}
                                         onPress={() => handleUserSelect(null)}
                                     >
-                                        <Text style={styles.addStaffAccountBtnText}>Add new staff without account</Text>
+                                        <Text style={styles.addStaffAccountBtnText}>{t('staffForm.addWithoutAccount')}</Text>
                                     </TouchableOpacity>
 
                                 </View>
@@ -522,23 +524,23 @@ const CreateStaffScreen = () => {
 
                             {!searching && !selectedUser && searchResults.length == 0 && searchindex > 0 && keyword.trim().length >= 3 && (
                                 <View style={[styles.resultsContainer, { borderWidth: 0 }]}>
-                                    <Text style={{ fontFamily: 'Acumin', fontWeight: 'bold', color: 'black' }}>
-                                        No results.
+                                    <Text style={[styles.helperTitle, isRTL && styles.rtlText]}>
+                                        {t('staffForm.noResults')}
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Acumin', marginBottom: 10, color: 'black' }}>
-                                        Looks like the staff you are looking for does not have an account on Riyadah.
+                                    <Text style={[styles.helperText, isRTL && styles.rtlText]}>
+                                        {t('staffForm.noResultsHint')}
                                     </Text>
 
-                                    <Text style={{ fontFamily: 'Acumin', marginBottom: 10, color: 'black' }}>
-                                        Don't worry you can still create a new staff by clicking on the button below.
+                                    <Text style={[styles.helperText, isRTL && styles.rtlText]}>
+                                        {t('staffForm.createWithoutAccountHint')}
                                     </Text>
 
                                     <TouchableOpacity
                                         style={styles.addStaffAccountBtn}
                                         onPress={() => handleUserSelect(null)}
                                     >
-                                        <Text style={styles.addStaffAccountBtnText}>Add new staff without account</Text>
+                                        <Text style={styles.addStaffAccountBtnText}>{t('staffForm.addWithoutAccount')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             )}
@@ -547,9 +549,9 @@ const CreateStaffScreen = () => {
                         {selectedUser != null && !showSearchSection && !showConfirmation && (
                             <View>
                                 <View>
-                                    <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Selected user</Text>
+                                    <Text style={[styles.sectionTitle, { marginBottom: 0 }, isRTL && styles.rtlText]}>{t('staffForm.selectedUser')}</Text>
                                 </View>
-                                <View style={styles.selectedUserContainer}>
+                                <View style={[styles.selectedUserContainer, isRTL && styles.selectedUserContainerRtl]}>
                                     <Image
                                         source={
                                             selectedUser.image != null
@@ -560,8 +562,8 @@ const CreateStaffScreen = () => {
                                         resizeMode="contain"
                                     />
                                     <View style={styles.selectedUserInfo}>
-                                        <Text style={styles.selectedUserName}>{selectedUser.name}</Text>
-                                        <Text style={styles.selectedUserEmail}>{selectedUser.email}</Text>
+                                        <Text style={[styles.selectedUserName, isRTL && styles.rtlText]}>{selectedUser.name}</Text>
+                                        <Text style={[styles.selectedUserEmail, isRTL && styles.rtlText]}>{selectedUser.email}</Text>
                                     </View>
                                     <TouchableOpacity
                                         style={styles.clearSelectionButton}
@@ -581,8 +583,8 @@ const CreateStaffScreen = () => {
                             >
                                 <View style={styles.selectedUserContainer}>
                                     <View style={styles.selectedUserInfo}>
-                                        <Text style={styles.selectedUserName}>Tap here to retry search</Text>
-                                        <Text style={styles.selectedUserEmail}>Search for an existing account and skip basic information</Text>
+                                        <Text style={[styles.selectedUserName, isRTL && styles.rtlText]}>{t('staffForm.retrySearch')}</Text>
+                                        <Text style={[styles.selectedUserEmail, isRTL && styles.rtlText]}>{t('staffForm.retrySearchHint')}</Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -591,7 +593,7 @@ const CreateStaffScreen = () => {
 
                         {/* Basic Information */}
                         {showBasicInfo && <View>
-                            <Text style={styles.sectionTitle}>Basic Information</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('staffForm.basicInfo')}</Text>
 
                             {/* <View style={styles.formGroup}>
                                 <Text style={styles.label}>Image</Text>
@@ -604,14 +606,14 @@ const CreateStaffScreen = () => {
                                                     source={{ uri: `data:image/png;base64,${image}` }}
                                                     style={[styles.avatarPreview,]}
                                                 />
-                                                <Text style={styles.uploadHint}>Tap to change image</Text>
+                                                <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('staffForm.tapToChangeImage')}</Text>
                                             </View>
                                         ) : (
                                             <>
                                                 <View style={styles.emptyImage}>
                                                     <MaterialIcons name="add" size={40} color="#FF4000" />
                                                 </View>
-                                                <Text style={styles.uploadHint}>Tap to upload new image</Text>
+                                                <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('staffForm.tapToUploadImage')}</Text>
                                             </>
                                         )}
                                     </TouchableOpacity>
@@ -619,10 +621,10 @@ const CreateStaffScreen = () => {
                             </View> */}
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Name *</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.name')}</Text>
                                 <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter staff name"
+                                    style={[styles.input, isRTL && styles.rtlText]}
+                                    placeholder={t('staffForm.enterStaffName')}
                                     placeholderTextColor={"#888"}
                                     value={formData.name}
                                     onChangeText={(text) => handleChange('name', text)}
@@ -630,39 +632,39 @@ const CreateStaffScreen = () => {
                             </View>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Email *</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.email')}</Text>
                                 <TextInput
-                                    style={[styles.input, { marginBottom: 5 }]}
-                                    placeholder="Enter email address"
+                                    style={[styles.input, { marginBottom: 5 }, isRTL && styles.rtlText]}
+                                    placeholder={t('staffForm.enterEmail')}
                                     keyboardType="email-address"
                                     placeholderTextColor={"#888"}
                                     autoCapitalize="none"
                                     value={formData.email}
                                     onChangeText={(text) => handleChange('email', text)}
                                 />
-                                <Text style={styles.uploadHint}>This will be used to login</Text>
+                                <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('staffForm.loginHint')}</Text>
                             </View>
 
                         </View>}
 
                         {/* Professional Information */}
                         {showProfessionalInfo && <View>
-                            <Text style={[styles.sectionTitle, { marginTop: 30 }]}>Professional Information</Text>
+                            <Text style={[styles.sectionTitle, { marginTop: 30 }, isRTL && styles.rtlText]}>{t('staffForm.professionalInfo')}</Text>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Role *</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.role')}</Text>
                                 <View style={styles.pickerContainer}>
                                     <RNPicker
                                         selectedValue={formData.role}
                                         onValueChange={(value) => handleChange('role', value)}
                                         style={styles.picker}
                                     >
-                                        <RNPicker.Item label="Coach" value="Coach" />
+                                        <RNPicker.Item label={t('staffForm.coach')} value="Coach" />
                                         {/* <RNPicker.Item label="Assistant Coach" value="Assistant Coach" /> */}
-                                        <RNPicker.Item label="Manager" value="Manager" />
+                                        <RNPicker.Item label={t('staffForm.manager')} value="Manager" />
                                         {/* <RNPicker.Item label="Admin" value="Admin" /> */}
-                                        <RNPicker.Item label="Board Member" value="Board Member" />
-                                        <RNPicker.Item label="Medical Staff" value="Medical Staff" />
+                                        <RNPicker.Item label={t('staffForm.boardMember')} value="Board Member" />
+                                        <RNPicker.Item label={t('staffForm.medicalStaff')} value="Medical Staff" />
                                         {/* <RNPicker.Item label="Other" value="Other" /> */}
                                     </RNPicker>
                                 </View>
@@ -671,7 +673,7 @@ const CreateStaffScreen = () => {
                             {/* Team Assignments */}
                             {formData.role == "Coach" && <View>
                                 <View style={[styles.formGroup, { marginBottom: 20 }]}>
-                                    <Text style={styles.label}>Assigned Teams</Text>
+                                    <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.assignedTeams')}</Text>
                                     {teams.length > 0 ? (
                                         teams.map(team => (
                                             <TouchableOpacity
@@ -698,11 +700,11 @@ const CreateStaffScreen = () => {
                                                     </View>
                                                     }
                                                 </View>
-                                                <Text style={styles.teamName}>{team.name} ({team.sport})</Text>
+                                                <Text style={[styles.teamName, isRTL && styles.rtlText]}>{team.name} ({team.sport})</Text>
                                             </TouchableOpacity>
                                         ))
                                     ) : (
-                                        <Text style={styles.noTeamsText}>No teams available</Text>
+                                        <Text style={[styles.noTeamsText, isRTL && styles.rtlText]}>{t('staffForm.noTeams')}</Text>
                                     )}
                                 </View>
                             </View>}
@@ -718,27 +720,27 @@ const CreateStaffScreen = () => {
                         </View> */}
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Employment Type</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.employmentType')}</Text>
                                 <View style={styles.pickerContainer}>
                                     <RNPicker
                                         selectedValue={formData.employmentType}
                                         onValueChange={(value) => handleChange('employmentType', value)}
                                         style={styles.picker}
                                     >
-                                        <RNPicker.Item label="Full-time" value="Full-time" />
-                                        <RNPicker.Item label="Part-time" value="Part-time" />
-                                        <RNPicker.Item label="Contract" value="Contract" />
-                                        <RNPicker.Item label="Volunteer" value="Volunteer" />
+                                        <RNPicker.Item label={t('staffForm.fullTime')} value="Full-time" />
+                                        <RNPicker.Item label={t('staffForm.partTime')} value="Part-time" />
+                                        <RNPicker.Item label={t('staffForm.contract')} value="Contract" />
+                                        <RNPicker.Item label={t('staffForm.volunteer')} value="Volunteer" />
                                     </RNPicker>
                                 </View>
                             </View>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Salary (per month)</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.salaryPerMonth')}</Text>
                                 <View style={{ flexDirection: 'row', columnGap: 10 }}>
                                     <TextInput
-                                        style={[styles.input, { flex: 1 }]}
-                                        placeholder="Salary amount"
+                                        style={[styles.input, { flex: 1 }, isRTL && styles.rtlText]}
+                                        placeholder={t('staffForm.salaryAmount')}
                                         keyboardType="numeric"
                                         value={formData.salary?.split(' ')[0] || '0'}
                                         onChangeText={(text) => {
@@ -780,11 +782,11 @@ const CreateStaffScreen = () => {
 
                             {/* Qualifications */}
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Qualifications</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.qualifications')}</Text>
                                 <View style={styles.listInputContainer}>
                                     <TextInput
-                                        style={[styles.input, { marginBottom: 0, flex: 1 }]}
-                                        placeholder="Add qualification"
+                                        style={[styles.input, { marginBottom: 0, flex: 1 }, isRTL && styles.rtlText]}
+                                        placeholder={t('staffForm.addQualification')}
                                         placeholderTextColor={"#888"}
                                         value={qualificationInput}
                                         onChangeText={setQualificationInput}
@@ -794,7 +796,7 @@ const CreateStaffScreen = () => {
                                         style={styles.addItemButton}
                                         onPress={addQualification}
                                     >
-                                        <Text style={styles.addItemButtonText}>Add</Text>
+                                        <Text style={styles.addItemButtonText}>{t('staffForm.add')}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={styles.itemsList}>
@@ -811,11 +813,11 @@ const CreateStaffScreen = () => {
 
                             {/* Certifications */}
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Certifications</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.certifications')}</Text>
                                 <View style={styles.listInputContainer}>
                                     <TextInput
-                                        style={[styles.input, { marginBottom: 0, flex: 1 }]}
-                                        placeholder="Add certification"
+                                        style={[styles.input, { marginBottom: 0, flex: 1 }, isRTL && styles.rtlText]}
+                                        placeholder={t('staffForm.addCertification')}
                                         placeholderTextColor={"#888"}
                                         value={certificationInput}
                                         onChangeText={setCertificationInput}
@@ -825,7 +827,7 @@ const CreateStaffScreen = () => {
                                         style={styles.addItemButton}
                                         onPress={addCertification}
                                     >
-                                        <Text style={styles.addItemButtonText}>Add</Text>
+                                        <Text style={styles.addItemButtonText}>{t('staffForm.add')}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 <View style={styles.itemsList}>
@@ -930,7 +932,7 @@ const CreateStaffScreen = () => {
 
                             {/* Status */}
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Status</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.status')}</Text>
                                 <View style={styles.statusContainer}>
                                     <TouchableOpacity
                                         style={[
@@ -943,7 +945,7 @@ const CreateStaffScreen = () => {
                                             styles.statusButtonText,
                                             formData.isActive && styles.activeStatusButtonText
                                         ]}>
-                                            Active
+                                            {t('staffForm.active')}
                                         </Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
@@ -957,18 +959,18 @@ const CreateStaffScreen = () => {
                                             styles.statusButtonText,
                                             !formData.isActive && styles.inactiveStatusButtonText
                                         ]}>
-                                            Inactive
+                                            {t('staffForm.inactive')}
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
 
-                            <View style={[styles.profileActions, styles.inlineActions]}>
+                            <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                 <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    <Text style={styles.profileButtonText}>{t('staffForm.cancel')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSubmit} disabled={saving} style={[styles.profileButton, styles.savebtn]}>
-                                    <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
+                                    <Text style={styles.profileButtonText}>{saving ? t('staffForm.saving') : t('staffForm.save')}</Text>
                                     {saving && (
                                         <ActivityIndicator
                                             size="small"
@@ -982,44 +984,44 @@ const CreateStaffScreen = () => {
 
                         {showConfirmation &&
                             <View>
-                                <Text style={styles.confirmationTitle}>
-                                    Staff account created successfully
+                                <Text style={[styles.confirmationTitle, isRTL && styles.rtlText]}>
+                                    {t('staffForm.successTitle')}
                                 </Text>
 
-                                <Text style={styles.confirmationSubTitle}>
-                                    Email: {formData.email}
+                                <Text style={[styles.confirmationSubTitle, isRTL && styles.rtlText]}>
+                                    {t('staffForm.emailPrefix', { email: formData.email })}
                                 </Text>
 
-                                <View style={[styles.profileActions, styles.inlineActions]}>
+                                <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                     <TouchableOpacity onPress={handleCopy} style={styles.profileButton}>
                                         {copied ? (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                 <Feather name="check" size={16} color="black" />
-                                                <Text style={styles.profileButtonText}>Copied</Text>
+                                                <Text style={styles.profileButtonText}>{t('staffForm.copied')}</Text>
                                             </View>
                                         ) : (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                 <Feather name="copy" size={16} color="black" />
-                                                <Text style={styles.profileButtonText}>Copy</Text>
+                                                <Text style={styles.profileButtonText}>{t('staffForm.copy')}</Text>
                                             </View>
                                         )}
                                     </TouchableOpacity>
                                     <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                             <Feather name="share-2" size={16} color="black" />
-                                            <Text style={styles.profileButtonText}>Share</Text>
+                                            <Text style={styles.profileButtonText}>{t('staffForm.share')}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 </View>
 
-                                <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }]}>
-                                    {`You can screenshot these credentials or copy/paste them to your staff in order to login to their account.\nYou will not be able to see these info again.`}
+                                <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }, isRTL && styles.rtlText]}>
+                                    {t('staffForm.credentialsHint')}
                                 </Text>
 
                                 <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/staff/createStaff')}>
                                     <Image source={require('../../assets/buttonBeforeLight.png')} style={styles.sideRect} />
                                     <View style={styles.createAccountButton}>
-                                        <Text style={styles.createAccountText}>Add another staff</Text>
+                                        <Text style={styles.createAccountText}>{t('staffForm.addAnother')}</Text>
                                     </View>
                                     <Image source={require('../../assets/buttonAfterLight.png')} style={styles.sideRectAfter} />
                                 </TouchableOpacity>
@@ -1030,7 +1032,7 @@ const CreateStaffScreen = () => {
                                 })}>
                                     <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
                                     <View style={styles.loginButton}>
-                                        <Text style={styles.loginText}>Go back to staff list</Text>
+                                        <Text style={styles.loginText}>{t('staffForm.backToList')}</Text>
                                     </View>
                                     <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                                 </TouchableOpacity>
@@ -1068,6 +1070,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -1086,6 +1092,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     contentContainer: {
         padding: 20,
@@ -1295,6 +1305,9 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         columnGap: 15,
     },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
+    },
     saveLoaderContainer: {
         marginLeft: 10
     },
@@ -1419,6 +1432,15 @@ const styles = StyleSheet.create({
         color: '#666',
         fontSize: 14,
     },
+    userMetaRow: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    userMetaRowRtl: {
+        flexDirection: 'row-reverse',
+    },
     separator: {
         height: 1,
         backgroundColor: '#eee',
@@ -1430,6 +1452,9 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         marginTop: 10,
+    },
+    selectedUserContainerRtl: {
+        flexDirection: 'row-reverse',
     },
     selectedUserInfo: {
         flex: 1,
@@ -1512,7 +1537,23 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#150000',
         fontFamily: 'Qatar',
-    }, backBtn: {
+    },
+    helperTitle: {
+        fontFamily: 'Acumin',
+        marginTop: 10,
+        fontWeight: 'bold',
+        color: 'black',
+    },
+    helperText: {
+        fontFamily: 'Acumin',
+        marginBottom: 10,
+        color: 'black',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
+    backBtn: {
         position: 'absolute',
         top: 60,
         left: 10,
@@ -1520,6 +1561,11 @@ const styles = StyleSheet.create({
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
     },
     backBtnText: {
         color: '#FFF',

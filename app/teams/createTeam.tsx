@@ -21,11 +21,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function CreateTeam() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -90,8 +92,8 @@ export default function CreateTeam() {
 
     const validateForm = () => {
         const newErrors = {};
-        if (!teamData.name.trim()) setError('Team name is required');
-        if (!teamData.sport) setError('Please select a sport');
+        if (!teamData.name.trim()) setError(t('teamCreate.teamNameRequired'));
+        if (!teamData.sport) setError(t('teamCreate.selectSport'));
         return newErrors;
     };
 
@@ -100,7 +102,7 @@ export default function CreateTeam() {
         const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (!permissionResult.granted) {
-            alert("Permission to access media library is required!");
+            alert(t('teamCreate.mediaPermission'));
             return;
         }
 
@@ -119,7 +121,7 @@ export default function CreateTeam() {
                 const sizeInMB = (base64Length * (3 / 4)) / (1024 * 1024);
 
                 if (sizeInMB > 2) {
-                    setError("Image too large. Max 2MB");
+                    setError(t('teamCreate.imageTooLarge'));
                     return;
                 }
 
@@ -127,7 +129,7 @@ export default function CreateTeam() {
                 setTeamData({ ...teamData, image: base64Image });
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to pick image: ' + error.message);
+            Alert.alert(t('teamCreate.errorTitle'), `${t('teamCreate.failedPickImage')}: ${error.message}`);
         }
     };
 
@@ -173,11 +175,11 @@ export default function CreateTeam() {
                     params: { tab: 'Teams' }
                 })
             } else {
-                throw new Error(data.message || 'Failed to create team');
+                throw new Error(data.message || t('teamCreate.failedCreate'));
             }
         } catch (error) {
             console.error('Error creating team:', error);
-            Alert.alert('Error', error.message);
+            Alert.alert(t('teamCreate.errorTitle'), error.message);
         } finally {
             setSaving(false);
         }
@@ -266,12 +268,12 @@ export default function CreateTeam() {
                         style={styles.backBtn}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to teams</Text>
+                        <Text style={styles.backBtnText}>{t('teamCreate.backToTeams')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>New Team</Text>
-                        {!loading && <Text style={styles.pageDesc}>Create a new team in your club</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('teamCreate.newTeam')}</Text>
+                        {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('teamCreate.newTeamDesc')}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -284,7 +286,7 @@ export default function CreateTeam() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Teams</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('teamCreate.ghost')}</Text>
                 </View>
 
                 {/* <View style={styles.header}>
@@ -306,7 +308,7 @@ export default function CreateTeam() {
 
                         {/* Team Logo */}
                         <View style={styles.imageUploadContainer}>
-                            <Text style={styles.label}>Team Logo</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('teamCreate.teamLogo')}</Text>
 
                             <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
                                 {localImg || teamData?.image ? (
@@ -315,14 +317,14 @@ export default function CreateTeam() {
                                             source={{ uri: localImg || teamData.image }}
                                             style={[styles.avatarPreview, , { backgroundColor: '#FF4000' }]}
                                         />
-                                        <Text style={styles.uploadHint}>Tap to change image</Text>
+                                        <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('teamCreate.tapChangeImage')}</Text>
                                     </View>
                                 ) : (
                                     <>
                                         <View style={styles.emptyImage}>
                                             <MaterialIcons name="add" size={40} color="#FF4000" />
                                         </View>
-                                        <Text style={styles.uploadHint}>Tap to upload new image</Text>
+                                        <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('teamCreate.tapUploadImage')}</Text>
                                     </>
                                 )}
                             </TouchableOpacity>
@@ -330,10 +332,10 @@ export default function CreateTeam() {
 
                         {/* Team Name */}
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Team Name</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('teamCreate.teamName')}</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Enter team name"
+                                placeholder={t('teamCreate.enterTeamName')}
                                 placeholderTextColor={"#888888"}
                                 value={teamData.name}
                                 onChangeText={(text) => setTeamData({ ...teamData, name: text })}
@@ -343,7 +345,7 @@ export default function CreateTeam() {
 
                         {/* Coaches */}
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Coaches</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('teamCreate.coaches')}</Text>
                             {/* <TextInput
                                 style={styles.input}
                                 placeholder="Enter coach name"
@@ -401,7 +403,7 @@ export default function CreateTeam() {
 
                         {/* Sport Selection */}
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Sport</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('teamCreate.sport')}</Text>
                             {/* <View style={styles.pickerContainer}>
                                 <Picker
                                     selectedValue={teamData.sport}
@@ -432,7 +434,7 @@ export default function CreateTeam() {
 
                         {/* Age Group */}
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Age Group</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('teamCreate.ageGroup')}</Text>
                             <View style={styles.pickerContainer}>
                                 {/* <Picker
                                     selectedValue={teamData.ageGroup}
@@ -468,7 +470,7 @@ export default function CreateTeam() {
                                     {showNewAgeGroupInput && <View style={[styles.newAgeGroupContainer, newAgeGroupError && { borderWidth: 1, borderColor: '#ff4400' }]}>
                                         <TextInput
                                             style={[styles.input, styles.newAgeGroupInput]}
-                                            placeholder="Enter age group name"
+                                            placeholder={t('teamCreate.newAgeGroup')}
                                             placeholderTextColor={"#888888"}
                                             value={newAgeGroup}
                                             onChangeText={setNewAgeGroup}
@@ -493,7 +495,7 @@ export default function CreateTeam() {
 
                         {/* Gender */}
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Gender</Text>
+                            <Text style={[styles.label, isRTL && styles.rtlText]}>{t('teamCreate.gender')}</Text>
                             {/* <View style={styles.pickerContainer}>
                                 <Picker
                                     selectedValue={teamData.gender}
@@ -522,12 +524,12 @@ export default function CreateTeam() {
                             </View>
                         </View>
 
-                        <View style={[styles.profileActions, styles.inlineActions]}>
+                        <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
+                                <Text style={styles.profileButtonText}>{t('teamCreate.cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
+                                <Text style={styles.profileButtonText}>{saving ? t('teamCreate.saving') : t('teamCreate.save')}</Text>
                                 {saving && (
                                     <ActivityIndicator
                                         size="small"
@@ -562,6 +564,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         columnGap: 15
+    },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
+        justifyContent: 'flex-start'
     },
     saveLoaderContainer: {
         marginLeft: 10
@@ -599,6 +605,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -723,6 +733,14 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     error: {
         marginBottom: 15,

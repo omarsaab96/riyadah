@@ -20,11 +20,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function Coaches() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -170,7 +172,7 @@ export default function Coaches() {
 
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('Authentication token missing');
+                setError(t('teamManage.authMissing'));
                 setaddingCoach(prev => prev.filter(id => id !== coach._id));
                 return;
             }
@@ -195,11 +197,11 @@ export default function Coaches() {
             } else {
                 setaddingCoach(prev => prev.filter(id => id !== coach._id));
                 console.error(data.message);
-                setError(data.message || 'Failed to add coach.');
+                setError(data.message || t('teamManage.failedAddCoach'));
             }
         } catch (err) {
             console.error('Error adding coach:', err);
-            setError('Something went wrong while adding the coach.');
+            setError(t('teamManage.addCoachError'));
         }
     };
 
@@ -209,7 +211,7 @@ export default function Coaches() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                throw new Error('Authentication token missing');
+                throw new Error(t('teamManage.authMissing'));
             }
 
             const res = await fetch(`https://server.riyadah.app/api/teams/${team._id}/remove-coaches`, {
@@ -234,7 +236,7 @@ export default function Coaches() {
                 console.error(data.message || 'Failed to remove coach');
             }
         } catch (err) {
-            setError('Error removing coach')
+            setError(t('teamManage.removeCoachError'))
             console.log('Error removing coach:', err);
         } finally {
             setLoadingRemove(prev => prev.filter(_id => _id !== coachid));
@@ -278,18 +280,18 @@ export default function Coaches() {
                         onPress={() => {
                             router.back()
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back</Text>
+                        <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>{t('teamManage.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Team Coaches</Text>
-                        {!loading && <Text style={styles.pageDesc}>Manage coaches of {team?.name}</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamManage.coachesTitle')}</Text>
+                        {!loading && <Text style={[styles.pageDesc, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamManage.coachesDesc').replace('{name}', team?.name || '')}</Text>}
 
                         {loading &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                            <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#fff"
@@ -299,10 +301,10 @@ export default function Coaches() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>coaches</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('teamManage.coachesGhost')}</Text>
 
                     {!loading &&
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                             {team?.image != null && <Image
                                 source={{ uri: team?.image }}
                                 style={styles.profileImageAvatar}
@@ -321,19 +323,19 @@ export default function Coaches() {
 
                         {team && <View style={styles.profileSection}>
                             <View style={{ marginBottom: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                                    <Text style={styles.title}>{team.coaches.length} coach{team.coaches.length == 1 ? '' : 'es'}</Text>
+                                <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRtl]}>
+                                    <Text style={[styles.title, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.coachCount').replace('{count}', String(team.coaches.length)).replace('{suffix}', team.coaches.length == 1 ? '' : 'es')}</Text>
 
                                     {user._id == userId && !editMode &&
                                         <TouchableOpacity style={styles.editToggle} onPress={() => { setKeyword(''); setEditMode(true) }}>
                                             <Entypo name="edit" size={16} color="#FF4000" />
-                                            <Text style={styles.editToggleText}>Edit</Text>
+                                            <Text style={styles.editToggleText}>{t('teamManage.edit')}</Text>
                                         </TouchableOpacity>}
 
                                     {user._id == userId && editMode &&
                                         <TouchableOpacity style={styles.editToggle} onPress={() => { setEditMode(false) }}>
                                             <AntDesign name="check" size={16} color="#FF4000" />
-                                            <Text style={styles.editToggleText}>Done</Text>
+                                            <Text style={styles.editToggleText}>{t('teamManage.done')}</Text>
                                         </TouchableOpacity>}
                                 </View>
 
@@ -341,10 +343,11 @@ export default function Coaches() {
                                     <View style={{ marginBottom: 16 }}>
                                         <TextInput
                                             style={styles.input}
-                                            placeholder="Add coach by name or email (min. 3 characters)"
+                                            placeholder={t('teamManage.addCoachPlaceholder')}
                                             placeholderTextColor="#A8A8A8"
                                             value={keyword}
                                             onChangeText={handleSearchInput}
+                                            style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
                                         />
                                         {searching &&
                                             <ActivityIndicator
@@ -392,10 +395,10 @@ export default function Coaches() {
 
                                                                     )}
                                                                 </View>
-                                                                <View style={styles.searchResultItemInfo}>
+                                                                <View style={[styles.searchResultItemInfo, isRTL && styles.searchResultItemInfoRtl]}>
                                                                     <View>
-                                                                        <Text style={styles.searchResultItemName}>{coach.name}</Text>
-                                                                        <Text style={[styles.searchResultItemDescription, coach.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{coach.sport || 'no sport'}</Text>
+                                                                        <Text style={[styles.searchResultItemName, isRTL ? styles.rtlText : styles.ltrText]}>{coach.name}</Text>
+                                                                        <Text style={[styles.searchResultItemDescription, coach.sport == null && { opacity: 0.5, fontStyle: 'italic' }, isRTL ? styles.rtlText : styles.ltrText]}>{coach.sport || t('teamManage.noSport')}</Text>
                                                                     </View>
                                                                     {addingCoach.includes(coach._id) ? (
                                                                         <ActivityIndicator
@@ -411,7 +414,7 @@ export default function Coaches() {
                                                                                 ]
                                                                             }
                                                                         >
-                                                                            {alreadyCoach ? 'Already a Coach' : '+ Add As Coach'}
+                                                                            {alreadyCoach ? t('teamManage.alreadyCoach') : t('teamManage.addAsCoach')}
                                                                         </Text>
                                                                     )}
 
@@ -423,9 +426,9 @@ export default function Coaches() {
                                             }
 
                                             {searchResults.length == 0 && !searching &&
-                                                <View>
-                                                    <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
-                                                        No results
+                                                        <View>
+                                                    <Text style={[styles.searchNoResultText, { marginBottom: 15 }, isRTL ? styles.rtlText : styles.ltrText]}>
+                                                        {t('teamManage.noResults')}
                                                     </Text>
                                                 </View>
                                             }
@@ -435,7 +438,7 @@ export default function Coaches() {
 
                                 {team.coaches && team.coaches.length > 0 ? (
                                     <View style={{ marginBottom: 20 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                        <View style={[styles.peopleGrid, isRTL && styles.peopleGridRtl]}>
                                             {team.coaches.map((coach) => {
                                                 const animVal = getAnimatedValue(coach._id);
                                                 const animatedWidth = animVal.interpolate({
@@ -500,9 +503,9 @@ export default function Coaches() {
                                                                                 justifyContent: 'center'
                                                                             }}>
                                                                                 <Text style={{ color: '#FF4000', fontFamily: 'Qatar', fontSize: 22, marginBottom: 30 }}>
-                                                                                    Sure?
+                                                                                    {t('teamManage.sure')}
                                                                                 </Text>
-                                                                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                                                                <View style={[styles.confirmRow, isRTL && styles.confirmRowRtl]}>
                                                                                     <TouchableOpacity onPress={() => handleRemoveCoach(coach._id)}>
                                                                                         <Text
                                                                                             style={{
@@ -514,7 +517,7 @@ export default function Coaches() {
                                                                                                 borderRadius: 5,
                                                                                             }}
                                                                                         >
-                                                                                            Yes
+                                                                                            {t('teamManage.yes')}
                                                                                         </Text>
                                                                                     </TouchableOpacity>
                                                                                     <TouchableOpacity
@@ -533,7 +536,7 @@ export default function Coaches() {
                                                                                                 borderRadius: 5,
                                                                                             }}
                                                                                         >
-                                                                                            No
+                                                                                            {t('teamManage.no')}
                                                                                         </Text>
                                                                                     </TouchableOpacity>
                                                                                 </View>
@@ -609,7 +612,7 @@ export default function Coaches() {
                                                                     </View>
                                                                 )}
                                                             </View>
-                                                            <Text style={{ color: 'black', fontSize: 14, fontFamily: 'Acumin' }}>{coach?.name?.trim()}</Text>
+                                                            <Text style={[styles.personName, isRTL ? styles.rtlText : styles.ltrText]}>{coach?.name?.trim()}</Text>
                                                         </TouchableOpacity>
                                                     </View>
                                                 );
@@ -618,7 +621,7 @@ export default function Coaches() {
                                     </View>
 
                                 ) : (
-                                    <Text style={styles.paragraph}>No coaches</Text>
+                                    <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.noCoaches')}</Text>
                                 )}
                             </View>
                         </View>}
@@ -685,6 +688,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -791,6 +798,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     error: {
         marginBottom: 15,
         backgroundColor: '#fce3e3',
@@ -846,6 +857,10 @@ const styles = StyleSheet.create({
         height: '70%',
         maxWidth: 200,
         overflow: 'hidden',
+    },
+    profileImageRtl: {
+        right: undefined,
+        left: -5,
     },
     profileImageAvatar: {
         height: '100%',
@@ -936,6 +951,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
     },
+    searchResultItemInfoRtl: {
+        flexDirection: 'row-reverse',
+    },
     searchResultItemLink: {
         color: '#FF4000'
     },
@@ -982,9 +1000,60 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
     backBtnText: {
         color: '#FFF',
         fontSize:18,
         fontFamily:'Qatar'
+    },
+    loaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5,
+    },
+    loaderRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    sectionHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
+    peopleGrid: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 15,
+    },
+    peopleGridRtl: {
+        flexDirection: 'row-reverse',
+    },
+    confirmRow: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    confirmRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    personName: {
+        color: 'black',
+        fontSize: 14,
+        fontFamily: 'Acumin',
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });

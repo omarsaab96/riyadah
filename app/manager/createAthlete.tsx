@@ -19,11 +19,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 const CreateAthleteScreen = () => {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [saving, setSaving] = useState(false);
     const scrollViewRef = useRef(null);
     const [error, setError] = useState(null);
@@ -151,7 +153,7 @@ const CreateAthleteScreen = () => {
     
     const handleSubmit = async () => {
         if (!formData.name || !formData.email) {
-            setError("Please fill in all required fields");
+            setError(t('managerAthlete.requiredFields'));
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
             return;
         } else {
@@ -206,7 +208,7 @@ const CreateAthleteScreen = () => {
             if (!response.ok) {
                 const errorMsg = data.errors?.map(e => `${e.path}: ${e.msg}`).join('\n') ||
                     data.message ||
-                    'Failed to create athlete';
+                    t('managerAthlete.failedCreate');
                 throw new Error(errorMsg);
             }
 
@@ -287,11 +289,11 @@ const CreateAthleteScreen = () => {
                     />
                     <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                         <Ionicons name="arrow-back" size={20} color="#fff" />
-                        <Text style={styles.backText}>Back</Text>
+                        <Text style={styles.backText}>{t('managerAthlete.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>New Athlete</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('managerAthlete.newAthlete')}</Text>
                     </View>
                 </View>
 
@@ -303,13 +305,13 @@ const CreateAthleteScreen = () => {
                         </View>}
 
                         {!showConfirmation && <View>
-                            <Text style={styles.sectionTitle}>Basic Information</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('managerAthlete.basicInfo')}</Text>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Name *</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('managerAthlete.name')} *</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Enter athlete name"
+                                    placeholder={t('managerAthlete.enterAthleteName')}
                                     placeholderTextColor={"#888"}
                                     value={formData.name}
                                     onChangeText={(text) => handleChange('name', text)}
@@ -317,25 +319,25 @@ const CreateAthleteScreen = () => {
                             </View>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Email *</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('managerAthlete.email')} *</Text>
                                 <TextInput
                                     style={[styles.input, { marginBottom: 5 }]}
-                                    placeholder="Enter email address"
+                                    placeholder={t('managerAthlete.enterEmail')}
                                     keyboardType="email-address"
                                     placeholderTextColor={"#888"}
                                     autoCapitalize="none"
                                     value={formData.email}
                                     onChangeText={(text) => handleChange('email', text)}
                                 />
-                                <Text style={styles.uploadHint}>This will be used to login</Text>
+                                <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('managerAthlete.loginHint')}</Text>
                             </View>
-                            <Text style={[styles.sectionTitle, { marginTop: 30 }]}>Athlete Information</Text>
+                            <Text style={[styles.sectionTitle, { marginTop: 30 }, isRTL && styles.rtlText]}>{t('managerAthlete.athleteInfo')}</Text>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Phone</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('managerAthlete.phone')}</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Enter phone number"
+                                    placeholder={t('managerAthlete.enterPhone')}
                                     keyboardType="phone-pad"
                                     placeholderTextColor={"#888"}
                                     value={formData.phone}
@@ -344,14 +346,14 @@ const CreateAthleteScreen = () => {
                             </View>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Gender</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('managerAthlete.gender')}</Text>
                                 <View style={styles.pickerContainer}>
                                     <RNPicker
                                         selectedValue={formData.gender}
                                         onValueChange={(value) => handleChange('gender', value)}
                                         style={styles.picker}
                                     >
-                                        <RNPicker.Item label="Select gender" value="" />
+                                        <RNPicker.Item label={t('managerAthlete.selectGender')} value="" />
                                         <RNPicker.Item label="Male" value="Male" />
                                         <RNPicker.Item label="Female" value="Female" />
                                     </RNPicker>
@@ -421,14 +423,14 @@ const CreateAthleteScreen = () => {
                             </View> */}
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Sport</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('managerAthlete.sport')}</Text>
                                 <View style={styles.pickerContainer}>
                                     <RNPicker
                                         selectedValue={formData.sport}
                                         onValueChange={(value) => handleChange('sport', value)}
                                         style={styles.picker}
                                     >
-                                        <RNPicker.Item label="Select sport" value="" />
+                                        <RNPicker.Item label={t('managerAthlete.selectSport')} value="" />
                                         {sportOptions.map((sport) => (
                                             <RNPicker.Item key={sport._id || sport.name} label={sport.name} value={sport.name} />
                                         ))}
@@ -440,11 +442,11 @@ const CreateAthleteScreen = () => {
                             </View>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Club</Text>
+                                <Text style={[styles.label, isRTL && styles.rtlText]}>{t('managerAthlete.club')}</Text>
                                 <View style={styles.searchContainer}>
                                     <TextInput
                                         style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                        placeholder="Search by club name (min. 3 characters)"
+                                        placeholder={t('managerAthlete.searchClub')}
                                         placeholderTextColor="#888"
                                         value={clubKeyword}
                                         onChangeText={handleClubSearchInput}
@@ -463,7 +465,7 @@ const CreateAthleteScreen = () => {
                                             />
                                             <Text style={styles.selectedClubText}>{selectedClub.name}</Text>
                                         </View>
-                                        <Text style={styles.clearClubText}>Remove</Text>
+                                        <Text style={styles.clearClubText}>{t('managerAthlete.remove')}</Text>
                                     </TouchableOpacity>
                                 )}
 
@@ -513,10 +515,10 @@ const CreateAthleteScreen = () => {
 
                             <View style={[styles.profileActions, styles.inlineActions]}>
                                 <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    <Text style={styles.profileButtonText}>{t('managerAthlete.cancel')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSubmit} disabled={saving} style={[styles.profileButton, styles.savebtn]}>
-                                    <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
+                                    <Text style={styles.profileButtonText}>{saving ? t('managerAthlete.saving') : t('managerAthlete.save')}</Text>
                                     {saving && (
                                         <ActivityIndicator
                                             size="small"
@@ -531,11 +533,11 @@ const CreateAthleteScreen = () => {
                     {showConfirmation &&
                         <View>
                             <Text style={styles.confirmationTitle}>
-                                Athlete account created successfully
+                                {t('managerAthlete.created')}
                             </Text>
 
                             <Text style={styles.confirmationSubTitle}>
-                                Email: {formData.email}
+                                {t('managerAthlete.emailLabel', { email: formData.email })}
                             </Text>
                             {/* <Text style={styles.confirmationSubTitle}>
                                 Password: {formData.password}
@@ -546,36 +548,36 @@ const CreateAthleteScreen = () => {
                                     {copied ? (
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                             <Feather name="check" size={16} color="black" />
-                                            <Text style={styles.profileButtonText}>Copied</Text>
+                                            <Text style={styles.profileButtonText}>{t('managerAthlete.copied')}</Text>
                                         </View>
                                     ) : (
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                             <Feather name="copy" size={16} color="black" />
-                                            <Text style={styles.profileButtonText}>Copy</Text>
+                                            <Text style={styles.profileButtonText}>{t('managerAthlete.copy')}</Text>
                                         </View>
                                     )}
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                         <Feather name="share-2" size={16} color="black" />
-                                        <Text style={styles.profileButtonText}>Share</Text>
+                                        <Text style={styles.profileButtonText}>{t('managerAthlete.share')}</Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
 
                             <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }]}>
-                                {`You can screenshot these credentials or copy/paste them to your athlete in order to login to their account.\nYou will not be able to see these info again.`}
+                                {t('managerAthlete.credentialsHint')}
                             </Text>
 
                             <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/manager/createAthlete')}>
                                 <View style={styles.createAccountButton}>
-                                    <Text style={styles.createAccountText}>Add another athlete</Text>
+                                    <Text style={styles.createAccountText}>{t('managerAthlete.addAnother')}</Text>
                                 </View>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/manager/dashboard')}>
                                 <View style={styles.loginButton}>
-                                    <Text style={styles.loginText}>Go back to dashboard</Text>
+                                    <Text style={styles.loginText}>{t('managerAthlete.backToDashboard')}</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
@@ -601,6 +603,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -908,6 +914,10 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontFamily: 'Acumin',
         fontSize: 14
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });
 

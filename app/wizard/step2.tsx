@@ -2,12 +2,14 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../../context/language';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
 
 export default function WizardStep2() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const { formData, updateFormData } = useRegistration();
 
     const [day, setDay] = useState<string | null>((formData.type == "Club" || formData.type == "Association") ? '01' : formData.dob?.day || null);
@@ -49,17 +51,17 @@ export default function WizardStep2() {
         if (hasAnyInput) {
             if (!month?.length) {
                 setShowParentEmail(false);
-                setError('Month is required');
+                setError(t('wizard.monthRequired'));
                 return;
             }
             if (!day?.length) {
                 setShowParentEmail(false);
-                setError('Day is required');
+                setError(t('wizard.dayRequired'));
                 return;
             }
             if (!year?.length) {
                 setShowParentEmail(false);
-                setError('Year is required');
+                setError(t('wizard.yearRequired'));
                 return;
             }
         } else {
@@ -71,7 +73,7 @@ export default function WizardStep2() {
         const isComplete = (day.length > 0 && day.length <= 2) && (month.length > 0 && month.length <= 2) && year.length === 4;
         if (!isComplete) {
             setShowParentEmail(false);
-            setError('Please enter a valid date');
+            setError(t('wizard.invalidDate'));
             return;
         }
 
@@ -82,14 +84,14 @@ export default function WizardStep2() {
         // Guard against NaN
         if (Number.isNaN(dayNum) || Number.isNaN(monthNum) || Number.isNaN(yearNum)) {
             setShowParentEmail(false);
-            setError('Please enter only numbers for day, month, and year');
+            setError(t('wizard.numbersOnlyDate'));
             return;
         }
 
         // Validate month
         if (monthNum < 1 || monthNum > 12) {
             setShowParentEmail(false);
-            setError('Month must be between 01 and 12');
+            setError(t('wizard.monthRange'));
             return;
         }
 
@@ -100,7 +102,7 @@ export default function WizardStep2() {
         // Validate day
         if (dayNum < 1 || dayNum > maxDay) {
             setShowParentEmail(false);
-            setError(`Day must be between 01 and ${maxDay} for the selected month`);
+            setError(t('wizard.dayRange', { maxDay }));
             return;
         }
 
@@ -111,13 +113,13 @@ export default function WizardStep2() {
         // Basic validity checks
         if (isNaN(dobDate.getTime())) {
             setShowParentEmail(false);
-            setError('Please enter a valid date');
+            setError(t('wizard.invalidDate'));
             return;
         }
 
         if (dobDate > today) {
             setShowParentEmail(false);
-            setError('Date cannot be in the future');
+            setError(t('wizard.futureDate'));
             return;
         }
 
@@ -125,19 +127,19 @@ export default function WizardStep2() {
 
         if (age < 18 && formData.type === "Parent") {
             setShowParentEmail(false);
-            setError('Parents cannot be under 18');
+            setError(t('wizard.parentUnder18'));
             return;
         }
 
         if (age < 18 && formData.type === "Scout") {
             setShowParentEmail(false);
-            setError('Scout cannot be under 18');
+            setError(t('wizard.scoutUnder18'));
             return;
         }
 
         if (age < 18 && formData.type === "Sponsor") {
             setShowParentEmail(false);
-            setError('Sponsor cannot be under 18');
+            setError(t('wizard.sponsorUnder18'));
             return;
         }
 
@@ -176,12 +178,12 @@ export default function WizardStep2() {
 
         // Basic validity checks
         if (isNaN(dobDate.getTime())) {
-            setError('Please enter a valid date');
+            setError(t('wizard.invalidDate'));
             return;
         }
 
         if (dobDate > today) {
-            setError('Date cannot be in the future');
+            setError(t('wizard.futureDate'));
             return;
         }
 
@@ -189,7 +191,7 @@ export default function WizardStep2() {
             if (day != null && month != null && year != null && day.trim() != '' && month.trim() != '' && year.trim() != '') {
                 const age = calculateAge(dob);
                 if ((formData.type == "Scout" || formData.type == "Sponsor") && age < 18) {
-                    setError(`${formData.type} cannot be under 18`)
+                    setError(formData.type === 'Scout' ? t('wizard.scoutUnder18') : t('wizard.sponsorUnder18'))
                     return;
                 }
 
@@ -205,7 +207,7 @@ export default function WizardStep2() {
                 router.push('/wizard/step3');
 
             } else {
-                setError('Kindly fill all fields')
+                setError(t('wizard.fillAllFields'))
             }
 
         } else if (formData.type == "Club" || formData.type == "Association") {
@@ -222,14 +224,14 @@ export default function WizardStep2() {
                 router.push('/wizard/step3');
 
             } else {
-                setError('Kindly fill all fields')
+                setError(t('wizard.fillAllFields'))
             }
 
         } else {
             const age = calculateAge(dob);
 
             if (formData.type == "Parent" && age < 18) {
-                setError('Parents cannot be under 18')
+                setError(t('wizard.parentUnder18'))
                 return;
             }
 
@@ -265,7 +267,7 @@ export default function WizardStep2() {
                 }
 
             } else {
-                setError('Kindly fill all fields')
+                setError(t('wizard.fillAllFields'))
             }
         }
     };
@@ -279,20 +281,22 @@ export default function WizardStep2() {
                     resizeMode="contain"
                 />
 
-                {(formData.type != "Club" && formData.type != "Association") && <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Date of birth</Text>
-                    <Text style={styles.pageDesc}>When were you born?</Text>
+                {(formData.type != "Club" && formData.type != "Association") && <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                    <Text style={styles.pageTitle}>{t('wizard.dobTitle')}</Text>
+                    <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('wizard.dobDesc')}</Text>
                 </View>
                 }
 
-                {(formData.type == "Club" || formData.type == "Association") && <View style={styles.headerTextBlock}>
-                    <Text style={styles.pageTitle}>Established On</Text>
-                    <Text style={styles.pageDesc}>When was the {formData.type == "Club" ? 'club' : 'association'} established?</Text>
+                {(formData.type == "Club" || formData.type == "Association") && <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                    <Text style={styles.pageTitle}>{t('wizard.establishedTitle')}</Text>
+                    <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>
+                        {formData.type == "Club" ? t('wizard.establishedDescClub') : t('wizard.establishedDescAssociation')}
+                    </Text>
                 </View>
                 }
 
-                <Text style={styles.ghostText}>
-                    {(formData.type == "Club" || formData.type == "Association") ? 'SINCE' : 'DOB'}
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
+                    {(formData.type == "Club" || formData.type == "Association") ? t('wizard.sinceGhost') : t('wizard.dobGhost')}
                 </Text>
             </View>
 
@@ -353,11 +357,11 @@ export default function WizardStep2() {
 
                 {showParentEmail && (
                     <View>
-                        <Text style={styles.hint}>Since you are less than 18, kindly enter your parent's email address.</Text>
+                        <Text style={[styles.hint, isRTL && styles.rtlText]}>{t('wizard.parentEmailHint')}</Text>
 
                         <TextInput
-                            style={styles.input}
-                            placeholder="Parent email"
+                            style={[styles.input, isRTL && styles.rtlText]}
+                            placeholder={t('wizard.parentEmail')}
                             placeholderTextColor="#A8A8A8"
                             value={parentEmail}
                             onChangeText={setParentEmail}
@@ -376,7 +380,7 @@ export default function WizardStep2() {
                     {/* <Image source={require('../../assets/buttonBefore_black.png')} */}
                     {/* style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>NEXT</Text>
+                        <Text style={styles.loginText}>{t('wizard.next')}</Text>
                     </View>
                     {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
@@ -410,6 +414,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -429,6 +437,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2,
         textTransform: 'uppercase'
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     form: {
         paddingLeft: 20,
@@ -525,5 +537,9 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Acumin',
-    }
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
 });

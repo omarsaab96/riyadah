@@ -14,6 +14,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -47,6 +48,7 @@ const formatAnswer = (value: any) => {
 
 export default function SurveyDetailsScreen() {
     const router = useRouter();
+    const { isRTL, t, language } = useLanguage();
     const params = useLocalSearchParams();
     const surveyId = params.id as string;
 
@@ -75,7 +77,7 @@ export default function SurveyDetailsScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('coachSurvey.userNotAuthenticated'));
                 setLoading(false);
                 return;
             }
@@ -86,7 +88,7 @@ export default function SurveyDetailsScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to load survey');
+                setError(errorData.error || t('coachSurvey.failedSurvey'));
                 setLoading(false);
                 return;
             }
@@ -94,7 +96,7 @@ export default function SurveyDetailsScreen() {
             const data = await response.json();
             setSurvey(data.survey);
         } catch (err) {
-            setError('Failed to load survey');
+            setError(t('coachSurvey.failedSurvey'));
         } finally {
             setLoading(false);
         }
@@ -106,7 +108,7 @@ export default function SurveyDetailsScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('coachSurvey.userNotAuthenticated'));
                 setLoadingResponses(false);
                 return;
             }
@@ -123,7 +125,7 @@ export default function SurveyDetailsScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to load submissions');
+                setError(errorData.error || t('coachSurvey.failedResponses'));
                 setLoadingResponses(false);
                 return;
             }
@@ -132,7 +134,7 @@ export default function SurveyDetailsScreen() {
             setResponses(data.responses || []);
             setCount(data.count || 0);
         } catch (err) {
-            setError('Failed to load submissions');
+            setError(t('coachSurvey.failedResponses'));
         } finally {
             setLoadingResponses(false);
         }
@@ -171,11 +173,11 @@ export default function SurveyDetailsScreen() {
                         style={styles.backBtn}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to surveys</Text>
+                        <Text style={styles.backBtnText}>{t('coachSurvey.backToSurveys')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        {loading && <Text style={styles.pageTitle}>Survey details</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        {loading && <Text style={styles.pageTitle}>{t('coachSurvey.title')}</Text>}
 
                         {!loading &&
                             <Text style={styles.pageTitle}>{survey?.title}</Text>
@@ -194,7 +196,7 @@ export default function SurveyDetailsScreen() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Surv</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('coachSurvey.ghost')}</Text>
                 </View>
 
                 <ScrollView>
@@ -249,12 +251,12 @@ export default function SurveyDetailsScreen() {
                         </View>}
 
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Submissions</Text>
+                            <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('coachSurvey.submissions')}</Text>
                             {loadingResponses && <ActivityIndicator size="small" color="#FF4000" />}
                         </View>
 
                         {!loadingResponses && responses.length === 0 && (
-                            <Text style={styles.hintText}>No submissions found.</Text>
+                            <Text style={[styles.hintText, isRTL && styles.rtlText]}>{t('coachSurvey.noSubmissions')}</Text>
                         )}
 
                         {responses.map(response => {
@@ -262,19 +264,19 @@ export default function SurveyDetailsScreen() {
                             return (
                                 <View key={response._id} style={styles.card}>
                                     <Text style={styles.cardTitle}>
-                                        {user?.name || 'Unknown user'}
+                                        {user?.name || t('coachSurvey.unknownUser')}
                                     </Text>
                                     <Text style={styles.cardMeta}>
                                         {user?.email || user?._id || response.user}
                                     </Text>
                                     <Text style={styles.cardMeta}>
-                                        {new Date(response.createdAt).toLocaleString()}
+                                        {new Date(response.createdAt).toLocaleString(language === 'ar' ? 'ar' : undefined)}
                                     </Text>
                                     <View style={styles.answerList}>
                                         {response.answers.map((answer, index) => (
                                             <View key={`${response._id}-answer-${index}`} style={styles.answerRow}>
                                                 <Text style={styles.answerQuestion}>
-                                                    {questionMap.get(answer.questionId) || 'Question'}
+                                                    {questionMap.get(answer.questionId) || t('coachSurvey.question')}
                                                 </Text>
                                                 <Text style={styles.answerValue}>{formatAnswer(answer.value)}</Text>
                                             </View>
@@ -330,6 +332,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -431,6 +437,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginBottom: 20
     },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
     error: {
         marginBottom: 15,
         backgroundColor: '#fce3e3',
@@ -459,6 +469,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     backBtn: {
         position: 'absolute',

@@ -10,7 +10,9 @@ import { jwtDecode } from "jwt-decode";
 import { useEffect } from "react";
 import 'react-native-get-random-values';
 import 'react-native-reanimated';
+import { I18nManager, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { LanguageProvider, useLanguage } from '../context/language';
 import { RegistrationProvider } from '../context/registration';
 
 const linking = {
@@ -22,8 +24,25 @@ const linking = {
   },
 };
 
-export default function RootLayout() {
+function RootLayoutContent() {
   const router = useRouter();
+  const { isReady } = useLanguage();
+
+  useEffect(() => {
+    const normalizeNativeDirection = () => {
+      if (!I18nManager.isRTL) return;
+
+      try {
+        I18nManager.allowRTL(false);
+        I18nManager.forceRTL(false);
+        I18nManager.swapLeftAndRightInRTL(false);
+      } catch (error) {
+        console.log('Error normalizing native direction:', error);
+      }
+    };
+
+    normalizeNativeDirection();
+  }, []);
 
   useEffect(() => {
     const checkForUpdates = async () => {
@@ -112,7 +131,7 @@ export default function RootLayout() {
     // SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  if (!loaded) {
+  if (!loaded || !isReady) {
     // Async font loading only occurs in development.
     return null;
   }
@@ -121,14 +140,24 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <RegistrationProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DefaultTheme : DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" options={{ title: "Home" }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="light" />
+          <View style={{ flex: 1 }}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" options={{ title: "Home" }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="light" />
+          </View>
         </ThemeProvider>
       </RegistrationProvider>
     </SafeAreaProvider >
 
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <LanguageProvider>
+      <RootLayoutContent />
+    </LanguageProvider>
   );
 }

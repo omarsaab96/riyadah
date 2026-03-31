@@ -21,6 +21,7 @@ import {
     View
 } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
+import { useLanguage } from '../../context/language';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 
@@ -28,6 +29,7 @@ const { width } = Dimensions.get('window');
 
 export default function EditProfile() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
 
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
@@ -105,13 +107,13 @@ export default function EditProfile() {
 
         // Basic validity checks
         if (isNaN(dobDate.getTime())) {
-            setError('Please enter a valid date');
+            setError(t('profileEditor.invalidDate'));
             scrollRef.current?.scrollTo({ y: 0, animated: true });
             return;
         }
 
         if (dobDate > today) {
-            setError('Date cannot be in the future');
+            setError(t('profileEditor.futureDate'));
             scrollRef.current?.scrollTo({ y: 0, animated: true });
             return;
         }
@@ -155,9 +157,9 @@ export default function EditProfile() {
                             resizeMode="contain"
                         />
 
-                        <View style={styles.headerTextBlock}>
-                            <Text style={styles.pageTitle}>Edit profile</Text>
-                            {!loading && <Text style={styles.pageDesc}>Change your data</Text>}
+                        <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                            <Text style={styles.pageTitle}>{t('profileEditor.editProfile')}</Text>
+                            {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('profileEditor.changeYourData')}</Text>}
 
                             {loading &&
                                 <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -170,7 +172,7 @@ export default function EditProfile() {
                             }
                         </View>
 
-                        <Text style={styles.ghostText}>Edit</Text>
+                        <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('profileEditor.editGhost')}</Text>
 
                         {user && !loading && <View style={styles.profileImage}>
                             <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
@@ -210,14 +212,14 @@ export default function EditProfile() {
                                 {(user.image == null || user.image == "") &&
                                     <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
                                         <Entypo name="plus" size={20} color="#FF4000" />
-                                        <Text style={styles.uploadImageText}>Upload avatar</Text>
+                                        <Text style={styles.uploadImageText}>{t('profileEditor.uploadAvatar')}</Text>
                                     </TouchableOpacity>
                                 }
 
                                 {user.image != null && user.image != "" &&
                                     <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
                                         <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                        <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>Change avatar</Text>
+                                        <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>{t('profileEditor.changeAvatar')}</Text>
                                     </TouchableOpacity>
                                 }
                             </View>
@@ -236,11 +238,11 @@ export default function EditProfile() {
                             {user.type == "Parent" && <View style={styles.entity}>
                                 <View style={styles.noChildrenView}>
                                     <Text style={[styles.title, { marginBottom: 0 }]}>
-                                        Children ({children?.length || 0})
+                                        {t('profileEditor.childrenCount', { count: children?.length || 0 })}
                                     </Text>
                                     <TouchableOpacity style={styles.addChildrenButton} onPress={handleAddChildren}>
                                         <Entypo name="plus" size={20} color="#FF4000" />
-                                        <Text style={styles.addChildrenButtonText}>Add child</Text>
+                                        <Text style={styles.addChildrenButtonText}>{t('profileEditor.addChild')}</Text>
                                     </TouchableOpacity>
                                 </View>
                                 {children?.length > 0 ? (<View style={styles.childrenList}>
@@ -251,7 +253,7 @@ export default function EditProfile() {
                                     ))}
                                 </View>) : (
                                     <View>
-                                        <Text style={styles.noChildrenText}>No children added yet</Text>
+                                        <Text style={[styles.noChildrenText, isRTL && styles.rtlText]}>{t('profileEditor.noChildrenYet')}</Text>
                                     </View>
                                 )}
                             </View>}
@@ -259,12 +261,12 @@ export default function EditProfile() {
                             {user.type == "Club" &&
                                 <View style={styles.adminDiv}>
                                     <Text style={styles.title}>
-                                        Admin
+                                        {t('profileEditor.admin')}
                                     </Text>
 
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Admin"
+                                        placeholder={t('profileEditor.admin')}
                                         placeholderTextColor="#A8A8A8"
                                         value={user.admin?.name}
                                         onChangeText={(text) => updateField('admin.name', text)}
@@ -275,18 +277,18 @@ export default function EditProfile() {
                             {user.type != "Parent" &&
                                 <View style={styles.entity}>
                                     <Text style={[styles.title, { marginBottom: 0 }]}>
-                                        Contact Info
+                                        {t('profileEditor.contactInfo')}
                                     </Text>
                                     <Text style={[{ marginBottom: 10, fontSize: 12, color: '#aaa' }]}>
-                                        Empty fields will be hidden from your profile
+                                        {t('profileEditor.hiddenEmptyFields')}
                                     </Text>
 
                                     {user.type == "Club" && <Text style={[styles.subtitle, styles.contactSubTitle]}>
-                                        Description
+                                        {t('profileEditor.description')}
                                     </Text>}
 
                                     {user.type == "Club" && <TextInput style={styles.textarea}
-                                        placeholder="Opening hours"
+                                        placeholder={t('profileEditor.openingHours')}
                                         placeholderTextColor="#A8A8A8"
                                         value={user.contactInfo.description || ""}
                                         onChangeText={(text) => updateField('contactInfo.description', text)}
@@ -301,7 +303,7 @@ export default function EditProfile() {
                                         <FontAwesome6 name="phone" size={24} color="#000" />
                                         <TextInput
                                             style={[styles.input, styles.contactInput, { color: "#aaa" }]}
-                                            placeholder="Phone number"
+                                            placeholder={t('profileEditor.phoneNumber')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.phone}
                                             onChangeText={(text) => updateField('contactInfo.phone', text)}
@@ -313,7 +315,7 @@ export default function EditProfile() {
                                         <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
                                         <TextInput
                                             style={[styles.input, styles.contactInput]}
-                                            placeholder="ُEmail"
+                                            placeholder={t('profileEditor.email')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.email}
                                             onChangeText={(text) => updateField('contactInfo.email', text)}
@@ -324,7 +326,7 @@ export default function EditProfile() {
                                         <FontAwesome name="facebook" size={24} color="#000" />
                                         <TextInput
                                             style={[styles.input, styles.contactInput, { paddingLeft: 28 }]}
-                                            placeholder="Facebook username"
+                                            placeholder={t('profileEditor.facebookUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.facebook}
                                             onChangeText={(text) => updateField('contactInfo.facebook', text)}
@@ -336,7 +338,7 @@ export default function EditProfile() {
                                         <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
                                         <TextInput
                                             style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
-                                            placeholder="Instagram username"
+                                            placeholder={t('profileEditor.instagramUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.instagram}
                                             onChangeText={(text) => updateField('contactInfo.instagram', text)}
@@ -348,7 +350,7 @@ export default function EditProfile() {
                                         <FontAwesome name="whatsapp" size={24} color="#000" />
                                         <TextInput
                                             style={[styles.input, styles.contactInput]}
-                                            placeholder="Whatsapp number"
+                                            placeholder={t('profileEditor.whatsappNumber')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.whatsapp}
                                             onChangeText={(text) => updateField('contactInfo.whatsapp', text)}
@@ -360,7 +362,7 @@ export default function EditProfile() {
                                         <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
                                         <TextInput
                                             style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
-                                            placeholder="Telegram username"
+                                            placeholder={t('profileEditor.telegramUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.telegram}
                                             onChangeText={(text) => updateField('contactInfo.telegram', text)}
@@ -372,7 +374,7 @@ export default function EditProfile() {
                                         <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
                                         <TextInput
                                             style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
-                                            placeholder="Tiktok username"
+                                            placeholder={t('profileEditor.tiktokUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.tiktok}
                                             onChangeText={(text) => updateField('contactInfo.tiktok', text)}
@@ -383,7 +385,7 @@ export default function EditProfile() {
                                         <FontAwesome name="snapchat-ghost" size={24} color="#000" />
                                         <TextInput
                                             style={[styles.input, styles.contactInput]}
-                                            placeholder="Snapchat username"
+                                            placeholder={t('profileEditor.snapchatUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.snapchat}
                                             onChangeText={(text) => updateField('contactInfo.snapchat', text)}
@@ -393,7 +395,7 @@ export default function EditProfile() {
                                     {(user.type == "Club" || user.type == "Association") && <View>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
                                             <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
-                                                Location
+                                                {t('profileEditor.location')}
                                             </Text>
                                             <TouchableOpacity
                                                 style={styles.locationBtn}
@@ -423,11 +425,11 @@ export default function EditProfile() {
                                                     updateField('contactInfo.location.longitude', String(coords.longitude));
                                                 }}
                                             >
-                                                <Text style={styles.locationBtnText}>Use My Current Location</Text>
+                                                <Text style={styles.locationBtnText}>{t('profileEditor.useCurrentLocation')}</Text>
                                             </TouchableOpacity>
                                         </View>
 
-                                        <Text style={styles.hint}>Pinch to zoom, tap to pin location</Text>
+                                        <Text style={[styles.hint, isRTL && styles.rtlText]}>{t('profileEditor.mapHint')}</Text>
 
                                         <View style={styles.map}>
                                             <MapView
@@ -467,11 +469,11 @@ export default function EditProfile() {
                             {/* BIO */}
                             {user.type != "Parent" && <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    {(user.type == "Club" || user.type == "Association") ? 'Summary' : 'Bio'}
+                                    {(user.type == "Club" || user.type == "Association") ? t('profileEditor.summary') : t('profileEditor.bio')}
                                 </Text>
                                 <TextInput
                                     style={styles.textarea}
-                                    placeholder={(user.type == "Club" || user.type == "Association") ? `About the ${user.type}` : 'About you'}
+                                    placeholder={(user.type == "Club" || user.type == "Association") ? (user.type === 'Club' ? t('profileEditor.aboutClub') : t('profileEditor.aboutAssociation')) : t('profileEditor.aboutYou')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.bio || ""}
                                     onChangeText={(text) => updateField('bio', text)}
@@ -484,7 +486,7 @@ export default function EditProfile() {
                             {/* COUNTRY */}
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    Country
+                                    {t('profileEditor.country')}
                                 </Text>
                                 <View style={[styles.input, styles.select]}>
                                     <CountryPicker
@@ -519,7 +521,7 @@ export default function EditProfile() {
                             {/* DOB */}
                             <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    {(user.type == "Club" || user.type == "Association") ? 'Establishment date' : 'Date of Birth'}
+                                    {(user.type == "Club" || user.type == "Association") ? t('profileEditor.establishmentDate') : t('profileEditor.dateOfBirth')}
                                 </Text>
                                 <View style={styles.dobRow}>
                                     {user.type != "Club" && user.type != "Association" && <TextInput
@@ -557,11 +559,11 @@ export default function EditProfile() {
                             {/* POSITION */}
                             {user.type == "Athlete" && user.sport.some(s => ['Football', 'Basketball', 'Volleyball'].includes(s)) == "Athlete" && <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    Position
+                                    {t('profileEditor.position')}
                                 </Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Position you play eg.:Goal keeper"
+                                    placeholder={t('profileEditor.positionPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.position?.toString()}
                                     onChangeText={(text) => updateField('position', text)}
@@ -571,11 +573,11 @@ export default function EditProfile() {
                             {/* HEIGHT */}
                             {user.type == "Athlete" && <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    Height
+                                    {t('profileEditor.height')}
                                 </Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="In cm"
+                                    placeholder={t('profileEditor.heightPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.height?.toString()}
                                     onChangeText={(text) => updateField('height', text)}
@@ -585,11 +587,11 @@ export default function EditProfile() {
                             {/* WEIGHT */}
                             {user.type == "Athlete" && <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    Weight
+                                    {t('profileEditor.weight')}
                                 </Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="In Kg"
+                                    placeholder={t('profileEditor.weightPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.weight?.toString()}
                                     onChangeText={(text) => updateField('weight', text)}
@@ -634,11 +636,11 @@ export default function EditProfile() {
                             {/* ACHIEVEMENTS */}
                             {user.type == "Athlete" && <View style={styles.entity}>
                                 <Text style={styles.title}>
-                                    Achievements
+                                    {t('profileEditor.achievements')}
                                 </Text>
                                 <TextInput
                                     style={styles.textarea}
-                                    placeholder="What are your biggest achievements?"
+                                    placeholder={t('profileEditor.achievementsPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.achievements || ""}
                                     onChangeText={(text) => updateField('achievements', text)}
@@ -780,13 +782,13 @@ export default function EditProfile() {
 
                             </View>} */}
 
-                            <View style={[styles.profileActions, styles.inlineActions]}>
+                            <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                                 <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                    <Text style={styles.profileButtonText}>Cancel</Text>
+                                    <Text style={styles.profileButtonText}>{t('profileEditor.cancel')}</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={handleSave} style={[styles.profileButton, styles.savebtn]}>
                                     <Text style={styles.profileButtonText}>
-                                        {saving ? 'Saving' : 'Save'}
+                                        {saving ? t('profileEditor.saving') : t('profileEditor.save')}
                                     </Text>
                                     {saving && (
                                         <ActivityIndicator
@@ -803,7 +805,7 @@ export default function EditProfile() {
                 </View >
             </KeyboardAvoidingView>
 
-            <View style={styles.navBar}>
+            <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
@@ -875,6 +877,14 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     pageTitle: {
         color: '#ffffff',
@@ -1019,6 +1029,9 @@ const styles = StyleSheet.create({
         // Android shadow
         elevation: 5,
     },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
+    },
     icon: {
         width: 24,
         height: 24,
@@ -1038,6 +1051,9 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         columnGap: 15
     },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
+    },
     profileButton: {
         borderRadius: 5,
         padding: 10,
@@ -1051,6 +1067,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     textarea: {
         fontSize: 14,

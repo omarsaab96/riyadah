@@ -20,6 +20,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -45,6 +46,7 @@ const genders = [
 ];
 
 export default function ParentCreateAthlete() {
+    const { isRTL, t } = useLanguage();
     const { formData, updateFormData } = useRegistration();
     const router = useRouter();
     const [countryCode, setCountryCode] = useState('LB');
@@ -203,7 +205,7 @@ export default function ParentCreateAthlete() {
 
         } else {
             setSaving(false)
-            setError('Please fill name and email');
+            setError(t('profileEditor.pleaseFillNameEmail'));
         }
 
         updateFormData({
@@ -251,7 +253,7 @@ export default function ParentCreateAthlete() {
             }
         } catch (err) {
             console.error('Child creation failed:', err);
-            setError('Something went wrong. Please try again later.');
+            setError(t('profileEditor.childCreateFailed'));
         } finally {
             setSaving(false);
         }
@@ -280,17 +282,17 @@ export default function ParentCreateAthlete() {
                         resizeMode="contain"
                     />
 
-                    <View style={styles.headerTextBlock}>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                         <Text style={styles.pageTitle}>
-                            Child Account
+                            {t('profileEditor.childAccount')}
                         </Text>
-                        <Text style={styles.pageDesc}>
-                            Turn your child into a real Riyadah athlete
+                        <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>
+                            {t('profileEditor.childAccountDesc')}
                         </Text>
                     </View>
 
                     <Text style={styles.ghostText}>
-                        Childr
+                        {t('profileEditor.childrenGhost')}
                     </Text>
 
                 </View>
@@ -300,7 +302,7 @@ export default function ParentCreateAthlete() {
 
                         <TextInput
                             style={styles.input}
-                            placeholder="Child name"
+                            placeholder={t('profileEditor.childName')}
                             placeholderTextColor="#A8A8A8"
                             value={name}
                             onChangeText={setName}
@@ -308,14 +310,14 @@ export default function ParentCreateAthlete() {
                         />
                         <TextInput
                             style={[styles.input, { marginBottom: 5 }]}
-                            placeholder="Child email"
+                            placeholder={t('profileEditor.childEmail')}
                             placeholderTextColor="#A8A8A8"
                             value={email}
                             onChangeText={setEmail}
                             keyboardType="email-address"
                             autoCapitalize="none"
                         />
-                        <Text style={styles.uploadHint}>This will be used to login</Text>
+                        <Text style={[styles.uploadHint, isRTL && styles.rtlText]}>{t('profileEditor.loginHint')}</Text>
 
                         {/* <View style={styles.phoneContainer}>
                             <View style={styles.phonePicker}>
@@ -506,12 +508,12 @@ export default function ParentCreateAthlete() {
                             <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                         </TouchableOpacity> */}
 
-                        <View style={[styles.profileActions, styles.inlineActions]}>
+                        <View style={[styles.profileActions, styles.inlineActions, isRTL && styles.inlineActionsRtl]}>
                             <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                                <Text style={styles.profileButtonText}>Cancel</Text>
+                                <Text style={styles.profileButtonText}>{t('profileEditor.cancel')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleRegister} style={[styles.profileButton, styles.savebtn]}>
-                                <Text style={styles.profileButtonText}>{saving ? 'Saving' : 'Save'}</Text>
+                                <Text style={styles.profileButtonText}>{saving ? t('profileEditor.saving') : t('profileEditor.save')}</Text>
                                 {saving && (
                                     <ActivityIndicator
                                         size="small"
@@ -534,7 +536,7 @@ export default function ParentCreateAthlete() {
                 {childRegistered &&
                     <View style={styles.childConfirmation}>
                         <Text style={styles.confirmationTitle}>
-                            Child account created successfully
+                            {t('profileEditor.childCreated')}
                         </Text>
 
                         <Text style={styles.confirmationSubTitle}>
@@ -550,31 +552,31 @@ export default function ParentCreateAthlete() {
                                 {copied ? (
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                         <Feather name="check" size={16} color="black" />
-                                        <Text style={styles.profileButtonText}>Copied</Text>
+                                        <Text style={styles.profileButtonText}>{t('profileEditor.copied')}</Text>
                                     </View>
                                 ) : (
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                         <Feather name="copy" size={16} color="black" />
-                                        <Text style={styles.profileButtonText}>Copy</Text>
+                                        <Text style={styles.profileButtonText}>{t('profileEditor.copy')}</Text>
                                     </View>
                                 )}
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                     <Feather name="share-2" size={16} color="black" />
-                                    <Text style={styles.profileButtonText}>Share</Text>
+                                    <Text style={styles.profileButtonText}>{t('profileEditor.share')}</Text>
                                 </View>
                             </TouchableOpacity>
                         </View>
 
                         <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }]}>
-                            {`You can screenshot these credentials or copy/paste them to your child in order to login to their account.\nYou will not be able to see these info again.`}
+                            {t('profileEditor.childCredentialsHint')}
                         </Text>
 
                         <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/profile/addChildren')}>
                             <Image source={require('../../assets/buttonBeforeLight.png')} style={styles.sideRect} />
                             <View style={styles.createAccountButton}>
-                                <Text style={styles.createAccountText}>Add another child</Text>
+                                <Text style={styles.createAccountText}>{t('profileEditor.addAnotherChild')}</Text>
                             </View>
                             <Image source={require('../../assets/buttonAfterLight.png')} style={styles.sideRectAfter} />
                         </TouchableOpacity>
@@ -582,7 +584,7 @@ export default function ParentCreateAthlete() {
                         <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/profile/editProfile')}>
                             <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} />
                             <View style={styles.loginButton}>
-                                <Text style={styles.loginText}>continue editing your profile</Text>
+                                <Text style={styles.loginText}>{t('profileEditor.continueEditing')}</Text>
                             </View>
                             <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} />
                         </TouchableOpacity>
@@ -618,6 +620,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -637,6 +643,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     form: {
         paddingLeft: 20,
@@ -890,6 +900,9 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         columnGap: 15
     },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
+    },
     profileButtonText: {textTransform:'uppercase',
         fontSize: 16,
         color: '#150000',
@@ -919,6 +932,10 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
         marginBottom: 10,
         color: '#111111'
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     saveLoaderContainer: {
         marginLeft: 10

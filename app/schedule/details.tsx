@@ -18,6 +18,7 @@ import {
     View
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ export default function StaffDetailsScreen() {
   const params = useLocalSearchParams();
   const id = params.id;
   const router = useRouter();
+  const { isRTL, language, t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(true);
   const [event, setEvent] = useState<any>(null);
@@ -46,13 +48,13 @@ export default function StaffDetailsScreen() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Failed to load event details");
+          throw new Error(data.message || t('scheduleDetails.failedLoad'));
         }
 
         setEvent(data.data);
       } catch (err: any) {
         console.error("Error fetching event:", err);
-        Alert.alert("Error", err.message);
+        Alert.alert(t('messages.errorTitle'), err.message);
         router.back();
       } finally {
         setLoading(false);
@@ -80,7 +82,8 @@ export default function StaffDetailsScreen() {
   const formatDate = (date) => {
     if (!date) return '';
     const d = new Date(date);
-    const dateStr = d.toLocaleDateString('en-GB', {
+    const locale = language === 'ar' ? 'ar' : 'en-GB';
+    const dateStr = d.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -92,7 +95,8 @@ export default function StaffDetailsScreen() {
     if (!date) return '';
     const d = new Date(date);
 
-    const timeStr = d.toLocaleTimeString(undefined, {
+    const locale = language === 'ar' ? 'ar' : undefined;
+    const timeStr = d.toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true, // set true if you want AM/PM
@@ -103,18 +107,18 @@ export default function StaffDetailsScreen() {
   const handleCancelEvent = () => {
     if (event.repeats !== 'No' && id) {
       return Alert.alert(
-        'Recurring Event',
-        'Do you want to cancel only this occurrence or all future occurrences?',
+        t('scheduleDetails.recurringTitle'),
+        t('scheduleDetails.recurringMessage'),
         [
           {
-            text: 'This event only',
+            text: t('scheduleDetails.thisEventOnly'),
             onPress: () => confirmCancel('single'),
           },
           {
-            text: 'All occurrences',
+            text: t('scheduleDetails.allOccurrences'),
             onPress: () => confirmCancel('all'),
           },
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('scheduleDetails.cancel'), style: 'cancel' },
         ]
       );
     }
@@ -124,13 +128,13 @@ export default function StaffDetailsScreen() {
 
   const confirmCancel = (scope) => {
     Alert.alert(
-      'Confirm Cancellation',
+      t('scheduleDetails.confirmCancel'),
       scope === 'all'
-        ? 'Are you sure you want to cancel all future occurrences?'
-        : 'Are you sure you want to cancel this event?',
+        ? t('scheduleDetails.confirmCancelAll')
+        : t('scheduleDetails.confirmCancelOne'),
       [
-        { text: 'No', style: 'cancel' },
-        { text: 'Yes, cancel', onPress: () => submitEventUpdate(scope) },
+        { text: t('scheduleDetails.no'), style: 'cancel' },
+        { text: t('scheduleDetails.yesCancel'), onPress: () => submitEventUpdate(scope) },
       ]
     );
   };
@@ -159,10 +163,10 @@ export default function StaffDetailsScreen() {
       if (response.ok) {
         router.replace({ pathname: '/profile', params: { tab: 'Schedule' } });
       } else {
-        throw new Error(data.message || 'Failed to cancel event');
+        throw new Error(data.message || t('scheduleDetails.failedCancel'));
       }
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('messages.errorTitle'), error.message);
     } finally {
       setSaving(false);
     }
@@ -176,24 +180,24 @@ export default function StaffDetailsScreen() {
           onPress={() => {
             router.back()
           }}
-          style={styles.backBtn}
+          style={[styles.backBtn, isRTL && styles.backBtnRtl]}
         >
-          <Ionicons name="chevron-back" size={20} color="#ffffff" />
-          <Text style={styles.backBtnText}>Back</Text>
+          <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+          <Text style={styles.backBtnText}>{t('scheduleDetails.back')}</Text>
         </TouchableOpacity>
 
-        <View style={styles.headerTextBlock}>
-          {loading && <Text style={styles.pageTitle}>Event details</Text>}
+        <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+          {loading && <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleDetails.title')}</Text>}
 
           {!loading && event &&
             <>
-              <Text style={styles.pageTitle}>{event.title}</Text>
-              <Text style={styles.pageDesc}>{event.eventType}</Text>
+              <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{event.title}</Text>
+              <Text style={[styles.pageDesc, isRTL ? styles.rtlText : styles.ltrText]}>{event.eventType}</Text>
             </>
           }
 
           {loading &&
-            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+            <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
               <ActivityIndicator
                 size="small"
                 color="#fff"
@@ -203,21 +207,21 @@ export default function StaffDetailsScreen() {
           }
         </View>
 
-        <Text style={styles.ghostText}>Event</Text>
+        <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('scheduleDetails.ghost')}</Text>
       </View>
 
       {!event && !loading && <View style={styles.centered}>
-        <Text>No event found.</Text>
+        <Text style={isRTL ? styles.rtlText : styles.ltrText}>{t('scheduleDetails.noEvent')}</Text>
       </View>}
 
       {event && !loading && <ScrollView style={{ paddingHorizontal: 20}}>
         <View style={[styles.section]}>
-          {(userId == event.createdBy || userId == event.club) && <View style={{ flexDirection: 'row', gap: 20, marginBottom: 30 }}>
+          {(userId == event.createdBy || userId == event.club) && <View style={[styles.actionsRow, isRTL && styles.actionsRowRtl]}>
             {event.status == 'scheduled' && <TouchableOpacity style={styles.editToggle}
               onPress={() => handleCancelEvent()}
             >
               <MaterialIcons name="cancel" size={16} color="#FF4000" />
-              <Text style={styles.editToggleText}>Cancel event</Text>
+              <Text style={styles.editToggleText}>{t('scheduleDetails.cancelEvent')}</Text>
             </TouchableOpacity>}
 
             <TouchableOpacity style={styles.editToggle}
@@ -227,7 +231,7 @@ export default function StaffDetailsScreen() {
               })}
             >
               <Entypo name="edit" size={16} color="#FF4000" />
-              <Text style={styles.editToggleText}>Edit</Text>
+              <Text style={styles.editToggleText}>{t('scheduleDetails.edit')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.editToggle}
@@ -237,52 +241,52 @@ export default function StaffDetailsScreen() {
               })}
             >
               <FontAwesome name="users" size={16} color="#FF4000" />
-              <Text style={styles.editToggleText}>Attendance</Text>
+              <Text style={styles.editToggleText}>{t('scheduleDetails.attendance')}</Text>
             </TouchableOpacity>
           </View>}
 
-          {event.status == 'scheduled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          {event.status == 'scheduled' && <View style={[styles.statusRow, isRTL && styles.statusRowRtl]}>
             <FontAwesome name="check" size={14} color="#009933" />
             <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#009933' }]}>
-              {event.status}
+              {t('scheduleDetails.scheduled')}
             </Text>
           </View>}
 
-          {event.status == 'cancelled' && <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          {event.status == 'cancelled' && <View style={[styles.statusRow, isRTL && styles.statusRowRtl]}>
             <MaterialIcons name="cancel" size={16} color="#FF4400" />
             <Text style={[styles.contactText, { textTransform: 'capitalize', color: '#FF4400' }]}>
-              {event.status}
+              {t('scheduleDetails.cancelled')}
             </Text>
           </View>}
         </View>
 
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Title</Text>
-          <Text style={styles.contactText}>{event.title}</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleDetails.eventTitle')}</Text>
+          <Text style={[styles.contactText, isRTL ? styles.rtlText : styles.ltrText]}>{event.title}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>description</Text>
-          <Text style={styles.contactText}>{event.description || "No description"}</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleDetails.description')}</Text>
+          <Text style={[styles.contactText, isRTL ? styles.rtlText : styles.ltrText]}>{event.description || t('scheduleDetails.noDescription')}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Date</Text>
-          <Text style={styles.contactText}>{formatDate(event.date)}</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleDetails.date')}</Text>
+          <Text style={[styles.contactText, isRTL ? styles.rtlText : styles.ltrText]}>{formatDate(event.date)}</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>from</Text>
-          <Text style={styles.contactText}>{formatTime(event.startTime)}</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleDetails.from')}</Text>
+          <Text style={[styles.contactText, isRTL ? styles.rtlText : styles.ltrText]}>{formatTime(event.startTime)}</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>till</Text>
-          <Text style={styles.contactText}>{formatTime(event.endTime)}</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleDetails.till')}</Text>
+          <Text style={[styles.contactText, isRTL ? styles.rtlText : styles.ltrText]}>{formatTime(event.endTime)}</Text>
         </View>
 
         {event.location?.latitude != null && event.location?.longitude != null && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Location</Text>
+            <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleDetails.location')}</Text>
 
             <View style={styles.map}>
               <MapView
@@ -322,7 +326,7 @@ export default function StaffDetailsScreen() {
                   console.error(error);
                 }
               }}>
-              <Text style={styles.locationLinkText}>Get Directions</Text>
+              <Text style={styles.locationLinkText}>{t('profile.getDirections')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -350,6 +354,10 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     width: width - 40,
+  },
+  headerTextBlockRtl: {
+    left: undefined,
+    right: 20,
   },
   pageTitle: {
     color: '#ffffff',
@@ -450,6 +458,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  backBtnRtl: {
+    left: undefined,
+    right: 10,
+    flexDirection: 'row-reverse',
+  },
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
@@ -478,6 +491,10 @@ const styles = StyleSheet.create({
     right: -5,
     opacity: 0.2
   },
+  ghostTextRtl: {
+    right: undefined,
+    left: -5,
+  },
   map: {
     borderRadius: 8,
     overflow: 'hidden',
@@ -503,6 +520,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 20,
+    marginBottom: 30,
+  },
+  actionsRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  statusRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  statusRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  loaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 5,
+  },
+  loaderRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  ltrText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   editToggleText: {
     color: 'black',

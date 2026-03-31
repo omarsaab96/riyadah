@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '@/context/language';
 
 
 const GooglePlacesInput = () => {
+    const { isRTL, t } = useLanguage();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [selectedPlace, setSelectedPlace] = useState(null);
@@ -66,10 +68,10 @@ const GooglePlacesInput = () => {
                 style={styles.item}
                 onPress={() => fetchPlaceDetails(placeId)}
             >
-                <Text style={styles.title}>
+                <Text style={[styles.title, isRTL && styles.rtlText]}>
                     {prediction.structuredFormat?.mainText?.text}
                 </Text>
-                <Text style={styles.address}>
+                <Text style={[styles.address, isRTL && styles.rtlText]}>
                     {prediction.structuredFormat?.secondaryText?.text}
                 </Text>
             </TouchableOpacity>
@@ -81,9 +83,9 @@ const GooglePlacesInput = () => {
             <TextInput
                 value={query}
                 onChangeText={searchPlaces}
-                placeholder="Search location..."
+                placeholder={t('placesTest.searchPlaceholder')}
                 placeholderTextColor="#888"
-                style={styles.input}
+                style={[styles.input, isRTL && styles.rtlText]}
             />
 
             <FlatList
@@ -95,18 +97,18 @@ const GooglePlacesInput = () => {
 
             {selectedPlace && (
                 <View style={{ marginTop: 20 }}>
-                    <Text style={{ color: "#000" }}>Selected:</Text>
-                    <Text style={{ color: "#000" }}>
+                    <Text style={[styles.metaText, isRTL && styles.rtlText]}>{t('placesTest.selected')}</Text>
+                    <Text style={[styles.metaText, isRTL && styles.rtlText]}>
                         {selectedPlace.displayName?.text}
                     </Text>
-                    <Text style={{ color: "#000" }}>
+                    <Text style={[styles.metaText, isRTL && styles.rtlText]}>
                         {selectedPlace.formattedAddress}
                     </Text>
-                    <Text style={{ color: "#000" }}>
-                        Lat: {selectedPlace.location?.latitude}
+                    <Text style={[styles.metaText, isRTL && styles.rtlText]}>
+                        {t('placesTest.latitude')}: {selectedPlace.location?.latitude}
                     </Text>
-                    <Text style={{ color: "#000" }}>
-                        Lng: {selectedPlace.location?.longitude}
+                    <Text style={[styles.metaText, isRTL && styles.rtlText]}>
+                        {t('placesTest.longitude')}: {selectedPlace.location?.longitude}
                     </Text>
                 </View>
             )}
@@ -144,6 +146,13 @@ const styles = StyleSheet.create({
         color: "#555",
         fontSize: 12,
         marginTop: 2,
-    }
+    },
+    metaText: {
+        color: "#000",
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
 });
 export default GooglePlacesInput;

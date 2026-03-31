@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../../context/language';
 import { useRegistration } from '../../context/registration';
 
 const { width } = Dimensions.get('window');
@@ -17,6 +18,7 @@ const accountTypes = [
 export default function WizardStep1() {
     const { formData, updateFormData } = useRegistration();
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [selected, setSelected] = useState<string | null>(formData.type || null);
     const [error, setError] = useState<string | null>(null);
 
@@ -37,9 +39,18 @@ export default function WizardStep1() {
             router.push('/wizard/step2');
 
         } else {
-            setError('Kindly select an account type')
+            setError(t('wizard.selectAccountType'))
         }
     }
+
+    const accountLabels: Record<string, string> = {
+        Parent: t('wizard.parent'),
+        Athlete: t('wizard.athlete'),
+        Club: t('wizard.club'),
+        Association: t('wizard.association'),
+        Scout: t('wizard.scout'),
+        Sponsor: t('wizard.sponsor'),
+    };
 
     return (
         <View style={styles.container}>
@@ -50,17 +61,17 @@ export default function WizardStep1() {
                     resizeMode="contain"
                 />
 
-                <View style={styles.headerTextBlock}>
+                <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                     <Text style={styles.pageTitle}>
-                        Account type
+                        {t('wizard.accountType')}
                     </Text>
-                    <Text style={styles.pageDesc}>
-                        What are you?
+                    <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>
+                        {t('wizard.whatAreYou')}
                     </Text>
                 </View>
 
-                <Text style={styles.ghostText}>
-                    accou
+                <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
+                    {t('wizard.ghost')}
                 </Text>
 
             </View>
@@ -82,9 +93,8 @@ export default function WizardStep1() {
                             onPress={() => setSelected(label)}
                         >
                             <Image source={icon} style={styles.icon} resizeMode="contain" />
-                            <Text style={[styles.accountText, selected === label && styles.accountTextSelected]}>
-                                {label == "Association" ? 'Association/Federation' : label == "Club" ? 'Club/Academy' : label}
-                                {/* {label} */}
+                            <Text style={[styles.accountText, selected === label && styles.accountTextSelected, isRTL && styles.rtlText]}>
+                                {accountLabels[label] ?? label}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -96,7 +106,7 @@ export default function WizardStep1() {
                 <TouchableOpacity style={styles.fullButtonRow} onPress={handleNext}>
                     {/* <Image source={require('../../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
                     <View style={styles.loginButton}>
-                        <Text style={styles.loginText}>NEXT</Text>
+                        <Text style={styles.loginText}>{t('wizard.next')}</Text>
                     </View>
                     {/* <Image source={require('../../assets/buttonAfter_black.png')} style={styles.sideRectAfter} /> */}
                 </TouchableOpacity>
@@ -130,6 +140,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -149,6 +163,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2,
         textTransform:'uppercase'
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     fullButtonRow: {
         flexDirection: 'row',
@@ -246,5 +264,9 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontFamily: 'Acumin',
-    }
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
 });

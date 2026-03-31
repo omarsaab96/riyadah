@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import { useLanguage } from "../../context/language";
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +23,7 @@ export default function StaffDetailsScreen() {
   const params = useLocalSearchParams();
   const id = params.id;
   const router = useRouter();
+  const { isRTL, t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [staff, setStaff] = useState<any>(null);
 
@@ -42,13 +44,13 @@ export default function StaffDetailsScreen() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Failed to load staff details");
+          throw new Error(data.message || t('staffDetails.failedLoad'));
         }
 
         setStaff(data.data);
       } catch (err: any) {
         console.error("Error fetching staff:", err);
-        Alert.alert("Error", err.message);
+        Alert.alert(t('messages.errorTitle'), err.message);
         router.back();
       } finally {
         setLoading(false);
@@ -72,24 +74,24 @@ export default function StaffDetailsScreen() {
               params: { tab: 'Staff' }
             })
           }}
-          style={styles.backBtn}
+          style={[styles.backBtn, isRTL && styles.backBtnRtl]}
         >
-          <Ionicons name="chevron-back" size={20} color="#ffffff" />
-          <Text style={styles.backBtnText}>Back to staff</Text>
+          <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+          <Text style={styles.backBtnText}>{t('staffDetails.backToStaff')}</Text>
         </TouchableOpacity>
 
-        <View style={styles.headerTextBlock}>
-          {loading && <Text style={styles.pageTitle}>Staff details</Text>}
+        <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+          {loading && <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.title')}</Text>}
 
           {!loading && staff &&
             <>
-              <Text style={styles.pageTitle}>{staff.userRef.name}</Text>
-              <Text style={styles.pageDesc}>{staff.role || "Staff Member"}</Text>
+              <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{staff.userRef.name}</Text>
+              <Text style={[styles.pageDesc, isRTL ? styles.rtlText : styles.ltrText]}>{staff.role || t('staffDetails.defaultRole')}</Text>
             </>
           }
 
           {loading &&
-            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+            <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
               <ActivityIndicator
                 size="small"
                 color="#fff"
@@ -99,10 +101,10 @@ export default function StaffDetailsScreen() {
           }
         </View>
 
-        <Text style={styles.ghostText}>Staff</Text>
+        <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('staffDetails.ghost')}</Text>
 
         {!loading && staff &&
-          <View style={styles.profileImage}>
+          <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
             {(staff.userRef.image == null || staff.userRef.image == "") && staff.userRef.gender == "Male" && <Image
               source={require('../../assets/avatar.png')}
               style={styles.profileImageAvatar}
@@ -125,105 +127,105 @@ export default function StaffDetailsScreen() {
       </View>
 
       {!staff && !loading && <View style={styles.centered}>
-        <Text>No staff member found.</Text>
+        <Text style={isRTL ? styles.rtlText : styles.ltrText}>{t('staffDetails.noStaff')}</Text>
       </View>}
 
       {staff && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact info</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.contactInfo')}</Text>
           {staff.userRef.phone ? (
             <TouchableOpacity
-              style={styles.contactButton}
+              style={[styles.contactButton, isRTL && styles.contactButtonRtl]}
               onPress={() => Linking.openURL(`tel:${staff.userRef.phone}`)}
             >
-              <FontAwesome5 name="phone" size={14} color="#FF4000" style={{ marginRight: 2 }} />
-              <Text style={styles.contactText}>{staff.userRef.phone}</Text>
+              <FontAwesome5 name="phone" size={14} color="#FF4000" style={isRTL ? styles.iconSpacingRtl : styles.iconSpacing} />
+              <Text style={[styles.contactText, isRTL ? styles.rtlText : styles.ltrText]}>{staff.userRef.phone}</Text>
             </TouchableOpacity>
           ) : null}
 
           {staff.userRef.email ? (
             <TouchableOpacity
-              style={styles.contactButton}
+              style={[styles.contactButton, isRTL && styles.contactButtonRtl]}
               onPress={() => Linking.openURL(`mailto:${staff.userRef.email}`)}
             >
-              <MaterialCommunityIcons name="email-outline" size={18} color="#FF4000" />
-              <Text style={styles.contactText}>{staff.userRef.email}</Text>
+              <MaterialCommunityIcons name="email-outline" size={18} color="#FF4000" style={isRTL ? styles.iconSpacingRtl : styles.iconSpacing} />
+              <Text style={[styles.contactText, isRTL ? styles.rtlText : styles.ltrText]}>{staff.userRef.email}</Text>
             </TouchableOpacity>
           ) : null}
         </View>
 
         {staff.userRef.country && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Country</Text>
-            <Text style={styles.listItem}>
+            <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('profile.country')}</Text>
+            <Text style={[styles.listItem, isRTL ? styles.rtlText : styles.ltrText]}>
               {staff.userRef.country}
             </Text>
           </View>
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Teams</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('profile.teams')}</Text>
           {staff.teams && staff.teams.length > 0 ? (
             staff.teams.map((team: any) => (
               <TouchableOpacity key={team._id} onPress={() => router.push({
                 pathname: '/teams/details',
                 params: { id: team._id },
               })}>
-                <View  style={styles.teamItem}>
+                <View  style={[styles.teamItem, isRTL && styles.teamItemRtl]}>
                   <View>
                     {team.image ? (
                       <Image
                         source={{ uri: team.image }}
-                        style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                        style={[styles.teamImage, isRTL && styles.teamImageRtl]}
                       />
                     ) : (
                       <Image
                         source={require('../../assets/teamlogo.png')}
-                        style={{ tintColor:'#000',width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                        style={[styles.teamImage, isRTL && styles.teamImageRtl, { tintColor:'#000' }]}
                       />
                     )}
                   </View>
                   <View>
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamSport}>{team.sport}</Text>
+                    <Text style={[styles.teamName, isRTL ? styles.rtlText : styles.ltrText]}>{team.name}</Text>
+                    <Text style={[styles.teamSport, isRTL ? styles.rtlText : styles.ltrText]}>{team.sport}</Text>
                   </View>
                 </View>
               </TouchableOpacity>
 
             ))
           ) : (
-            <Text style={styles.noData}>No teams assigned</Text>
+            <Text style={[styles.noData, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.noTeamsAssigned')}</Text>
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Qualifications</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.qualifications')}</Text>
           {staff.qualifications && staff.qualifications.length > 0 ? (
             staff.qualifications.map((q: string, i: number) => (
-              <Text key={i} style={styles.listItem}>- {q}</Text>
+              <Text key={i} style={[styles.listItem, isRTL ? styles.rtlText : styles.ltrText]}>{'\u2022'} {q}</Text>
             ))
           ) : (
-            <Text style={styles.noData}>None</Text>
+            <Text style={[styles.noData, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.none')}</Text>
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Certifications</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.certifications')}</Text>
           {staff.certifications && staff.certifications.length > 0 ? (
             staff.certifications.map((c: string, i: number) => (
-              <Text key={i} style={styles.listItem}>- {c}</Text>
+              <Text key={i} style={[styles.listItem, isRTL ? styles.rtlText : styles.ltrText]}>{'\u2022'} {c}</Text>
             ))
           ) : (
-            <Text style={styles.noData}>None</Text>
+            <Text style={[styles.noData, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.none')}</Text>
           )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Employment</Text>
-          <Text style={styles.listItem}>Type: {staff.employmentType || "N/A"}</Text>
-          <Text style={styles.listItem}>Salary: {staff.salary || "N/A"}</Text>
-          <Text style={styles.listItem}>Status: {staff.isActive ? "Active" : "Inactive"}</Text>
+          <Text style={[styles.sectionTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.employment')}</Text>
+          <Text style={[styles.listItem, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.type')}: {staff.employmentType || t('staffDetails.notAvailable')}</Text>
+          <Text style={[styles.listItem, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.salary')}: {staff.salary || t('staffDetails.notAvailable')}</Text>
+          <Text style={[styles.listItem, isRTL ? styles.rtlText : styles.ltrText]}>{t('staffDetails.status')}: {staff.isActive ? t('staffDetails.active') : t('staffDetails.inactive')}</Text>
         </View>
 
 
@@ -248,6 +250,10 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     width: width - 40,
+  },
+  headerTextBlockRtl: {
+    left: undefined,
+    right: 20,
   },
   pageTitle: {
     color: '#ffffff',
@@ -313,6 +319,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 4,
   },
+  contactButtonRtl: {
+    flexDirection: 'row-reverse',
+  },
   contactText: {
     marginLeft: 8,
     color:'black',
@@ -326,6 +335,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  teamItemRtl: {
+    flexDirection: 'row-reverse',
+  },
+  teamImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  teamImageRtl: {
+    marginRight: 0,
+    marginLeft: 10,
   },
   teamName: {
     fontWeight: "bold",
@@ -350,6 +372,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  backBtnRtl: {
+    left: undefined,
+    right: 10,
+    flexDirection: 'row-reverse',
+  },
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
@@ -362,6 +389,10 @@ const styles = StyleSheet.create({
     height: '70%',
     maxWidth: 200,
     overflow: 'hidden',
+  },
+  profileImageRtl: {
+    right: undefined,
+    left: -5,
   },
   profileImageAvatar: {
     height: '100%',
@@ -377,5 +408,31 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: -5,
     opacity: 0.2
+  },
+  ghostTextRtl: {
+    right: undefined,
+    left: -5,
+  },
+  loaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 5,
+  },
+  loaderRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  iconSpacing: {
+    marginRight: 2,
+  },
+  iconSpacingRtl: {
+    marginLeft: 2,
+  },
+  ltrText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

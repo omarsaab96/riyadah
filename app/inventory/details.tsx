@@ -14,6 +14,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import { useLanguage } from "../../context/language";
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +22,7 @@ export default function StaffDetailsScreen() {
   const params = useLocalSearchParams();
   const id = params.id;
   const router = useRouter();
+  const { isRTL, t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState<any>(null);
 
@@ -42,13 +44,13 @@ export default function StaffDetailsScreen() {
 
 
         if (!response.ok) {
-          throw new Error(data.message || "Failed to load item details");
+          throw new Error(data.message || t('inventory.failedCreate'));
         }
 
         setItem(data.data[0]);
       } catch (err: any) {
         console.error("Error fetching item:", err);
-        Alert.alert("Error", err.message);
+        Alert.alert(t('inventory.errorTitle'), err.message);
         router.back();
       } finally {
         setLoading(false);
@@ -73,11 +75,11 @@ export default function StaffDetailsScreen() {
           style={styles.backBtn}
         >
           <Ionicons name="chevron-back" size={20} color="#ffffff" />
-          <Text style={styles.backBtnText}>Back to Inventory</Text>
+          <Text style={styles.backBtnText}>{t('inventory.backToInventory')}</Text>
         </TouchableOpacity>
 
-        <View style={styles.headerTextBlock}>
-          {loading && <Text style={styles.pageTitle}>Inventory item details</Text>}
+        <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+          {loading && <Text style={styles.pageTitle}>{t('inventory.detailsTitle')}</Text>}
 
           {!loading && item &&
             <>
@@ -97,17 +99,17 @@ export default function StaffDetailsScreen() {
           }
         </View>
 
-        <Text style={styles.ghostText}>Item</Text>
+        <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('inventory.ghost')}</Text>
       </View>
 
       {!item && !loading && <View style={styles.centered}>
-        <Text>No item found.</Text>
+        <Text>{t('inventory.noItem')}</Text>
       </View>}
 
       {item && !loading && <ScrollView style={{ paddingHorizontal: 20 }}>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Image</Text>
+          <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('inventory.image')}</Text>
           {item.image ? (
             <Image
               source={{ uri: item.image }}
@@ -122,16 +124,16 @@ export default function StaffDetailsScreen() {
           }
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Available quantity</Text>
+          <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('inventory.availableQuantity')}</Text>
           <Text style={styles.contactText}>{item.quantity}</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>UnitPrice</Text>
+          <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('inventory.unitPrice')}</Text>
           <Text style={styles.contactText}>{item.unitPrice}</Text>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.contactText}>{item.description || '-'}</Text>
+          <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('inventory.description')}</Text>
+          <Text style={[styles.contactText, isRTL && styles.rtlText]}>{item.description || t('inventory.noDescription')}</Text>
         </View>
 
       </ScrollView >
@@ -155,6 +157,10 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     width: width - 40,
+  },
+  headerTextBlockRtl: {
+    left: undefined,
+    right: 20,
   },
   pageTitle: {
     color: '#ffffff',
@@ -261,6 +267,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Qatar'
   },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
+  },
   profileImage: {
     position: 'absolute',
     bottom: 0,
@@ -283,6 +293,10 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: -5,
     opacity: 0.2
+  },
+  ghostTextRtl: {
+    right: undefined,
+    left: -5,
   },
   inventoryIcon: {
         width: 100,

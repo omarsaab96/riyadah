@@ -3,15 +3,22 @@ import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useLanguage } from '@/context/language';
 
 export default function NotFoundScreen() {
+  const { isRTL, t } = useLanguage();
+
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
+      <Stack.Screen options={{ title: t('notFound.title') }} />
       <ThemedView style={styles.container}>
-        <ThemedText type="title">This screen does not exist.</ThemedText>
+        <ThemedText type="title" style={isRTL ? styles.rtlText : undefined}>
+          {t('notFound.message')}
+        </ThemedText>
         <Link href="/" style={styles.link}>
-          <ThemedText type="link">Go to home screen!</ThemedText>
+          <ThemedText type="link" style={isRTL ? styles.rtlText : undefined}>
+            {t('notFound.goHome')}
+          </ThemedText>
         </Link>
       </ThemedView>
     </>
@@ -28,5 +35,9 @@ const styles = StyleSheet.create({
   link: {
     marginTop: 15,
     paddingVertical: 15,
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

@@ -32,11 +32,13 @@ import {
 import CountryFlag from "react-native-country-flag";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import DynamicLineChart from './chartsExample';
+import { useLanguage } from '../../context/language';
 
 
 const { width } = Dimensions.get('window');
 
 export default function Profile() {
+    const { isRTL, t } = useLanguage();
     const router = useRouter();
     const { tab } = useLocalSearchParams();
     const scrollY = useRef(new Animated.Value(0)).current;
@@ -74,6 +76,22 @@ export default function Profile() {
     const tabsAthlete = ['Profile', 'Schedule', 'Surveys', 'Financials', 'Performance'];
     const tabsAssociations = ['Profile', 'Clubs'];
     const tabsCoach = ['Profile', 'Teams', 'Schedule', 'Surveys', 'Financials', 'Timesheet'];
+    const translateTabLabel = (label: string) => {
+        const tabKeyMap: Record<string, any> = {
+            Profile: 'profile.profile',
+            Teams: 'profile.teams',
+            Schedule: 'profile.schedule',
+            Staff: 'profile.staff',
+            Inventory: 'profile.inventory',
+            Financials: 'profile.financials',
+            Surveys: 'profile.surveys',
+            Timesheet: 'profile.timesheet',
+            Performance: 'profile.performance',
+            Clubs: 'profile.clubs',
+        };
+
+        return tabKeyMap[label] ? t(tabKeyMap[label]) : label;
+    };
     const animatedValues = useRef<{ [key: string]: Animated.Value }>({});
     const flexDivRef = useRef(null);
     const [cellWidth, setCellWidth] = useState(0);
@@ -95,6 +113,7 @@ export default function Profile() {
 
     const [selectedUserTest, setSelectedUserTest] = useState(null);
     const [previouslyTestedSkills, setPreviouslyTestedSkills] = useState({});
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     const generateCalendarDays = (year, month, events = []) => {
         const startOfMonth = new Date(year, month, 1);
@@ -268,77 +287,48 @@ export default function Profile() {
     }
 
     const getSchedule = async () => {
-        if (user.type == "Athlete" && user.role != "Coach") {
-            try {
-                const res = await fetch(`https://server.riyadah.app/api/schedules/user/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const response = await res.json();
-
-                // console.log(response)
-
-                if (response.success) {
-                    setSchedule(response.data)
-                    setScheduleLoading(false);
-                } else {
-                    setSchedule(null)
-                }
-            } catch (err) {
-                console.error('Failed to fetch schedule', err);
-            }
+        if (!user || !userId) {
+            setSchedule([]);
+            setScheduleLoading(false);
+            return;
         }
 
-        if (user.type == "Club") {
-            try {
-                const res = await fetch(`https://server.riyadah.app/api/schedules/club/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const response = await res.json();
+        try {
+            const token = await SecureStore.getItemAsync('userToken');
+            let endpoint = null;
 
-                // console.log(response)
-
-                if (response.success) {
-                    setSchedule(response.data)
-                    setScheduleLoading(false);
-                } else {
-                    setSchedule(null)
-                }
-            } catch (err) {
-                console.error('Failed to fetch schedule', err);
+            if (user.type == "Club") {
+                endpoint = `https://server.riyadah.app/api/schedules/club/${userId}`;
+            } else if (user.type == "Athlete") {
+                endpoint = `https://server.riyadah.app/api/schedules/user/${userId}`;
             }
-        }
 
-        if (user.type == "Athlete" && user.role == "Coach") {
-
-            try {
-                const res = await fetch(`https://server.riyadah.app/api/schedules/user/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${await SecureStore.getItemAsync('userToken')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const response = await res.json();
-
-                // console.log(response)
-
-                if (response.success) {
-                    setSchedule(response.data)
-                    setScheduleLoading(false);
-                } else {
-                    setSchedule(null)
-                }
-            } catch (err) {
-                console.error('Failed to fetch schedule', err);
+            if (!endpoint) {
+                setSchedule([]);
+                return;
             }
+
+            const res = await fetch(endpoint, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const response = await res.json();
+
+            console.log(response)
+
+            if (response.success) {
+                setSchedule(response.data || [])
+            } else {
+                setSchedule([])
+            }
+        } catch (err) {
+            console.error('Failed to fetch schedule', err);
+            setSchedule([])
+        } finally {
+            setScheduleLoading(false);
         }
     }
 
@@ -1222,8 +1212,8 @@ export default function Profile() {
 
                 <View style={styles.headerTextBlock}>
                     {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
-                    <Text style={styles.pageTitle}>{user?.name || 'Profile'}</Text>
-                    {!loading && <Text style={styles.pageDesc}>
+                    <Text style={[styles.pageTitle, textDirectionStyle]}>{user?.name || t('profile.defaultTitle')}</Text>
+                    {!loading && <Text style={[styles.pageDesc, textDirectionStyle]}>
                         {user.role != null ? user.role : userType}
                     </Text>}
 
@@ -1238,7 +1228,7 @@ export default function Profile() {
                     }
                 </View>
 
-                {!loading && <Text style={styles.ghostText}>{user.name.substring(0, 6)}</Text>}
+                {!loading && <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{user.name.substring(0, 6)}</Text>}
 
                 {!loading && <>
                     {userId == user._id ? (
@@ -1279,8 +1269,8 @@ export default function Profile() {
                                 {(user.image == null || user.image == "") &&
                                     <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/profile/uploadAvatar')}>
                                         <Entypo name="plus" size={20} color="#FF4000" />
-                                        <Text style={styles.uploadImageText}>
-                                            {(user.type == "Club" || user.type == "Association") ? 'Upload logo' : 'Upload avatar'}
+                                        <Text style={[styles.uploadImageText, textDirectionStyle]}>
+                                            {(user.type == "Club" || user.type == "Association") ? t('profile.uploadLogo') : t('profile.uploadAvatar')}
                                         </Text>
                                     </TouchableOpacity>
                                 }
@@ -1288,8 +1278,8 @@ export default function Profile() {
                                 {user.image != null && user.image != "" &&
                                     <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/profile/uploadAvatar')}>
                                         <FontAwesome name="refresh" size={16} color="#FF4000" />
-                                        <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
-                                            {(user.type == "Club" || user.type == "Association") ? 'Change logo' : 'Change avatar'}
+                                        <Text style={[styles.uploadImageText, isRTL ? { marginRight: 5 } : { marginLeft: 5 }, textDirectionStyle]}>
+                                            {(user.type == "Club" || user.type == "Association") ? t('profile.changeLogo') : t('profile.changeAvatar')}
                                         </Text>
                                     </TouchableOpacity>
                                 }
@@ -1329,6 +1319,7 @@ export default function Profile() {
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={isRTL && styles.tabsScrollRtl}
                     >
                         {tabsAthlete.map((label, index) => (
                             <TouchableOpacity
@@ -1339,8 +1330,8 @@ export default function Profile() {
                                 ]}
                                 onPress={() => updateTab(label)}
                             >
-                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
-                                    {label}
+                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive, textDirectionStyle]}>
+                                    {translateTabLabel(label)}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -1354,6 +1345,7 @@ export default function Profile() {
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={isRTL && styles.tabsScrollRtl}
                     >
                         {tabs.map((label, index) => (
                             <TouchableOpacity
@@ -1364,8 +1356,8 @@ export default function Profile() {
                                 ]}
                                 onPress={() => updateTab(label)}
                             >
-                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
-                                    {label}
+                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive, textDirectionStyle]}>
+                                    {translateTabLabel(label)}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -1386,8 +1378,8 @@ export default function Profile() {
                             ]}
                             onPress={() => updateTab(label)}
                         >
-                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
-                                {label}
+                            <Text style={[styles.tabText, activeTab === label && styles.tabTextActive, textDirectionStyle]}>
+                                {translateTabLabel(label)}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -1400,6 +1392,7 @@ export default function Profile() {
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={isRTL && styles.tabsScrollRtl}
                     >
                         {tabsCoach.map((label, index) => (
                             <TouchableOpacity
@@ -1410,8 +1403,8 @@ export default function Profile() {
                                 ]}
                                 onPress={() => updateTab(label)}
                             >
-                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive]}>
-                                    {label}
+                                <Text style={[styles.tabText, activeTab === label && styles.tabTextActive, textDirectionStyle]}>
+                                    {translateTabLabel(label)}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -1445,7 +1438,7 @@ export default function Profile() {
                             <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
                         </View>
                         <View style={styles.profileProgressTextSection}>
-                            <Text style={styles.profileProgressText}>Complete your profile now</Text>
+                            <Text style={[styles.profileProgressText, textDirectionStyle]}>{t('profile.completeProfile')}</Text>
                             <Image
                                 style={styles.profileProgressImg}
                                 source={require('../../assets/rightArrow.png')}
@@ -1479,7 +1472,7 @@ export default function Profile() {
                                         )}
                                         <View>
                                             <Text style={styles.adminName}>{adminUser.name}</Text>
-                                            <Text style={styles.adminLink}>Check profile</Text>
+                                            <Text style={[styles.adminLink, textDirectionStyle]}>{t('profile.checkProfile')}</Text>
                                         </View>
                                     </View>
                                 </TouchableOpacity>
@@ -1617,7 +1610,7 @@ export default function Profile() {
                                                             console.error(error);
                                                         }
                                                     }}>
-                                                    <Text style={styles.locationLinkText}>Get Directions</Text>
+                                                    <Text style={styles.locationLinkText}>{t('profile.getDirections')}</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         }
@@ -1626,18 +1619,18 @@ export default function Profile() {
                             ) : (
                                 <View>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
-                                        <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }]}>
-                                            CONTACT
+                                        <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }, textDirectionStyle]}>
+                                            {t('profile.contact')}
                                         </Text>
 
                                         {userId == user._id && <TouchableOpacity onPress={handleEdit} style={styles.emptyContactInfoBtn}>
-                                            <Text style={styles.emptyContactInfoBtnText}>+Add contact info</Text>
+                                            <Text style={[styles.emptyContactInfoBtnText, textDirectionStyle]}>{t('profile.addContactInfo')}</Text>
                                         </TouchableOpacity>}
 
                                     </View>
                                     <View>
-                                        <Text style={[styles.emptyContactInfo, { marginBottom: 5 }]}>
-                                            No contact info
+                                        <Text style={[styles.emptyContactInfo, { marginBottom: 5 }, textDirectionStyle]}>
+                                            {t('profile.noContactInfo')}
                                         </Text>
                                     </View>
                                 </View>
@@ -1647,97 +1640,97 @@ export default function Profile() {
 
                     {/* BIO */}
                     {user.type != "Parent" && <View style={styles.profileSection}>
-                        <Text style={styles.title}>
-                            {(user.type != "Club" && user.type != "Association") ? 'Bio' : 'Summary'}
+                        <Text style={[styles.title, textDirectionStyle]}>
+                            {(user.type != "Club" && user.type != "Association") ? t('profile.bio') : t('profile.summary')}
                         </Text>
                         {user.bio ? (
-                            <Text style={styles.paragraph}>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>
                                 {user.bio}
                             </Text>
                         ) : (
-                            <Text style={styles.paragraph}>-</Text>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                         )}
 
                     </View>}
 
                     {/* SPORT */}
                     {user.type != "Parent" && <View style={styles.profileSection}>
-                        <Text style={styles.title}>
+                        <Text style={[styles.title, textDirectionStyle]}>
                             {user.type === "Scout" || user.type === "Sponsor"
-                                ? 'Interested in'
-                                : `Sport${user.sport?.length > 1 ? 's' : ''}`
+                                ? t('profile.interestedIn')
+                                : user.sport?.length > 1 ? t('profile.sports') : t('profile.sport')
                             }
                         </Text>
                         {user.sport && user.sport.length > 0 ? (
-                            <Text style={styles.paragraph}>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>
                                 {user.sport.toString()}
                             </Text>
                         ) : (
-                            <Text style={styles.paragraph}>-</Text>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                         )}
                     </View>}
 
 
                     <View style={styles.profileSection}>
                         {/* COUNTRY */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Country
+                        <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                            <Text style={[styles.title, textDirectionStyle]}>
+                                {t('profile.country')}
                             </Text>
                             {user.country ? (
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <View style={{ marginRight: 8 }}>
+                                <View style={[styles.inlineInfoRow, isRTL && styles.inlineInfoRowRtl]}>
+                                    <View style={isRTL ? { marginLeft: 8 } : { marginRight: 8 }}>
                                         <CountryFlag isoCode={user.country} size={14} />
                                     </View>
-                                    <Text style={styles.paragraph}>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>
                                         {user.country}
                                     </Text>
                                 </View>
                             ) : (
-                                <Text style={styles.paragraph}>-</Text>
+                                <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                             )}
                         </View>
 
                         {/* PLAYS IN TEAMS */}
-                        {user.type == "Athlete" && user.role != "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Plays in
+                        {user.type == "Athlete" && user.role != "Coach" && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                            <Text style={[styles.title, textDirectionStyle]}>
+                                {t('profile.playsIn')}
                             </Text>
                             {user.memberOf.length > 0 ? (
                                 <View>
-                                    <Text style={styles.paragraph}>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>
                                         {/* {user.memberOf.toString()} */}
                                         {user.memberOf.map(team => team.name).join(", ")}
                                     </Text>
                                 </View>
                             ) : (
-                                <Text style={styles.paragraph}>0 teams</Text>
+                                <Text style={[styles.paragraph, textDirectionStyle]}>0 {t('profile.teamsCount')}</Text>
                             )}
                         </View>}
 
                         {/* COACH OF TEAMS */}
-                        {user.role && user.role == "Coach" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Coach of
+                        {user.role && user.role == "Coach" && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                            <Text style={[styles.title, textDirectionStyle]}>
+                                {t('profile.coachOf')}
                             </Text>
                             {userCoachOf.length > 0 ? (
                                 <View>
-                                    <Text style={styles.paragraph}>{userCoachOf.length} {userCoachOf.length == 1 ? 'team' : 'teams'}</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>{userCoachOf.length} {userCoachOf.length == 1 ? t('profile.team') : t('profile.teamsCount')}</Text>
                                 </View>
                             ) : (
-                                <Text style={styles.paragraph}>0 teams</Text>
+                                <Text style={[styles.paragraph, textDirectionStyle]}>0 {t('profile.teamsCount')}</Text>
                             )}
                         </View>}
 
                         {/* CLUB */}
-                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Club
+                        {user.type == "Athlete" && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                            <Text style={[styles.title, textDirectionStyle]}>
+                                {t('profile.club')}
                             </Text>
                             {user.clubs && (
                                 <View>
                                     {(user.clubs.length == 0 && (!user.memberOf || user.memberOf == null || user.memberOf.length == 0) && (!user.isStaff || user.isStaff == null || user.isStaff.length == 0)) &&
-                                        <Text style={styles.paragraph}>Independent</Text>
+                                        <Text style={[styles.paragraph, textDirectionStyle]}>{t('profile.independent')}</Text>
                                     }
 
                                     {user.clubs.length == 0 && ((user.memberOf && user.memberOf != null && user.memberOf.length > 0) || (user.isStaff && user.isStaff != null && user.isStaff.length > 0)) &&
@@ -1750,10 +1743,10 @@ export default function Profile() {
                                             const currentClubName = user.clubs[0].name;
 
                                             if (!additionalClubs || additionalClubs === currentClubName) {
-                                                return <Text style={styles.paragraph}>{currentClubName}</Text>;
+                                                return <Text style={[styles.paragraph, textDirectionStyle]}>{currentClubName}</Text>;
                                             } else {
                                                 return (
-                                                    <Text style={styles.paragraph}>
+                                                    <Text style={[styles.paragraph, textDirectionStyle]}>
                                                         {currentClubName} and {additionalClubs.replace('clubs', 'more clubs')}
                                                     </Text>
                                                 );
@@ -1765,16 +1758,16 @@ export default function Profile() {
                         </View>}
 
                         {/* Organization */}
-                        {(user.type == "Scout" || user.type == "Sponsor") && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={styles.title}>
-                                Organization
+                        {(user.type == "Scout" || user.type == "Sponsor") && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                            <Text style={[styles.title, textDirectionStyle]}>
+                                {t('profile.organization')}
                             </Text>
                             {!user.organization.independent ? (
                                 <View>
-                                    <Text style={styles.paragraph}>{user.organization.name}</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>{user.organization.name}</Text>
                                 </View>
                             ) : (
-                                <Text style={styles.paragraph}>Independent</Text>
+                                <Text style={[styles.paragraph, textDirectionStyle]}>{t('profile.independent')}</Text>
                             )}
                         </View>}
 
@@ -1905,43 +1898,43 @@ export default function Profile() {
 
                     {/* ACHIEVEMENTS */}
                     {user.type != "Club" && user.type != "Scout" && user.type != "Association" && user.type != "Sponsor" && <View style={styles.profileSection}>
-                        {user.type != "Parent" && <Text style={styles.title}>
-                            Achievements
+                        {user.type != "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                            {t('profile.achievements')}
                         </Text>
                         }
-                        {user.type == "Parent" && <Text style={styles.title}>
-                            Children's Achievements
+                        {user.type == "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                            {t('profile.childrenAchievements')}
                         </Text>
                         }
                         {user.achievements ? (
-                            <Text style={styles.paragraph}>{user.achievements}</Text>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>{user.achievements}</Text>
                         ) : (
-                            <Text style={styles.paragraph}>-</Text>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                         )}
                     </View>}
 
                     {/* EVENTS */}
                     {user.type != "Scout" && user.type != "Sponsor" && user.type != "Association" && <View style={styles.profileSection}>
-                        {user.type != "Parent" && <Text style={styles.title}>
-                            Upcoming Events
+                        {user.type != "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                            {t('profile.upcomingEvents')}
                         </Text>}
-                        {user.type == "Parent" && <Text style={styles.title}>
-                            Children's Upcoming Events
+                        {user.type == "Parent" && <Text style={[styles.title, textDirectionStyle]}>
+                            {t('profile.childrenUpcomingEvents')}
                         </Text>}
                         {user.events ? (
-                            <Text style={styles.paragraph}>{user.events}</Text>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>{user.events}</Text>
                         ) : (
-                            <Text style={styles.paragraph}>-</Text>
+                            <Text style={[styles.paragraph, textDirectionStyle]}>-</Text>
                         )}
                     </View>}
 
                     {/* ACIONS */}
                     {userId == user._id && <View style={[styles.profileSection, styles.profileActions]}>
                         <TouchableOpacity onPress={handleEdit} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Edit profile</Text>
+                            <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('profile.editProfile')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleShareProfile} style={styles.profileButton}>
-                            <Text style={styles.profileButtonText}>Share Profile</Text>
+                            <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('profile.shareProfile')}</Text>
                         </TouchableOpacity>
                     </View>}
                 </View>
@@ -1969,13 +1962,13 @@ export default function Profile() {
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>Club Teams</Text>
+                                <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubTeams')}</Text>
                                 {userId == user._id && user.type === "Club" && (
                                     <TouchableOpacity
                                         style={styles.addButton}
                                         onPress={() => router.push('/teams/createTeam')}
                                     >
-                                        <Text style={styles.addButtonText}>+ Add Team</Text>
+                                        <Text style={styles.addButtonText}>{t('profile.addTeam')}</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -2001,18 +1994,18 @@ export default function Profile() {
                                     style={styles.emptyStateImage}
                                     resizeMode="contain"
                                 /> */}
-                                    <Text style={styles.emptyStateTitle}>No Teams Yet</Text>
-                                    <Text style={styles.emptyStateText}>
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noTeamsYet')}</Text>
+                                    <Text style={[styles.emptyStateText, textDirectionStyle]}>
                                         {userId == user._id
-                                            ? "Create your first team to get started"
-                                            : "This club hasn't created any teams yet"}
+                                            ? t('profile.createFirstTeam')
+                                            : t('profile.noClubTeamsYet')}
                                     </Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.emptyStateButton}
                                             onPress={() => router.push('/teams/createTeam')}
                                         >
-                                            <Text style={styles.emptyStateButtonText}>Create Team</Text>
+                                            <Text style={styles.emptyStateButtonText}>{t('profile.createTeam')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -2054,27 +2047,31 @@ export default function Profile() {
                                 )}
                             </View> */}
 
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                                <Text style={styles.sectionTitle}>{clubs.length} Association club{clubs.length == 1 ? '' : 's'}</Text>
+                            <View style={[styles.sectionHeader, { marginBottom: 20 }]}>
+                                <Text style={[styles.sectionTitle, textDirectionStyle]}>
+                                    {t('profile.associationClubsCount')
+                                        .replace('{count}', String(clubs.length))
+                                        .replace('{suffix}', clubs.length == 1 ? '' : 's')}
+                                </Text>
 
                                 {user._id == userId && !editMode &&
                                     <TouchableOpacity style={styles.editToggle} onPress={() => { setKeyword(''); setEditMode(true) }}>
                                         <Entypo name="edit" size={16} color="#FF4000" />
-                                        <Text style={styles.editToggleText}>Manage</Text>
+                                        <Text style={[styles.editToggleText, textDirectionStyle]}>{t('profile.manage')}</Text>
                                     </TouchableOpacity>}
 
                                 {user._id == userId && editMode &&
                                     <TouchableOpacity style={styles.editToggle} onPress={() => { setEditMode(false) }}>
                                         <AntDesign name="close" size={16} color="#FF4000" />
-                                        <Text style={styles.editToggleText}>Cancel</Text>
+                                        <Text style={[styles.editToggleText, textDirectionStyle]}>{t('profile.cancelPlain')}</Text>
                                     </TouchableOpacity>}
                             </View>
 
                             {editMode && <View>
                                 <View style={{ marginBottom: 16 }}>
                                     <TextInput
-                                        style={styles.input}
-                                        placeholder="search clubs (min. 3 characters)"
+                                        style={[styles.input, textDirectionStyle]}
+                                        placeholder={t('profile.searchClubsPlaceholder')}
                                         placeholderTextColor="#A8A8A8"
                                         value={keyword}
                                         onChangeText={handleSearchInput}
@@ -2116,7 +2113,7 @@ export default function Profile() {
                                                             </View>
                                                             <View style={styles.searchResultItemInfo}>
                                                                 <View>
-                                                                    <Text style={styles.searchResultItemName}>{club.name}</Text>
+                                                                    <Text style={[styles.searchResultItemName, textDirectionStyle]}>{club.name}</Text>
                                                                     {/* <Text style={[styles.searchResultItemDescription, club.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{club.sport || 'no sport'}</Text> */}
                                                                 </View>
                                                                 {addingClub.includes(club._id) ? (
@@ -2129,11 +2126,12 @@ export default function Profile() {
                                                                         style={
                                                                             [
                                                                                 styles.searchResultItemLink,
-                                                                                alreadyCoach && { color: 'gray', fontStyle: 'italic' }
+                                                                                alreadyCoach && { color: 'gray', fontStyle: 'italic' },
+                                                                                textDirectionStyle
                                                                             ]
                                                                         }
                                                                     >
-                                                                        {alreadyCoach ? 'Already added' : '+ Add'}
+                                                                        {alreadyCoach ? t('profile.alreadyAdded') : t('profile.add')}
                                                                     </Text>
                                                                 )}
 
@@ -2147,7 +2145,7 @@ export default function Profile() {
                                         {searchResults.length == 0 && !searching &&
                                             <View>
                                                 <Text style={[styles.searchNoResultText, { marginBottom: 15 }]}>
-                                                    No results
+                                                    {t('profile.noResults')}
                                                 </Text>
                                             </View>
                                         }
@@ -2222,7 +2220,7 @@ export default function Profile() {
                                                                             justifyContent: 'center'
                                                                         }}>
                                                                             <Text style={{ color: '#FF4000', fontFamily: 'Qatar', fontSize: 22, marginBottom: 30 }}>
-                                                                                Sure?
+                                                                                {t('profile.sure')}
                                                                             </Text>
                                                                             <View style={{ flexDirection: 'row', gap: 10 }}>
                                                                                 <TouchableOpacity onPress={() => handleRemoveClub(club._id)}>
@@ -2236,7 +2234,7 @@ export default function Profile() {
                                                                                             borderRadius: 5,
                                                                                         }}
                                                                                     >
-                                                                                        Yes
+                                                                                        {t('profile.yes')}
                                                                                     </Text>
                                                                                 </TouchableOpacity>
                                                                                 <TouchableOpacity
@@ -2255,7 +2253,7 @@ export default function Profile() {
                                                                                             borderRadius: 5,
                                                                                         }}
                                                                                     >
-                                                                                        No
+                                                                                        {t('profile.noShort')}
                                                                                     </Text>
                                                                                 </TouchableOpacity>
                                                                             </View>
@@ -2329,7 +2327,7 @@ export default function Profile() {
                                                                 </View>
                                                             )}
                                                         </View>
-                                                        <Text>{club?.name?.trim()}</Text>
+                                                        <Text style={textDirectionStyle}>{club?.name?.trim()}</Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             );
@@ -2338,18 +2336,18 @@ export default function Profile() {
                                 </View>
                             ) : (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyStateTitle}>No Clubs Yet</Text>
-                                    <Text style={styles.emptyStateText}>
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noClubsYet')}</Text>
+                                    <Text style={[styles.emptyStateText, textDirectionStyle]}>
                                         {userId == user._id
-                                            ? "Add your first club to get started"
-                                            : "This Association hasn't added any clubs yet"}
+                                            ? t('profile.addClubs')
+                                            : t('profile.noClubsYet')}
                                     </Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.emptyStateButton}
                                             onPress={() => { setKeyword(''); setEditMode(true) }}
                                         >
-                                            <Text style={styles.emptyStateButtonText}>Add Clubs</Text>
+                                            <Text style={styles.emptyStateButtonText}>{t('profile.addClubs')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -2380,14 +2378,14 @@ export default function Profile() {
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
                             <View style={styles.sectionHeader}>
-                                {user.type != "Athlete" && <Text style={styles.sectionTitle}>Club Schedule</Text>}
-                                {user.type == "Athlete" && user.role == "Coach" && <Text style={styles.sectionTitle}>Your teams Schedule</Text>}
-                                {userId == user._id && (user.type == "Club" || (user.type = "Athlete" && user.role == "Coach")) && (
+                                {user.type != "Athlete" && <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubSchedule')}</Text>}
+                                {user.type == "Athlete" && user.role == "Coach" && <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.yourTeamsSchedule')}</Text>}
+                                {userId == user._id && (user.type == "Club" || (user.type == "Athlete" && user.role == "Coach")) && (
                                     <TouchableOpacity
                                         style={styles.addButton}
                                         onPress={() => router.push('/schedule/createEvent')}
                                     >
-                                        <Text style={styles.addButtonText}>+ Add Event</Text>
+                                        <Text style={styles.addButtonText}>{t('profile.addEvent')}</Text>
                                     </TouchableOpacity>
                                 )}
                             </View>
@@ -2499,7 +2497,7 @@ export default function Profile() {
                                                 </View>
 
                                                 <View>
-                                                    <Text style={styles.subSectionTitle}>Events of the day - {selectedDate.getDate()} {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}</Text>
+                                                    <Text style={[styles.subSectionTitle, textDirectionStyle]}>{t('profile.eventsOfDay')} - {selectedDate.getDate()} {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}</Text>
                                                     {selectedDayEvents.length > 0 ? (
                                                         selectedDayEvents.map((event) => {
                                                             const eventDate = new Date(event.date);
@@ -2524,18 +2522,18 @@ export default function Profile() {
                                                                         </Text>
                                                                     </View>
                                                                     <View style={styles.eventDetails}>
-                                                                        <Text style={styles.eventTitle}>{event.status == "cancelled" && 'Cancelled - '}{event.title}</Text>
-                                                                        <Text style={styles.eventTime}>
+                                                                        <Text style={[styles.eventTitle, textDirectionStyle]}>{event.status == "cancelled" && `${t('profile.cancelled')} - `}{event.title}</Text>
+                                                                        <Text style={[styles.eventTime, textDirectionStyle]}>
                                                                             {formattedTime} - {endTime}
                                                                         </Text>
-                                                                        <Text style={styles.eventLocation}>
+                                                                        <Text style={[styles.eventLocation, textDirectionStyle]}>
                                                                             {event.locationType === 'online'
-                                                                                ? 'Online Event'
-                                                                                : event.venue?.name || 'Location TBD'}
+                                                                                ? t('profile.onlineEvent')
+                                                                                : event.venue?.name || t('profile.locationTbd')}
                                                                         </Text>
                                                                         {event.eventType === 'match' && event.opponent && (
                                                                             <View style={styles.opponentContainer}>
-                                                                                <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                                                <Text style={[styles.opponentText, textDirectionStyle]}>{t('profile.versus')} {event.opponent.name}</Text>
                                                                             </View>
                                                                         )}
                                                                     </View>
@@ -2552,7 +2550,7 @@ export default function Profile() {
                                                             );
                                                         })
                                                     ) : (
-                                                        <Text style={styles.noEventsText}>No events for this day.</Text>
+                                                        <Text style={[styles.noEventsText, textDirectionStyle]}>{t('profile.noEventsToday')}</Text>
                                                     )}
 
                                                     {/* <View style={{ marginTop: 30 }}>
@@ -2612,23 +2610,23 @@ export default function Profile() {
                                 </View>
                             ) : (
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyStateTitle}>No Scheduled Events</Text>
-                                    {user.type == "Club" && <Text style={styles.emptyStateText}>
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noScheduledEvents')}</Text>
+                                    {user.type == "Club" && <Text style={[styles.emptyStateText, textDirectionStyle]}>
                                         {userId === user._id
-                                            ? "Add your first event to get started"
-                                            : "This club hasn't scheduled any events yet"}
+                                            ? t('profile.createEvent')
+                                            : t('profile.noScheduledEvents')}
                                     </Text>}
                                     {userId === user._id && user.type == "Club" && (
                                         <TouchableOpacity
                                             style={styles.emptyStateButton}
                                             onPress={() => router.push('/schedule/createEvent')}
                                         >
-                                            <Text style={styles.emptyStateButtonText}>Create Event</Text>
+                                            <Text style={styles.emptyStateButtonText}>{t('profile.createEvent')}</Text>
                                         </TouchableOpacity>
                                     )}
 
-                                    {user.type == "Athlete" && user.role == "Coach" && <Text style={styles.emptyStateText}>
-                                        Your club hasn't scheduled any events yet
+                                    {user.type == "Athlete" && user.role == "Coach" && <Text style={[styles.emptyStateText, textDirectionStyle]}>
+                                        {t('profile.noScheduledEvents')}
                                     </Text>}
 
                                     {user.type == "Athlete" && user.role == "Coach" && (
@@ -2636,7 +2634,7 @@ export default function Profile() {
                                             style={styles.emptyStateButton}
                                             onPress={() => router.push('/schedule/createEvent')}
                                         >
-                                            <Text style={styles.emptyStateButtonText}>Create Event</Text>
+                                            <Text style={styles.emptyStateButtonText}>{t('profile.createEvent')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -2673,8 +2671,8 @@ export default function Profile() {
 
                         {!surveysLoading && coachSurveys.length === 0 && (
                             <View style={styles.emptyState}>
-                                <Text style={styles.emptyStateTitle}>No Surveys</Text>
-                                <Text style={styles.emptyStateText}>No active surveys are available right now.</Text>
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noSurveys')}</Text>
+                                <Text style={[styles.emptyStateText, textDirectionStyle]}>{t('profile.noActiveSurveys')}</Text>
                             </View>
                         )}
 
@@ -2727,13 +2725,13 @@ export default function Profile() {
                         ) : staff && staff.data?.length > 0 ? (
                             <View>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>Club Staff</Text>
+                                    <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubStaff')}</Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.addButton}
                                             onPress={() => router.push('/staff/createStaff')}
                                         >
-                                            <Text style={styles.addButtonText}>+ Add Staff</Text>
+                                            <Text style={styles.addButtonText}>{t('profile.addStaff')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -2777,7 +2775,7 @@ export default function Profile() {
                                                         onPress={() => Linking.openURL(`tel:${member.userRef.phone}`)}
                                                     >
                                                         <FontAwesome5 name="phone" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>Call</Text>
+                                                        <Text style={styles.contactButtonText}>{t('profile.call')}</Text>
                                                     </TouchableOpacity>
                                                 ) : (
                                                     <TouchableOpacity
@@ -2786,7 +2784,7 @@ export default function Profile() {
                                                         onPress={() => { }}
                                                     >
                                                         <FontAwesome5 name="phone" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>Call</Text>
+                                                        <Text style={styles.contactButtonText}>{t('profile.call')}</Text>
                                                     </TouchableOpacity>
                                                 )}
                                                 {member.userRef?.email ? (
@@ -2795,7 +2793,7 @@ export default function Profile() {
                                                         onPress={() => Linking.openURL(`mailto:${member.userRef.email}`)}
                                                     >
                                                         <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>Email</Text>
+                                                        <Text style={styles.contactButtonText}>{t('profile.email')}</Text>
                                                     </TouchableOpacity>
                                                 ) : (
                                                     <TouchableOpacity
@@ -2804,7 +2802,7 @@ export default function Profile() {
                                                         onPress={() => { }}
                                                     >
                                                         <MaterialCommunityIcons name="email-outline" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>Email</Text>
+                                                        <Text style={styles.contactButtonText}>{t('profile.email')}</Text>
                                                     </TouchableOpacity>
                                                 )}
                                                 {member.role && member.role == "Coach" && (
@@ -2820,7 +2818,7 @@ export default function Profile() {
                                                         })}
                                                     >
                                                         <MaterialCommunityIcons name="table-account" size={16} color="#FF4000" />
-                                                        <Text style={styles.contactButtonText}>TimeSheet</Text>
+                                                        <Text style={styles.contactButtonText}>{t('profile.timesheetButton')}</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
@@ -2831,29 +2829,29 @@ export default function Profile() {
                         ) : (
                             <View>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>Club Staff</Text>
+                                    <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubStaff')}</Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.addButton}
                                             onPress={() => router.push('/staff/createStaff')}
                                         >
-                                            <Text style={styles.addButtonText}>+ Add Staff</Text>
+                                            <Text style={styles.addButtonText}>{t('profile.addStaff')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
                                 <View style={styles.emptyState}>
-                                    <Text style={styles.emptyStateTitle}>No Staff Members</Text>
-                                    <Text style={styles.emptyStateText}>
+                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noStaffMembers')}</Text>
+                                    <Text style={[styles.emptyStateText, textDirectionStyle]}>
                                         {userId == user._id
-                                            ? "Add your first staff member to get started"
-                                            : "This club hasn't added any staff members yet"}
+                                            ? t('profile.addFirstStaff')
+                                            : t('profile.noClubStaffYet')}
                                     </Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.emptyStateButton}
                                             onPress={() => router.push('/staff/createStaff')}
                                         >
-                                            <Text style={styles.emptyStateButtonText}>Add Staff</Text>
+                                            <Text style={styles.emptyStateButtonText}>{t('profile.addStaffButton')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -2884,13 +2882,13 @@ export default function Profile() {
                         ) : (
                             <View>
                                 <View style={styles.sectionHeader}>
-                                    <Text style={styles.sectionTitle}>Club Inventory</Text>
+                                    <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubInventory')}</Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
                                             style={styles.addButton}
                                             onPress={() => router.push('/inventory/createInventory')}
                                         >
-                                            <Text style={styles.addButtonText}>+ Add Item</Text>
+                                            <Text style={styles.addButtonText}>{t('profile.addItem')}</Text>
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -2907,24 +2905,24 @@ export default function Profile() {
                                                     <FontAwesome5 name="box-open" size={24} color="#fff" />
                                                 </View>
                                                 <View style={styles.inventoryInfo}>
-                                                    <Text style={styles.inventoryName}>{item.itemName}</Text>
-                                                    <Text style={styles.inventoryCategory}>{item.category}</Text>
+                                                    <Text style={[styles.inventoryName, textDirectionStyle]}>{item.itemName}</Text>
+                                                    <Text style={[styles.inventoryCategory, textDirectionStyle]}>{item.category}</Text>
                                                 </View>
                                                 <View style={styles.inventoryStats}>
                                                     <Text style={styles.inventoryStatValue}>{item.quantity}</Text>
-                                                    <Text style={styles.inventoryStatLabel}>In Stock</Text>
+                                                    <Text style={styles.inventoryStatLabel}>{t('profile.inStock')}</Text>
                                                 </View>
                                             </View>
 
                                             <View style={styles.inventoryDetails}>
                                                 <View style={styles.inventoryDetailRow}>
-                                                    <Text style={styles.inventoryDetailLabel}>Unit Price:</Text>
-                                                    <Text style={styles.inventoryDetailValue}>{item.unitPrice}</Text>
+                                                    <Text style={[styles.inventoryDetailLabel, textDirectionStyle]}>{t('profile.unitPrice')}</Text>
+                                                    <Text style={[styles.inventoryDetailValue, textDirectionStyle]}>{item.unitPrice}</Text>
                                                 </View>
                                                 {item.description && (
                                                     <View style={[styles.inventoryDetailRow, { marginTop: 5 }]}>
-                                                        <Text style={styles.inventoryDetailLabel}>Description:</Text>
-                                                        <Text style={styles.inventoryDetailValue} numberOfLines={1}>{item.description}</Text>
+                                                        <Text style={[styles.inventoryDetailLabel, textDirectionStyle]}>{t('profile.description')}</Text>
+                                                        <Text style={[styles.inventoryDetailValue, textDirectionStyle]} numberOfLines={1}>{item.description}</Text>
                                                     </View>
                                                 )}
                                             </View>
@@ -2932,18 +2930,18 @@ export default function Profile() {
                                     ))
                                 ) : (
                                     <View style={styles.emptyState}>
-                                        <Text style={styles.emptyStateTitle}>No Items</Text>
-                                        <Text style={styles.emptyStateText}>
+                                        <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noItems')}</Text>
+                                        <Text style={[styles.emptyStateText, textDirectionStyle]}>
                                             {userId == user._id
-                                                ? "Add your first inventory item to get started"
-                                                : "This club hasn't added any inventory items yet"}
+                                                ? t('profile.addFirstInventory')
+                                                : t('profile.noClubInventoryYet')}
                                         </Text>
                                         {userId == user._id && (
                                             <TouchableOpacity
                                                 style={styles.emptyStateButton}
                                                 onPress={() => router.push('/inventory/createInventory')}
                                             >
-                                                <Text style={styles.emptyStateButtonText}>Add Item</Text>
+                                                <Text style={styles.emptyStateButtonText}>{t('profile.addItemButton')}</Text>
                                             </TouchableOpacity>
                                         )}
                                     </View>
@@ -2978,11 +2976,11 @@ export default function Profile() {
                                     <View style={styles.balanceSection}>
                                         {wallet != null && <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <View style={{ flex: 1 }}>
-                                                <Text style={styles.balanceTitle}>Balance</Text>
+                                                <Text style={[styles.balanceTitle, textDirectionStyle]}>{t('profile.balance')}</Text>
                                                 <Text style={styles.balanceAmount}>{wallet.currency} {wallet.balance}</Text>
                                             </View>
                                             <View style={{ flex: 1 }}>
-                                                <Text style={styles.balanceTitle}>Available Balance</Text>
+                                                <Text style={[styles.balanceTitle, textDirectionStyle]}>{t('profile.availableBalance')}</Text>
                                                 <Text style={styles.balanceAmount}>{wallet.currency} {wallet.availableBalance}</Text>
                                             </View>
                                         </View>}
@@ -2993,14 +2991,14 @@ export default function Profile() {
                                                 onPress={() => handleTopUp()}
                                             >
                                                 <MaterialCommunityIcons name="wallet-plus" size={20} color="#fff" />
-                                                <Text style={styles.balanceButtonText}>Top Up</Text>
+                                                <Text style={styles.balanceButtonText}>{t('profile.topUp')}</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity
                                                 style={styles.balanceButton}
                                                 onPress={() => router.push('/payments/createPayment')}
                                             >
                                                 <FontAwesome6 name="money-bill-transfer" size={20} color="#fff" />
-                                                <Text style={styles.balanceButtonText}>Send money</Text>
+                                                <Text style={styles.balanceButtonText}>{t('profile.sendMoney')}</Text>
                                             </TouchableOpacity>
                                         </View>
                                     </View>
@@ -3048,7 +3046,7 @@ export default function Profile() {
                                                                 <Text style={styles.inventoryStatValue}>
                                                                     {userId == item.payer._id ? '-' : '+'}{item.amount} {item.currency}
                                                                 </Text>
-                                                                <Text style={styles.inventoryStatLabel}>Amount</Text>
+                                                                <Text style={styles.inventoryStatLabel}>{t('profile.amount')}</Text>
                                                             </View>
                                                         </View>
 
@@ -3078,8 +3076,8 @@ export default function Profile() {
                                         </View>
                                     ) : (
                                         <View style={[styles.emptyState, { paddingVertical: 0, alignItems: 'flex-start' }]}>
-                                            <Text style={[styles.emptyStateText,]}>
-                                                Nothing to show
+                                            <Text style={[styles.emptyStateText, textDirectionStyle]}>
+                                                {t('profile.nothingToShow')}
                                             </Text>
                                         </View>
                                     )}
@@ -3087,8 +3085,9 @@ export default function Profile() {
                             )}
                         </View>
                     ) : (
-                        <View style={styles.contentContainer}>
-                            <Text style={{ textAlign: 'center' }}>Financials coming soon</Text>
+                        <View style={styles.emptyState}>
+                            <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.comingSoon')}</Text>
+                            <Text style={[styles.emptyStateText, textDirectionStyle]}>{t('profile.financialsSoon')}</Text>
                         </View>
                     )}
                 </Animated.ScrollView>
@@ -3116,36 +3115,35 @@ export default function Profile() {
                             <View>
                                 <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
                                     <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
-                                        Timesheet
+                                        {t('profile.timesheet')}
                                     </Text>
                                 </View>
-                                <Text style={styles.paragraph}>
-                                    This will use your current location to check you into your club. Please note that
-                                    your timesheet will be accessed and used by the HR department of your club.
+                                <Text style={[styles.paragraph, textDirectionStyle]}>
+                                    {t('profile.timesheetInfo')}
                                 </Text>
 
                                 <View style={[styles.balanceActions, { marginTop: 20 }]}>
                                     <TouchableOpacity style={styles.balanceButton} onPress={() => { handleCheckIn() }}>
                                         <Feather name="arrow-down-circle" size={20} color="#fff" />
-                                        <Text style={styles.balanceButtonText}>Check In</Text>
+                                        <Text style={styles.balanceButtonText}>{t('profile.checkIn')}</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity style={styles.balanceButton} onPress={() => { handleCheckOut() }}>
                                         <Feather name="arrow-up-circle" size={20} color="#fff" />
-                                        <Text style={styles.balanceButtonText}>Check Out</Text>
+                                        <Text style={styles.balanceButtonText}>{t('profile.checkOut')}</Text>
                                     </TouchableOpacity>
                                 </View>
 
                                 <View style={{ marginTop: 30 }}>
                                     <View style={styles.sectionHeader}>
                                         <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
-                                            History
+                                            {t('profile.history')}
                                         </Text>
                                     </View>
 
                                     {userTimeSheet.length === 0 && (
                                         <Text style={{ color: '#888', textAlign: 'center' }}>
-                                            No timesheet records yet.
+                                            {t('profile.noTimesheetRecords')}
                                         </Text>
                                     )}
 
@@ -3170,12 +3168,12 @@ export default function Profile() {
                                                         {checkIfLocationIsRight(item.location.latitude, item.location.longitude) ? (
                                                             <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                                                 <FontAwesome name="check" size={14} color="#009933" />
-                                                                <Text>Location match</Text>
+                                                                <Text>{t('profile.locationMatch')}</Text>
                                                             </View>
                                                         ) : (
                                                             <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                                                                 <FontAwesome name="close" size={14} color="#FF4400" />
-                                                                <Text>Location does not match</Text>
+                                                                <Text>{t('profile.locationMismatch')}</Text>
                                                             </View>
                                                         )}
                                                     </Text>)}
@@ -3183,11 +3181,11 @@ export default function Profile() {
 
                                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                                     <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
-                                                        In: {formatTimeOnly(item.checkIn)}
+                                                        {t('profile.in')}: {formatTimeOnly(item.checkIn)}
                                                     </Text>
 
                                                     <Text style={{ fontFamily: 'Acumin', fontSize: 14, color: '#111', flex: 1 }}>
-                                                        Out: {item.checkOut ? formatTimeOnly(item.checkOut) : 'Not checked out yet'}
+                                                        {t('profile.out')}: {item.checkOut ? formatTimeOnly(item.checkOut) : t('profile.notCheckedOut')}
                                                     </Text>
                                                 </View>
 
@@ -3224,23 +3222,23 @@ export default function Profile() {
                             <View>
                                 <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
                                     <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
-                                        Performance
+                                        {t('profile.performance')}
                                     </Text>
                                     {user.skillsAreVerified?.by != null &&
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                             <Octicons name="verified" size={16} color="#009933" />
-                                            <Text style={{ color: "#009933" }}>Verified</Text>
+                                            <Text style={{ color: "#009933" }}>{t('common.verified')}</Text>
                                         </View>
                                     }
                                 </View>
 
-                                {selectedUserTest == null && <Text>No data yet</Text>}
+                                {selectedUserTest == null && <Text style={textDirectionStyle}>{t('profile.noDataYet')}</Text>}
 
                                 {selectedUserTest && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
-                                    <Text style={styles.title}>
-                                        Last Test Date
+                                    <Text style={[styles.title, textDirectionStyle]}>
+                                        {t('profile.lastTestDate')}
                                     </Text>
-                                    <Text>
+                                    <Text style={textDirectionStyle}>
                                         {formatDate(selectedUserTest?.lastTested)}
                                     </Text>
                                 </View>}
@@ -3248,8 +3246,8 @@ export default function Profile() {
                                 {user.type == "Athlete" && overallGraphData && overallGraphData.length > 0 &&
                                     <>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 5, marginBottom: 10 }}>
-                                            <Text style={styles.title}>
-                                                Overall Average Performance
+                                            <Text style={[styles.title, textDirectionStyle]}>
+                                                {t('profile.overallAveragePerformance')}
                                             </Text>
                                         </View>
                                         <View style={[styles.profileSection, styles.skillsSection]}>
@@ -3296,8 +3294,8 @@ export default function Profile() {
 
                                                 <Text style={{ opacity: 0.7 }}>
                                                     {item.lastUpdated
-                                                        ? `Last updated ${new Date(item.lastUpdated).toLocaleDateString()}`
-                                                        : "No data"
+                                                        ? `${t('profile.lastUpdated')} ${new Date(item.lastUpdated).toLocaleDateString()}`
+                                                        : t('profile.noDataYet')
                                                     }
                                                 </Text>
                                             </View>
@@ -3320,7 +3318,7 @@ export default function Profile() {
                 </Animated.ScrollView>
             }
 
-            <View style={styles.navBar}>
+            <View style={[styles.navBar, isRTL && styles.navBarRtl]}>
                 <TouchableOpacity onPress={() => router.replace('/settings')}>
                     <Image source={require('../../assets/settings.png')} style={styles.icon} />
                 </TouchableOpacity>
@@ -3346,7 +3344,9 @@ export default function Profile() {
 }
 
 const TeamCard = ({ team }) => {
+    const { isRTL, t } = useLanguage();
     const router = useRouter();
+    const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
     return (
         <TouchableOpacity
@@ -3357,7 +3357,7 @@ const TeamCard = ({ team }) => {
                 params: { id: team._id },
             })}
         >
-            <View style={styles.teamHeader}>
+            <View style={[styles.teamHeader, isRTL && styles.teamHeaderRtl]}>
                 {team.image ? (
                     <Image
                         source={{ uri: team.image }}
@@ -3370,18 +3370,18 @@ const TeamCard = ({ team }) => {
                     </View>
                 )}
                 <View style={styles.teamInfo}>
-                    <Text style={styles.teamName}>{team.name}</Text>
-                    <Text style={styles.teamSport}>{team.sport}</Text>
+                    <Text style={[styles.teamName, textDirectionStyle]}>{team.name}</Text>
+                    <Text style={[styles.teamSport, textDirectionStyle]}>{team.sport}</Text>
                 </View>
                 <View style={styles.teamStats}>
                     <Text style={styles.teamStatValue}>{team.members?.length || 0}</Text>
-                    <Text style={styles.teamStatLabel}>Members</Text>
+                    <Text style={styles.teamStatLabel}>{t('profile.members')}</Text>
                 </View>
             </View>
 
             {team.coaches.length > 0 && (
-                <View style={styles.coachSection}>
-                    <Text style={styles.coachLabel}>{team.coaches.length == 1 ? 'Coach' : 'Coaches'}</Text>
+                <View style={[styles.coachSection, isRTL && styles.coachSectionRtl]}>
+                    <Text style={[styles.coachLabel, textDirectionStyle]}>{team.coaches.length == 1 ? t('profile.coach') : t('profile.coaches')}</Text>
 
                     <View style={styles.coachInfoDiv}>
                         {team.coaches.map((coach, index) => (
@@ -3390,7 +3390,7 @@ const TeamCard = ({ team }) => {
                                     pathname: '/profile/public',
                                     params: { id: coach._id },
                                 })}
-                                key={index} style={styles.coachInfo}>
+                                key={index} style={[styles.coachInfo, isRTL && styles.coachInfoRtl]}>
                                 {coach.image ? (
                                     <Image
                                         source={{ uri: coach.image }}
@@ -3403,7 +3403,7 @@ const TeamCard = ({ team }) => {
                                         resizeMode="contain"
                                     />
                                 )}
-                                <Text style={styles.coachName}>{coach.name}</Text>
+                                <Text style={[styles.coachName, textDirectionStyle]}>{coach.name}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -3557,6 +3557,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     profileImage: {
         position: 'absolute',
         bottom: 0,
@@ -3632,6 +3636,9 @@ const styles = StyleSheet.create({
         // Android shadow
         elevation: 5,
     },
+    navBarRtl: {
+        flexDirection: 'row-reverse',
+    },
     icon: {
         width: 24,
         height: 24,
@@ -3682,6 +3689,9 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         flexDirection: 'row'
     },
+    tabsScrollRtl: {
+        flexDirection: 'row-reverse',
+    },
     tab: {
         padding: 10,
         paddingBottom: 5,
@@ -3706,6 +3716,21 @@ const styles = StyleSheet.create({
     },
     contactTitle: {
         marginBottom: 10
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    infoRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    inlineInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    inlineInfoRowRtl: {
+        flexDirection: 'row-reverse',
     },
     contactItem: {
         borderRadius: 10,
@@ -3843,6 +3868,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 15,
     },
+    teamHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
     teamLogo: {
         width: 50,
         height: 50,
@@ -3894,6 +3922,9 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: '#eeeeee',
     },
+    coachSectionRtl: {
+        flexDirection: 'row-reverse',
+    },
     coachLabel: {
         fontFamily: 'Acumin',
         fontSize: 14,
@@ -3913,6 +3944,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#eeeeee',
         padding: 5,
         borderRadius: 20,
+    },
+    coachInfoRtl: {
+        flexDirection: 'row-reverse',
     },
     coachAvatar: {
         width: 25,
@@ -4438,5 +4472,13 @@ const styles = StyleSheet.create({
         color: 'white',
         fontFamily: 'Qatar',
         fontSize: 16,
-    }
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
+    },
 });

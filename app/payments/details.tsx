@@ -17,11 +17,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function PaymentDetails() {
     const router = useRouter();
+    const { isRTL, language, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [payment, setPayment] = useState(null);
@@ -59,7 +61,7 @@ export default function PaymentDetails() {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
                 if (!token) {
-                    setError('Authentication token missing');
+                    setError(t('payments.authMissing'));
                     return;
                 }
 
@@ -76,11 +78,11 @@ export default function PaymentDetails() {
                 if (res.ok) {
                     setPayment(data.data);
                 } else {
-                    setError(data.message || 'Failed to fetch payment details');
+                    setError(data.message || t('payments.failedFetch'));
                 }
             } catch (err) {
                 console.error('Error fetching payment:', err);
-                setError('Something went wrong while fetching payment');
+                setError(t('payments.failedFetchGeneric'));
             } finally {
                 setLoading(false);
             }
@@ -108,11 +110,11 @@ export default function PaymentDetails() {
                     params: { tab: 'Financials' }
                 })
             } else {
-                alert(data.message || 'Failed to settle payment');
+                alert(data.message || t('payments.failedSettle'));
             }
         } catch (err) {
             console.error('Error settling payment:', err);
-            alert('Error settling payment');
+            alert(t('payments.errorSettling'));
         }
     }
 
@@ -131,6 +133,25 @@ export default function PaymentDetails() {
         const hourStr = hours.toString().padStart(2, '0');
 
         return `${day} ${month} ${year} ${hourStr}:${minutes} ${ampm}`;
+    };
+
+    const formatPaymentDate = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleString(language === 'ar' ? 'ar' : 'en-US', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
+    };
+
+    const getStatusLabel = (status: string) => {
+        if (status === 'completed') return t('payments.completed');
+        if (status === 'declined') return t('payments.declined');
+        return t('payments.pending');
     };
 
     return (
@@ -153,19 +174,19 @@ export default function PaymentDetails() {
                                 params: { tab: 'Financials' }
                             })
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to financials</Text>
+                        <Text style={styles.backBtnText}>{t('payments.backToFinancials')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Payment details</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('payments.paymentDetails')}</Text>
 
-                        {!loading && <Text style={styles.pageDesc}>Payment# {payment._id}</Text>}
+                        {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('payments.paymentNumber', { id: payment._id })}</Text>}
 
                         {loading &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                            <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#fff"
@@ -175,7 +196,7 @@ export default function PaymentDetails() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Payme</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>Payme</Text>
                 </View>
 
                 <ScrollView >
@@ -189,29 +210,29 @@ export default function PaymentDetails() {
                         {payment && (
                             <View>
                                 <View style={{ marginBottom: 30 }}>
-                                    <View style={styles.row}>
-                                        <Text style={styles.title}>Amount</Text>
-                                        <Text style={styles.value}>{payment.amount} {payment.currency}</Text>
+                                    <View style={[styles.row, isRTL && styles.rowRtl]}>
+                                        <Text style={[styles.title, isRTL && styles.rtlText]}>{t('payments.amount')}</Text>
+                                        <Text style={[styles.value, isRTL && styles.rtlText]}>{payment.amount} {payment.currency}</Text>
                                     </View>
 
-                                    <View style={styles.row}>
-                                        <Text style={styles.title}>Type</Text>
-                                        <Text style={styles.value}>{payment.type}</Text>
+                                    <View style={[styles.row, isRTL && styles.rowRtl]}>
+                                        <Text style={[styles.title, isRTL && styles.rtlText]}>{t('payments.type')}</Text>
+                                        <Text style={[styles.value, isRTL && styles.rtlText]}>{payment.type}</Text>
                                     </View>
 
-                                    <View style={styles.row}>
-                                        <Text style={styles.title}>Date</Text>
-                                        <Text style={styles.value}>{formatDate(payment.createdAt)}</Text>
+                                    <View style={[styles.row, isRTL && styles.rowRtl]}>
+                                        <Text style={[styles.title, isRTL && styles.rtlText]}>{t('payments.date')}</Text>
+                                        <Text style={[styles.value, isRTL && styles.rtlText]}>{formatPaymentDate(payment.createdAt)}</Text>
                                     </View>
 
-                                    <View style={styles.row}>
-                                        <Text style={styles.title}>Note</Text>
-                                        <Text style={styles.value}>{payment.note ? payment.note : '-'}</Text>
+                                    <View style={[styles.row, isRTL && styles.rowRtl]}>
+                                        <Text style={[styles.title, isRTL && styles.rtlText]}>{t('payments.note')}</Text>
+                                        <Text style={[styles.value, isRTL && styles.rtlText]}>{payment.note ? payment.note : '-'}</Text>
                                     </View>
 
-                                    <View style={[styles.row, { alignItems: 'center', marginBottom: 30 }]}>
-                                        <Text style={styles.title}>Status</Text>
-                                        <View style={{flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                    <View style={[styles.row, isRTL && styles.rowRtl, { alignItems: 'center', marginBottom: 30 }]}>
+                                        <Text style={[styles.title, isRTL && styles.rtlText]}>{t('payments.status')}</Text>
+                                        <View style={[styles.statusRow, isRTL && styles.statusRowRtl]}>
                                             {payment.status == 'pending' && <Octicons name="unverified" size={16} color="#ffc400" />}
                                             {payment.status == 'completed' && <Octicons name="verified" size={16} color="#009933" />}
                                             {payment.status == 'declined' && <Octicons name="x-circle" size={16} color="#FF4000" />}
@@ -219,16 +240,16 @@ export default function PaymentDetails() {
                                                 textTransform: 'capitalize',
                                                 color: payment.status == 'completed' ? '#009933' : payment.status == 'pending' ? '#ffc400' : '#FF4000'
                                             }]}>
-                                                {payment.status}
+                                                {getStatusLabel(payment.status)}
                                             </Text>
                                         </View>
                                     </View>
                                 </View>
 
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[styles.peopleRow, isRTL && styles.peopleRowRtl]}>
                                     {payment.payer && (
                                         <View style={{ width: '40%' }}>
-                                            <Text style={[styles.title, { marginBottom: 0 }]}>Payer</Text>
+                                            <Text style={[styles.title, { marginBottom: 0 }, isRTL && styles.rtlText]}>{t('payments.payer')}</Text>
                                             <View>
                                                 <TouchableOpacity
                                                     style={{ alignItems: 'center', backgroundColor: '#eeeeee', padding: 10, borderRadius: 8 }}
@@ -318,7 +339,7 @@ export default function PaymentDetails() {
 
                                     {payment.beneficiary && (
                                         <View style={{ width: '40%' }}>
-                                            <Text style={[styles.title, { marginBottom: 0 }]}>Beneficiary</Text>
+                                            <Text style={[styles.title, { marginBottom: 0 }, isRTL && styles.rtlText]}>{t('payments.beneficiary')}</Text>
                                             <View>
                                                 <TouchableOpacity
                                                     style={{ alignItems: 'center', backgroundColor: '#eeeeee', padding: 10, borderRadius: 8 }}
@@ -443,6 +464,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
@@ -473,6 +499,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -527,6 +557,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         right: -5,
         opacity: 0.2
+    },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
     },
     error: {
         marginBottom: 15,
@@ -600,6 +634,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 10
     },
+    rowRtl: {
+        flexDirection: 'row-reverse',
+    },
     label: {
         fontFamily: 'Acumin',
         fontSize: 16,
@@ -654,5 +691,33 @@ const styles = StyleSheet.create({
         height: 48,
         width: 13,
         marginLeft: -1
+    },
+    loaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5,
+    },
+    loaderRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    statusRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+    },
+    statusRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    peopleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    peopleRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });

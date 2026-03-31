@@ -14,20 +14,23 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useLanguage } from '../context/language';
 
 
 
 const { width } = Dimensions.get('window');
-const router = useRouter();
 
 
 export default function Login() {
+  const router = useRouter();
+  const { isRTL, t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailChecked, setEmailChecked] = useState(false);
+  const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
 
   useEffect(() => {
@@ -51,7 +54,7 @@ export default function Login() {
     setLoading(true)
 
     if (!email || !password) {
-      setError("Please fill email and password")
+      setError(t('auth.pleaseFillEmailPassword'))
       setLoading(false)
     };
 
@@ -85,7 +88,7 @@ export default function Login() {
       }
 
     } catch (error: any) {
-      setError("Login failed. Please try again")
+      setError(t('auth.loginFailed'))
       setLoading(false)
       console.error('Login failed:', error.message);
     }
@@ -97,7 +100,7 @@ export default function Login() {
     setLoading(true)
 
     if (!email) {
-      setError("Please enter email")
+      setError(t('auth.pleaseEnterEmail'))
       setLoading(false)
       return;
     };
@@ -134,7 +137,7 @@ export default function Login() {
       }
 
     } catch (error: any) {
-      setError("Email Check failed. Please try again")
+      setError(t('auth.emailCheckFailed'))
       setLoading(false)
       setEmailChecked(false)
       console.error('Login failed:', error.message);
@@ -156,21 +159,21 @@ export default function Login() {
           }}
           style={styles.backBtn}
         >
-          <Ionicons name="chevron-back" size={20} color="#ffffff" />
-          <Text style={styles.backBtnText}>Back</Text>
+          <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+          <Text style={[styles.backBtnText, textDirectionStyle]}>{t('auth.back')}</Text>
         </TouchableOpacity>
 
-        <View style={styles.headerTextBlock}>
-          <Text style={styles.pageTitle}>
-            Login
+        <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+          <Text style={[styles.pageTitle, textDirectionStyle]}>
+            {t('auth.loginTitle')}
           </Text>
-          <Text style={styles.pageDesc}>
-            Let's get started!
+          <Text style={[styles.pageDesc, textDirectionStyle]}>
+            {t('auth.loginSubtitle')}
           </Text>
         </View>
 
-        <Text style={styles.ghostText}>
-          Login
+        <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
+          {t('auth.loginTitle')}
         </Text>
 
       </View>
@@ -178,11 +181,11 @@ export default function Login() {
       <View style={styles.form}>
         {error != '' && <View style={styles.error}>
           <View style={styles.errorIcon}></View>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={[styles.errorText, textDirectionStyle]}>{error}</Text>
         </View>}
         {!emailChecked && <TextInput
-          style={styles.input}
-          placeholder="Email"
+          style={[styles.input, textDirectionStyle]}
+          placeholder={t('auth.email')}
           placeholderTextColor="#A8A8A8"
           value={email}
           onChangeText={setEmail}
@@ -191,14 +194,14 @@ export default function Login() {
         />}
 
         {emailChecked && <View>
-          <TouchableOpacity style={{ marginBottom: 40, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <Ionicons name="chevron-back" size={20} color="#FF4400" style={{ transform: [{ translateY: 1 }] }} />
-            <Text style={{ color: "#FF4400" }}>{email}</Text>
+          <TouchableOpacity style={[styles.emailBackRow, isRTL && styles.emailBackRowRtl]}>
+            <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#FF4400" style={{ transform: [{ translateY: 1 }] }} />
+            <Text style={[styles.emailBackText, textDirectionStyle]}>{email}</Text>
           </TouchableOpacity>
           <View>
             <TextInput
-              style={[styles.input, styles.passwordInput]}
-              placeholder="Password"
+              style={[styles.input, styles.passwordInput, textDirectionStyle]}
+              placeholder={t('auth.password')}
               placeholderTextColor="#A8A8A8"
               value={password}
               onChangeText={setPassword}
@@ -206,7 +209,7 @@ export default function Login() {
             />
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
+              style={[styles.eyeIcon, isRTL && styles.eyeIconRtl]}
             >
               <MaterialIcons
                 name={showPassword ? "visibility-off" : "visibility"}
@@ -219,7 +222,7 @@ export default function Login() {
 
         {emailChecked && <View>
           <TouchableOpacity style={styles.forgotPassword} onPress={() => { router.push('/profile/forgotPassword') }}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <Text style={[styles.forgotPasswordText, textDirectionStyle]}>{t('auth.forgotPassword')}</Text>
           </TouchableOpacity>
         </View>}
 
@@ -227,7 +230,7 @@ export default function Login() {
           {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
           <View style={styles.loginButton}>
             <Text style={styles.loginText}>
-              {loading ? 'LOGGING IN' : 'LOGIN'}
+              {loading ? t('auth.loggingIn') : t('auth.login')}
             </Text>
             {loading && (
               <ActivityIndicator
@@ -244,7 +247,7 @@ export default function Login() {
           {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
           <View style={styles.loginButton}>
             <Text style={styles.loginText}>
-              {loading ? 'NEXT' : 'NEXT'}
+              {t('auth.next')}
             </Text>
             {loading && (
               <ActivityIndicator
@@ -259,9 +262,9 @@ export default function Login() {
       </View>
 
       <View style={styles.switchLinkContainer}>
-        <Text style={{ color: 'black' }}>Need a new account?</Text>
+        <Text style={[styles.switchText, textDirectionStyle]}>{t('auth.needAccount')}</Text>
         <TouchableOpacity onPress={() => router.replace('/register')}>
-          <Text style={styles.switchLink}>REGISTER HERE</Text>
+          <Text style={[styles.switchLink, isRTL && styles.switchLinkRtl]}>{t('auth.registerHere')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -292,6 +295,10 @@ const styles = StyleSheet.create({
     left: 20,
     width: width - 40,
   },
+  headerTextBlockRtl: {
+    left: undefined,
+    right: 20,
+  },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -314,6 +321,19 @@ const styles = StyleSheet.create({
     width: '100%',
     textAlign: 'right',
     textTransform: 'uppercase'
+  },
+  ghostTextRtl: {
+    right: undefined,
+    left: -5,
+    textAlign: 'left',
+  },
+  ltrText: {
+    textAlign: 'left',
+    writingDirection: 'ltr'
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl'
   },
   form: {
     paddingLeft: 20,
@@ -372,6 +392,9 @@ const styles = StyleSheet.create({
     color: '#525252',
     textDecorationLine: 'underline'
   },
+  switchText: {
+    color: 'black'
+  },
   switchLinkContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -386,6 +409,10 @@ const styles = StyleSheet.create({
     paddingTop: 3,
     lineHeight: 16,
     color: 'black'
+  },
+  switchLinkRtl: {
+    marginLeft: 0,
+    marginRight: 5,
   },
   error: {
     marginBottom: 15,
@@ -421,10 +448,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Qatar'
   },
+  emailBackRow: {
+    marginBottom: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  },
+  emailBackRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  emailBackText: {
+    color: "#FF4400"
+  },
   eyeIcon: {
     position: 'absolute',
     right: 15,
     top: Platform.OS == 'ios' ? 17 : 17,
     zIndex: 1,
+  },
+  eyeIconRtl: {
+    right: undefined,
+    left: 15,
   },
 });

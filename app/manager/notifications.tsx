@@ -17,6 +17,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
@@ -64,6 +65,7 @@ const TYPE_TEMPLATES: Record<string, { title: string; body: string }> = {
 
 export default function ManagerNotificationsScreen() {
     const router = useRouter();
+    const { isRTL, t, language } = useLanguage();
     const [targetMode, setTargetMode] = useState('user');
     const [searchKeyword, setSearchKeyword] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -83,6 +85,48 @@ export default function ManagerNotificationsScreen() {
     const [success, setSuccess] = useState('');
 
     const isSearchMode = useMemo(() => ['user', 'users', 'club', 'team', 'event', 'coach'].includes(targetMode), [targetMode]);
+    const targetModes = useMemo(() => ([
+        { key: 'user', label: language === 'ar' ? 'مستخدم' : 'User' },
+        { key: 'users', label: language === 'ar' ? 'مستخدمون' : 'Users' },
+        { key: 'club', label: language === 'ar' ? 'نادي' : 'Club' },
+        { key: 'team', label: language === 'ar' ? 'فريق' : 'Team' },
+        { key: 'event', label: language === 'ar' ? 'فعالية' : 'Event' },
+        { key: 'coach', label: language === 'ar' ? 'مدرب' : 'Coach' },
+        { key: 'sport', label: language === 'ar' ? 'رياضة' : 'Sport' }
+    ]), [language]);
+    const notificationTypes = useMemo(() => ([
+        { key: 'survey', label: language === 'ar' ? 'استبيان' : 'Survey' },
+        { key: 'event', label: language === 'ar' ? 'فعالية' : 'Event' },
+        { key: 'event_reminder', label: language === 'ar' ? 'تذكير فعالية' : 'Event reminder' },
+        { key: 'monthly_payment_reminder', label: language === 'ar' ? 'تذكير دفع' : 'Payment reminder' },
+        { key: 'offer', label: language === 'ar' ? 'عرض' : 'Offer' },
+        { key: 'post_like', label: language === 'ar' ? 'إعجاب بمنشور' : 'Post like' },
+        { key: 'post_comment', label: language === 'ar' ? 'تعليق على منشور' : 'Post comment' },
+        { key: 'team_member', label: language === 'ar' ? 'عضو فريق' : 'Team member' },
+        { key: 'team_coach', label: language === 'ar' ? 'مدرب فريق' : 'Team coach' },
+        { key: 'chat_message', label: language === 'ar' ? 'رسالة محادثة' : 'Chat message' },
+        { key: 'info', label: language === 'ar' ? 'معلومة' : 'Info' },
+        { key: 'alert', label: language === 'ar' ? 'تنبيه' : 'Alert' },
+        { key: 'system', label: language === 'ar' ? 'نظام' : 'System' }
+    ]), [language]);
+    const getTemplate = (type: string) => {
+        const templates: Record<string, { title: string; body: string }> = {
+            survey: { title: language === 'ar' ? 'استبيان جديد' : 'New survey', body: language === 'ar' ? 'يرجى إكمال الاستبيان الخاص بك.' : 'Please complete your survey.' },
+            event: { title: language === 'ar' ? 'فعالية جديدة' : 'New event', body: language === 'ar' ? 'لديك فعالية جديدة مجدولة.' : 'You have a new event scheduled.' },
+            event_reminder: { title: language === 'ar' ? 'تذكير بالفعالية' : 'Event reminder', body: language === 'ar' ? 'ستبدأ فعاليتك قريبًا.' : 'Your event starts soon.' },
+            monthly_payment_reminder: { title: language === 'ar' ? 'تذكير بالدفع' : 'Payment reminder', body: language === 'ar' ? 'رسوم عضوية النادي مستحقة اليوم.' : 'Your club membership fee is due today.' },
+            offer: { title: language === 'ar' ? 'عرض جديد' : 'New offer', body: language === 'ar' ? 'هناك عرض جديد متاح لك.' : 'A new offer is available for you.' },
+            post_like: { title: language === 'ar' ? 'إعجاب جديد' : 'New like', body: language === 'ar' ? 'أعجب أحدهم بمنشورك.' : 'Someone liked your post.' },
+            post_comment: { title: language === 'ar' ? 'تعليق جديد' : 'New comment', body: language === 'ar' ? 'علّق أحدهم على منشورك.' : 'Someone commented on your post.' },
+            team_member: { title: language === 'ar' ? 'تمت إضافتك كعضو' : 'Added as member', body: language === 'ar' ? 'تمت إضافتك إلى فريق.' : 'You have been added to a team.' },
+            team_coach: { title: language === 'ar' ? 'تم تعيينك كمدرب' : 'Added as coach', body: language === 'ar' ? 'تم تعيينك لتدريب فريق.' : 'You have been assigned to coach a team.' },
+            chat_message: { title: language === 'ar' ? 'رسالة جديدة' : 'New message', body: language === 'ar' ? 'لديك رسالة جديدة.' : 'You have a new message.' },
+            info: { title: language === 'ar' ? 'معلومة' : 'Info', body: language === 'ar' ? 'إليك تحديث جديد.' : 'Here is an update.' },
+            alert: { title: language === 'ar' ? 'تنبيه' : 'Alert', body: language === 'ar' ? 'يرجى اتخاذ إجراء.' : 'Please take action.' },
+            system: { title: language === 'ar' ? 'إشعار نظام' : 'System notice', body: language === 'ar' ? 'يوجد تحديث للنظام.' : 'System update.' }
+        };
+        return templates[type];
+    };
 
     useEffect(() => {
         if (targetMode === 'sport') {
@@ -125,7 +169,7 @@ export default function ManagerNotificationsScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('coachSurvey.userNotAuthenticated'));
                 setSearching(false);
                 return;
             }
@@ -154,7 +198,7 @@ export default function ManagerNotificationsScreen() {
             });
 
             if (!response.ok) {
-                setError('Failed to search');
+                setError(t('manager.failedSearch'));
                 setSearchResults([]);
                 setSearching(false);
                 return;
@@ -169,7 +213,7 @@ export default function ManagerNotificationsScreen() {
                 setSearchResults(data || []);
             }
         } catch (err) {
-            setError('Failed to search');
+            setError(t('manager.failedSearch'));
             setSearchResults([]);
         } finally {
             setSearching(false);
@@ -196,7 +240,7 @@ export default function ManagerNotificationsScreen() {
     };
 
     const applyTemplate = () => {
-        const template = TYPE_TEMPLATES[notificationType];
+        const template = getTemplate(notificationType);
         if (template) {
             setTitle(template.title);
             setBody(template.body);
@@ -204,7 +248,7 @@ export default function ManagerNotificationsScreen() {
     };
 
     const applyRandom = () => {
-        const template = TYPE_TEMPLATES[notificationType];
+        const template = getTemplate(notificationType);
         if (!template) return;
         setTitle(template.title);
         setBody(template.body);
@@ -228,20 +272,20 @@ export default function ManagerNotificationsScreen() {
 
         const targetPayload = buildTargetPayload();
         if (!targetPayload.mode) {
-            setError('Select a target.');
+            setError(t('manager.selectTarget'));
             return;
         }
 
         if (targetMode === 'users' && selectedUsers.length === 0) {
-            setError('Select at least one user.');
+            setError(t('manager.selectAtLeastOneUser'));
             return;
         }
         if (targetMode !== 'users' && targetMode !== 'sport' && !selectedTarget?._id) {
-            setError('Select a target.');
+            setError(t('manager.selectTarget'));
             return;
         }
         if (targetMode === 'sport' && !selectedSport) {
-            setError('Select a sport.');
+            setError(t('manager.selectSport'));
             return;
         }
 
@@ -252,7 +296,7 @@ export default function ManagerNotificationsScreen() {
                 data = JSON.parse(trimmed);
             }
         } catch (err) {
-            setError('Data must be valid JSON.');
+            setError(t('manager.invalidJson'));
             return;
         }
 
@@ -260,7 +304,7 @@ export default function ManagerNotificationsScreen() {
         try {
             const token = await SecureStore.getItemAsync('userToken');
             if (!token) {
-                setError('User not authenticated');
+                setError(t('coachSurvey.userNotAuthenticated'));
                 setSending(false);
                 return;
             }
@@ -287,15 +331,15 @@ export default function ManagerNotificationsScreen() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                setError(errorData.error || 'Failed to send notifications');
+                setError(errorData.error || t('manager.failedSendNotifications'));
                 setSending(false);
                 return;
             }
 
             const result = await response.json();
-            setSuccess(`Sent ${result.sent || 0}/${result.total || 0} notifications.`);
+            setSuccess(t('manager.sentNotifications', { sent: result.sent || 0, total: result.total || 0 }));
         } catch (err) {
-            setError('Failed to send notifications');
+            setError(t('manager.failedSendNotifications'));
         } finally {
             setSending(false);
         }
@@ -313,13 +357,13 @@ export default function ManagerNotificationsScreen() {
                         style={styles.logo}
                         resizeMode="contain"
                     />
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Ionicons name="arrow-back" size={20} color="#fff" />
-                        <Text style={styles.backText}>Back</Text>
+                    <TouchableOpacity style={[styles.backButton, isRTL && styles.backButtonRtl]} onPress={() => router.back()}>
+                        <Ionicons name={isRTL ? "arrow-forward" : "arrow-back"} size={20} color="#fff" />
+                        <Text style={styles.backText}>{t('manager.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Notifications</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={[styles.pageTitle, isRTL && styles.rtlText]}>{t('manager.notifications')}</Text>
                     </View>
                 </View>
 
@@ -337,15 +381,15 @@ export default function ManagerNotificationsScreen() {
                             </View>
                         ) : null}
 
-                        <Text style={styles.sectionTitle}>Target</Text>
-                        <View style={styles.inlineRow}>
-                            {TARGET_MODES.map(item => (
+                        <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.target')}</Text>
+                        <View style={[styles.inlineRow, isRTL && styles.inlineRowRtl]}>
+                            {targetModes.map(item => (
                                 <TouchableOpacity
                                     key={item.key}
                                     style={[styles.chip, targetMode === item.key && styles.activeChip]}
                                     onPress={() => setTargetMode(item.key)}
                                 >
-                                    <Text style={[styles.chipText, targetMode === item.key && styles.activeChipText]}>
+                                    <Text style={[styles.chipText, isRTL && styles.rtlText, targetMode === item.key && styles.activeChipText]}>
                                         {item.label}
                                     </Text>
                                 </TouchableOpacity>
@@ -355,10 +399,10 @@ export default function ManagerNotificationsScreen() {
                         {isSearchMode && (
                             <>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, isRTL && styles.rtlText]}
                                     value={searchKeyword}
                                     onChangeText={handleSearchInput}
-                                    placeholder="Search by name or email"
+                                    placeholder={t('manager.searchPlaceholder')}
                                     placeholderTextColor="#888"
                                 />
                                 {searching && <ActivityIndicator size="small" color="#FF4400" />}
@@ -367,11 +411,11 @@ export default function ManagerNotificationsScreen() {
                                         {searchResults.map((item, idx) => (
                                             <TouchableOpacity
                                                 key={`${item._id}-${idx}`}
-                                                style={styles.searchResultItem}
+                                                style={[styles.searchResultItem, isRTL && styles.searchResultItemRtl]}
                                                 onPress={() => (targetMode === 'users' ? handleAddUser(item) : handleSelectTarget(item))}
                                             >
-                                                <Text style={styles.searchResultText}>{item.name || item.title || item.email}</Text>
-                                                {!!item.email && <Text style={styles.searchResultSub}>{item.email}</Text>}
+                                                <Text style={[styles.searchResultText, isRTL && styles.rtlText]}>{item.name || item.title || item.email}</Text>
+                                                {!!item.email && <Text style={[styles.searchResultSub, isRTL && styles.rtlText]}>{item.email}</Text>}
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -386,7 +430,7 @@ export default function ManagerNotificationsScreen() {
                                     onValueChange={(value) => setSelectedSport(value)}
                                     style={styles.picker}
                                 >
-                                    <RNPicker.Item label="Select a sport" value="" />
+                                    <RNPicker.Item label={t('manager.selectSportPlaceholder')} value="" />
                                     {sports.map(sport => (
                                         <RNPicker.Item key={sport._id} label={sport.name} value={sport.name} />
                                     ))}
@@ -395,10 +439,10 @@ export default function ManagerNotificationsScreen() {
                         )}
 
                         {targetMode === 'users' && selectedUsers.length > 0 && (
-                            <View style={styles.selectedList}>
+                            <View style={[styles.selectedList, isRTL && styles.inlineRowRtl]}>
                                 {selectedUsers.map(user => (
-                                    <View key={user._id} style={styles.selectedChip}>
-                                        <Text style={styles.selectedChipText}>{user.name || user.email}</Text>
+                                    <View key={user._id} style={[styles.selectedChip, isRTL && styles.selectedChipRtl]}>
+                                        <Text style={[styles.selectedChipText, isRTL && styles.rtlText]}>{user.name || user.email}</Text>
                                         <TouchableOpacity onPress={() => removeUser(user._id)}>
                                             <Feather name="x" size={14} color="#FF4400" />
                                         </TouchableOpacity>
@@ -408,8 +452,8 @@ export default function ManagerNotificationsScreen() {
                         )}
 
                         {targetMode !== 'users' && targetMode !== 'sport' && selectedTarget && (
-                            <View style={styles.selectedSingle}>
-                                <Text style={styles.selectedSingleText}>
+                            <View style={[styles.selectedSingle, isRTL && styles.selectedSingleRtl]}>
+                                <Text style={[styles.selectedSingleText, isRTL && styles.rtlText]}>
                                     {selectedTarget.name || selectedTarget.title || selectedTarget.email}
                                 </Text>
                                 <TouchableOpacity onPress={() => setSelectedTarget(null)}>
@@ -418,58 +462,58 @@ export default function ManagerNotificationsScreen() {
                             </View>
                         )}
 
-                        <Text style={styles.sectionTitle}>Notification</Text>
-                        <View style={styles.inlineRow}>
-                            {NOTIFICATION_TYPES.map(item => (
+                        <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.notification')}</Text>
+                        <View style={[styles.inlineRow, isRTL && styles.inlineRowRtl]}>
+                            {notificationTypes.map(item => (
                                 <TouchableOpacity
                                     key={item.key}
                                     style={[styles.chip, notificationType === item.key && styles.activeChip]}
                                     onPress={() => setNotificationType(item.key)}
                                 >
-                                    <Text style={[styles.chipText, notificationType === item.key && styles.activeChipText]}>
+                                    <Text style={[styles.chipText, isRTL && styles.rtlText, notificationType === item.key && styles.activeChipText]}>
                                         {item.label}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <View style={styles.inlineRow}>
+                        <View style={[styles.inlineRow, isRTL && styles.inlineRowRtl]}>
                             <TouchableOpacity style={styles.secondaryButton} onPress={applyTemplate}>
-                                <Text style={styles.secondaryButtonText}>Use template</Text>
+                                <Text style={styles.secondaryButtonText}>{t('manager.useTemplate')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.secondaryButton} onPress={applyRandom}>
-                                <Text style={styles.secondaryButtonText}>Random test</Text>
+                                <Text style={styles.secondaryButtonText}>{t('manager.randomTest')}</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.toggleRow} onPress={() => setRandomTest(prev => !prev)}>
+                            <TouchableOpacity style={[styles.toggleRow, isRTL && styles.toggleRowRtl]} onPress={() => setRandomTest(prev => !prev)}>
                                 <View style={[styles.toggleBox, randomTest && styles.toggleBoxActive]}>
                                     {randomTest && <Feather name="check" size={14} color="#fff" />}
                                 </View>
-                                <Text style={styles.toggleLabel}>Random</Text>
+                                <Text style={styles.toggleLabel}>{t('manager.random')}</Text>
                             </TouchableOpacity>
                         </View>
 
-                        <Text style={styles.label}>Title</Text>
+                        <Text style={styles.label}>{t('manager.title')}</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, isRTL && styles.rtlText]}
                             value={title}
                             onChangeText={setTitle}
-                            placeholder="Notification title"
+                            placeholder={t('manager.notificationTitlePlaceholder')}
                             placeholderTextColor="#888"
                         />
 
-                        <Text style={styles.label}>Body</Text>
+                        <Text style={styles.label}>{t('manager.body')}</Text>
                         <TextInput
-                            style={styles.textarea}
+                            style={[styles.textarea, isRTL && styles.rtlText]}
                             value={body}
                             onChangeText={setBody}
-                            placeholder="Notification message"
+                            placeholder={t('manager.notificationBodyPlaceholder')}
                             placeholderTextColor="#888"
                             multiline
                         />
 
-                        <Text style={styles.label}>Data (JSON)</Text>
+                        <Text style={styles.label}>{t('manager.dataJson')}</Text>
                         <TextInput
-                            style={styles.textarea}
+                            style={[styles.textarea, isRTL && styles.rtlText]}
                             value={dataJson}
                             onChangeText={setDataJson}
                             placeholder='{"screen":"survey","id":"..."}'
@@ -479,7 +523,7 @@ export default function ManagerNotificationsScreen() {
 
                         <TouchableOpacity style={styles.primaryButton} onPress={handleSend} disabled={sending}>
                             {sending && <ActivityIndicator size="small" color="#fff" />}
-                            <Text style={styles.primaryButtonText}>{sending ? 'Sending...' : 'Send notification'}</Text>
+                            <Text style={styles.primaryButtonText}>{sending ? t('manager.sendingNotification') : t('manager.sendNotification')}</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -518,6 +562,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 5,
     },
+    backButtonRtl: {
+        right: undefined,
+        left: 20,
+        flexDirection: 'row-reverse',
+    },
     backText: {
         color: '#fff',
         fontFamily: 'Acumin',
@@ -528,6 +577,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -544,6 +597,10 @@ const styles = StyleSheet.create({
         color: '#111111',
         marginTop: 10,
         marginBottom: 10
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     label: {
         fontFamily: 'Acumin',
@@ -579,6 +636,9 @@ const styles = StyleSheet.create({
         gap: 8,
         marginBottom: 10
     },
+    inlineRowRtl: {
+        flexDirection: 'row-reverse',
+    },
     chip: {
         paddingVertical: 6,
         paddingHorizontal: 12,
@@ -609,6 +669,9 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#e0e0e0'
     },
+    searchResultItemRtl: {
+        alignItems: 'flex-end',
+    },
     searchResultText: {
         fontFamily: 'Acumin',
         fontSize: 13,
@@ -628,6 +691,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#e0e0e0',
         borderRadius: 10
+    },
+    selectedSingleRtl: {
+        flexDirection: 'row-reverse',
     },
     selectedSingleText: {
         fontFamily: 'Acumin',
@@ -649,6 +715,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#e0e0e0',
         borderRadius: 16
+    },
+    selectedChipRtl: {
+        flexDirection: 'row-reverse',
     },
     selectedChipText: {
         fontFamily: 'Acumin',
@@ -687,6 +756,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6
+    },
+    toggleRowRtl: {
+        flexDirection: 'row-reverse',
     },
     toggleBox: {
         width: 18,

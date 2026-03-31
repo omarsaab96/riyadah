@@ -8,11 +8,13 @@ import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams();
+  const { isRTL, language, t } = useLanguage();
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
   const router = useRouter();
@@ -72,7 +74,7 @@ export default function EditEventScreen() {
   const formatDate = (date) => {
     if (!date) return '';
     const d = new Date(date);
-    const dateStr = d.toLocaleDateString('en-GB', {
+    const dateStr = d.toLocaleDateString(language === 'ar' ? 'ar' : 'en-GB', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -84,13 +86,26 @@ export default function EditEventScreen() {
     if (!date) return '';
     const d = new Date(date);
 
-    const timeStr = d.toLocaleTimeString(undefined, {
+    const timeStr = d.toLocaleTimeString(language === 'ar' ? 'ar' : undefined, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true, // set true if you want AM/PM
     });
     return ` ${timeStr}`;
   };
+
+  const eventTypeOptions = [
+    { value: 'Training', label: t('scheduleForm.trainingSession') },
+    { value: 'Match', label: t('scheduleForm.match') },
+    { value: 'Meeting', label: t('scheduleForm.meeting') },
+    { value: 'Tournament', label: t('scheduleForm.tournament') },
+  ];
+
+  const locationTypeOptions = [
+    { value: 'Venue', label: t('scheduleForm.venue') },
+    { value: 'Online', label: t('scheduleForm.online') },
+    { value: 'tbd', label: t('scheduleForm.toBeDetermined') },
+  ];
 
   const setEventDate = (event, selectedDate) => {
     if (Platform.OS === 'android') {
@@ -183,7 +198,7 @@ export default function EditEventScreen() {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Failed to load event');
+        if (!res.ok) throw new Error(data.message || t('scheduleForm.failedLoad'));
 
         const e = data.data;
 
@@ -223,7 +238,7 @@ export default function EditEventScreen() {
         setLoading(false);
       } catch (err) {
         console.error(err);
-        Alert.alert('Error', err.message);
+        Alert.alert(t('messages.errorTitle'), err.message);
         router.back();
       }
     };
@@ -391,36 +406,36 @@ export default function EditEventScreen() {
 
   const handleSubmit = async () => {
     if (!formData.title || !formData.team) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      Alert.alert(t('messages.errorTitle'), t('scheduleForm.fillRequired'));
       return;
     }
 
     if (pickedEndTime <= pickedStartTime) {
-      Alert.alert('Error', 'End time must be after start time');
+      Alert.alert(t('messages.errorTitle'), t('scheduleForm.endTimeAfterStart'));
       return;
     }
 
     // If event is recurring, ask user what to edit
     if (formData.repeats !== 'No' && id) {
       return Alert.alert(
-        'Recurring Event',
-        'Do you want to edit only this occurrence or all future occurrences?',
+        t('scheduleForm.recurringEditTitle'),
+        t('scheduleForm.recurringEditMessage'),
         [
           {
-            text: 'This event only',
+            text: t('scheduleForm.thisEventOnly'),
             onPress: () => {
               setEditScope('single');
               submitEventUpdate('single');
             },
           },
           {
-            text: 'All occurrences',
+            text: t('scheduleForm.allOccurrences'),
             onPress: () => {
               setEditScope('all');
               submitEventUpdate('all');
             },
           },
-          { text: 'Cancel', style: 'cancel' },
+          { text: t('scheduleForm.cancel'), style: 'cancel' },
         ]
       );
     }
@@ -478,11 +493,11 @@ export default function EditEventScreen() {
           params: { tab: 'Schedule' }
         })
       } else {
-        throw new Error(data.message || 'Failed to create event');
+        throw new Error(data.message || t('scheduleForm.failedUpdate'));
       }
     } catch (error) {
       // console.error('Error creating event:', error);
-      Alert.alert('Error', error.message);
+      Alert.alert(t('messages.errorTitle'), error.message);
     } finally {
       setSaving(false);
     }
@@ -509,18 +524,18 @@ export default function EditEventScreen() {
                 params: { tab: 'Schedule' }
               })
             }}
-            style={styles.backBtn}
+            style={[styles.backBtn, isRTL && styles.backBtnRtl]}
           >
-            <Ionicons name="chevron-back" size={20} color="#ffffff" />
-            <Text style={styles.backBtnText}>Back to Schedule</Text>
+            <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+            <Text style={styles.backBtnText}>{t('scheduleForm.backToSchedule')}</Text>
           </TouchableOpacity>
 
-          <View style={styles.headerTextBlock}>
-            <Text style={styles.pageTitle}>Edit Event</Text>
-            {!loading && <Text style={styles.pageDesc}>Update existing event</Text>}
+          <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+            <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.editEventTitle')}</Text>
+            {!loading && <Text style={[styles.pageDesc, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.editEventDesc')}</Text>}
 
             {loading &&
-              <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+              <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
                 <ActivityIndicator
                   size="small"
                   color="#fff"
@@ -530,7 +545,7 @@ export default function EditEventScreen() {
             }
           </View>
 
-          <Text style={styles.ghostText}>Events</Text>
+          <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('scheduleForm.ghost')}</Text>
         </View>
 
         <ScrollView >
@@ -541,10 +556,10 @@ export default function EditEventScreen() {
 
           {!loading &&<View style={styles.contentContainer}>
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Event Title *</Text>
+              <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.eventTitle')}</Text>
               <TextInput
-                style={styles.input}
-                placeholder="Enter event title"
+                style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
+                placeholder={t('scheduleForm.enterEventTitle')}
                 placeholderTextColor={"#888"}
                 value={formData.title}
                 onChangeText={(text) => handleChange('title', text)}
@@ -552,13 +567,13 @@ export default function EditEventScreen() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Date*</Text>
+              <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.date')}</Text>
               <TouchableOpacity
-                style={styles.dateInput}
+                style={[styles.dateInput, isRTL && styles.dateInputRtl]}
                 onPress={() => setShowDatePicker(true)}
                 disabled={true}
               >
-                <Text style={[styles.inputText, { opacity: 0.5 }]}>
+                <Text style={[styles.inputText, { opacity: 0.5 }, isRTL ? styles.rtlText : styles.ltrText]}>
                   {formatDate(pickedDate)}
                 </Text>
                 <FontAwesome5 name="calendar-alt" size={18} color="#666" />
@@ -566,14 +581,14 @@ export default function EditEventScreen() {
             </View>
 
             {/* Event Time start-end */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+            <View style={[styles.timeRow, isRTL && styles.timeRowRtl]}>
               <View style={[styles.formGroup, { flex: 1 }]}>
-                <Text style={styles.label}>From*</Text>
+                <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.from')}</Text>
                 <TouchableOpacity
-                  style={styles.dateInput}
+                  style={[styles.dateInput, isRTL && styles.dateInputRtl]}
                   onPress={() => setShowStartTimePicker(true)}
                 >
-                  <Text style={styles.inputText}>
+                  <Text style={[styles.inputText, isRTL ? styles.rtlText : styles.ltrText]}>
                     {formatTime(pickedStartTime)}
                   </Text>
                   <FontAwesome5 name="clock" size={18} color="#666" />
@@ -581,12 +596,12 @@ export default function EditEventScreen() {
               </View>
 
               <View style={[styles.formGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Till*</Text>
+                <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.till')}</Text>
                 <TouchableOpacity
-                  style={styles.dateInput}
+                  style={[styles.dateInput, isRTL && styles.dateInputRtl]}
                   onPress={() => setShowEndTimePicker(true)}
                 >
-                  <Text style={styles.inputText}>
+                  <Text style={[styles.inputText, isRTL ? styles.rtlText : styles.ltrText]}>
                     {formatTime(pickedEndTime)}
                   </Text>
                   <FontAwesome5 name="clock" size={18} color="#666" />
@@ -624,23 +639,22 @@ export default function EditEventScreen() {
             )}
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Event Type *</Text>
+              <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.eventType')}</Text>
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={formData.eventType}
                   onValueChange={(value) => handleChange('eventType', value)}
                   style={styles.picker}
                 >
-                  <Picker.Item label="Training Session" value="Training" />
-                  <Picker.Item label="Match" value="Match" />
-                  <Picker.Item label="Meeting" value="Meeting" />
-                  <Picker.Item label="Tournament" value="Tournament" />
+                  {eventTypeOptions.map((option) => (
+                    <Picker.Item key={option.value} label={option.label} value={option.value} />
+                  ))}
                 </Picker>
               </View>
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Team *</Text>
+              <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.team')}</Text>
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={formData.team}
@@ -659,10 +673,10 @@ export default function EditEventScreen() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Description</Text>
+              <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.description')}</Text>
               <TextInput
-                style={[styles.input]}
-                placeholder="Enter description"
+                style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
+                placeholder={t('scheduleForm.enterDescription')}
                 placeholderTextColor={"#888"}
                 multiline
                 value={formData.description}
@@ -689,16 +703,16 @@ export default function EditEventScreen() {
             </View> */}
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Location Type</Text>
+              <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.locationType')}</Text>
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={formData.locationType}
                   onValueChange={(value) => handleChange('locationType', value)}
                   style={styles.picker}
                 >
-                  <Picker.Item label="Venue" value="Venue" />
-                  <Picker.Item label="Online" value="Online" />
-                  <Picker.Item label="To Be Determined" value="tbd" />
+                  {locationTypeOptions.map((option) => (
+                    <Picker.Item key={option.value} label={option.label} value={option.value} />
+                  ))}
                 </Picker>
               </View>
             </View>
@@ -706,21 +720,21 @@ export default function EditEventScreen() {
             {formData.locationType === 'Venue' && (
               <>
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Venue Name</Text>
+                  <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.venueName')}</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
                     placeholderTextColor={"#888"}
-                    placeholder="Enter venue name"
+                    placeholder={t('scheduleForm.enterVenueName')}
                     value={formData.venue.name}
                     onChangeText={(text) => handleNestedChange('venue', 'name', text)}
                   />
                 </View>
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Venue Address</Text>
+                  <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.venueAddress')}</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
                     placeholderTextColor={"#888"}
-                    placeholder="Enter venue address"
+                    placeholder={t('scheduleForm.enterVenueAddress')}
                     value={formData.venue.address}
                     onChangeText={(text) => handleNestedChange('venue', 'address', text)}
                   />
@@ -730,11 +744,11 @@ export default function EditEventScreen() {
 
             {formData.locationType === 'Online' && (
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Online Meeting Link</Text>
+                <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.onlineMeetingLink')}</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
                   placeholderTextColor={"#888"}
-                  placeholder="Enter meeting link"
+                  placeholder={t('scheduleForm.enterMeetingLink')}
                   value={formData.onlineLink}
                   onChangeText={(text) => handleChange('onlineLink', text)}
                 />
@@ -743,7 +757,7 @@ export default function EditEventScreen() {
 
             {formData.locationType !== 'Online' &&
               <View>
-                <Text style={styles.label}>Venue Location</Text>
+                <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.venueLocation')}</Text>
                 <View style={styles.map}>
                   <MapView
                     provider={PROVIDER_GOOGLE}
@@ -780,11 +794,11 @@ export default function EditEventScreen() {
 
             {formData.eventType === 'Training' && (
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Training Focus</Text>
+                <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.trainingFocus')}</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
                   placeholderTextColor={"#888"}
-                  placeholder="E.g. Passing drills, defensive positioning"
+                  placeholder={t('scheduleForm.trainingFocusPlaceholder')}
                   value={formData.trainingFocus}
                   onChangeText={(text) => handleChange('trainingFocus', text)}
                 />
@@ -793,12 +807,12 @@ export default function EditEventScreen() {
 
             {formData.eventType === 'Training' && inventoryItems.length > 0 && (
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Required Equipment</Text>
+                <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.requiredEquipment')}</Text>
                 <View>
                   <View style={styles.equipmentContainer}>
                     <TextInput
                       style={[styles.input, { marginBottom: 0, flex: 1 }]}
-                      placeholder="Search equipment (min. 3 characters)"
+                      placeholder={t('scheduleForm.searchEquipment')}
                       value={equipmentSearch}
                       placeholderTextColor={"#888"}
                       onChangeText={handleSearch}
@@ -826,14 +840,14 @@ export default function EditEventScreen() {
                         }}
                       >
                         <Text style={styles.searchResultText}>{item.itemName}</Text>
-                        <Text style={styles.searchResultSubText}>Available: {item.quantity}</Text>
+                        <Text style={styles.searchResultSubText}>{t('scheduleForm.available').replace('{count}', String(item.quantity))}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                 )}
                 {!searching && equipmentSearch.trim().length >= 3 && searchResults.length == 0 && (
-                  <Text style={{ fontFamily: 'Acumin', color: 'black' }}>
-                    No results. Try another keyword
+                  <Text style={[styles.noResultsText, isRTL ? styles.rtlText : styles.ltrText]}>
+                    {t('scheduleForm.noEquipmentResults')}
                   </Text>
                 )}
 
@@ -863,7 +877,7 @@ export default function EditEventScreen() {
                         style={styles.addSelectedButton}
                         onPress={addEquipment}
                       >
-                        <Text style={styles.addSelectedButtonText}>Add</Text>
+                        <Text style={styles.addSelectedButtonText}>{t('scheduleForm.add')}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -905,34 +919,34 @@ export default function EditEventScreen() {
             {formData.eventType === 'Match' && (
               <>
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Opponent Name</Text>
+                  <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.opponentName')}</Text>
                   <TextInput
-                    style={styles.input}
-                    placeholder="Enter opponent team name"
+                    style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
+                    placeholder={t('scheduleForm.enterOpponentName')}
                     placeholderTextColor={"#888"}
                     value={formData.opponent.name}
                     onChangeText={(text) => handleNestedChange('opponent', 'name', text)}
                   />
                 </View>
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Opponent Logo URL</Text>
+                  <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.opponentLogoUrl')}</Text>
                   <TextInput
-                    style={styles.input}
-                    placeholder="Enter opponent logo URL"
+                    style={[styles.input, isRTL ? styles.rtlText : styles.ltrText]}
+                    placeholder={t('scheduleForm.enterOpponentLogoUrl')}
                     placeholderTextColor={"#888"}
                     value={formData.opponent.logo}
                     onChangeText={(text) => handleNestedChange('opponent', 'logo', text)}
                   />
                 </View>
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>Home or Away</Text>
+                  <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.homeOrAway')}</Text>
                   <Picker
                     selectedValue={formData.isHomeGame}
                     onValueChange={(value) => handleChange('isHomeGame', value)}
                     style={styles.picker}
                   >
-                    <Picker.Item label="Home Game" value={true} />
-                    <Picker.Item label="Away Game" value={false} />
+                    <Picker.Item label={t('scheduleForm.homeGame')} value={true} />
+                    <Picker.Item label={t('scheduleForm.awayGame')} value={false} />
                   </Picker>
                 </View>
               </>
@@ -941,11 +955,11 @@ export default function EditEventScreen() {
 
             <View style={[styles.profileActions, styles.inlineActions]}>
               <TouchableOpacity onPress={handleCancel} style={styles.profileButton}>
-                <Text style={styles.profileButtonText}>Cancel</Text>
+                <Text style={styles.profileButtonText}>{t('scheduleForm.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handleSubmit} style={[styles.profileButton, styles.savebtn]}>
                 <Text style={styles.profileButtonText}>
-                  {saving ? 'Editing' : 'Edit'}
+                  {saving ? t('scheduleForm.editing') : t('scheduleForm.edit')}
                 </Text>
                 {saving && (
                   <ActivityIndicator
@@ -1031,6 +1045,10 @@ const styles = StyleSheet.create({
     left: 20,
     width: width - 40,
   },
+  headerTextBlockRtl: {
+    left: undefined,
+    right: 20,
+  },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -1063,6 +1081,10 @@ const styles = StyleSheet.create({
     right: -5,
     opacity: 0.2
   },
+  ghostTextRtl: {
+    right: undefined,
+    left: -5,
+  },
   profileActions: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.2)',
@@ -1072,6 +1094,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     columnGap: 15
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  timeRowRtl: {
+    flexDirection: 'row-reverse',
   },
   saveLoaderContainer: {
     marginLeft: 10
@@ -1133,6 +1163,9 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 4,
     justifyContent: 'space-between',
+  },
+  dateInputRtl: {
+    flexDirection: 'row-reverse',
   },
   // dateInput: {
   //     borderWidth: 1,
@@ -1294,10 +1327,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignContent: 'center',
   },
+  backBtnRtl: {
+    left: undefined,
+    right: 10,
+    flexDirection: 'row-reverse',
+  },
   backBtnText: {
     color: '#FFF',
     fontSize: 18,
     fontFamily: 'Qatar'
+  },
+  loaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 5,
+  },
+  loaderRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  noResultsText: {
+    fontFamily: 'Acumin',
+    color: 'black',
+  },
+  ltrText: {
+    textAlign: 'left',
+    writingDirection: 'ltr',
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   iosPickerContainer: {
     backgroundColor: '#fff',

@@ -20,12 +20,14 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 
 const { width } = Dimensions.get('window');
 
 export default function VerifyProfile() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
 
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
@@ -225,7 +227,7 @@ export default function VerifyProfile() {
         } else {
             setEmailOTPSent(false)
             console.error(res)
-            setError("Failed to send email OTP");
+            setError(t('account.emailOtpFailed'));
         }
 
         setVerifyingEmail(false)
@@ -263,7 +265,7 @@ export default function VerifyProfile() {
             startCountdown();
         } else {
             setPhoneOTPSent(false)
-            setError("Failed to send phone OTP");
+            setError(t('account.phoneOtpFailed'));
         }
 
         setVerifyingPhone(false)
@@ -362,7 +364,7 @@ export default function VerifyProfile() {
         } else {
             setPhoneOTPSent(true)
             console.error(res)
-            setError("Failed to verify phone OTP");
+            setError(t('account.genericError'));
         }
 
         setVerifyingPhone(false)
@@ -385,14 +387,14 @@ export default function VerifyProfile() {
                         onPress={() => {
                             router.back()
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
                         <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back</Text>
+                        <Text style={styles.backBtnText}>{t('account.back')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Verify account</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('account.verifyAccount')}</Text>
                         {!loading && user && <Text style={styles.pageDesc}>{user?.name}</Text>}
 
                         {loading &&
@@ -406,7 +408,7 @@ export default function VerifyProfile() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>Verify</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('account.verifyGhost')}</Text>
 
                     {user && !loading && <View style={styles.profileImage}>
                         {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
@@ -443,13 +445,13 @@ export default function VerifyProfile() {
                             <View>
                                 <View style={styles.entity}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={styles.title}>
-                                            Email address
+                                        <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                            {t('account.emailAddressLabel')}
                                         </Text>
                                         {user.verified.email == null &&
                                             <TouchableOpacity onPress={handleSendEmailOTP} style={[styles.profileButton, styles.savebtn]}>
                                                 <Text style={styles.profileButtonText}>
-                                                    {verifyingEmail ? 'Sending OTP' : 'Send OTP'}
+                                                    {verifyingEmail ? t('account.sendingOtp') : t('account.sendOtp')}
                                                 </Text>
                                                 {verifyingEmail && (
                                                     <ActivityIndicator
@@ -465,7 +467,7 @@ export default function VerifyProfile() {
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                 <Octicons name="verified" size={14} color="#009933" />
                                                 <Text style={styles.verifiedbadge}>
-                                                    Verified
+                                                    {t('account.verified')}
                                                 </Text>
                                             </View>
                                         }
@@ -492,14 +494,14 @@ export default function VerifyProfile() {
 
                                 <View style={styles.entity}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <Text style={styles.title}>
-                                            Phone number
+                                        <Text style={[styles.title, isRTL && styles.rtlText]}>
+                                            {t('account.phoneNumberLabel')}
                                         </Text>
 
                                         {user.verified.phone == null &&
                                             <TouchableOpacity onPress={handleSendPhoneOTP} style={[styles.profileButton, styles.savebtn]}>
                                                 <Text style={styles.profileButtonText}>
-                                                    {verifyingPhone ? 'Sending OTP' : 'Send OTP'}
+                                                    {verifyingPhone ? t('account.sendingOtp') : t('account.sendOtp')}
                                                 </Text>
                                                 {verifyingPhone && (
                                                     <ActivityIndicator
@@ -515,7 +517,7 @@ export default function VerifyProfile() {
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                 <Octicons name="verified" size={14} color="#009933" />
                                                 <Text style={styles.verifiedbadge}>
-                                                    Verified
+                                                    {t('account.verified')}
                                                 </Text>
                                             </View>
                                         }
@@ -559,7 +561,7 @@ export default function VerifyProfile() {
 
                         {emailOTPSent &&
                             <View>
-                                <Text style={{ textAlign: 'center', marginBottom: 10, color: 'black', fontSize: 14 }}>We sent you a code on</Text>
+                                <Text style={[styles.centerText, isRTL && styles.rtlText]}>{t('account.otpSentHint')}</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                                     <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 14 }}>
                                         {emailAddress}
@@ -592,16 +594,16 @@ export default function VerifyProfile() {
 
                                 <View style={{ flexDirection: 'row', alignItems: "center", justifyContent: 'space-between' }}>
                                     {secondsLeft > 0 ? (
-                                        <Text style={{ color: "#aaa" }}>Get a new code {secondsLeft}s</Text>
+                                        <Text style={{ color: "#aaa" }}>{t('account.getNewCode')} {secondsLeft}s</Text>
                                     ) : (
                                         <TouchableOpacity onPress={handleResendEmailOTP}>
-                                            <Text style={{ color: "#FF4000" }}>Get a new code</Text>
+                                            <Text style={{ color: "#FF4000" }}>{t('account.getNewCode')}</Text>
                                         </TouchableOpacity>
                                     )}
                                     <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
                                         <TouchableOpacity onPress={handleVerifyEmailOTP} disabled={verifyingEmail} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
                                             <Text style={styles.profileButtonText}>
-                                                {verifyingEmail ? 'Verifying' : 'Verify'}
+                                                {verifyingEmail ? t('account.verifying') : t('account.verify')}
                                             </Text>
                                             {verifyingEmail && <ActivityIndicator size="small" color={'black'} />}
                                         </TouchableOpacity>
@@ -612,7 +614,7 @@ export default function VerifyProfile() {
 
                         {phoneOTPSent &&
                             <View>
-                                <Text style={{ textAlign: 'center', marginBottom: 10, color: 'black', fontSize: 14 }}>We sent you a code on</Text>
+                                <Text style={[styles.centerText, isRTL && styles.rtlText]}>{t('account.otpSentHint')}</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                                     <Text style={{ fontWeight: 'bold', color: 'black', fontSize: 14 }}>
                                         {'+' + callingCode + phoneNumber}
@@ -644,16 +646,16 @@ export default function VerifyProfile() {
 
                                 <View style={{ flexDirection: 'row', alignItems: "center", justifyContent: 'space-between' }}>
                                     {secondsLeft > 0 ? (
-                                        <Text style={{ color: "#aaa" }}>Get a new code {secondsLeft}s</Text>
+                                        <Text style={{ color: "#aaa" }}>{t('account.getNewCode')} {secondsLeft}s</Text>
                                     ) : (
                                         <TouchableOpacity onPress={handleResendPhoneOTP}>
-                                            <Text style={{ color: "#FF4000" }}>Get a new code OTP</Text>
+                                            <Text style={{ color: "#FF4000" }}>{t('account.getNewCode')}</Text>
                                         </TouchableOpacity>
                                     )}
                                     <View style={[styles.profileActions, styles.inlineActions, { paddingTop: 0, borderTopWidth: 0 }]}>
                                         <TouchableOpacity onPress={handleVerifyPhoneOTP} disabled={verifyingPhone} style={[styles.profileButton, { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 0, paddingVertical: 10, paddingHorizontal: 15 }]}>
                                             <Text style={styles.profileButtonText}>
-                                                {verifyingPhone ? 'Verifying' : 'Verify'}
+                                                {verifyingPhone ? t('account.verifying') : t('account.verify')}
                                             </Text>
                                             {verifyingPhone && <ActivityIndicator size="small" color={'black'} />}
                                         </TouchableOpacity>
@@ -717,6 +719,10 @@ const styles = StyleSheet.create({
         left: 20,
         width: width - 40,
     },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
+    },
     pageTitle: {
         color: '#ffffff',
         fontFamily: 'Qatar',
@@ -757,6 +763,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     profileImage: {
         position: 'absolute',
         bottom: 0,
@@ -780,6 +790,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-end',
         columnGap: 15
+    },
+    inlineActionsRtl: {
+        flexDirection: 'row-reverse',
     },
     profileButton: {
         borderRadius: 5,
@@ -860,6 +873,21 @@ const styles = StyleSheet.create({
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
+    centerText: {
+        textAlign: 'center',
+        marginBottom: 10,
+        color: 'black',
+        fontSize: 14,
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     backBtnText: {
         color: '#FFF',

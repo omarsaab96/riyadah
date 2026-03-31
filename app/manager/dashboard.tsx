@@ -14,11 +14,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function ManagerDashboardScreen() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -70,12 +72,12 @@ export default function ManagerDashboardScreen() {
                         resizeMode="contain"
                     />
                     <TouchableOpacity style={styles.logout} onPress={() => { handleLogout() }}>
-                        <Text style={styles.logoutText}>Logout</Text>
+                        <Text style={styles.logoutText}>{t('manager.logout')}</Text>
                     </TouchableOpacity>
 
 
-                    <View style={styles.headerTextBlock}>
-                        <Text style={styles.pageTitle}>Manager dashboard</Text>
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        <Text style={styles.pageTitle}>{t('manager.dashboard')}</Text>
                         {!loading && <Text style={styles.pageDesc}>{user.name}</Text>}
 
                         {loading &&
@@ -97,42 +99,42 @@ export default function ManagerDashboardScreen() {
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
-                        <Text style={styles.sectionTitle}>Quick links</Text>
+                        <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('manager.quickLinks')}</Text>
 
                         <TouchableOpacity
                             style={styles.fullButtonRow}
                             onPress={() => router.push('/manager/skillsTesting')}>
-                            <Text style={styles.fullButtonText}>Athletes Performance Tests</Text>
+                            <Text style={styles.fullButtonText}>{t('manager.performanceTests')}</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.fullButtonRow, { marginTop: 10 }]}
                             onPress={() => router.push('/manager/surveys')}>
-                            <Text style={styles.fullButtonText}>Survey Manager</Text>
+                            <Text style={styles.fullButtonText}>{t('manager.surveyManager')}</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.fullButtonRow, { marginTop: 10 }]}
                             onPress={() => router.push('/manager/sports')}>
-                            <Text style={styles.fullButtonText}>Sports Manager</Text>
+                            <Text style={styles.fullButtonText}>{t('manager.sportsManager')}</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.fullButtonRow, { marginTop: 10 }]}
                             onPress={() => router.push('/manager/notifications')}>
-                            <Text style={styles.fullButtonText}>Manual Notifications</Text>
+                            <Text style={styles.fullButtonText}>{t('manager.manualNotifications')}</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.fullButtonRow, { marginTop: 10 }]}
                             onPress={() => router.push('/manager/bulkAthletes')}>
-                            <Text style={styles.fullButtonText}>Add Bulk New Athletes</Text>
+                            <Text style={styles.fullButtonText}>{t('manager.addBulkAthletes')}</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.fullButtonRow, { marginTop: 10 }]}
                             onPress={() => router.push('/manager/createAthlete')}>
-                            <Text style={styles.fullButtonText}>Add New Athlete</Text>
+                            <Text style={styles.fullButtonText}>{t('manager.addAthlete')}</Text>
                             <Feather name="arrow-right" size={20} color="#FF4400" />
                         </TouchableOpacity>
                     </View>
@@ -190,6 +192,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -307,6 +313,10 @@ const styles = StyleSheet.create({
         color: "#000",
         fontSize: 14,
         marginBottom: 20
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
     fullButtonText: {
         fontFamily: 'Qatar',

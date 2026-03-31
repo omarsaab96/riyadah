@@ -24,12 +24,14 @@ import {
   View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useLanguage } from '../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function Register() {
   const { formData, updateFormData } = useRegistration();
   const router = useRouter();
+  const { isRTL, t } = useLanguage();
   const [countryCode, setCountryCode] = useState("EG");
   const [callingCode, setCallingCode] = useState(20);
 
@@ -41,6 +43,7 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const textDirectionStyle = isRTL ? styles.rtlText : styles.ltrText;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -98,17 +101,17 @@ export default function Register() {
     if (name != null && email != null && phoneNumber != null && password != null && agreed) {
 
       if (!isValidEmail(email)) {
-        setError("Invalid email address")
+        setError(t('auth.invalidEmail'))
         setLoading(false);
         return;
       }
       if (!isValidPhoneNumber(phoneNumber, countryCode)) {
-        setError("Invalid phone number");
+        setError(t('auth.invalidPhone'));
         setLoading(false);
         return;
       }
       if (!isValidPassword(password)) {
-        setError("Password should be at least 6 characters");
+        setError(t('auth.passwordMin'));
         setLoading(false);
         return;
       }
@@ -137,7 +140,7 @@ export default function Register() {
 
     } else {
       setLoading(false)
-      setError('Please fill all fields and agree to our terms');
+      setError(t('auth.fillAllFields'));
     }
   };
 
@@ -178,21 +181,21 @@ export default function Register() {
             }}
             style={styles.backBtn}
           >
-            <Ionicons name="chevron-back" size={20} color="#ffffff" />
-            <Text style={styles.backBtnText}>Back</Text>
+            <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+            <Text style={[styles.backBtnText, textDirectionStyle]}>{t('auth.back')}</Text>
           </TouchableOpacity>
 
-          <View style={styles.headerTextBlock}>
-            <Text style={styles.pageTitle}>
-              Create your Account
+          <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+            <Text style={[styles.pageTitle, textDirectionStyle]}>
+              {t('auth.createAccountTitle')}
             </Text>
-            <Text style={styles.pageDesc}>
-              Join the energy, unite with athletes like you!
+            <Text style={[styles.pageDesc, textDirectionStyle]}>
+              {t('auth.createAccountSubtitle')}
             </Text>
           </View>
 
-          <Text style={styles.ghostText}>
-            join
+          <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>
+            {t('auth.create')}
           </Text>
 
         </View>
@@ -200,12 +203,12 @@ export default function Register() {
           <View style={styles.form}>
             {error != '' && <View style={styles.error}>
               <View style={styles.errorIcon}></View>
-              <Text style={styles.errorText}>{error}</Text>
+              <Text style={[styles.errorText, textDirectionStyle]}>{error}</Text>
             </View>}
 
             <TextInput
-              style={styles.input}
-              placeholder="Name"
+              style={[styles.input, textDirectionStyle]}
+              placeholder={t('auth.name')}
               placeholderTextColor="#A8A8A8"
               value={name}
               onChangeText={setName}
@@ -213,8 +216,8 @@ export default function Register() {
             />
 
             <TextInput
-              style={styles.input}
-              placeholder="Email"
+              style={[styles.input, textDirectionStyle]}
+              placeholder={t('auth.email')}
               placeholderTextColor="#A8A8A8"
               value={email}
               onChangeText={setEmail}
@@ -222,7 +225,7 @@ export default function Register() {
               autoCapitalize="none"
             />
 
-            <View style={styles.phoneContainer}>
+            <View style={[styles.phoneContainer, isRTL && styles.phoneContainerRtl]}>
               <View style={styles.phonePicker}>
                 <CountryPicker
                   countryCode={countryCode}
@@ -241,8 +244,8 @@ export default function Register() {
                 />
               </View>
               <TextInput
-                style={[styles.input, styles.phoneInput]}
-                placeholder="Phone number"
+                style={[styles.input, styles.phoneInput, textDirectionStyle]}
+                placeholder={t('auth.phoneNumber')}
                 keyboardType="phone-pad"
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
@@ -250,8 +253,8 @@ export default function Register() {
             </View>
             <View>
               <TextInput
-                style={[styles.input, styles.passwordInput]}
-                placeholder="Password"
+                style={[styles.input, styles.passwordInput, textDirectionStyle]}
+                placeholder={t('auth.password')}
                 placeholderTextColor="#A8A8A8"
                 value={password}
                 onChangeText={setPassword}
@@ -259,7 +262,7 @@ export default function Register() {
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}
+                style={[styles.eyeIcon, isRTL && styles.eyeIconRtl]}
               >
                 <MaterialIcons
                   name={showPassword ? "visibility-off" : "visibility"}
@@ -269,20 +272,20 @@ export default function Register() {
               </TouchableOpacity>
             </View>
             <View style={styles.hintContainer}>
-              <Text style={styles.hint}>Password must be at least 6 character long and include 1 capital letter and 1 symbol</Text>
+              <Text style={[styles.hint, textDirectionStyle]}>{t('auth.passwordHint')}</Text>
             </View>
 
-            <TouchableOpacity onPress={toggleCheckbox} style={styles.checkboxContainer} activeOpacity={1}>
-              <View style={styles.checkbox}>
+            <TouchableOpacity onPress={toggleCheckbox} style={[styles.checkboxContainer, isRTL && styles.checkboxContainerRtl]} activeOpacity={1}>
+              <View style={[styles.checkbox, isRTL && styles.checkboxRtl]}>
                 {agreed && <View style={styles.checked} >
                   <Image source={require('../assets/check.png')} style={styles.checkImage} />
                 </View>}
               </View>
 
-              <Text style={styles.label}>
-                I agree to Riyadah's{' '}
+              <Text style={[styles.label, textDirectionStyle]}>
+                {t('auth.agreePrefix')}
                 <Text style={styles.link} onPress={() => openLink("https://riyadah.app/terms")}>
-                  Terms and Conditions
+                  {t('auth.termsAndConditions')}
                 </Text>
               </Text>
             </TouchableOpacity>
@@ -291,7 +294,7 @@ export default function Register() {
               {/* <Image source={require('../assets/buttonBefore_black.png')} style={styles.sideRect} /> */}
               <View style={styles.loginButton}>
                 <Text style={styles.loginText}>
-                  {loading ? 'CREATING' : 'CREATE'} ACCOUNT
+                  {loading ? t('auth.creating') : t('auth.create')} {t('auth.account')}
                 </Text>
                 {loading && (
                   <ActivityIndicator
@@ -306,15 +309,15 @@ export default function Register() {
           </View>
 
           <View style={styles.switchLinkContainer}>
-            <Text style={{ color: 'black' }}>Already have an account?</Text>
+            <Text style={[styles.switchText, textDirectionStyle]}>{t('auth.alreadyHaveAccount')}</Text>
             <TouchableOpacity onPress={() => router.replace('/login')}>
-              <Text style={styles.switchLink}>LOGIN HERE</Text>
+              <Text style={[styles.switchLink, isRTL && styles.switchLinkRtl]}>{t('auth.loginHere')}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.disclaimer}>
-            <Text style={styles.hint}>
-              By creating and using an account on Riyadah, you are agreeing to the Riyadah's terms and conditions and privacy policy terms and clauses.
+            <Text style={[styles.hint, textDirectionStyle]}>
+              {t('auth.disclaimer')}
             </Text>
           </View>
         </ScrollView>
@@ -347,6 +350,10 @@ const styles = StyleSheet.create({
     left: 20,
     width: width - 40,
   },
+  headerTextBlockRtl: {
+    left: undefined,
+    right: 20,
+  },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -366,6 +373,18 @@ const styles = StyleSheet.create({
     right: -5,
     opacity: 0.2,
     textTransform: 'uppercase'
+  },
+  ghostTextRtl: {
+    right: undefined,
+    left: -5,
+  },
+  ltrText: {
+    textAlign: 'left',
+    writingDirection: 'ltr'
+  },
+  rtlText: {
+    textAlign: 'right',
+    writingDirection: 'rtl'
   },
   form: {
     paddingLeft: 20,
@@ -390,6 +409,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     gap: 5
+  },
+  phoneContainerRtl: {
+    flexDirection: 'row-reverse',
   },
   phonePicker: {
     justifyContent: 'center',
@@ -453,12 +475,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10
   },
+  switchText: {
+    color: 'black'
+  },
   switchLink: {
     marginLeft: 5,
     fontFamily: 'Qatar',
     fontSize: 14,
     paddingTop: 3,
     lineHeight: 16
+  },
+  switchLinkRtl: {
+    marginLeft: 0,
+    marginRight: 5,
   },
   hintContainer: {
     marginTop: 5,
@@ -480,6 +509,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40
   },
+  checkboxContainerRtl: {
+    flexDirection: 'row-reverse',
+  },
   checkbox: {
     width: 18,
     height: 18,
@@ -489,6 +521,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5
+  },
+  checkboxRtl: {
+    marginRight: 0,
+    marginLeft: 10,
   },
   checked: {
     width: 18,
@@ -552,5 +588,9 @@ const styles = StyleSheet.create({
     right: 15,
     top: 12,
     zIndex: 1,
+  },
+  eyeIconRtl: {
+    right: undefined,
+    left: 15,
   },
 });

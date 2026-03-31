@@ -20,11 +20,13 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { useLanguage } from '../../context/language';
 
 const { width } = Dimensions.get('window');
 
 export default function TeamDetails() {
     const router = useRouter();
+    const { isRTL, t } = useLanguage();
     const [userId, setUserId] = useState(null);
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
@@ -166,26 +168,27 @@ export default function TeamDetails() {
                                 params: { tab: 'Teams' }
                             })
                         }}
-                        style={styles.backBtn}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
-                        <Text style={styles.backBtnText}>Back to teams</Text>
+                        <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
+                        <Text style={styles.backBtnText}>{t('teamDetails.backToTeams')}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.headerTextBlock}>
-                        {loading && <Text style={styles.pageTitle}>Team details</Text>}
+                    <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
+                        {loading && <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.title')}</Text>}
 
                         {!loading && user && team && user._id !== team.club._id &&
-                            <Text style={styles.pageTitle}>{team?.name}</Text>
+                            <Text style={[styles.pageTitle, isRTL ? styles.rtlText : styles.ltrText]}>{team?.name}</Text>
                         }
 
                         {!loading && user && team && user._id === team.club._id &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: 200, zIndex: 1 }}>
+                            <View style={[styles.titleEditRow, isRTL && styles.titleEditRowRtl]}>
                                 <TextInput
                                     style={[
                                         styles.pageTitle,
                                         { padding: 0, maxWidth: 160 },
-                                        isFocused && styles.inputFocused
+                                        isFocused && styles.inputFocused,
+                                        isRTL ? styles.rtlText : styles.ltrText
                                     ]}
                                     value={teamName}
                                     onChangeText={(text) => setTeamName(text)}
@@ -199,7 +202,7 @@ export default function TeamDetails() {
                                 {changeTeamNameLoading ? (
                                     <ActivityIndicator size="small" color="#ffffff" />
                                 ) : isFocused ? (
-                                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                                    <View style={[styles.inlineIconRow, isRTL && styles.inlineIconRowRtl]}>
                                         <TouchableOpacity onPress={() => { updateTeamName(); nameEditRef.current?.blur(); }}>
                                             <AntDesign name="check" size={24} color="#FFFFFF" />
                                         </TouchableOpacity>
@@ -215,10 +218,10 @@ export default function TeamDetails() {
                             </View>
                         }
 
-                        {!loading && <Text style={styles.pageDesc}>{team?.sport}</Text>}
+                        {!loading && <Text style={[styles.pageDesc, isRTL ? styles.rtlText : styles.ltrText]}>{team?.sport}</Text>}
 
                         {loading &&
-                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
+                            <View style={[styles.loaderRow, isRTL && styles.loaderRowRtl]}>
                                 <ActivityIndicator
                                     size="small"
                                     color="#fff"
@@ -228,11 +231,11 @@ export default function TeamDetails() {
                         }
                     </View>
 
-                    <Text style={styles.ghostText}>{teamName.substring(0, 6)}</Text>
+                    <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{teamName.substring(0, 6)}</Text>
 
                     {!loading && team && user && <>
                         {user && user._id == team.club ? (
-                            <View style={styles.profileImage}>
+                            <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                                 <TouchableOpacity onPress={() => router.push('/teams/uploadLogo')}>
                                     {(team.image == null || team.image == "") && <Image
                                         source={require('../../assets/teamlogo.png')}
@@ -250,7 +253,7 @@ export default function TeamDetails() {
                                     <TouchableOpacity style={styles.uploadImage} onPress={() => router.push('/teams/uploadLogo')}>
                                         <Entypo name="plus" size={20} color="#FF4000" />
                                         <Text style={styles.uploadImageText}>
-                                            Upload logo
+                                            {t('teamDetails.uploadLogo')}
                                         </Text>
                                     </TouchableOpacity>
                                 }
@@ -259,13 +262,13 @@ export default function TeamDetails() {
                                     <TouchableOpacity style={[styles.uploadImage, { padding: 5, }]} onPress={() => router.push('/teams/uploadLogo')}>
                                         <FontAwesome name="refresh" size={16} color="#FF4000" />
                                         <Text style={[styles.uploadImageText, { marginLeft: 5 }]}>
-                                            Change logo
+                                            {t('teamDetails.changeLogo')}
                                         </Text>
                                     </TouchableOpacity>
                                 }
                             </View>
                         ) : (
-                            <View style={styles.profileImage}>
+                            <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
                                 {(team.image == null || team.image == "") && <Image
                                     source={require('../../assets/teamlogo.png')}
                                     style={[styles.profileImageAvatar,{tintColor:'#000'}]}
@@ -292,40 +295,40 @@ export default function TeamDetails() {
                         {user && team && <View style={styles.profileSection}>
 
                             {/* age group */}
-                            {team.ageGroup && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Age Group
+                            {team.ageGroup && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                                <Text style={[styles.title, isRTL ? styles.rtlText : styles.ltrText]}>
+                                    {t('teamDetails.ageGroup')}
                                 </Text>
                                 {team.ageGroup ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{team.ageGroup}</Text>
+                                        <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>{team.ageGroup}</Text>
                                     </View>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>-</Text>
                                 )}
                             </View>}
 
                             {/* gender */}
-                            {team.gender && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Text style={styles.title}>
-                                    Gender
+                            {team.gender && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                                <Text style={[styles.title, isRTL ? styles.rtlText : styles.ltrText]}>
+                                    {t('teamDetails.gender')}
                                 </Text>
                                 {team.gender ? (
                                     <View>
-                                        <Text style={styles.paragraph}>{team.gender}</Text>
+                                        <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>{team.gender}</Text>
                                     </View>
                                 ) : (
-                                    <Text style={styles.paragraph}>-</Text>
+                                    <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>-</Text>
                                 )}
                             </View>}
 
                             {/* club */}
                             {team.club && (
                                 <View style={{ marginVertical: 20 }}>
-                                    <Text style={[styles.title, { marginBottom: 10 }]}>Club</Text>
+                                    <Text style={[styles.title, { marginBottom: 10 }, isRTL ? styles.rtlText : styles.ltrText]}>{t('profile.club')}</Text>
                                     <View>
                                         <TouchableOpacity
-                                            style={{ flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#eeeeee', paddingVertical: 10, borderRadius: 8 }}
+                                            style={[styles.clubCard, isRTL && styles.clubCardRtl]}
                                             onPress={() => router.push({
                                                 pathname: '/profile/public',
                                                 params: { id: team.club._id },
@@ -333,19 +336,19 @@ export default function TeamDetails() {
                                             {team.club.image ? (
                                                 <Image
                                                     source={{ uri: team.club.image }}
-                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                    style={[styles.clubImage, isRTL && styles.clubImageRtl]}
                                                 />
                                             ) : (
                                                 <Image
                                                     source={require('../../assets/clublogo.png')}
-                                                    style={{ width: 50, height: 50, borderRadius: 25, marginRight: 10 }}
+                                                    style={[styles.clubImage, isRTL && styles.clubImageRtl]}
                                                 />
                                             )}
 
                                             <View style={{ flex: 1, flexShrink: 1, width: '100%' }}>
 
                                                 <Text
-                                                    style={[styles.paragraph, { fontWeight: 'bold' }]}
+                                                    style={[styles.paragraph, { fontWeight: 'bold' }, isRTL ? styles.rtlText : styles.ltrText]}
                                                     numberOfLines={1}
                                                     ellipsizeMode="tail"
                                                 >
@@ -353,7 +356,7 @@ export default function TeamDetails() {
                                                 </Text>
 
                                                 <Text
-                                                    style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }]}
+                                                    style={[styles.paragraph, { fontSize: 14, opacity: 0.5, marginBottom: 10 }, isRTL ? styles.rtlText : styles.ltrText]}
                                                     numberOfLines={1}
                                                     ellipsizeMode="tail"
                                                 >
@@ -374,8 +377,8 @@ export default function TeamDetails() {
 
                             {/* coaches */}
                             <View style={{ marginVertical: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                    <Text style={styles.title}>{team.coaches.length} Coach{team.coaches.length == 1 ? '' : 'es'}</Text>
+                                <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRtl]}>
+                                    <Text style={[styles.title, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.coachCount').replace('{count}', String(team.coaches.length)).replace('{suffix}', team.coaches.length == 1 ? '' : 'es')}</Text>
                                     {user && user._id === team.club._id &&
                                         <TouchableOpacity style={styles.editToggle}
                                             onPress={() => router.push({
@@ -384,13 +387,13 @@ export default function TeamDetails() {
                                             })}
                                         >
                                             <Entypo name="edit" size={16} color="#FF4000" />
-                                            <Text style={styles.editToggleText}>Manage</Text>
+                                            <Text style={styles.editToggleText}>{t('profile.manage')}</Text>
                                         </TouchableOpacity>}
                                 </View>
 
                                 {team.coaches && team.coaches.length > 0 ? (
                                     <View style={{ marginBottom: 20 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                        <View style={[styles.peopleGrid, isRTL && styles.peopleGridRtl]}>
                                             {team.coaches.map((coach) => (
                                                 <TouchableOpacity
                                                     key={coach._id}
@@ -425,21 +428,21 @@ export default function TeamDetails() {
                                                             </View>
                                                         )}
 
-                                                        <Text style={[styles.paragraph,{fontSize:14}]}>{coach.name.trim()}</Text>
+                                                        <Text style={[styles.paragraph,{fontSize:14}, isRTL ? styles.rtlText : styles.ltrText]}>{coach.name.trim()}</Text>
                                                     </View>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
                                     </View>
                                 ) : (
-                                    <Text style={styles.paragraph}>No coaches</Text>
+                                    <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.noCoaches')}</Text>
                                 )}
                             </View>
 
                             {/* members */}
                             <View style={{ marginVertical: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                    <Text style={styles.title}>{team.members.length} Member{team.members.length == 1 ? '' : 's'}</Text>
+                                <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRtl]}>
+                                    <Text style={[styles.title, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.memberCount').replace('{count}', String(team.members.length)).replace('{suffix}', team.members.length == 1 ? '' : 's')}</Text>
                                     {user && (
                                         (user._id === team.club._id || (user.role === "Coach" && Array.isArray(team.coaches) && team.coaches.some(coach => coach._id === user._id))
                                         )) && (
@@ -451,14 +454,14 @@ export default function TeamDetails() {
                                                 })}
                                             >
                                                 <Entypo name="edit" size={16} color="#FF4000" />
-                                                <Text style={styles.editToggleText}>Manage</Text>
+                                                <Text style={styles.editToggleText}>{t('profile.manage')}</Text>
                                             </TouchableOpacity>
                                         )}
                                 </View>
 
                                 {team.members && team.members.length > 0 ? (
                                     <View style={{ marginBottom: 20 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 15 }}>
+                                        <View style={[styles.peopleGrid, isRTL && styles.peopleGridRtl]}>
                                             {team.members.map((member) => (
                                                 <TouchableOpacity
                                                     key={member._id}
@@ -494,7 +497,7 @@ export default function TeamDetails() {
                                                                 </View>
                                                             )}
                                                         </View>
-                                                        <Text style={[styles.paragraph,{fontSize:14}]}>{member?.name?.trim()}</Text>
+                                                        <Text style={[styles.paragraph,{fontSize:14}, isRTL ? styles.rtlText : styles.ltrText]}>{member?.name?.trim()}</Text>
                                                     </View>
                                                 </TouchableOpacity>
                                             ))}
@@ -502,14 +505,14 @@ export default function TeamDetails() {
                                     </View>
 
                                 ) : (
-                                    <Text style={styles.paragraph}>No members</Text>
+                                    <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.noMembers')}</Text>
                                 )}
                             </View>
 
                             {/* events */}
                             <View style={{ marginVertical: 20 }}>
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                                    <Text style={styles.title}>Upcoming events</Text>
+                                <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRtl]}>
+                                    <Text style={[styles.title, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.upcomingEvents')}</Text>
                                 </View>
 
                                 {schedule && schedule.length > 0 ? (
@@ -521,7 +524,7 @@ export default function TeamDetails() {
                                         return (
                                             <TouchableOpacity
                                                 key={event._id}
-                                                style={styles.eventCard}
+                                                style={[styles.eventCard, isRTL && styles.eventCardRtl]}
                                                 onPress={() => router.push(`/schedule/details?id=${event._id}`)}
                                             >
                                                 <View style={styles.eventDate}>
@@ -531,18 +534,18 @@ export default function TeamDetails() {
                                                     </Text>
                                                 </View>
                                                 <View style={styles.eventDetails}>
-                                                    <Text style={styles.eventTitle}>{event.title}</Text>
-                                                    <Text style={styles.eventTime}>
+                                                    <Text style={[styles.eventTitle, isRTL ? styles.rtlText : styles.ltrText]}>{event.title}</Text>
+                                                    <Text style={[styles.eventTime, isRTL ? styles.rtlText : styles.ltrText]}>
                                                         {formattedTime} - {endTime}
                                                     </Text>
-                                                    <Text style={styles.eventLocation}>
+                                                    <Text style={[styles.eventLocation, isRTL ? styles.rtlText : styles.ltrText]}>
                                                         {event.locationType === 'online'
-                                                            ? 'Online Event'
-                                                            : event.venue?.name || 'Location TBD'}
+                                                            ? t('profile.onlineEvent')
+                                                            : event.venue?.name || t('profile.locationTbd')}
                                                     </Text>
                                                     {event.eventType === 'match' && event.opponent && (
                                                         <View style={styles.opponentContainer}>
-                                                            <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                            <Text style={[styles.opponentText, isRTL ? styles.rtlText : styles.ltrText]}>{t('profile.versus')} {event.opponent.name}</Text>
                                                         </View>
                                                     )}
                                                 </View>
@@ -559,7 +562,7 @@ export default function TeamDetails() {
                                         );
                                     })
                                 ) : (
-                                    <Text style={styles.paragraph}>No events</Text>
+                                    <Text style={[styles.paragraph, isRTL ? styles.rtlText : styles.ltrText]}>{t('teamDetails.noEvents')}</Text>
                                 )}
                             </View>
                         </View>}
@@ -626,6 +629,10 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+    },
+    headerTextBlockRtl: {
+        left: undefined,
+        right: 20,
     },
     pageTitle: {
         color: '#ffffff',
@@ -740,6 +747,10 @@ const styles = StyleSheet.create({
         right: -5,
         opacity: 0.2
     },
+    ghostTextRtl: {
+        right: undefined,
+        left: -5,
+    },
     error: {
         marginBottom: 15,
         backgroundColor: '#fce3e3',
@@ -795,6 +806,10 @@ const styles = StyleSheet.create({
         height: '70%',
         maxWidth: 200,
         overflow: 'hidden',
+    },
+    profileImageRtl: {
+        right: undefined,
+        left: -5,
     },
     profileImageAvatar: {
         height: '100%',
@@ -906,6 +921,9 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 3,
     },
+    eventCardRtl: {
+        flexDirection: 'row-reverse',
+    },
     eventDate: {
         width: 60,
         alignItems: 'center',
@@ -978,9 +996,94 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    backBtnRtl: {
+        left: undefined,
+        right: 10,
+        flexDirection: 'row-reverse',
+    },
     backBtnText: {
         color: '#FFF',
         fontSize:18,
         fontFamily:'Qatar'
+    },
+    titleEditRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        maxWidth: 200,
+        zIndex: 1,
+    },
+    titleEditRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    inlineIconRow: {
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'center',
+    },
+    inlineIconRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    loaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 5,
+    },
+    loaderRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    infoRowRtl: {
+        flexDirection: 'row-reverse',
+    },
+    clubCard: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: '#eeeeee',
+        paddingVertical: 10,
+        borderRadius: 8,
+    },
+    clubCardRtl: {
+        flexDirection: 'row-reverse',
+    },
+    clubImage: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 10,
+    },
+    clubImageRtl: {
+        marginRight: 0,
+        marginLeft: 10,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    sectionHeaderRtl: {
+        flexDirection: 'row-reverse',
+    },
+    peopleGrid: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 15,
+    },
+    peopleGridRtl: {
+        flexDirection: 'row-reverse',
+    },
+    ltrText: {
+        textAlign: 'left',
+        writingDirection: 'ltr',
+    },
+    rtlText: {
+        textAlign: 'right',
+        writingDirection: 'rtl',
     },
 });
