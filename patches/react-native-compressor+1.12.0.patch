@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native-compressor/ios/Image/ImageCompressor.swift b/node_modules/react-native-compressor/ios/Image/ImageCompressor.swift
+index 7fe78f0..6f98f28 100644
+--- a/node_modules/react-native-compressor/ios/Image/ImageCompressor.swift
++++ b/node_modules/react-native-compressor/ios/Image/ImageCompressor.swift
+@@ -370,8 +370,7 @@ class ImageCompressor {
+             var results: PHFetchResult<PHAsset>?
+             
+             if imageURL?.scheme?.caseInsensitiveCompare("assets-library") == .orderedSame {
+-                assetID = imageURL?.absoluteString ?? ""
+-                results = PHAsset.fetchAssets(withALAssetURLs: [imageURL!], options: nil)
++                return
+             } else {
+                 assetID = imagePath.replacingOccurrences(of: "ph://", with: "")
+                 results = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
+diff --git a/node_modules/react-native-compressor/ios/Video/VideoMain.swift b/node_modules/react-native-compressor/ios/Video/VideoMain.swift
+index 4c716d1..a1ee146 100644
+--- a/node_modules/react-native-compressor/ios/Video/VideoMain.swift
++++ b/node_modules/react-native-compressor/ios/Video/VideoMain.swift
+@@ -1,5 +1,4 @@
+ import Foundation
+-import AssetsLibrary
+ import AVFoundation
+ import Photos
+ import MobileCoreServices
