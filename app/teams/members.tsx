@@ -316,8 +316,8 @@ export default function Members() {
 
                 <ScrollView >
                     <View style={styles.contentContainer}>
-                        {error != '' && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
+                        {error != '' && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                            <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
@@ -352,7 +352,7 @@ export default function Members() {
                                         <ActivityIndicator
                                             size="small"
                                             color="#FF4000"
-                                            style={styles.searchLoader}
+                                            style={[styles.searchLoader, isRTL && { left: 10, right: 'auto' }]}
                                         />
                                     }
 
@@ -365,7 +365,7 @@ export default function Members() {
                                                     return (
                                                         <View key={athlete._id}>
                                                             <TouchableOpacity
-                                                                style={styles.searchResultItem}
+                                                                style={[styles.searchResultItem,isRTL&&{flexDirection:'row-reverse'}]}
                                                                 onPress={() => !alreadyMember && handleAddMember(athlete)}
                                                                 disabled={alreadyMember}
                                                             >
@@ -661,7 +661,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -675,8 +676,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         position: 'absolute',
         top: 30,
         left: 20,
@@ -686,7 +687,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 60,
         left: 10,
-        width:200,
+        width: 200,
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
@@ -698,8 +699,8 @@ const styles = StyleSheet.create({
     },
     backBtnText: {
         color: '#FFF',
-        fontSize:18,
-        fontFamily:'Qatar'
+        fontSize: 18,
+        fontFamily: 'Qatar'
     },
     headerTextBlock: {
         position: 'absolute',
@@ -708,8 +709,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth: 200
     },
     pageTitle: {
         color: '#ffffff',
@@ -808,13 +810,14 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     ghostText: {
-        color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color: '#ff6633',
+        maxHeight: 200,
+        lineHeight: 200
     },
     ghostTextRtl: {
         right: undefined,
@@ -980,13 +983,13 @@ const styles = StyleSheet.create({
     searchResultItemDescription: {
         // fontSize:16,
         marginBottom: 5,
-        color:'#888888'
+        color: '#888888'
     },
     searchResultItemName: {
         fontWeight: 'bold',
         fontSize: 16,
         // marginBottom:5
-        color:'black'
+        color: 'black'
     },
     removeBtn: {
         width: 25,

@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 120,
-        height: 30,
+        height: 40,
         position: 'absolute',
         top: 30,
         left: 20,
@@ -283,8 +283,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     pageTitle: {
         color: '#ffffff',
@@ -293,14 +294,15 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     ghostText: {
-        color: '#ffffff',
         fontSize: 100,
         textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,

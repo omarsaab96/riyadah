@@ -4,15 +4,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { useLanguage } from "../../context/language";
 
@@ -165,7 +165,7 @@ export default function TimeSheetScreen() {
           <Text style={styles.pageTitle}>{t('timesheet.title')}</Text>
 
           {!loading && staff &&
-            <Text style={styles.pageDesc}>{staff.userRef.name || t('timesheet.defaultStaffName')}</Text>
+            <Text style={styles.pageDesc}>{staff.userRef?.name || t('timesheet.defaultStaffName')}</Text>
           }
 
           {loading &&
@@ -183,19 +183,19 @@ export default function TimeSheetScreen() {
 
         {!loading && staff &&
           <View style={styles.profileImage}>
-            {(staff.userRef.image == null || staff.userRef.image == "") && staff.userRef.gender == "Male" && <Image
+            {(staff.userRef?.image == null || staff.userRef?.image == "") && staff.userRef?.gender == "Male" && <Image
               source={require('../../assets/avatar.png')}
               style={styles.profileImageAvatar}
               resizeMode="contain"
             />}
 
-            {(staff.userRef.image == null || staff.userRef.image == "") && staff.userRef.gender == "Female" && <Image
+            {(staff.userRef?.image == null || staff.userRef?.image == "") && staff.userRef?.gender == "Female" && <Image
               source={require('../../assets/avatarF.png')}
               style={styles.profileImageAvatar}
               resizeMode="contain"
             />}
 
-            {staff.userRef.image != null && <Image
+            {staff.userRef?.image != null && <Image
               source={{ uri: staff.userRef.image }}
               style={styles.profileImageAvatar}
               resizeMode="contain"
@@ -297,9 +297,10 @@ const styles = StyleSheet.create({
     width: width - 40,
   },
   headerTextBlockRtl: {
-    left: undefined,
-    right: 20,
-  },
+        left: 'auto',
+        right: 20,
+        maxWidth:200
+    },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -421,13 +422,14 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   ghostText: {
-    color: '#ffffff',
     fontSize: 100, textTransform: 'uppercase',
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2
+    color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
   },
   ghostTextRtl: {
     right: undefined,

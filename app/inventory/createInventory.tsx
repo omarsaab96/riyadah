@@ -1,5 +1,4 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -42,6 +41,13 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
         unitPrice: '0 EGP',
         description: '',
     });
+    const categoryOptions = [
+        { label: t('inventory.equipment'), value: 'Equipment' },
+        { label: t('inventory.uniform'), value: 'Uniform' },
+        { label: t('inventory.accessories'), value: 'Accessories' },
+        { label: t('inventory.medicalSupplies'), value: 'Medical supplies' },
+    ];
+    const currencyOptions = ['EGP', 'USD', 'EUR'];
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -148,9 +154,9 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                                 params: { tab: 'Inventory' }
                             })
                         }}
-                        style={styles.backBtn}
+                            style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Ionicons name={isRTL?"chevron-forward":"chevron-back"} size={20} color="#ffffff" />
                         <Text style={styles.backBtnText}>{t('inventory.backToInventory')}</Text>
                     </TouchableOpacity>
 
@@ -173,15 +179,15 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                 </View>
 
                 <ScrollView>
-                    {error != '' && <View style={styles.error}>
-                        <View style={styles.errorIcon}></View>
+                    {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                        <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                         <Text style={styles.errorText}>{error}</Text>
                     </View>}
                     <View style={styles.contentContainer}>
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.itemName')} *</Text>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input,isRTL&&{textAlign:'right'}]}
                                 placeholderTextColor={"#888"}
                                 placeholder={t('inventory.enterItemName')}
                                 value={formData.itemName}
@@ -192,30 +198,30 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.category')} *</Text>
                             {/* <TextInput
-                                style={styles.input}
+                                style={[styles.input,isRTL&&{textAlign:'right'}]}
                                 placeholder="Enter category"
                                 value={formData.category}
                                 onChangeText={(text) => handleChange('category', text)}
                             /> */}
-                            <View style={styles.pickerContainer}>
-                                <Picker
-                                    style={styles.picker}
-                                    selectedValue={formData.category}
-                                    onValueChange={(value) => handleChange('category', value)}
-                                >
-                                    {/* <Picker.Item label="Select a category..." value="" enabled={false} /> */}
-                                    <Picker.Item label={t('inventory.equipment')} value="Equipment" />
-                                    <Picker.Item label={t('inventory.uniform')} value="Uniform" />
-                                    <Picker.Item label={t('inventory.accessories')} value="Accessories" />
-                                    <Picker.Item label={t('inventory.medicalSupplies')} value="Medical supplies" />
-                                </Picker>
+                            <View style={[styles.choiceGroup, isRTL && styles.choiceGroupRtl]}>
+                                {categoryOptions.map((option) => (
+                                    <TouchableOpacity
+                                        key={option.value}
+                                        style={[styles.multipleChoice, formData.category == option.value && styles.selectedChoice]}
+                                        onPress={() => handleChange('category', option.value)}
+                                    >
+                                        <Text style={[styles.multipleChoiceText, formData.category == option.value && styles.selectedChoiceText]}>
+                                            {option.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
                             </View>
                         </View>
 
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.quantity')}</Text>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input,isRTL&&{textAlign:'right'}]}
                                 placeholder={t('inventory.enterQuantity')}
                                 placeholderTextColor={"#888"}
                                 keyboardType="numeric"
@@ -226,9 +232,9 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
 
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.unitPrice')}</Text>
-                            <View style={{ flexDirection: 'row', columnGap: 10 }}>
+                            <View style={[styles.priceRow,isRTL&&{flexDirection:'row-reverse'}]}>
                                 <TextInput
-                                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                                    style={[styles.input, styles.amountInput, isRTL&&{textAlign:'right'}]}
                                     placeholder={t('inventory.amount')}
                                     keyboardType="numeric"
                                     placeholderTextColor={"#888"}
@@ -239,26 +245,28 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                                         handleChange('unitPrice', `${amount} ${currency}`);
                                     }}
                                 />
-                                <View style={[styles.pickerContainer, { flex: 1 }]}>
-                                    <Picker
-                                        style={styles.picker}
-                                        selectedValue={formData.unitPrice?.split(' ')[1] || 'USD'}
-                                        onValueChange={(currency) => {
-                                            const amount = formData.unitPrice?.split(' ')[0] || '0';
-                                            handleChange('unitPrice', `${amount} ${currency}`);
-                                        }}
-                                    >
-                                        <Picker.Item label="EGP" value="EGP" />
-                                        <Picker.Item label="USD" value="USD" />
-                                        <Picker.Item label="EUR" value="EUR" />
-                                    </Picker>
+                                <View style={[styles.currencyChoices, isRTL && styles.choiceGroupRtl]}>
+                                    {currencyOptions.map((currency) => (
+                                        <TouchableOpacity
+                                            key={currency}
+                                            style={[styles.multipleChoice, styles.currencyChoice, (formData.unitPrice?.split(' ')[1] || 'USD') == currency && styles.selectedChoice]}
+                                            onPress={() => {
+                                                const amount = formData.unitPrice?.split(' ')[0] || '0';
+                                                handleChange('unitPrice', `${amount} ${currency}`);
+                                            }}
+                                        >
+                                            <Text style={[styles.multipleChoiceText, (formData.unitPrice?.split(' ')[1] || 'USD') == currency && styles.selectedChoiceText]}>
+                                                {currency}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
                                 </View>
                             </View>
                         </View>
 
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.description')}</Text>
-                            <TextInput style={styles.textarea}
+                            <TextInput style={[styles.textarea,isRTL&&{textAlign:'right'}]}
                                 placeholder={t('inventory.enterDescription')}
                                 placeholderTextColor="#A8A8A8"
                                 value={formData.description || ""}
@@ -326,7 +334,7 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
     },
     pageTitle: {
@@ -340,13 +348,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin'
     },
     ghostText: {
-        color: '#ffffff',
         fontSize:100,textTransform:'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,
@@ -431,17 +440,50 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
         fontSize: 16,
     },
-    pickerContainer: {
-        overflow: 'hidden',
-        borderRadius: 8,
+    choiceGroup: {
+        flexDirection: 'row',
+        gap: 10,
+        flexWrap: 'wrap',
     },
-    picker: {
-        width: '100%',
-        fontFamily: 'Acumin',
-        fontSize: 14,
+    choiceGroupRtl: {
+        flexDirection: 'row-reverse',
+    },
+    priceRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        flexWrap: 'wrap',
+    },
+    amountInput: {
+        flexGrow: 1,
+        flexBasis: 120,
+        marginBottom: 0,
+    },
+    currencyChoices: {
+        flexDirection: 'row',
+        gap: 10,
+        flexWrap: 'wrap',
+    },
+    multipleChoice: {
         backgroundColor: '#F4F4F4',
-        borderRadius: 8,
-        color: 'black'
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+    },
+    currencyChoice: {
+        minWidth: 58,
+        alignItems: 'center',
+    },
+    multipleChoiceText: {
+        fontFamily: 'Acumin',
+        color: '#000',
+        fontSize: 16,
+    },
+    selectedChoice: {
+        backgroundColor: '#1a491e',
+    },
+    selectedChoiceText: {
+        color: '#fff',
     },
     backBtn: {
         position: 'absolute',
@@ -451,6 +493,12 @@ const styles = StyleSheet.create({
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    backBtnRtl: {
+        flexDirection: 'row-reverse',
+        width:'100%',
+        left:0,
+        right:10
     },
     backBtnText: {
         color: '#FFF',

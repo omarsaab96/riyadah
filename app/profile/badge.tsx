@@ -1,5 +1,5 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLanguage } from '@/context/language';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -171,8 +171,8 @@ export default function Badge() {
           <ScrollView>
             <View style={styles.contentContainer}>
               {error && (
-                <View style={styles.error}>
-                  <View style={styles.errorIcon} />
+                <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                  <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]} />
                   <Text style={[styles.errorText, isRTL && styles.rtlText]}>{error}</Text>
                 </View>
               )}
@@ -371,9 +371,10 @@ const styles = StyleSheet.create({
     width: width - 40,
   },
   headerTextBlockRtl: {
-    left: undefined,
-    right: 20,
-  },
+        left: 'auto',
+        right: 20,
+        maxWidth:200
+    },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -408,14 +409,15 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
   ghostText: {
-    color: '#ffffff',
     fontSize: 100,
     textTransform: 'uppercase',
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2,
+    color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
   },
   ghostTextRtl: {
     right: undefined,

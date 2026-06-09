@@ -163,8 +163,8 @@ export default function WizardStep4() {
             ) : (
                 <>
                     <View style={styles.form}>
-                        {error != null && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
+                        {error != null && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
@@ -279,7 +279,6 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 120,
-        height: 30,
         height: 40,
         position: 'absolute',
         top: 40,
@@ -293,8 +292,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth: 200
     },
     pageTitle: {
         color: '#ffffff',
@@ -307,16 +307,17 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin'
     },
     ghostText: {
-        color: '#ffffff',
-        fontSize: 100, textTransform: 'uppercase',
+        fontSize: 100,
+        textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2,
+        color: '#ff6633',
         width: '100%',
         textAlign: 'right',
-        textTransform: 'uppercase'
+        maxHeight: 200,
+        lineHeight: 200
     },
     ghostTextRtl: {
         right: undefined,
@@ -452,7 +453,7 @@ const styles = StyleSheet.create({
         color: '#888',
         fontFamily: 'Acumin',
         fontSize: 14,
-        lineHeight:18
+        lineHeight: 18
     },
     rtlText: {
         textAlign: 'right',

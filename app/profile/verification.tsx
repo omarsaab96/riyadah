@@ -389,13 +389,13 @@ export default function VerifyProfile() {
                         }}
                         style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Ionicons name={isRTL?"chevron-forward":"chevron-back"} size={20} color="#ffffff" />
                         <Text style={styles.backBtnText}>{t('account.back')}</Text>
                     </TouchableOpacity>
 
                     <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                         <Text style={styles.pageTitle}>{t('account.verifyAccount')}</Text>
-                        {!loading && user && <Text style={styles.pageDesc}>{user?.name}</Text>}
+                        {!loading && user && <Text style={[styles.pageDesc,isRTL&&{textAlign:'right'}]}>{user?.name}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -410,7 +410,9 @@ export default function VerifyProfile() {
 
                     <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('account.verifyGhost')}</Text>
 
-                    {user && !loading && <View style={styles.profileImage}>
+                    {user && !loading &&
+                    <View style={[styles.profileImage, isRTL && styles.rtlprofileImage]}>
+                    
                         {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
                             source={require('../../assets/clublogo.png')}
                             style={styles.profileImageAvatar}
@@ -436,35 +438,35 @@ export default function VerifyProfile() {
 
                 {user && !loading && <ScrollView>
                     <View style={styles.contentContainer}>
-                        {error != null && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
+                        {error != null && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
                         {!emailOTPSent && !phoneOTPSent &&
                             <View>
                                 <View style={styles.entity}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },isRTL&&{flexDirection:'row-reverse'}]}>
                                         <Text style={[styles.title, isRTL && styles.rtlText]}>
                                             {t('account.emailAddressLabel')}
                                         </Text>
                                         {user.verified.email == null &&
                                             <TouchableOpacity onPress={handleSendEmailOTP} style={[styles.profileButton, styles.savebtn]}>
-                                                <Text style={styles.profileButtonText}>
+                                                <Text style={[styles.profileButtonText,isRTL&&{width:80}]}>
                                                     {verifyingEmail ? t('account.sendingOtp') : t('account.sendOtp')}
                                                 </Text>
-                                                {verifyingEmail && (
+                                                {/* {verifyingEmail && (
                                                     <ActivityIndicator
                                                         size="small"
                                                         color="#111111"
                                                         style={styles.saveLoaderContainer}
                                                     />
-                                                )}
+                                                )} */}
                                             </TouchableOpacity>
                                         }
 
-                                        {user.verified.email != null &&
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                        {user.verified.email = null &&
+                                            <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 5 },isRTL&&{flexDirection:'row-reverse'}]}>
                                                 <Octicons name="verified" size={14} color="#009933" />
                                                 <Text style={styles.verifiedbadge}>
                                                     {t('account.verified')}
@@ -493,14 +495,14 @@ export default function VerifyProfile() {
                                 </View>
 
                                 <View style={styles.entity}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },isRTL&&{flexDirection:'row-reverse'}]}>
                                         <Text style={[styles.title, isRTL && styles.rtlText]}>
                                             {t('account.phoneNumberLabel')}
                                         </Text>
 
                                         {user.verified.phone == null &&
                                             <TouchableOpacity onPress={handleSendPhoneOTP} style={[styles.profileButton, styles.savebtn]}>
-                                                <Text style={styles.profileButtonText}>
+                                                <Text style={[styles.profileButtonText,isRTL&&{width:80}]}>
                                                     {verifyingPhone ? t('account.sendingOtp') : t('account.sendOtp')}
                                                 </Text>
                                                 {verifyingPhone && (
@@ -514,7 +516,7 @@ export default function VerifyProfile() {
                                         }
 
                                         {user.verified.phone != null &&
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                            <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 5 },isRTL&&{flexDirection:'row-reverse'}]}>
                                                 <Octicons name="verified" size={14} color="#009933" />
                                                 <Text style={styles.verifiedbadge}>
                                                     {t('account.verified')}
@@ -720,8 +722,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     pageTitle: {
         color: '#ffffff',
@@ -755,13 +758,14 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     ghostText: {
-        color: '#ffffff',
         fontSize:100,textTransform:'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,
@@ -774,6 +778,11 @@ const styles = StyleSheet.create({
         height: '70%',
         maxWidth: 200,
         overflow: 'hidden',
+    },
+    
+    rtlprofileImage: {
+        right: 'auto',
+        left: -5
     },
     profileImageAvatar: {
         height: '100%',
@@ -804,7 +813,8 @@ const styles = StyleSheet.create({
     savebtn: {
         flexDirection: 'row'
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform:'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',

@@ -290,7 +290,7 @@ export default function PublicProfile() {
         const url = `https://riyadah.app/profile/public/${user._id}`;
         try {
             const result = await Share.share({
-                message: `Check out ${user.name}'s profile on Riyadah!\n${url}`,
+                message: `Check out ${user?.name || t('profile.defaultTitle')}'s profile on Riyadah!\n${url}`,
             });
 
             if (result.action === Share.sharedAction) {
@@ -354,18 +354,19 @@ export default function PublicProfile() {
                     onPress={() => {
                         router.back()
                     }}
-                    style={styles.backBtn}
+                    style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                 >
-                    <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                    <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
                     <Text style={[styles.backBtnText, textDirectionStyle]}>{t('auth.back')}</Text>
                 </TouchableOpacity>
 
-                <View style={styles.headerTextBlock}>
-                    {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
-
+                <View style={[styles.headerTextBlock]}>
+                    <Text style={isRTL&&{textAlign:'right'}}>
+                        {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
+                    </Text>
                     <Text style={[styles.pageTitle, textDirectionStyle]}>{user?.name || t('profile.defaultTitle')}</Text>
                     {!loading && <Text style={[styles.pageDesc, textDirectionStyle]}>
-                        {user?.type} {user.role ? `/ ${user.role}` : ''}
+                        {user?.type} {user?.role ? `/ ${user.role}` : ''}
                     </Text>}
 
                     {loading &&
@@ -379,10 +380,10 @@ export default function PublicProfile() {
                     }
                 </View>
 
-                {!loading && <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{user.name.substring(0, 6)}</Text>}
+                {!loading && user?.name && <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{user.name.substring(0, 6)}</Text>}
 
-                {!loading && (
-                    <View style={styles.profileImage}>
+                {!loading && user && (
+                    <View style={[styles.profileImage, isRTL && styles.rtlprofileImage]}>
                         {(user.image == null || user.image == "") && user.type == "Club" && (
                             <Image
                                 source={require('../../assets/clublogo.png')}
@@ -467,7 +468,7 @@ export default function PublicProfile() {
                                             />
                                         )}
                                         <View>
-                                            <Text style={styles.adminName}>{adminUser.name}</Text>
+                                            <Text style={styles.adminName}>{adminUser?.name || t('profile.defaultTitle')}</Text>
                                         </View>
                                     </View>
                                 ) : (
@@ -478,7 +479,7 @@ export default function PublicProfile() {
                                             resizeMode="contain"
                                         />
                                         <View>
-                                            <Text style={styles.adminName}>{user.admin.name}</Text>
+                                            <Text style={styles.adminName}>{user.admin?.name || t('profile.defaultTitle')}</Text>
                                         </View>
                                     </View>
                                 )}
@@ -493,7 +494,7 @@ export default function PublicProfile() {
                                     || user.contactInfo?.tiktok != null || user.contactInfo?.snapchat != null || user.contactInfo?.location?.latitude != null
                                     || user.contactInfo?.location?.longitude != null || user.contactInfo?.description != null) ? (
                                     <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                    <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
                                             <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }, textDirectionStyle]}>
                                                 {t('profile.contact')}
                                             </Text>
@@ -515,7 +516,7 @@ export default function PublicProfile() {
 
                                             </TouchableOpacity>
                                         </View>
-                                        <View>
+                                        <View style={isRTL&&{flexDirection:'row-reverse'}}>
                                             {user.contactInfo?.description != null && user.type == "Club" && (
                                                 <View style={styles.contactDescription}>
                                                     <Text style={textDirectionStyle}>{user.contactInfo?.description}</Text>
@@ -628,7 +629,7 @@ export default function PublicProfile() {
                                     </View>
                                 ) : (
                                     <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                    <View style={{ flexDirection: isRTL?'row-reverse':'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
                                             <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }, textDirectionStyle]}>
                                                 {t('profile.contact')}
                                             </Text>
@@ -716,14 +717,14 @@ export default function PublicProfile() {
                             </View>
 
                             {/* PLAYS IN TEAMS */}
-                            {user.type == "Athlete"&& user.role != "Coach"  && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
+                            {user.type == "Athlete" && user.role != "Coach" && <View style={[styles.infoRow, isRTL && styles.infoRowRtl]}>
                                 <Text style={[styles.title, textDirectionStyle]}>
                                     {t('profile.playsIn')}
                                 </Text>
                                 {user.memberOf.length > 0 ? (
                                     <View>
                                         <Text style={[styles.paragraph, textDirectionStyle]}>
-                                            {user.memberOf.map(team => team.name).join(", ")}
+                                            {(user.memberOf || []).filter(Boolean).map(team => team?.name || t('profile.defaultTitle')).join(", ")}
                                         </Text>
                                     </View>
                                 ) : (
@@ -747,7 +748,7 @@ export default function PublicProfile() {
 
                             {/* CLUB */}
                             {user.type == "Athlete" && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                     <Text style={[styles.title, textDirectionStyle]}>
                                         {t('profile.club')}
                                     </Text>
@@ -755,7 +756,7 @@ export default function PublicProfile() {
                                         <View>
                                             {user.isStaff.length == 0 && <Text style={[styles.paragraph, textDirectionStyle]}>{user.club}</Text>}
                                             {user.isStaff.length > 0 && user.isStaff.map((staff, index) => (
-                                                <Text key={index} style={[styles.paragraph, textDirectionStyle]}>{staff.name}</Text>
+                                                <Text key={index} style={[styles.paragraph, textDirectionStyle]}>{staff?.name || t('profile.defaultTitle')}</Text>
                                             ))}
                                         </View>
                                     ) : (
@@ -766,13 +767,13 @@ export default function PublicProfile() {
 
                             {/* Organization */}
                             {(user.type == "Scout" || user.type == "Sponsor") && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                     <Text style={[styles.title, textDirectionStyle]}>
                                         {t('profile.organization')}
                                     </Text>
                                     {!user.organization?.independent ? (
                                         <View>
-                                            <Text style={[styles.paragraph, textDirectionStyle]}>{user.organization?.name}</Text>
+                                            <Text style={[styles.paragraph, textDirectionStyle]}>{user.organization?.name || t('profile.defaultTitle')}</Text>
                                         </View>
                                     ) : (
                                         <Text style={[styles.paragraph, textDirectionStyle]}>{t('profile.independent')}</Text>
@@ -782,7 +783,7 @@ export default function PublicProfile() {
 
                             {/* NUMBER OF SPORTS */}
                             {user.type == "Club" && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                     <Text style={[styles.title, textDirectionStyle]}>
                                         {t('profile.totalSports')}
                                     </Text>
@@ -800,7 +801,7 @@ export default function PublicProfile() {
 
                             {/* NUMBER OF TEAMS */}
                             {user.type == "Club" && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                     <Text style={[styles.title, textDirectionStyle]}>
                                         {t('profile.totalTeams')}
                                     </Text>
@@ -818,7 +819,7 @@ export default function PublicProfile() {
 
                             {/* NUMBER OF MEMBERS */}
                             {user.type == "Club" && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                     <Text style={[styles.title, textDirectionStyle]}>
                                         {t('profile.totalMembers')}
                                     </Text>
@@ -835,7 +836,7 @@ export default function PublicProfile() {
                             )}
 
                             {/* DOB */}
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                 <Text style={[styles.title, textDirectionStyle]}>
                                     {user.type == "Club" ? t('profile.established') : t('profile.dateOfBirth')}
                                 </Text>
@@ -853,7 +854,7 @@ export default function PublicProfile() {
 
                             {/* HEIGHT */}
                             {user.type == "Athlete" && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                     <Text style={[styles.title, textDirectionStyle]}>
                                         {t('profile.height')}
                                     </Text>
@@ -869,7 +870,7 @@ export default function PublicProfile() {
 
                             {/* WEIGHT */}
                             {user.type == "Athlete" && (
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                                     <Text style={[styles.title, textDirectionStyle]}>
                                         {t('profile.weight')}
                                     </Text>
@@ -1210,7 +1211,7 @@ export default function PublicProfile() {
                                                                         </Text>
                                                                         {event.eventType === 'match' && event.opponent && (
                                                                             <View style={styles.opponentContainer}>
-                                                                                <Text style={[styles.opponentText, textDirectionStyle]}>{t('profile.versus')} {event.opponent.name}</Text>
+                                                                                <Text style={[styles.opponentText, textDirectionStyle]}>{t('profile.versus')} {event.opponent?.name || t('profile.defaultTitle')}</Text>
                                                                             </View>
                                                                         )}
                                                                     </View>
@@ -1265,7 +1266,7 @@ export default function PublicProfile() {
                                                                                 </Text>
                                                                                 {event.eventType === 'match' && event.opponent && (
                                                                                     <View style={styles.opponentContainer}>
-                                                                                        <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                                                        <Text style={styles.opponentText}>vs {event.opponent?.name || 'TBD'}</Text>
                                                                                     </View>
                                                                                 )}
                                                                             </View>
@@ -1339,7 +1340,7 @@ export default function PublicProfile() {
                                                     </View>
                                                 )}
                                                 <View style={styles.staffInfo}>
-                                                    <Text style={[styles.staffName, textDirectionStyle]}>{member.name}</Text>
+                                                    <Text style={[styles.staffName, textDirectionStyle]}>{member?.name || t('profile.defaultTitle')}</Text>
                                                     <Text style={[styles.staffRole, textDirectionStyle]}>{member.role || t('profile.staff')}</Text>
                                                 </View>
                                                 <View style={styles.staffStats}>
@@ -1522,11 +1523,11 @@ const TeamCard = ({ team }) => {
                     />
                 ) : (
                     <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
-                        <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
+                        <Text style={styles.defaultLogoText}>{team?.name?.charAt(0)}</Text>
                     </View>
                 )}
                 <View style={styles.teamInfo}>
-                    <Text style={[styles.teamName, textDirectionStyle]}>{team.name}</Text>
+                    <Text style={[styles.teamName, textDirectionStyle]}>{team?.name || t('profile.defaultTitle')}</Text>
                     <Text style={[styles.teamSport, textDirectionStyle]}>{team.sport}</Text>
                 </View>
                 <View style={styles.teamStats}>
@@ -1535,12 +1536,12 @@ const TeamCard = ({ team }) => {
                 </View>
             </View>
 
-            {team.coaches.length > 0 && (
+            {(team.coaches || []).filter(Boolean).length > 0 && (
                 <View style={[styles.coachSection, isRTL && styles.coachSectionRtl]}>
-                    <Text style={[styles.coachLabel, textDirectionStyle]}>{team.coaches.length == 1 ? t('profile.coach') : t('profile.coaches')}</Text>
+                    <Text style={[styles.coachLabel, textDirectionStyle]}>{(team.coaches || []).filter(Boolean).length == 1 ? t('profile.coach') : t('profile.coaches')}</Text>
 
                     <View style={styles.coachInfoDiv}>
-                        {team.coaches.map((coach, index) => (
+                        {(team.coaches || []).filter(Boolean).map((coach, index) => (
                             <TouchableOpacity
                                 onPress={() => router.push({
                                     pathname: '/profile/public',
@@ -1559,7 +1560,7 @@ const TeamCard = ({ team }) => {
                                         resizeMode="contain"
                                     />
                                 )}
-                                <Text style={[styles.coachName, textDirectionStyle]}>{coach.name}</Text>
+                                <Text style={[styles.coachName, textDirectionStyle]}>{coach?.name || t('profile.defaultTitle')}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -1629,8 +1630,8 @@ const styles = StyleSheet.create({
         color: '#111111',
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         position: 'absolute',
         top: 30,
         left: 20,
@@ -1723,13 +1724,14 @@ const styles = StyleSheet.create({
         color: 'black',
     },
     ghostText: {
-        color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,
@@ -1742,6 +1744,10 @@ const styles = StyleSheet.create({
         height: '70%',
         maxWidth: 200,
         overflow: 'hidden',
+    },
+    rtlprofileImage: {
+        right: 'auto',
+        left: -5
     },
     profileImageAvatar: {
         height: '100%',
@@ -1796,7 +1802,7 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
-        tintColor:'#111111'
+        tintColor: '#111111'
     },
     activeIcon: {
         width: 24,
@@ -1814,7 +1820,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -2449,10 +2456,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    backBtnRtl: {
+        flexDirection: 'row-reverse',
+        width: '100%',
+        left: 'auto',
+        right: 10
+    },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
-        fontFamily: 'Qatar'
+        fontFamily: 'Qatar',
+        lineHeight: 18
     },
     ltrText: {
         textAlign: 'left',

@@ -157,7 +157,7 @@ export default function Login() {
           onPress={() => {
             router.back()
           }}
-          style={styles.backBtn}
+          style={[styles.backBtn,isRTL&&{left:'auto',right:20,flexDirection:'row-reverse'}]}
         >
           <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
           <Text style={[styles.backBtnText, textDirectionStyle]}>{t('auth.back')}</Text>
@@ -179,8 +179,8 @@ export default function Login() {
       </View>
 
       <View style={styles.form}>
-        {error != '' && <View style={styles.error}>
-          <View style={styles.errorIcon}></View>
+        {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+          <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
           <Text style={[styles.errorText, textDirectionStyle]}>{error}</Text>
         </View>}
         {!emailChecked && <TextInput
@@ -194,7 +194,7 @@ export default function Login() {
         />}
 
         {emailChecked && <View>
-          <TouchableOpacity style={[styles.emailBackRow, isRTL && styles.emailBackRowRtl]}>
+          <TouchableOpacity onPress={()=>{setEmailChecked(false)}}style={[styles.emailBackRow, isRTL && styles.emailBackRowRtl]}>
             <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#FF4400" style={{ transform: [{ translateY: 1 }] }} />
             <Text style={[styles.emailBackText, textDirectionStyle]}>{email}</Text>
           </TouchableOpacity>
@@ -261,7 +261,7 @@ export default function Login() {
         </TouchableOpacity>}
       </View>
 
-      <View style={styles.switchLinkContainer}>
+      <View style={[styles.switchLinkContainer,isRTL&&{flexDirection:'row-reverse'}]}>
         <Text style={[styles.switchText, textDirectionStyle]}>{t('auth.needAccount')}</Text>
         <TouchableOpacity onPress={() => router.replace('/register')}>
           <Text style={[styles.switchLink, isRTL && styles.switchLinkRtl]}>{t('auth.registerHere')}</Text>
@@ -296,9 +296,10 @@ const styles = StyleSheet.create({
     width: width - 40,
   },
   headerTextBlockRtl: {
-    left: undefined,
-    right: 20,
-  },
+        left: 'auto',
+        right: 20,
+        maxWidth:200
+    },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -311,16 +312,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Acumin'
   },
   ghostText: {
-    color: '#ffffff',
     fontSize: 100,
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2,
+    color:'#ff6633',
     width: '100%',
     textAlign: 'right',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    maxHeight:200,
+    lineHeight:200,
   },
   ghostTextRtl: {
     right: undefined,

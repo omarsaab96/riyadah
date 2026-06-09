@@ -377,11 +377,13 @@ const styles = StyleSheet.create({
     },
     backBtnRtl: {
         flexDirection: 'row-reverse',
+        width:'100%'
     },
     backBtnText: {
         color: '#FFF',
         fontSize: 18,
         fontFamily: 'Qatar',
+        lineHeight:18
     },
     messageContainer: {
         maxWidth: '80%',

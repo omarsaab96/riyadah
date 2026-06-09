@@ -339,8 +339,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     pageTitle: {
         color: '#ffffff',
@@ -353,14 +354,15 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin'
     },
     ghostText: {
-        color: '#ffffff',
         fontSize: 100,
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2,
-        textTransform:'uppercase'
+        color:'#ff6633',
+        textTransform:'uppercase',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,

@@ -289,22 +289,24 @@ const styles = StyleSheet.create({
     width: width - 40,
   },
   headerTextBlockRtl: {
-    left: undefined,
-    right: 20,
-  },
+        left: 'auto',
+        right: 20,
+        maxWidth:200
+    },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
     fontSize: 30,
   },
   ghostText: {
-    color: '#ffffff',
     fontSize: 100,
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2
+    color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
   },
   ghostTextRtl: {
     right: undefined,

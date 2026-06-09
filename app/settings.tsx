@@ -177,7 +177,7 @@ export default function Profile() {
 
                     <View style={styles.footer}>
                         <View style={styles.settings}>
-                            <View style={styles.footerSection}>
+                            <View style={[styles.footerSection,isRTL&&{flexDirection:'row-reverse'}]}>
                                 <View style={styles.footerLinks}>
                                     <TouchableOpacity onPress={() => openLink("https://riyadah.app/terms")} style={[styles.footerLinkRow, isRTL && styles.footerLinkRowRtl]}>
                                         <Feather name="external-link" size={12} color="#FF4000" />
@@ -195,13 +195,13 @@ export default function Profile() {
                             </View>
 
                             <TouchableOpacity onPress={handleDeactivateAccount} style={[styles.profileButton, styles.deactivateBtn]}>
-                                <Text style={[styles.profileButtonText, styles.deactivateBtnText, textDirectionStyle]}>{t('settings.deactivate')}</Text>
+                                <Text style={[styles.profileButtonText, styles.deactivateBtnText]}>{t('settings.deactivate')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleLogout} style={[styles.profileButton, styles.logoutBtn]}>
                                 <Text style={[styles.profileButtonText, styles.logoutText]}>{t('settings.logout')}</Text>
                             </TouchableOpacity>
 
-                            <Text style={styles.disclaimer}>{year} {"\u00A9"} Riyadah v{Constants.expoConfig.version}</Text>
+                            <Text style={styles.disclaimer}>{year} {"\u00A9"} {t('common.riyadah')} v{Constants.expoConfig.version}</Text>
 
                         </View>
                     </View>
@@ -263,8 +263,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: 20,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     pageTitle: {
         color: '#ffffff',
@@ -285,13 +286,14 @@ const styles = StyleSheet.create({
         writingDirection: 'rtl'
     },
     ghostText: {
-        color: '#ffffff',
         fontSize: 100,
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2,
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,
@@ -458,7 +460,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 15
+        marginBottom: 15,
     },
     footerLinks: {
         gap: 5

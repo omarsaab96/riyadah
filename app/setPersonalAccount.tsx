@@ -10,18 +10,18 @@ import { useRegistration } from '../context/registration';
 
 import { useLocalSearchParams } from 'expo-router';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useLanguage } from '../context/language';
@@ -242,8 +242,8 @@ export default function SetPersonalAccountScreen() {
 
         <ScrollView>
           <View style={styles.form}>
-            {error != '' && <View style={styles.error}>
-              <View style={styles.errorIcon}></View>
+            {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+              <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
               <Text style={[styles.errorText, textDirectionStyle]}>{error}</Text>
             </View>}
 
@@ -350,7 +350,7 @@ export default function SetPersonalAccountScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* <View style={styles.switchLinkContainer}>
+          {/* <View style={[styles.switchLinkContainer,isRTL&&{flexDirection:'row-reverse'}]}>
             <Text style={{ color: 'black' }}>Already have an account?</Text>
             <TouchableOpacity onPress={() => router.replace('/login')}>
               <Text style={styles.switchLink}>LOGIN HERE</Text>
@@ -411,14 +411,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Acumin'
   },
   ghostText: {
-    color: '#ffffff',
     fontSize: 100,
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2,
-    textTransform: 'uppercase'
+    color:'#ff6633',
+    textTransform: 'uppercase',
+    maxHeight:200,
+    lineHeight:200
   },
   ghostTextRtl: {
     right: undefined,

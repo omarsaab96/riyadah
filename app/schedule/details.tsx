@@ -7,15 +7,15 @@ import * as SecureStore from "expo-secure-store";
 import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Linking,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useLanguage } from '../../context/language';
@@ -356,9 +356,10 @@ const styles = StyleSheet.create({
     width: width - 40,
   },
   headerTextBlockRtl: {
-    left: undefined,
-    right: 20,
-  },
+        left: 'auto',
+        right: 20,
+        maxWidth:200
+    },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -483,13 +484,14 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   ghostText: {
-    color: '#ffffff',
     fontSize:100,textTransform:'uppercase',
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2
+    color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
   },
   ghostTextRtl: {
     right: undefined,

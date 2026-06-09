@@ -621,8 +621,8 @@ export default function skillsTestingScreen() {
                 </View>}
 
                 {selectedAccount != '' && selectedUser != null && <View style={styles.contentContainer}>
-                    {error != '' && <View style={styles.error}>
-                        <View style={styles.errorIcon}></View>
+                    {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                        <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                         <Text style={styles.errorText}>{error}</Text>
                     </View>}
 

@@ -1,7 +1,6 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -386,7 +385,7 @@ export default function EditEventScreen() {
     }
   };
 
-  const handleChange = (name: string, value: string) => {
+  const handleChange = (name: string, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -549,8 +548,8 @@ export default function EditEventScreen() {
         </View>
 
         <ScrollView >
-          {error != '' && <View style={styles.error}>
-            <View style={styles.errorIcon}></View>
+          {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
             <Text style={styles.errorText}>{error}</Text>
           </View>}
 
@@ -641,34 +640,38 @@ export default function EditEventScreen() {
             <View style={styles.formGroup}>
               <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.eventType')}</Text>
               <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.eventType}
-                  onValueChange={(value) => handleChange('eventType', value)}
-                  style={styles.picker}
-                >
+                <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
                   {eventTypeOptions.map((option) => (
-                    <Picker.Item key={option.value} label={option.label} value={option.value} />
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[styles.multipleChoice, formData.eventType == option.value && styles.selectedChoice]}
+                      onPress={() => handleChange('eventType', option.value)}
+                    >
+                      <Text style={[styles.multipleChoiceText, formData.eventType == option.value && styles.selectedChoiceText]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
                   ))}
-                </Picker>
+                </View>
               </View>
             </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.team')}</Text>
               <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.team}
-                  onValueChange={(value) => handleChange('team', value)}
-                  style={styles.picker}
-                >
+                <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
                   {teams.map(team => (
-                    <Picker.Item
+                    <TouchableOpacity
                       key={team._id}
-                      label={`${team.name} (${team.sport})`}
-                      value={team._id}
-                    />
+                      style={[styles.multipleChoice, formData.team == team._id && styles.selectedChoice]}
+                      onPress={() => handleChange('team', team._id)}
+                    >
+                      <Text style={[styles.multipleChoiceText, formData.team == team._id && styles.selectedChoiceText]}>
+                        {team.name} ({team.sport})
+                      </Text>
+                    </TouchableOpacity>
                   ))}
-                </Picker>
+                </View>
               </View>
             </View>
 
@@ -684,36 +687,22 @@ export default function EditEventScreen() {
               />
             </View>
 
-            {/* < View style={styles.formGroup}>
-              <Text style={[styles.label, { marginBottom: 0 }]}>Recurring event</Text>
-              <Text style={styles.hint}>Recurrence will expire automatically after one year.</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={'No'}
-                  onValueChange={setRepeat}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="No" value="No" />
-                  <Picker.Item label="Daily" value="Daily" />
-                  <Picker.Item label="Weekly" value="Weekly" />
-                  <Picker.Item label="Monthly" value="Monthly" />
-                  <Picker.Item label="Yearly" value="Yearly" />
-                </Picker>
-              </View>
-            </View> */}
-
             <View style={styles.formGroup}>
               <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.locationType')}</Text>
               <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.locationType}
-                  onValueChange={(value) => handleChange('locationType', value)}
-                  style={styles.picker}
-                >
+                <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
                   {locationTypeOptions.map((option) => (
-                    <Picker.Item key={option.value} label={option.label} value={option.value} />
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[styles.multipleChoice, formData.locationType == option.value && styles.selectedChoice]}
+                      onPress={() => handleChange('locationType', option.value)}
+                    >
+                      <Text style={[styles.multipleChoiceText, formData.locationType == option.value && styles.selectedChoiceText]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
                   ))}
-                </Picker>
+                </View>
               </View>
             </View>
 
@@ -940,14 +929,22 @@ export default function EditEventScreen() {
                 </View>
                 <View style={styles.formGroup}>
                   <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.homeOrAway')}</Text>
-                  <Picker
-                    selectedValue={formData.isHomeGame}
-                    onValueChange={(value) => handleChange('isHomeGame', value)}
-                    style={styles.picker}
-                  >
-                    <Picker.Item label={t('scheduleForm.homeGame')} value={true} />
-                    <Picker.Item label={t('scheduleForm.awayGame')} value={false} />
-                  </Picker>
+                  <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
+                    {[
+                      { label: t('scheduleForm.homeGame'), value: true },
+                      { label: t('scheduleForm.awayGame'), value: false },
+                    ].map((option) => (
+                      <TouchableOpacity
+                        key={String(option.value)}
+                        style={[styles.multipleChoice, formData.isHomeGame == option.value && styles.selectedChoice]}
+                        onPress={() => handleChange('isHomeGame', option.value)}
+                      >
+                        <Text style={[styles.multipleChoiceText, formData.isHomeGame == option.value && styles.selectedChoiceText]}>
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </>
             )}
@@ -1046,9 +1043,10 @@ const styles = StyleSheet.create({
     width: width - 40,
   },
   headerTextBlockRtl: {
-    left: undefined,
-    right: 20,
-  },
+        left: 'auto',
+        right: 20,
+        maxWidth:200
+    },
   pageTitle: {
     color: '#ffffff',
     fontFamily: 'Qatar',
@@ -1073,13 +1071,14 @@ const styles = StyleSheet.create({
     color: '#111',
   },
   ghostText: {
-    color: '#ffffff',
     fontSize:100,textTransform:'uppercase',
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2
+    color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
   },
   ghostTextRtl: {
     right: undefined,
@@ -1392,5 +1391,30 @@ const styles = StyleSheet.create({
   mapPreview: {
     width: '100%',
     height: 150,
+  },
+  choiceRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  choiceRowRtl: {
+    flexDirection: 'row-reverse',
+  },
+  multipleChoice: {
+    backgroundColor: '#F4F4F4',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  multipleChoiceText: {
+    fontFamily: 'Acumin',
+    color: '#000',
+    fontSize: 16,
+  },
+  selectedChoice: {
+    backgroundColor: '#1a491e',
+  },
+  selectedChoiceText: {
+    color: '#fff',
   },
 });

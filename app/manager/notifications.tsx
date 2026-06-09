@@ -370,8 +370,8 @@ export default function ManagerNotificationsScreen() {
                 <ScrollView>
                     <View style={styles.contentContainer}>
                         {error ? (
-                            <View style={styles.error}>
-                                <View style={styles.errorIcon}></View>
+                            <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                                <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                                 <Text style={styles.errorText}>{error}</Text>
                             </View>
                         ) : null}
@@ -579,8 +579,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     pageTitle: {
         color: '#ffffff',

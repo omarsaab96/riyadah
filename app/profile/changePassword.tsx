@@ -167,13 +167,13 @@ export default function ChangePassword() {
                         }}
                         style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name="chevron-back" size={20} color="#ffffff" />
+                        <Ionicons name={isRTL?"chevron-forward":"chevron-back"} size={20} color="#ffffff" />
                         <Text style={styles.backBtnText}>{t('account.back')}</Text>
                     </TouchableOpacity>
 
                     <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
                         <Text style={styles.pageTitle}>{t('account.changePassword')}</Text>
-                        {!loading && user && <Text style={styles.pageDesc}>{user?.name}</Text>}
+                        {!loading && user && <Text style={[styles.pageDesc,isRTL&&{textAlign:'right'}]}>{user?.name}</Text>}
 
                         {loading &&
                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 5 }}>
@@ -214,8 +214,8 @@ export default function ChangePassword() {
 
                 {user && !loading && <ScrollView>
                     <View style={styles.contentContainer}>
-                        {error != null && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
+                        {error != null && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
     },
     pageTitle: {
@@ -393,13 +393,14 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     ghostText: {
-        color: '#ffffff',
         fontSize:100,textTransform:'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,
@@ -507,7 +508,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     backBtnRtl: {
-        left: undefined,
+        left: 'auto',
         right: 10,
         flexDirection: 'row-reverse',
     },

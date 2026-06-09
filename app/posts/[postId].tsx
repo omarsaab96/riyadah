@@ -460,7 +460,7 @@ const MoreOptionsSheet = ({
           onClose();
           router.push({ pathname: '/profile/public', params: { id: post.created_by._id } });
         }} style={styles.profileButton}>
-          <Text style={styles.profileButtonText}>{t('landing.userProfile', { name: post.created_by.name })}</Text>
+          <Text style={styles.profileButtonText}>{t('landing.userProfile', { name: post.created_by?.name || t('messages.unknownUser') })}</Text>
         </TouchableOpacity>
       )}
 

@@ -8,6 +8,7 @@ export const translations = {
       loading: 'Loading...',
       verified: 'Verified',
       pending: 'Pending',
+      riyadah: 'Riyadah'
     },
     settings: {
       title: 'Settings',
@@ -1478,6 +1479,7 @@ export const translations = {
       loading: 'جارٍ التحميل...',
       verified: 'موثق',
       pending: 'قيد الانتظار',
+      riyadah: 'رياضة'
     },
     settings: {
       title: 'الإعدادات',
@@ -2027,9 +2029,9 @@ export const translations = {
       changePassword: 'تغيير كلمة المرور',
       forgotPassword: 'نسيت كلمة المرور',
       resetPasswordDesc: 'أعد تعيين كلمة مرور حسابك',
-      forgotGhost: 'Forgo',
-      accountGhost: 'Accou',
-      passwordGhost: 'Pass',
+      forgotGhost: 'نسيت',
+      accountGhost: 'حسابك',
+      passwordGhost: 'كلمة المرور',
       emailAddress: 'البريد الإلكتروني',
       phoneNumber: 'رقم الهاتف',
       invalidEmail: 'بريد إلكتروني غير صالح',

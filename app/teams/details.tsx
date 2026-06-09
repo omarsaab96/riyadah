@@ -1,7 +1,6 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -287,8 +286,8 @@ export default function TeamDetails() {
                 <ScrollView >
 
                     <View style={styles.contentContainer}>
-                        {error != '' && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
+                        {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
@@ -352,7 +351,7 @@ export default function TeamDetails() {
                                                     numberOfLines={1}
                                                     ellipsizeMode="tail"
                                                 >
-                                                    {team.club.name}
+                                                    {team.club?.name || t('profile.defaultTitle')}
                                                 </Text>
 
                                                 <Text
@@ -360,7 +359,7 @@ export default function TeamDetails() {
                                                     numberOfLines={1}
                                                     ellipsizeMode="tail"
                                                 >
-                                                    {team.club.sport.toString().replaceAll(',', ', ')}
+                                                    {team.club?.sport?.toString().replaceAll(',', ', ') || '-'}
                                                 </Text>
 
                                                 {/* <View style={styles.locationLink}>
@@ -428,7 +427,7 @@ export default function TeamDetails() {
                                                             </View>
                                                         )}
 
-                                                        <Text style={[styles.paragraph,{fontSize:14}, isRTL ? styles.rtlText : styles.ltrText]}>{coach.name.trim()}</Text>
+                                                        <Text style={[styles.paragraph,{fontSize:14}, isRTL ? styles.rtlText : styles.ltrText]}>{coach?.name?.trim() || t('profile.defaultTitle')}</Text>
                                                     </View>
                                                 </TouchableOpacity>
                                             ))}
@@ -527,7 +526,9 @@ export default function TeamDetails() {
                                                 style={[styles.eventCard, isRTL && styles.eventCardRtl]}
                                                 onPress={() => router.push(`/schedule/details?id=${event._id}`)}
                                             >
-                                                <View style={styles.eventDate}>
+                                                <View style={[styles.eventDate,isRTL&&{borderRightWidth: 0,borderLeftWidth: 1,
+        borderLeftColor: '#eeeeee',marginRight: 0,
+        marginLeft: 15,}]}>
                                                     <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
                                                     <Text style={styles.eventMonth}>
                                                         {eventDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
@@ -545,11 +546,11 @@ export default function TeamDetails() {
                                                     </Text>
                                                     {event.eventType === 'match' && event.opponent && (
                                                         <View style={styles.opponentContainer}>
-                                                            <Text style={[styles.opponentText, isRTL ? styles.rtlText : styles.ltrText]}>{t('profile.versus')} {event.opponent.name}</Text>
+                                                            <Text style={[styles.opponentText, isRTL ? styles.rtlText : styles.ltrText]}>{t('profile.versus')} {event.opponent?.name || t('profile.defaultTitle')}</Text>
                                                         </View>
                                                     )}
                                                 </View>
-                                                <TouchableOpacity
+                                                {/* <TouchableOpacity
                                                     style={styles.eventAction}
                                                     onPress={(e) => {
                                                         e.stopPropagation();
@@ -557,7 +558,7 @@ export default function TeamDetails() {
                                                     }}
                                                 >
                                                     <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
-                                                </TouchableOpacity>
+                                                </TouchableOpacity> */}
                                             </TouchableOpacity>
                                         );
                                     })
@@ -631,8 +632,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     pageTitle: {
         color: '#ffffff',
@@ -739,13 +741,14 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     ghostText: {
-        color: '#ffffff',
         fontSize:100,textTransform:'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,

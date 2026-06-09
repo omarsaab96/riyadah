@@ -9,7 +9,7 @@ type LanguageContextType = {
   isRTL: boolean;
   language: Language;
   setLanguage: (nextLanguage: Language) => Promise<void>;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey, params?: Record<string, string | number>) => string;
   direction: 'ltr' | 'rtl';
   textAlign: 'left' | 'right';
 };
@@ -20,12 +20,18 @@ const normalizeLanguage = (value: string | null): Language => {
   return value === 'ar' ? 'ar' : 'en';
 };
 
-const getTranslation = (language: Language, key: TranslationKey) => {
+const getTranslation = (language: Language, key: TranslationKey, params: Record<string, string | number> = {}) => {
   const [namespace, token] = key.split('.') as [keyof typeof translations.en, string];
-  const currentGroup = translations[language][namespace] as Record<string, string>;
-  const fallbackGroup = translations.en[namespace] as Record<string, string>;
+  const dictionary = translations as Record<string, Record<string, Record<string, string>>>;
+  const currentGroup = dictionary[language]?.[namespace];
+  const fallbackGroup = dictionary.en?.[namespace];
 
-  return currentGroup[token] ?? fallbackGroup[token] ?? key;
+  const template = currentGroup?.[token] ?? fallbackGroup?.[token] ?? key;
+
+  return Object.entries(params).reduce(
+    (result, [paramKey, value]) => result.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(value)),
+    template
+  );
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
@@ -61,7 +67,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     setLanguage,
     direction: language === 'ar' ? 'rtl' : 'ltr',
     textAlign: language === 'ar' ? 'right' : 'left',
-    t: (key) => getTranslation(language, key),
+    t: (key, params) => getTranslation(language, key, params),
   };
 
   return (

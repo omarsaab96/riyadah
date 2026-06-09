@@ -148,7 +148,7 @@ export default function Register() {
     setAgreed(prev => !prev);
   };
 
-  const openLink = async (url:string) => {
+  const openLink = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
       if (supported) {
@@ -179,7 +179,7 @@ export default function Register() {
             onPress={() => {
               router.back()
             }}
-            style={styles.backBtn}
+            style={[styles.backBtn, isRTL && { flexDirection: 'row-reverse', left: 'auto', right: 10 }]}
           >
             <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
             <Text style={[styles.backBtnText, textDirectionStyle]}>{t('auth.back')}</Text>
@@ -201,8 +201,8 @@ export default function Register() {
         </View>
         <ScrollView>
           <View style={styles.form}>
-            {error != '' && <View style={styles.error}>
-              <View style={styles.errorIcon}></View>
+            {error != '' && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+              <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
               <Text style={[styles.errorText, textDirectionStyle]}>{error}</Text>
             </View>}
 
@@ -308,7 +308,7 @@ export default function Register() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.switchLinkContainer}>
+          <View style={[styles.switchLinkContainer, isRTL && { flexDirection: 'row-reverse' }]}>
             <Text style={[styles.switchText, textDirectionStyle]}>{t('auth.alreadyHaveAccount')}</Text>
             <TouchableOpacity onPress={() => router.replace('/login')}>
               <Text style={[styles.switchLink, isRTL && styles.switchLinkRtl]}>{t('auth.loginHere')}</Text>
@@ -349,10 +349,12 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     width: width - 40,
+    zIndex:1
   },
   headerTextBlockRtl: {
-    left: undefined,
+    left: 'auto',
     right: 20,
+    maxWidth: 200
   },
   pageTitle: {
     color: '#ffffff',
@@ -365,14 +367,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Acumin'
   },
   ghostText: {
-    color: '#ffffff',
     fontSize: 100,
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2,
-    textTransform: 'uppercase'
+    color: '#ff6633',
+    textTransform: 'uppercase',
+    maxHeight: 200,
+    lineHeight: 200,
   },
   ghostTextRtl: {
     right: undefined,
@@ -388,7 +391,7 @@ const styles = StyleSheet.create({
   },
   form: {
     paddingLeft: 20,
-    paddingRight: 20
+    paddingRight: 20,
   },
   input: {
     fontSize: Platform.OS == 'ios' ? 16 : 14,

@@ -85,15 +85,15 @@ export default function Messages() {
                     // Check if this is a new chat (not in existing list)
                     const isNewChat = !prevChats.some(c => c._id === updatedChat._id);
 
-                    
+
                     const unreadFromOthers = updatedChat.unreadMessages?.filter(m => m.senderId !== userId);
 
                     if (isNewChat) {
-                        
+
                         return [{
                             _id: updatedChat._id,
                             participants: updatedChat.participants,
-                            otherParticipant: updatedChat.participants.filter(op=>op._id!=userId)[0] || null,
+                            otherParticipant: updatedChat.participants.filter(op => op._id != userId)[0] || null,
                             lastMessage: updatedChat.lastMessage,
                             unreadMessages: unreadFromOthers
                         }, ...prevChats];
@@ -540,7 +540,7 @@ export default function Messages() {
                     backdropComponent={props => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />}
                     keyboardBehavior="interactive"
                     keyboardBlurBehavior="restore"
-                    >
+                >
                     <BottomSheetView style={{ backgroundColor: 'white', zIndex: 1 }}>
                         <View style={[styles.commentModalHeader, isRTL && styles.commentModalHeaderRtl]}>
                             <Text style={[styles.commentModalTitle, textDirectionStyle]}>{t('messages.newMessage')}</Text>
@@ -603,10 +603,10 @@ export default function Messages() {
                                                 )}
                                             </View>
                                             <View style={styles.commentContent}>
-                                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <View style={[{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, isRTL && { flexDirection: 'row-reverse' }]}>
                                                     <View>
-                                                        <View style={[styles.commentAuthorRow, isRTL && styles.commentAuthorRowRtl]}>
-                                                            <Text style={[styles.commentAuthor, textDirectionStyle]}>{item.name}</Text>
+                                                        <View style={[styles.commentAuthorRow, isRTL && styles.commentAuthorRowRtl, {  }]}>
+                                                            <Text style={[styles.commentAuthor, textDirectionStyle, isRTL && { marginRight: 0, marginLeft: 15 }]}>{item.name}</Text>
                                                         </View>
                                                         <Text style={[styles.commentText, textDirectionStyle]}>{item.type}</Text>
                                                     </View>
@@ -703,8 +703,8 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 30,
         // tintColor: '#111111',
     },
     loadingContainer: {
@@ -730,7 +730,8 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: 'rgba(0,0,0,0.05)',
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -772,7 +773,7 @@ const styles = StyleSheet.create({
     },
     icon: {
         width: 24,
-        height: 24,        
+        height: 24,
         tintColor: '#111111',
     },
     activeIcon: {
@@ -875,11 +876,11 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
         fontSize: 16,
         color: 'black',
-        lineHeight: Platform.OS == "ios" ? 18: 16,
+        lineHeight: Platform.OS == "ios" ? 18 : 16,
         textAlign: 'center',
         overflow: 'hidden',
-        width:20,
-        height:20
+        width: 20,
+        height: 20
     },
     chatDate: {
         color: '#aaa',
@@ -1117,7 +1118,7 @@ const styles = StyleSheet.create({
     },
     commentModalTitle: {
         fontSize: 18,
-        fontFamily:'Qatar',
+        fontFamily: 'Qatar',
         color: '#333',
     },
     confirmRow: {

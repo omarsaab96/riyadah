@@ -4,15 +4,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { useLanguage } from "../../context/language";
 
@@ -72,19 +72,19 @@ export default function StaffDetailsScreen() {
               params: { tab: 'Inventory' }
             })
           }}
-          style={styles.backBtn}
+          style={[styles.backBtn, isRTL && styles.backBtnRtl]}
         >
-          <Ionicons name="chevron-back" size={20} color="#ffffff" />
+          <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
           <Text style={styles.backBtnText}>{t('inventory.backToInventory')}</Text>
         </TouchableOpacity>
 
         <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
-          {loading && <Text style={styles.pageTitle}>{t('inventory.detailsTitle')}</Text>}
+          {loading && <Text style={[styles.pageTitle,isRTL&&{textAlign:'right'}]}>{t('inventory.detailsTitle')}</Text>}
 
           {!loading && item &&
             <>
-              <Text style={styles.pageTitle}>{item.itemName}</Text>
-              <Text style={styles.pageDesc}>{item.category}</Text>
+              <Text style={[styles.pageTitle,isRTL&&{textAlign:'right'}]}>{item.itemName}</Text>
+              <Text style={[styles.pageDesc,isRTL&&{textAlign:'right'}]}>{item.category}</Text>
             </>
           }
 
@@ -110,6 +110,7 @@ export default function StaffDetailsScreen() {
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('inventory.image')}</Text>
+          <View style={isRTL&&{flexDirection:'row-reverse'}}>
           {item.image ? (
             <Image
               source={{ uri: item.image }}
@@ -119,9 +120,10 @@ export default function StaffDetailsScreen() {
             <View style={[styles.inventoryIcon, styles.defaultInventoryIcon]}>
               <FontAwesome5 name="box-open" size={36} color="#fff" />
             </View>
-          )
+          )}
+          </View>
 
-          }
+          
         </View>
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, isRTL && styles.rtlText]}>{t('inventory.availableQuantity')}</Text>
@@ -159,8 +161,9 @@ const styles = StyleSheet.create({
     width: width - 40,
   },
   headerTextBlockRtl: {
-    left: undefined,
+    left: 'auto',
     right: 20,
+
   },
   pageTitle: {
     color: '#ffffff',
@@ -261,6 +264,10 @@ const styles = StyleSheet.create({
     zIndex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+  }, backBtnRtl: {
+    left: undefined,
+    right: 10,
+    flexDirection: 'row-reverse',
   },
   backBtnText: {
     color: '#FFF',
@@ -286,26 +293,27 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   ghostText: {
-    color: '#ffffff',
-    fontSize:100,textTransform:'uppercase',
+    fontSize: 100, textTransform: 'uppercase',
     fontFamily: 'Qatar',
     position: 'absolute',
     bottom: 20,
     right: -5,
-    opacity: 0.2
+    color: '#ff6633',
+    maxHeight: 200,
+    lineHeight: 200
   },
   ghostTextRtl: {
     right: undefined,
     left: -5,
   },
   inventoryIcon: {
-        width: 100,
-        height: 100,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    defaultInventoryIcon: {
-        backgroundColor: '#FF4000',
-    },
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  defaultInventoryIcon: {
+    backgroundColor: '#FF4000',
+  },
 });

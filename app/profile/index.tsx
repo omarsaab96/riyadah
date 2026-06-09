@@ -31,8 +31,8 @@ import {
 } from 'react-native';
 import CountryFlag from "react-native-country-flag";
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import DynamicLineChart from './chartsExample';
 import { useLanguage } from '../../context/language';
+import DynamicLineChart from './chartsExample';
 
 
 const { width } = Dimensions.get('window');
@@ -215,7 +215,7 @@ export default function Profile() {
     }, [user, tab]);
 
     const getAdminInfo = async () => {
-        if (user.type == "Club") {
+        if (user?.type == "Club" && user.admin?.email) {
             try {
                 const res = await fetch(`https://server.riyadah.app/api/users/findAdmin?email=${user.admin.email}`, {
                     method: 'POST',
@@ -237,7 +237,15 @@ export default function Profile() {
     }
 
     const getTeams = async () => {
+        if (!user) {
+            setTeamsLoading(false);
+            return;
+        }
+
+        let loadedTeams = false;
+
         if (user.type == "Club") {
+            loadedTeams = true;
             const token = await SecureStore.getItemAsync('userToken');
 
             try {
@@ -262,6 +270,7 @@ export default function Profile() {
         }
 
         if (user.role && user.role == "Coach") {
+            loadedTeams = true;
             const token = await SecureStore.getItemAsync('userToken');
 
             try {
@@ -283,6 +292,10 @@ export default function Profile() {
             } catch (err) {
                 console.error('Failed to fetch teams', err);
             }
+        }
+
+        if (!loadedTeams) {
+            setTeamsLoading(false);
         }
     }
 
@@ -333,7 +346,7 @@ export default function Profile() {
     }
 
     const getStaff = async () => {
-        if (user.type == "Club") {
+        if (user?.type == "Club") {
             try {
                 const token = await SecureStore.getItemAsync('userToken');
                 const response = await fetch(`https://server.riyadah.app/api/staff/byClub/${userId}`, {
@@ -358,6 +371,8 @@ export default function Profile() {
             } finally {
                 setStaffLoading(false);
             }
+        } else {
+            setStaffLoading(false);
         }
     };
 
@@ -387,6 +402,8 @@ export default function Profile() {
             } finally {
                 setInventoryLoading(false);
             }
+        } else {
+            setInventoryLoading(false);
         }
     };
 
@@ -432,7 +449,7 @@ export default function Profile() {
     }
 
     const getClubs = async () => {
-        setClubs(user.clubs);
+        setClubs(user?.clubs || []);
         setClubsLoading(false)
         // if (user?.type === "Association") {
         //     try {
@@ -461,6 +478,11 @@ export default function Profile() {
     }
 
     const getTimesheet = async () => {
+        if (!user?._id) {
+            setTimesheetLoading(false);
+            return;
+        }
+
         try {
             const token = await SecureStore.getItemAsync('userToken');
 
@@ -611,7 +633,7 @@ export default function Profile() {
         const url = `https://riyadah.app/profile/public/${userId}`;
         try {
             const result = await Share.share({
-                message: `Check out ${user.name}'s profile on Riyadah!\n${url}`,
+                message: `Check out ${user?.name || t('profile.defaultTitle')}'s profile on Riyadah!\n${url}`,
             });
 
             if (result.action === Share.sharedAction) {
@@ -629,6 +651,8 @@ export default function Profile() {
     };
 
     const getProfileProgress = () => {
+        if (!user) return 0;
+
         let progress = 0;
         let filledFields = 0;
 
@@ -1000,7 +1024,7 @@ export default function Profile() {
         if (uniqueClubs.length > 1) {
             return `${uniqueClubs.length} clubs`;
         } else if (uniqueClubs.length === 1) {
-            return uniqueClubs[0].name; // full club object
+            return uniqueClubs[0]?.name || null; // full club object
         } else {
             return null;
         }
@@ -1078,6 +1102,8 @@ export default function Profile() {
     };
 
     const handleCheckIn = async () => {
+        if (!user) return;
+
         try {
             console.log('getting loc')
             const token = await SecureStore.getItemAsync('userToken');
@@ -1123,6 +1149,8 @@ export default function Profile() {
     };
 
     const handleCheckOut = async () => {
+        if (!user) return;
+
         try {
             console.log('getting loc')
             const token = await SecureStore.getItemAsync('userToken');
@@ -1169,8 +1197,8 @@ export default function Profile() {
 
     function getDistanceFromLatLonInMeters(lat1, lon1) {
         const R = 6371e3; // Earth radius in meters
-        const lat2 = user.isStaff[0].contactInfo.location.latitude;
-        const lon2 = user.isStaff[0].contactInfo.location.longitude;
+        const lat2 = user?.isStaff?.[0]?.contactInfo?.location?.latitude;
+        const lon2 = user?.isStaff?.[0]?.contactInfo?.location?.longitude;
 
         if (lat2 == null || lon2 == null) {
             return 0;
@@ -1205,16 +1233,16 @@ export default function Profile() {
         <View style={styles.container}>
             <Animated.View style={[styles.pageHeader, { height: headerHeight }]}>
                 <Animated.Image
-                    source={require('../../assets/logo_white.png')}
-                    style={[styles.logo, { opacity: logoOpacity }]}
+                    source={isRTL ? require('../../assets/logo_white_ar.png') : require('../../assets/logo_white.png')}
+                    style={[styles.logo, { opacity: logoOpacity }, isRTL && { left: 'auto', right: 0 }]}
                     resizeMode="contain"
                 />
 
                 <View style={styles.headerTextBlock}>
-                    {user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}
+                    <Text style={isRTL && { textAlign: 'right' }}>{user && user.accountBadge && <MaterialIcons name="verified" size={24} color="white" />}</Text>
                     <Text style={[styles.pageTitle, textDirectionStyle]}>{user?.name || t('profile.defaultTitle')}</Text>
                     {!loading && <Text style={[styles.pageDesc, textDirectionStyle]}>
-                        {user.role != null ? user.role : userType}
+                        {user?.role != null ? user.role : userType}
                     </Text>}
 
                     {loading &&
@@ -1228,11 +1256,11 @@ export default function Profile() {
                     }
                 </View>
 
-                {!loading && <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{user.name.substring(0, 6)}</Text>}
+                {!loading && user?.name && <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{user.name.substring(0, 6)}</Text>}
 
-                {!loading && <>
+                {!loading && user && <>
                     {userId == user._id ? (
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.rtlprofileImage]}>
                             <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
                                 {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
                                     source={require('../../assets/clublogo.png')}
@@ -1286,7 +1314,7 @@ export default function Profile() {
                             </View>
                         </View>
                     ) : (
-                        <View style={styles.profileImage}>
+                        <View style={[styles.profileImage, isRTL && styles.rtlprofileImage]}>
                             {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
                                 source={require('../../assets/clublogo.png')}
                                 style={[styles.profileImageAvatar, { transform: [{ translateX: -10 }] }]}
@@ -1387,7 +1415,7 @@ export default function Profile() {
             )}
 
             {/* Tabs for Coaches */}
-            {!loading && user.role && user?.role == "Coach" && (
+            {!loading && user?.role == "Coach" && (
                 <View style={styles.tabs}>
                     <ScrollView
                         horizontal
@@ -1448,30 +1476,30 @@ export default function Profile() {
                     </TouchableOpacity>
                     }
 
-                    {user.type == "Club" && user.admin.email != null &&
-                        <View style={styles.adminDiv}>
-                            <Text style={[styles.title, styles.contactTitle]}>
+                    {user.type == "Club" && user.admin?.email != null &&
+                        <View style={[styles.adminDiv]}>
+                            <Text style={[styles.title, styles.contactTitle, isRTL && { textAlign: 'right' }]}>
                                 Admin
                             </Text>
 
                             {adminUser &&
                                 <TouchableOpacity style={styles.adminButton} onPress={() => { handleGoToAdminProfile(adminUser.id) }}>
-                                    <View style={styles.admin}>
+                                    <View style={[styles.admin, isRTL && { flexDirection: 'row-reverse' }]}>
                                         {adminUser.image != null ? (
                                             <Image
                                                 source={{ uri: adminUser.image }}
-                                                style={styles.adminAvatar}
+                                                style={[styles.adminAvatar, isRTL && { marginRight: 0, marginLeft: 20 }]}
                                                 resizeMode="contain"
                                             />
                                         ) : (
                                             <Image
                                                 source={require('../../assets/avatar.png')}
-                                                style={styles.adminAvatar}
+                                                style={[styles.adminAvatar, isRTL && { marginRight: 0, marginLeft: 20 }]}
                                                 resizeMode="contain"
                                             />
                                         )}
                                         <View>
-                                            <Text style={styles.adminName}>{adminUser.name}</Text>
+                                            <Text style={styles.adminName}>{adminUser?.name || t('profile.defaultTitle')}</Text>
                                             <Text style={[styles.adminLink, textDirectionStyle]}>{t('profile.checkProfile')}</Text>
                                         </View>
                                     </View>
@@ -1479,14 +1507,14 @@ export default function Profile() {
                             }
 
                             {adminUser == null &&
-                                <View style={styles.admin}>
+                                <View style={[styles.admin, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <Image
                                         source={require('../../assets/avatar.png')}
-                                        style={styles.adminAvatar}
+                                        style={[styles.adminAvatar, isRTL && { marginRight: 0, marginLeft: 20 }]}
                                         resizeMode="contain"
                                     />
                                     <View>
-                                        <Text style={styles.adminName}>{user.admin.name}</Text>
+                                        <Text style={styles.adminName}>{user.admin?.name || t('profile.defaultTitle')}</Text>
                                     </View>
                                 </View>
                             }
@@ -1503,7 +1531,7 @@ export default function Profile() {
                             (
                                 <View>
                                     <Text style={[styles.title, styles.contactTitle]}>
-                                        CONTACT
+                                        {t('profile.contact')}
                                     </Text>
                                     <View>
                                         {user.contactInfo?.description != null && user.type == "Club" &&
@@ -1511,7 +1539,7 @@ export default function Profile() {
                                                 <Text style={{ color: 'black' }}>{user.contactInfo?.description}</Text>
                                             </View>
                                         }
-                                        <View style={styles.contactInfo}>
+                                        <View style={[styles.contactInfo, isRTL && { flexDirection: 'row-reverse' }]}>
                                             {user.contactInfo?.phone != null &&
                                                 <View style={styles.contactItem}>
                                                     <TouchableOpacity style={styles.contactLink} onPress={() => Linking.openURL(`tel:${user.contactInfo.phone}`)}>
@@ -1618,7 +1646,7 @@ export default function Profile() {
                                 </View>
                             ) : (
                                 <View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
+                                    <View style={{ flexDirection: isRTL ? 'row-reverse' : 'row', alignItems: 'center', marginBottom: 10, justifyContent: 'space-between' }}>
                                         <Text style={[styles.title, styles.contactTitle, { marginBottom: 0 }, textDirectionStyle]}>
                                             {t('profile.contact')}
                                         </Text>
@@ -1700,7 +1728,7 @@ export default function Profile() {
                                 <View>
                                     <Text style={[styles.paragraph, textDirectionStyle]}>
                                         {/* {user.memberOf.toString()} */}
-                                        {user.memberOf.map(team => team.name).join(", ")}
+                                        {(user.memberOf || []).filter(Boolean).map(team => team?.name || t('profile.defaultTitle')).join(", ")}
                                     </Text>
                                 </View>
                             ) : (
@@ -1740,7 +1768,7 @@ export default function Profile() {
                                     {user.clubs.length > 0 && ((user.memberOf && user.memberOf != null && user.memberOf.length > 0) || (user.isStaff && user.isStaff != null && user.isStaff.length > 0)) && (
                                         (() => {
                                             const additionalClubs = getUserClubs();
-                                            const currentClubName = user.clubs[0].name;
+                                            const currentClubName = user.clubs[0]?.name || '';
 
                                             if (!additionalClubs || additionalClubs === currentClubName) {
                                                 return <Text style={[styles.paragraph, textDirectionStyle]}>{currentClubName}</Text>;
@@ -1762,9 +1790,9 @@ export default function Profile() {
                             <Text style={[styles.title, textDirectionStyle]}>
                                 {t('profile.organization')}
                             </Text>
-                            {!user.organization.independent ? (
+                            {!user.organization?.independent ? (
                                 <View>
-                                    <Text style={[styles.paragraph, textDirectionStyle]}>{user.organization.name}</Text>
+                                    <Text style={[styles.paragraph, textDirectionStyle]}>{user.organization?.name || t('profile.defaultTitle')}</Text>
                                 </View>
                             ) : (
                                 <Text style={[styles.paragraph, textDirectionStyle]}>{t('profile.independent')}</Text>
@@ -1772,7 +1800,7 @@ export default function Profile() {
                         </View>}
 
                         {/* NUMBER OF SPORTS */}
-                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type == "Club" && <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                             <Text style={styles.title}>
                                 Total number of sports
                             </Text>
@@ -1788,7 +1816,7 @@ export default function Profile() {
                         </View>}
 
                         {/* NUMBER OF TEAMS */}
-                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type == "Club" && <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                             <Text style={styles.title}>
                                 Total number of teams
                             </Text>
@@ -1804,7 +1832,7 @@ export default function Profile() {
                         </View>}
 
                         {/* NUMBER OF MEMBERS */}
-                        {user.type == "Club" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type == "Club" && <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                             <Text style={styles.title}>
                                 Total number of members
                             </Text>
@@ -1820,7 +1848,7 @@ export default function Profile() {
                         </View>}
 
                         {/* DOB */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                             <Text style={styles.title}>
                                 {(user.type == "Club" || user.type == "Association") ? 'Established' : 'Date of Birth'}
                             </Text>
@@ -1837,7 +1865,7 @@ export default function Profile() {
                         </View>
 
                         {/* HEIGHT */}
-                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type == "Athlete" && <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                             <Text style={styles.title}>
                                 Height
                             </Text>
@@ -1851,7 +1879,7 @@ export default function Profile() {
                         </View>}
 
                         {/* WEIGHT */}
-                        {user.type == "Athlete" && <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {user.type == "Athlete" && <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, isRTL && styles.infoRowRtl]}>
                             <Text style={styles.title}>
                                 Weight
                             </Text>
@@ -1961,7 +1989,7 @@ export default function Profile() {
                     ) : (
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
-                            <View style={styles.sectionHeader}>
+                            <View style={[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                 <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubTeams')}</Text>
                                 {userId == user._id && user.type === "Club" && (
                                     <TouchableOpacity
@@ -2035,7 +2063,7 @@ export default function Profile() {
                     ) : (
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
-                            {/* <View style={styles.sectionHeader}>
+                            {/* <View style={[styles.sectionHeader,isRTL&&{flexDirection:'row-reverse'}]}>
                                 <Text style={styles.sectionTitle}>Association Clubs</Text>
                                 {userId == user._id && (
                                     <TouchableOpacity
@@ -2047,7 +2075,7 @@ export default function Profile() {
                                 )}
                             </View> */}
 
-                            <View style={[styles.sectionHeader, { marginBottom: 20 }]}>
+                            <View style={[[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }], { marginBottom: 20 }]}>
                                 <Text style={[styles.sectionTitle, textDirectionStyle]}>
                                     {t('profile.associationClubsCount')
                                         .replace('{count}', String(clubs.length))
@@ -2113,7 +2141,7 @@ export default function Profile() {
                                                             </View>
                                                             <View style={styles.searchResultItemInfo}>
                                                                 <View>
-                                                                    <Text style={[styles.searchResultItemName, textDirectionStyle]}>{club.name}</Text>
+                                                                    <Text style={[styles.searchResultItemName, textDirectionStyle]}>{club?.name || t('profile.defaultTitle')}</Text>
                                                                     {/* <Text style={[styles.searchResultItemDescription, club.sport == null && { opacity: 0.5, fontStyle: 'italic' }]}>{club.sport || 'no sport'}</Text> */}
                                                                 </View>
                                                                 {addingClub.includes(club._id) ? (
@@ -2377,7 +2405,7 @@ export default function Profile() {
                     ) : (
                         <View style={styles.contentContainer}>
                             {/* Header with Add button */}
-                            <View style={styles.sectionHeader}>
+                            <View style={[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                 {user.type != "Athlete" && <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubSchedule')}</Text>}
                                 {user.type == "Athlete" && user.role == "Coach" && <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.yourTeamsSchedule')}</Text>}
                                 {userId == user._id && (user.type == "Club" || (user.type == "Athlete" && user.role == "Coach")) && (
@@ -2508,14 +2536,20 @@ export default function Profile() {
                                                             return (
                                                                 <TouchableOpacity
                                                                     key={event._id}
-                                                                    style={styles.eventCard}
+                                                                    style={[styles.eventCard, isRTL && { flexDirection: 'row-reverse' }]}
                                                                     onPress={() => router.push({
                                                                         pathname: '/schedule/details',
                                                                         params: { id: event._id }
                                                                     })
                                                                     }
                                                                 >
-                                                                    <View style={styles.eventDate}>
+                                                                    <View style={[styles.eventDate, isRTL && {
+                                                                        borderRightWidth: 0,
+                                                                        borderLeftColor: '#eeeeee',
+                                                                        marginRight: 0,
+                                                                        borderLeftWidth: 1,
+                                                                        marginLeft: 15
+                                                                    }]}>
                                                                         <Text style={styles.eventDay}>{eventDate.getDate()}</Text>
                                                                         <Text style={styles.eventMonth}>
                                                                             {eventDate.toLocaleString('default', { month: 'short' }).toUpperCase()}
@@ -2533,11 +2567,11 @@ export default function Profile() {
                                                                         </Text>
                                                                         {event.eventType === 'match' && event.opponent && (
                                                                             <View style={styles.opponentContainer}>
-                                                                                <Text style={[styles.opponentText, textDirectionStyle]}>{t('profile.versus')} {event.opponent.name}</Text>
+                                                                                <Text style={[styles.opponentText, textDirectionStyle]}>{t('profile.versus')} {event.opponent?.name || t('profile.defaultTitle')}</Text>
                                                                             </View>
                                                                         )}
                                                                     </View>
-                                                                    <TouchableOpacity
+                                                                    {/* <TouchableOpacity
                                                                         style={styles.eventAction}
                                                                         onPress={(e) => {
                                                                             e.stopPropagation();
@@ -2545,7 +2579,7 @@ export default function Profile() {
                                                                         }}
                                                                     >
                                                                         <FontAwesome5 name="ellipsis-v" size={16} color="#666" />
-                                                                    </TouchableOpacity>
+                                                                    </TouchableOpacity> */}
                                                                 </TouchableOpacity>
                                                             );
                                                         })
@@ -2592,7 +2626,7 @@ export default function Profile() {
                                                                                 </Text>
                                                                                 {event.eventType === 'match' && event.opponent && (
                                                                                     <View style={styles.opponentContainer}>
-                                                                                        <Text style={styles.opponentText}>vs {event.opponent.name}</Text>
+                                                                                        <Text style={styles.opponentText}>vs {event.opponent?.name || 'TBD'}</Text>
                                                                                     </View>
                                                                                 )}
                                                                             </View>
@@ -2654,8 +2688,8 @@ export default function Profile() {
                     scrollEventThrottle={16}
                 >
                     <View style={styles.contentContainer}>
-                        {surveysError != '' && <View style={styles.error}>
-                            <View style={styles.errorIcon}></View>
+                        {surveysError != '' && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                            <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                             <Text style={styles.errorText}>{surveysError}</Text>
                         </View>}
 
@@ -2671,7 +2705,7 @@ export default function Profile() {
 
                         {!surveysLoading && coachSurveys.length === 0 && (
                             <View style={styles.emptyState}>
-                                    <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noSurveys')}</Text>
+                                <Text style={[styles.emptyStateTitle, textDirectionStyle]}>{t('profile.noSurveys')}</Text>
                                 <Text style={[styles.emptyStateText, textDirectionStyle]}>{t('profile.noActiveSurveys')}</Text>
                             </View>
                         )}
@@ -2681,21 +2715,21 @@ export default function Profile() {
                                 {coachSurveys.map((survey) => (
                                     <TouchableOpacity
                                         key={survey._id}
-                                        style={styles.surveyListItem}
+                                        style={[styles.surveyListItem, isRTL && { flexDirection: 'row-reverse' }]}
                                         onPress={() => router.push({
                                             pathname: user.role == "Coach" ? '/coach/surveyDetails' : '/surveys/respond',
                                             params: { id: survey._id },
                                         })}
                                     >
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.surveyListTitle}>{survey.title}</Text>
-                                            <Text style={styles.surveyListMeta}>
+                                            <Text style={[styles.surveyListTitle, isRTL && { textAlign: 'right' }]}>{survey.title}</Text>
+                                            <Text style={[styles.surveyListMeta, isRTL && { textAlign: 'right' }]}>
                                                 {user.role == "Coach"
                                                     ? `${survey.submissionCount || 0} submissions`
                                                     : `${survey.status || 'pending'}${survey.pendingCount ? ` (${survey.pendingCount})` : ''}`}
                                             </Text>
                                         </View>
-                                        <Feather name="arrow-right" size={18} color="#FF4400" />
+                                        <Feather name={isRTL ? "arrow-left" : "arrow-right"} size={18} color="#FF4400" />
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -2724,7 +2758,7 @@ export default function Profile() {
                             </View>
                         ) : staff && staff.data?.length > 0 ? (
                             <View>
-                                <View style={styles.sectionHeader}>
+                                <View style={[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubStaff')}</Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
@@ -2739,10 +2773,10 @@ export default function Profile() {
                                     {staff && staff.data?.map((member, index) => (
                                         <TouchableOpacity
                                             key={member._id}
-                                            style={styles.staffCard}
+                                            style={[styles.staffCard]}
                                             onPress={() => router.push(`/staff/details?id=${member._id}`)}
                                         >
-                                            <View style={styles.staffHeader}>
+                                            <View style={[styles.staffHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                                 {member.userRef?.image ? (
                                                     <Image
                                                         source={{ uri: member.userRef?.image }}
@@ -2755,8 +2789,8 @@ export default function Profile() {
                                                     </View>
                                                 )}
                                                 <View style={styles.staffInfo}>
-                                                    <Text style={styles.staffName}>{member.userRef?.name}</Text>
-                                                    <Text style={styles.staffRole}>{member.role || 'Staff Member'}</Text>
+                                                    <Text style={[styles.staffName, isRTL && { textAlign: 'right' }]}>{member.userRef?.name}</Text>
+                                                    <Text style={[styles.staffRole, isRTL && { textAlign: 'right' }]}>{member.role || 'Staff Member'}</Text>
                                                 </View>
                                                 {member.role && member.role == "Coach" && <View style={styles.staffStats}>
                                                     <Text style={styles.staffStatValue}>
@@ -2768,7 +2802,7 @@ export default function Profile() {
                                                 </View>}
                                             </View>
 
-                                            <View style={styles.staffContact}>
+                                            <View style={[styles.staffContact, isRTL && { flexDirection: 'row-reverse' }]}>
                                                 {member.userRef?.phone ? (
                                                     <TouchableOpacity
                                                         style={styles.contactButton}
@@ -2828,7 +2862,7 @@ export default function Profile() {
                             </View>
                         ) : (
                             <View>
-                                <View style={styles.sectionHeader}>
+                                <View style={[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubStaff')}</Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
@@ -2881,11 +2915,11 @@ export default function Profile() {
                             </View>
                         ) : (
                             <View>
-                                <View style={styles.sectionHeader}>
+                                <View style={[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <Text style={[styles.sectionTitle, textDirectionStyle]}>{t('profile.clubInventory')}</Text>
                                     {userId == user._id && (
                                         <TouchableOpacity
-                                            style={styles.addButton}
+                                            style={[styles.addButton, isRTL && { width: 120 }]}
                                             onPress={() => router.push('/inventory/createInventory')}
                                         >
                                             <Text style={styles.addButtonText}>{t('profile.addItem')}</Text>
@@ -2900,7 +2934,7 @@ export default function Profile() {
                                             style={styles.inventoryCard}
                                             onPress={() => router.push(`/inventory/details?id=${item._id}`)}
                                         >
-                                            <View style={styles.inventoryHeader}>
+                                            <View style={[styles.inventoryHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                                 <View style={[styles.inventoryIcon, styles.defaultInventoryIcon]}>
                                                     <FontAwesome5 name="box-open" size={24} color="#fff" />
                                                 </View>
@@ -2914,13 +2948,13 @@ export default function Profile() {
                                                 </View>
                                             </View>
 
-                                            <View style={styles.inventoryDetails}>
-                                                <View style={styles.inventoryDetailRow}>
+                                            <View style={[styles.inventoryDetails,]}>
+                                                <View style={[styles.inventoryDetailRow, isRTL && { flexDirection: 'row-reverse' }]}>
                                                     <Text style={[styles.inventoryDetailLabel, textDirectionStyle]}>{t('profile.unitPrice')}</Text>
                                                     <Text style={[styles.inventoryDetailValue, textDirectionStyle]}>{item.unitPrice}</Text>
                                                 </View>
                                                 {item.description && (
-                                                    <View style={[styles.inventoryDetailRow, { marginTop: 5 }]}>
+                                                    <View style={[styles.inventoryDetailRow, { marginTop: 5 }, isRTL && { flexDirection: 'row-reverse' }]}>
                                                         <Text style={[styles.inventoryDetailLabel, textDirectionStyle]}>{t('profile.description')}</Text>
                                                         <Text style={[styles.inventoryDetailValue, textDirectionStyle]} numberOfLines={1}>{item.description}</Text>
                                                     </View>
@@ -3003,7 +3037,7 @@ export default function Profile() {
                                         </View>
                                     </View>
 
-                                    <View style={styles.sectionHeader}>
+                                    <View style={[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                         <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
                                             History
                                         </Text>
@@ -3023,18 +3057,18 @@ export default function Profile() {
                                                         })}>
                                                         <View style={styles.inventoryHeader}>
                                                             <View style={styles.inventoryInfo}>
-                                                                {userId == item.payer._id ? (
+                                                                {userId == item.payer?._id ? (
                                                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                                         <MaterialIcons name="arrow-circle-up" size={20} color="#FF4400" />
                                                                         <Text style={styles.inventoryName}>
-                                                                            {item.beneficiary.name}
+                                                                            {item.beneficiary?.name || t('profile.defaultTitle')}
                                                                         </Text>
                                                                     </View>
                                                                 ) : (
                                                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                                                         <MaterialIcons name="arrow-circle-down" size={20} color="#009933" />
                                                                         <Text style={styles.inventoryName}>
-                                                                            {item.payer.name}
+                                                                            {item.payer?.name || t('profile.defaultTitle')}
                                                                         </Text>
                                                                     </View>
                                                                 )}
@@ -3044,7 +3078,7 @@ export default function Profile() {
                                                             </View>
                                                             <View style={styles.inventoryStats}>
                                                                 <Text style={styles.inventoryStatValue}>
-                                                                    {userId == item.payer._id ? '-' : '+'}{item.amount} {item.currency}
+                                                                    {userId == item.payer?._id ? '-' : '+'}{item.amount} {item.currency}
                                                                 </Text>
                                                                 <Text style={styles.inventoryStatLabel}>{t('profile.amount')}</Text>
                                                             </View>
@@ -3113,7 +3147,7 @@ export default function Profile() {
                             </View>
                         ) : (
                             <View>
-                                <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
+                                <View style={[[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }], { marginBottom: 10 }]}>
                                     <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
                                         {t('profile.timesheet')}
                                     </Text>
@@ -3135,7 +3169,7 @@ export default function Profile() {
                                 </View>
 
                                 <View style={{ marginTop: 30 }}>
-                                    <View style={styles.sectionHeader}>
+                                    <View style={[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }]}>
                                         <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
                                             {t('profile.history')}
                                         </Text>
@@ -3220,7 +3254,7 @@ export default function Profile() {
                             </View>
                         ) : (
                             <View>
-                                <View style={[styles.sectionHeader, { marginBottom: 10 }]}>
+                                <View style={[[styles.sectionHeader, isRTL && { flexDirection: 'row-reverse' }], { marginBottom: 10 }, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <Text style={[styles.balanceTitle, { marginBottom: 0 }]}>
                                         {t('profile.performance')}
                                     </Text>
@@ -3361,16 +3395,16 @@ const TeamCard = ({ team }) => {
                 {team.image ? (
                     <Image
                         source={{ uri: team.image }}
-                        style={styles.teamLogo}
+                        style={[styles.teamLogo, isRTL && { marginRight: 0, marginLeft: 15 }]}
                         resizeMode="contain"
                     />
                 ) : (
-                    <View style={[styles.teamLogo, styles.defaultTeamLogo]}>
-                        <Text style={styles.defaultLogoText}>{team.name?.charAt(0)}</Text>
+                    <View style={[styles.teamLogo, styles.defaultTeamLogo, isRTL && { marginRight: 0, marginLeft: 15 }]}>
+                        <Text style={styles.defaultLogoText}>{team?.name?.charAt(0)}</Text>
                     </View>
                 )}
                 <View style={styles.teamInfo}>
-                    <Text style={[styles.teamName, textDirectionStyle]}>{team.name}</Text>
+                    <Text style={[styles.teamName, textDirectionStyle]}>{team?.name || t('profile.defaultTitle')}</Text>
                     <Text style={[styles.teamSport, textDirectionStyle]}>{team.sport}</Text>
                 </View>
                 <View style={styles.teamStats}>
@@ -3379,12 +3413,14 @@ const TeamCard = ({ team }) => {
                 </View>
             </View>
 
-            {team.coaches.length > 0 && (
+            {(team.coaches || []).filter(Boolean).length > 0 && (
                 <View style={[styles.coachSection, isRTL && styles.coachSectionRtl]}>
-                    <Text style={[styles.coachLabel, textDirectionStyle]}>{team.coaches.length == 1 ? t('profile.coach') : t('profile.coaches')}</Text>
+                    <Text style={[styles.coachLabel, textDirectionStyle, isRTL && { marginRight: 0, marginLeft: 10 }]}>
+                        {(team.coaches || []).filter(Boolean).length == 1 ? t('profile.coach') : t('profile.coaches')}
+                    </Text>
 
-                    <View style={styles.coachInfoDiv}>
-                        {team.coaches.map((coach, index) => (
+                    <View style={[styles.coachInfoDiv, isRTL && { flexDirection: 'row-reverse' }]}>
+                        {(team.coaches || []).filter(Boolean).map((coach, index) => (
                             <TouchableOpacity
                                 onPress={() => router.push({
                                     pathname: '/profile/public',
@@ -3403,7 +3439,7 @@ const TeamCard = ({ team }) => {
                                         resizeMode="contain"
                                     />
                                 )}
-                                <Text style={[styles.coachName, textDirectionStyle]}>{coach.name}</Text>
+                                <Text style={[styles.coachName, textDirectionStyle]}>{coach.name || t('profile.defaultTitle')}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -3464,6 +3500,7 @@ const styles = StyleSheet.create({
         bottom: 20,
         left: 20,
         width: width - 40,
+        zIndex: 1
     },
     pageTitle: {
         color: '#ffffff',
@@ -3476,7 +3513,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin'
     },
     profileSection: {
-        marginBottom: 30
+        marginBottom: 30,
     },
     skillsSection: {
         backgroundColor: '#f2f2f2',
@@ -3549,13 +3586,14 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     ghostText: {
-        color: '#ffffff',
         fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color: '#ff6633',
+        maxHeight: 200,
+        lineHeight: 200
     },
     ghostTextRtl: {
         right: undefined,
@@ -3568,6 +3606,10 @@ const styles = StyleSheet.create({
         height: '70%',
         maxWidth: 200,
         overflow: 'hidden',
+    },
+    rtlprofileImage: {
+        right: 'auto',
+        left: -5
     },
     profileImageAvatar: {
         height: '100%',
@@ -3944,6 +3986,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#eeeeee',
         padding: 5,
         borderRadius: 20,
+        gap: 10
     },
     coachInfoRtl: {
         flexDirection: 'row-reverse',
@@ -3955,7 +3998,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF4000',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 10,
     },
     coachName: {
         fontFamily: 'Acumin',
@@ -4170,12 +4212,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 15,
+        gap: 15
     },
     staffAvatar: {
         width: 60,
         height: 60,
         borderRadius: 30,
-        marginRight: 15,
     },
     defaultStaffAvatar: {
         backgroundColor: '#FF4000',
@@ -4246,12 +4288,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 15,
+        gap: 15
     },
     inventoryIcon: {
         width: 60,
         height: 60,
         borderRadius: 30,
-        marginRight: 15,
         justifyContent: 'center',
         alignItems: 'center',
     },

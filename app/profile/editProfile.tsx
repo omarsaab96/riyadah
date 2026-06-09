@@ -21,8 +21,8 @@ import {
     View
 } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
-import { useLanguage } from '../../context/language';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useLanguage } from '../../context/language';
 
 
 const { width } = Dimensions.get('window');
@@ -152,13 +152,13 @@ export default function EditProfile() {
                 <View style={styles.container}>
                     <View style={styles.pageHeader}>
                         <Image
-                            source={require('../../assets/logo_white.png')}
-                            style={styles.logo}
+                            source={isRTL ? require('../../assets/logo_white_ar.png') : require('../../assets/logo_white.png')}
+                            style={[styles.logo, isRTL && { left: 'auto', right: 0 }]}
                             resizeMode="contain"
                         />
 
                         <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
-                            <Text style={styles.pageTitle}>{t('profileEditor.editProfile')}</Text>
+                            <Text style={[styles.pageTitle, ]}>{t('profileEditor.editProfile')}</Text>
                             {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('profileEditor.changeYourData')}</Text>}
 
                             {loading &&
@@ -174,7 +174,7 @@ export default function EditProfile() {
 
                         <Text style={[styles.ghostText, isRTL && styles.ghostTextRtl]}>{t('profileEditor.editGhost')}</Text>
 
-                        {user && !loading && <View style={styles.profileImage}>
+                        {user && !loading && <View style={[styles.profileImage, isRTL && styles.rtlprofileImage]}>
                             <TouchableOpacity onPress={() => router.push('/profile/uploadAvatar')}>
                                 {(user.image == null || user.image == "") && (user.type == "Club" || user.type == "Association") && <Image
                                     source={require('../../assets/clublogo.png')}
@@ -231,8 +231,8 @@ export default function EditProfile() {
                     {user && !loading && <ScrollView ref={scrollRef}>
 
                         <View style={styles.contentContainer}>
-                            {error != null && <View style={styles.error}>
-                                <View style={styles.errorIcon}></View>
+                            {error != null && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                                <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                                 <Text style={styles.errorText}>{error}</Text>
                             </View>}
                             {user.type == "Parent" && <View style={styles.entity}>
@@ -265,11 +265,12 @@ export default function EditProfile() {
                                     </Text>
 
                                     <TextInput
-                                        style={styles.input}
+                                        style={[styles.input,isRTL&&{textAlign:'right'}]}
                                         placeholder={t('profileEditor.admin')}
                                         placeholderTextColor="#A8A8A8"
                                         value={user.admin?.name}
                                         onChangeText={(text) => updateField('admin.name', text)}
+                                        
                                     />
                                 </View>
                             }
@@ -287,7 +288,7 @@ export default function EditProfile() {
                                         {t('profileEditor.description')}
                                     </Text>}
 
-                                    {user.type == "Club" && <TextInput style={styles.textarea}
+                                    {user.type == "Club" && <TextInput style={[styles.textarea,isRTL&&{textAlign:'right'}]}
                                         placeholder={t('profileEditor.openingHours')}
                                         placeholderTextColor="#A8A8A8"
                                         value={user.contactInfo.description || ""}
@@ -299,22 +300,22 @@ export default function EditProfile() {
 
 
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <FontAwesome6 name="phone" size={24} color="#000" />
                                         <TextInput
-                                            style={[styles.input, styles.contactInput, { color: "#aaa" }]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput, { color: "#aaa" }]}
                                             placeholder={t('profileEditor.phoneNumber')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.phone}
                                             onChangeText={(text) => updateField('contactInfo.phone', text)}
-                                            // editable={false}
+                                        // editable={false}
                                         />
                                     </View>
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <MaterialCommunityIcons name="email-outline" size={24} color="#000" />
                                         <TextInput
-                                            style={[styles.input, styles.contactInput]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput]}
                                             placeholder={t('profileEditor.email')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.email}
@@ -322,10 +323,10 @@ export default function EditProfile() {
                                         />
                                     </View>
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <FontAwesome name="facebook" size={24} color="#000" />
                                         <TextInput
-                                            style={[styles.input, styles.contactInput, { paddingLeft: 28 }]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput, { paddingLeft: 28 }]}
                                             placeholder={t('profileEditor.facebookUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.facebook}
@@ -333,11 +334,11 @@ export default function EditProfile() {
                                         />
                                     </View>
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <FontAwesome name="instagram" size={24} color="#000" />
-                                        <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
+                                        <Text style={[{ marginLeft: 20, color: '#000', fontSize: 16 },isRTL&&{marginLeft: 0,marginRight: 20}]}>@</Text>
                                         <TextInput
-                                            style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput, { paddingLeft: 0 }]}
                                             placeholder={t('profileEditor.instagramUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.instagram}
@@ -346,10 +347,10 @@ export default function EditProfile() {
                                         />
                                     </View>
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <FontAwesome name="whatsapp" size={24} color="#000" />
                                         <TextInput
-                                            style={[styles.input, styles.contactInput]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput]}
                                             placeholder={t('profileEditor.whatsappNumber')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.whatsapp}
@@ -357,11 +358,11 @@ export default function EditProfile() {
                                         />
                                     </View>
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <FontAwesome5 name="telegram-plane" size={24} color="#000" />
-                                        <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
+                                        <Text style={[{ marginLeft: 20, color: '#000', fontSize: 16 },isRTL&&{marginLeft: 0,marginRight: 20}]}>@</Text>
                                         <TextInput
-                                            style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput, { paddingLeft: 0 }]}
                                             placeholder={t('profileEditor.telegramUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.telegram}
@@ -369,11 +370,11 @@ export default function EditProfile() {
                                         />
                                     </View>
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <FontAwesome6 name="tiktok" size={24} color="#000" />
-                                        <Text style={{ marginLeft: 20, color: '#000', fontSize: 16 }}>@</Text>
+                                        <Text style={[{ marginLeft: 20, color: '#000', fontSize: 16 },isRTL&&{marginLeft: 0,marginRight: 20}]}>@</Text>
                                         <TextInput
-                                            style={[styles.input, styles.contactInput, { paddingLeft: 0 }]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput, { paddingLeft: 0 }]}
                                             placeholder={t('profileEditor.tiktokUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.tiktok}
@@ -381,10 +382,10 @@ export default function EditProfile() {
                                         />
                                     </View>
 
-                                    <View style={styles.contactItem}>
+                                    <View style={[styles.contactItem,isRTL&&{flexDirection:'row-reverse'}]}>
                                         <FontAwesome name="snapchat-ghost" size={24} color="#000" />
                                         <TextInput
-                                            style={[styles.input, styles.contactInput]}
+                                            style={[[styles.input,isRTL&&{textAlign:'right'}], styles.contactInput]}
                                             placeholder={t('profileEditor.snapchatUsername')}
                                             placeholderTextColor="#A8A8A8"
                                             value={user.contactInfo.snapchat}
@@ -393,7 +394,7 @@ export default function EditProfile() {
                                     </View>
 
                                     {(user.type == "Club" || user.type == "Association") && <View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 }}>
+                                        <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 5 },isRTL&&{flexDirection:'row-reverse'}]}>
                                             <Text style={[styles.subtitle, styles.contactSubTitle, { width: 'auto' }]}>
                                                 {t('profileEditor.location')}
                                             </Text>
@@ -472,7 +473,7 @@ export default function EditProfile() {
                                     {(user.type == "Club" || user.type == "Association") ? t('profileEditor.summary') : t('profileEditor.bio')}
                                 </Text>
                                 <TextInput
-                                    style={styles.textarea}
+                                    style={[styles.textarea,isRTL&&{textAlign:'right'}]}
                                     placeholder={(user.type == "Club" || user.type == "Association") ? (user.type === 'Club' ? t('profileEditor.aboutClub') : t('profileEditor.aboutAssociation')) : t('profileEditor.aboutYou')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.bio || ""}
@@ -488,7 +489,7 @@ export default function EditProfile() {
                                 <Text style={styles.title}>
                                     {t('profileEditor.country')}
                                 </Text>
-                                <View style={[styles.input, styles.select]}>
+                                <View style={[[styles.input,isRTL&&{textAlign:'right'}], styles.select]}>
                                     <CountryPicker
                                         countryCode={user.country}
                                         withFilter
@@ -510,7 +511,7 @@ export default function EditProfile() {
                                     Team/club
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input,isRTL&&{textAlign:'right'}]}
                                     placeholder="Club name"
                                     placeholderTextColor="#A8A8A8"
                                     value={user.club}
@@ -562,7 +563,7 @@ export default function EditProfile() {
                                     {t('profileEditor.position')}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input,isRTL&&{textAlign:'right'}]}
                                     placeholder={t('profileEditor.positionPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.position?.toString()}
@@ -576,7 +577,7 @@ export default function EditProfile() {
                                     {t('profileEditor.height')}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input,isRTL&&{textAlign:'right'}]}
                                     placeholder={t('profileEditor.heightPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.height?.toString()}
@@ -590,7 +591,7 @@ export default function EditProfile() {
                                     {t('profileEditor.weight')}
                                 </Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input,isRTL&&{textAlign:'right'}]}
                                     placeholder={t('profileEditor.weightPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.weight?.toString()}
@@ -604,7 +605,7 @@ export default function EditProfile() {
                                     Highlights
                                 </Text>
                                 <TextInput
-                                    style={styles.textarea}
+                                    style={[styles.textarea,isRTL&&{textAlign:'right'}]}
                                     placeholder="Wanna highlight any accomplishment?"
                                     placeholderTextColor="#A8A8A8"
                                     value={user.highlights || ""}
@@ -622,7 +623,7 @@ export default function EditProfile() {
                                     Stats
                                 </Text>
                                 <TextInput
-                                    style={styles.textarea}
+                                    style={[styles.textarea,isRTL&&{textAlign:'right'}]}
                                     placeholder="Let people know how you perform"
                                     placeholderTextColor="#A8A8A8"
                                     value={user.stats || ""}
@@ -639,7 +640,7 @@ export default function EditProfile() {
                                     {t('profileEditor.achievements')}
                                 </Text>
                                 <TextInput
-                                    style={styles.textarea}
+                                    style={[styles.textarea,isRTL&&{textAlign:'right'}]}
                                     placeholder={t('profileEditor.achievementsPlaceholder')}
                                     placeholderTextColor="#A8A8A8"
                                     value={user.achievements || ""}
@@ -657,7 +658,7 @@ export default function EditProfile() {
                                     Upcoming Events
                                 </Text>
                                 <TextInput
-                                    style={styles.textarea}
+                                    style={[styles.textarea,isRTL&&{textAlign:'right'}]}
                                     placeholder="Are you attending any events?"
                                     placeholderTextColor="#A8A8A8"
                                     value={user.events || ""}
@@ -865,8 +866,8 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 40,
         position: 'absolute',
         top: 30,
         left: 20,
@@ -879,11 +880,12 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     ghostTextRtl: {
-        right: undefined,
+        right: 'auto',
         left: -5,
     },
     pageTitle: {
@@ -946,7 +948,7 @@ const styles = StyleSheet.create({
         fontFamily: "Qatar",
         fontSize: 20,
         marginBottom: 10,
-        color: 'black'
+        color: 'black',
     },
     subtitle: {
         fontFamily: "Acumin",
@@ -966,13 +968,14 @@ const styles = StyleSheet.create({
         color: 'black'
     },
     ghostText: {
-        color: '#ffffff',
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     profileImage: {
         position: 'absolute',
@@ -981,6 +984,11 @@ const styles = StyleSheet.create({
         height: '70%',
         maxWidth: 200,
         overflow: 'hidden',
+    },
+
+    rtlprofileImage: {
+        right: 'auto',
+        left: -5
     },
     profileImageAvatar: {
         height: '100%',
@@ -1035,6 +1043,7 @@ const styles = StyleSheet.create({
     icon: {
         width: 24,
         height: 24,
+        tintColor: '#111111',
     },
     activeIcon: {
         width: 24,
@@ -1063,7 +1072,8 @@ const styles = StyleSheet.create({
     savebtn: {
         flexDirection: 'row'
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -1096,7 +1106,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F4F4F4',
         marginBottom: 16,
         color: 'black',
-        borderRadius: 10
+        borderRadius: 10,
     },
     contactInput: {
         marginBottom: 0,

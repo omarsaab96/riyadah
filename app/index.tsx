@@ -36,7 +36,7 @@ export default function Home() {
 
             {/* Logo */}
                 <Image
-                    source={require('../assets/logo_orangeBlack.png')}
+                    source={isRTL?require('../assets/logo_orangeBlack_ar.png'):require('../assets/logo_orangeBlack.png')}
                     style={[styles.logo, isRTL && styles.logoRtl]}
                     resizeMode="contain"
                 />
@@ -44,7 +44,7 @@ export default function Home() {
             {/* Hero Section */}
             <View style={styles.heroContainer}>
                 <Image
-                    source={require('../assets/vector.png')}
+                    source={isRTL?require('../assets/vector-ar.png'):require('../assets/vector.png')}
                     style={styles.heroImage}
                     resizeMode="cover"
                 />
@@ -97,8 +97,9 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     logoRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        width: 90,
     },
     heroContainer: {
         position: 'relative',

@@ -427,19 +427,19 @@ export default function Landing() {
         return (
             <View style={styles.postContainer}>
                 <View style={[styles.postHeader, isRTL && styles.postHeaderRtl]}>
-                    {(item.created_by.image == null || item.created_by.image == "") ? (
+                    {(item.created_by?.image == null || item.created_by?.image == "") ? (
                         <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
-                            {item.created_by.gender == "Male" && <Image
+                            {item.created_by?.gender == "Male" && <Image
                                 source={require('../assets/avatar.png')}
                                 style={styles.profileImageAvatar}
                                 resizeMode="contain"
                             />}
-                            {item.created_by.gender == "Female" && <Image
+                            {item.created_by?.gender == "Female" && <Image
                                 source={require('../assets/avatarF.png')}
                                 style={styles.profileImageAvatar}
                                 resizeMode="contain"
                             />}
-                            {item.created_by.type == "Club" && <Image
+                            {item.created_by?.type == "Club" && <Image
                                 source={require('../assets/clublogo.png')}
                                 style={styles.profileImageAvatar}
                                 resizeMode="contain"
@@ -456,7 +456,7 @@ export default function Landing() {
                     )}
 
                     <View style={styles.postHeaderInfo}>
-                        <Text style={[styles.postUserName, textDirectionStyle]}>{item.created_by.name}</Text>
+                        <Text style={[styles.postUserName, textDirectionStyle]}>{item.created_by?.name || t('messages.unknownUser')}</Text>
                         <Text style={[styles.postDate, textDirectionStyle]}>{formatDate(item.date)}</Text>
                     </View>
 
@@ -1238,19 +1238,19 @@ export default function Landing() {
                                         return (
                                             <View key={index} style={styles.postContainer}>
                                                 <View style={[styles.postHeader, isRTL && styles.postHeaderRtl]}>
-                                                    {(newPost.created_by.image == null || newPost.created_by.image == "") ? (
+                                                    {(newPost.created_by?.image == null || newPost.created_by?.image == "") ? (
                                                         <View style={[styles.profileImage, isRTL && styles.profileImageRtl]}>
-                                                            {newPost.created_by.gender == "Male" && <Image
+                                                            {newPost.created_by?.gender == "Male" && <Image
                                                                 source={require('../assets/avatar.png')}
                                                                 style={styles.profileImageAvatar}
                                                                 resizeMode="contain"
                                                             />}
-                                                            {newPost.created_by.gender == "Female" && <Image
+                                                            {newPost.created_by?.gender == "Female" && <Image
                                                                 source={require('../assets/avatarF.png')}
                                                                 style={styles.profileImageAvatar}
                                                                 resizeMode="contain"
                                                             />}
-                                                            {newPost.created_by.type == "Club" && <Image
+                                                            {newPost.created_by?.type == "Club" && <Image
                                                                 source={require('../assets/clublogo.png')}
                                                                 style={styles.profileImageAvatar}
                                                                 resizeMode="contain"
@@ -1268,7 +1268,7 @@ export default function Landing() {
                                                     )}
 
                                                     <View style={styles.postHeaderInfo}>
-                                                        <Text style={[styles.postUserName, textDirectionStyle]}>{newPost.created_by.name}</Text>
+                                                        <Text style={[styles.postUserName, textDirectionStyle]}>{newPost.created_by?.name || t('messages.unknownUser')}</Text>
                                                         <Text style={[styles.postDate, textDirectionStyle]}>{formatDate(newPost.date)}</Text>
                                                     </View>
 
@@ -1680,7 +1680,7 @@ export default function Landing() {
                                                 <View style={[styles.commentRow, isRTL && styles.commentRowRtl]}>
                                                     <View>
                                                         <View style={[styles.commentAuthorRow, isRTL && styles.commentAuthorRowRtl]}>
-                                                            <Text style={[styles.commentAuthor, textDirectionStyle]}>{item.user.name}</Text>
+                                                            <Text style={[styles.commentAuthor, textDirectionStyle]}>{item.user?.name || t('messages.unknownUser')}</Text>
                                                             <Text style={[styles.commentDate, textDirectionStyle]}>{formatDate(item.date)}</Text>
                                                         </View>
                                                         <Text style={[styles.commentText, textDirectionStyle]}>{item.content}</Text>
@@ -1842,7 +1842,7 @@ export default function Landing() {
                                     })
                                 }}
                                 style={styles.profileButton}>
-                                <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('landing.userProfile').replace('{name}', selectedPost.created_by.name)}</Text>
+                                <Text style={[styles.profileButtonText, textDirectionStyle]}>{t('landing.userProfile').replace('{name}', selectedPost.created_by?.name || t('messages.unknownUser'))}</Text>
                             </TouchableOpacity>
                         )
                         }

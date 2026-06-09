@@ -1,7 +1,6 @@
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
@@ -340,7 +339,7 @@ const CreateEventScreen = () => {
         }
     };
 
-    const handleChange = (name: string, value: string) => {
+    const handleChange = (name: string, value: any) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
@@ -562,15 +561,15 @@ const CreateEventScreen = () => {
                     renderItem={() => (
                         <>
                             {error != '' && (
-                                <View style={styles.error}>
-                                    <View style={styles.errorIcon} />
+                                <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                                    <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]} />
                                     <Text style={styles.errorText}>{error}</Text>
                                 </View>
                             )}
 
                             <View >
-                                {error != '' && <View style={styles.error}>
-                                    <View style={styles.errorIcon}></View>
+                                {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
+                                    <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
                                     <Text style={styles.errorText}>{error}</Text>
                                 </View>}
 
@@ -660,16 +659,6 @@ const CreateEventScreen = () => {
                                     <View style={styles.formGroup}>
                                         <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.eventType')}</Text>
                                         <View style={styles.pickerContainer}>
-                                            {/* <Picker
-                                    selectedValue={formData.eventType}
-                                    onValueChange={(value) => handleChange('eventType', value)}
-                                    style={styles.picker}
-                                >
-                                    <Picker.Item label="Training Session" value="Training" />
-                                    <Picker.Item label="Match" value="Match" />
-                                    <Picker.Item label="Meeting" value="Meeting" />
-                                    <Picker.Item label="Tournament" value="Tournament" />
-                                </Picker> */}
                                             <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
                                                 {eventTypeOptions.map((type, index) => (
                                                     <TouchableOpacity
@@ -689,19 +678,19 @@ const CreateEventScreen = () => {
                                     <View style={styles.formGroup}>
                                         <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.team')}</Text>
                                         <View style={styles.pickerContainer}>
-                                            <Picker
-                                                selectedValue={formData.team}
-                                                onValueChange={(value) => handleChange('team', value)}
-                                                style={styles.picker}
-                                            >
+                                            <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
                                                 {teams.map(team => (
-                                                    <Picker.Item
+                                                    <TouchableOpacity
                                                         key={team._id}
-                                                        label={`${team.name} (${team.sport})`}
-                                                        value={team._id}
-                                                    />
+                                                        style={[styles.multipleChoice, formData.team == team._id && styles.selectedChoice]}
+                                                        onPress={() => handleChange('team', team._id)}
+                                                    >
+                                                        <Text style={[styles.multipleChoiceText, formData.team == team._id && styles.selectedChoiceText]}>
+                                                            {team.name} ({team.sport})
+                                                        </Text>
+                                                    </TouchableOpacity>
                                                 ))}
-                                            </Picker>
+                                            </View>
                                         </View>
                                     </View>
 
@@ -721,17 +710,6 @@ const CreateEventScreen = () => {
                                         <Text style={[styles.label, { marginBottom: 0 }, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.recurringEvent')}</Text>
                                         <Text style={[styles.hint, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.recurringHint')}</Text>
                                         <View style={styles.pickerContainer}>
-                                            {/* <Picker
-                                    selectedValue={repeat}
-                                    onValueChange={setRepeat}
-                                    style={styles.picker}
-                                >
-                                    <Picker.Item label="No" value="No" />
-                                    <Picker.Item label="Daily" value="Daily" />
-                                    <Picker.Item label="Weekly" value="Weekly" />
-                                    <Picker.Item label="Monthly" value="Monthly" />
-                                    <Picker.Item label="Yearly" value="Yearly" />
-                                </Picker> */}
                                             <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
                                                 {recurrenceOptions.map((reccurence, index) => (
                                                     <TouchableOpacity
@@ -751,16 +729,6 @@ const CreateEventScreen = () => {
                                     <View style={styles.formGroup}>
                                         <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.locationType')}</Text>
                                         <View style={styles.pickerContainer}>
-                                            {/* <Picker
-                                    selectedValue={formData.locationType}
-                                    onValueChange={(value) => handleChange('locationType', value)}
-                                    style={styles.picker}
-                                >
-                                    <Picker.Item label="Venue" value="Venue" />
-                                    <Picker.Item label="Online" value="Online" />
-                                    <Picker.Item label="To Be Determined" value="tbd" />
-                                </Picker> */}
-
                                             <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
                                                 {locationTypeOptions.map((type, index) => (
                                                     <TouchableOpacity
@@ -892,7 +860,6 @@ const CreateEventScreen = () => {
                                             <View>
                                                 <View style={styles.equipmentContainer}>
                                                     <TextInput
-                                                        style={[styles.input, { marginBottom: 0, flex: 1 }]}
                                                         placeholder={t('scheduleForm.searchEquipment')}
                                                         value={equipmentSearch}
                                                         placeholderTextColor={"#888"}
@@ -1022,14 +989,22 @@ const CreateEventScreen = () => {
                                             </View>
                                             <View style={styles.formGroup}>
                                                 <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.homeOrAway')}</Text>
-                                                <Picker
-                                                    selectedValue={formData.isHomeGame}
-                                                    onValueChange={(value) => handleChange('isHomeGame', value)}
-                                                    style={styles.picker}
-                                                >
-                                                    <Picker.Item label={t('scheduleForm.homeGame')} value={true} />
-                                                    <Picker.Item label={t('scheduleForm.awayGame')} value={false} />
-                                                </Picker>
+                                                <View style={[styles.choiceRow, isRTL && styles.choiceRowRtl]}>
+                                                    {[
+                                                        { label: t('scheduleForm.homeGame'), value: true },
+                                                        { label: t('scheduleForm.awayGame'), value: false },
+                                                    ].map((option) => (
+                                                        <TouchableOpacity
+                                                            key={String(option.value)}
+                                                            style={[styles.multipleChoice, formData.isHomeGame == option.value && styles.selectedChoice]}
+                                                            onPress={() => handleChange('isHomeGame', option.value)}
+                                                        >
+                                                            <Text style={[styles.multipleChoiceText, formData.isHomeGame == option.value && styles.selectedChoiceText]}>
+                                                                {option.label}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </View>
                                             </View>
                                         </>
                                     )}
@@ -1132,8 +1107,9 @@ const styles = StyleSheet.create({
         width: width - 40,
     },
     headerTextBlockRtl: {
-        left: undefined,
+        left: 'auto',
         right: 20,
+        maxWidth:200
     },
     pageTitle: {
         color: '#ffffff',
@@ -1159,13 +1135,14 @@ const styles = StyleSheet.create({
         color: '#111',
     },
     ghostText: {
-        color: '#ffffff',
         fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        opacity: 0.2
+        color:'#ff6633',
+    maxHeight:200,
+    lineHeight:200
     },
     ghostTextRtl: {
         right: undefined,
