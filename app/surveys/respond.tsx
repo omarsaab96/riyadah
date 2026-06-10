@@ -389,13 +389,13 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 40,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
     backButton: {
         position: 'absolute',
-        top: 40,
+        top: Platform.OS == 'ios' ? 60 : 40,
         right: 20,
         flexDirection: 'row',
         alignItems: 'center',
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     headerTextBlockRtl: {
         left: 'auto',
         right: 20,
-        maxWidth:200
+        maxWidth: 200
     },
     pageTitle: {
         color: '#ffffff',
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
     label: {
         fontFamily: "Qatar",
         fontSize: 20,
-        color:'#111'
+        color: '#111'
     },
     questionBlock: {
         marginBottom: 20
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 16,
         marginTop: 10,
-        color:'#111'
+        color: '#111'
     },
     textarea: {
         fontSize: 14,

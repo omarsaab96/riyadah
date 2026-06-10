@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     position: 'absolute',
-    top: 20,
+        top: Platform.OS == 'ios' ? 60 : 40,
     left: 20,
     zIndex: 1,
   },

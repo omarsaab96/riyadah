@@ -428,7 +428,7 @@ const CreateStaffScreen = () => {
                         }}
                         style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name={isRTL?"chevron-forward":"chevron-back"} size={20} color="#ffffff" />
+                        <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
                         <Text style={styles.backBtnText}>{t('staffForm.backToStaff')}</Text>
                     </TouchableOpacity>
 
@@ -442,8 +442,8 @@ const CreateStaffScreen = () => {
 
                 <ScrollView ref={scrollViewRef}>
                     <View style={styles.contentContainer}>
-                        {error != null && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
-                            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
+                        {error != null && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                            <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
@@ -467,7 +467,7 @@ const CreateStaffScreen = () => {
                                         <ActivityIndicator
                                             size="small"
                                             color="#FF4000"
-                                            style={[styles.searchLoader,isRTL&&{right:'auto',left:10}]}
+                                            style={[styles.searchLoader, isRTL && { right: 'auto', left: 10 }]}
                                         />
                                     }
                                 </View>
@@ -480,7 +480,7 @@ const CreateStaffScreen = () => {
                                         {searchResults.map((item) => (
                                             <TouchableOpacity
                                                 key={item._id}
-                                                style={[styles.userItem,isRTL&&{flexDirection:'row-reverse'}]}
+                                                style={[styles.userItem, isRTL && { flexDirection: 'row-reverse' }]}
                                                 onPress={() => handleUserSelect(item)}
                                             >
                                                 <Image
@@ -679,7 +679,7 @@ const CreateStaffScreen = () => {
                                         teams.map(team => (
                                             <TouchableOpacity
                                                 key={team._id}
-                                                style={[styles.teamItem,isRTL&&{flexDirection:'row-reverse'}]}
+                                                style={[styles.teamItem, isRTL && { flexDirection: 'row-reverse' }]}
                                                 onPress={() => {
                                                     const isSelected = formData.teams.includes(team._id);
                                                     if (isSelected) {
@@ -738,7 +738,7 @@ const CreateStaffScreen = () => {
 
                             <View style={styles.formGroup}>
                                 <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.salaryPerMonth')}</Text>
-                                <View style={[{ flexDirection: 'row', columnGap: 10 },isRTL&&{flexDirection:'row-reverse'}]}>
+                                <View style={[{ flexDirection: 'row', columnGap: 10 }, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <TextInput
                                         style={[styles.input, { flex: 1 }, isRTL && styles.rtlText]}
                                         placeholder={t('staffForm.salaryAmount')}
@@ -784,7 +784,7 @@ const CreateStaffScreen = () => {
                             {/* Qualifications */}
                             <View style={styles.formGroup}>
                                 <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.qualifications')}</Text>
-                                <View style={[styles.listInputContainer,isRTL&&{flexDirection:'row-reverse'}]}>
+                                <View style={[styles.listInputContainer, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <TextInput
                                         style={[styles.input, { marginBottom: 0, flex: 1 }, isRTL && styles.rtlText]}
                                         placeholder={t('staffForm.addQualification')}
@@ -815,7 +815,7 @@ const CreateStaffScreen = () => {
                             {/* Certifications */}
                             <View style={styles.formGroup}>
                                 <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.certifications')}</Text>
-                                <View style={[styles.listInputContainer,isRTL&&{flexDirection:'row-reverse'}]}>
+                                <View style={[styles.listInputContainer, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <TextInput
                                         style={[styles.input, { marginBottom: 0, flex: 1 }, isRTL && styles.rtlText]}
                                         placeholder={t('staffForm.addCertification')}
@@ -934,7 +934,7 @@ const CreateStaffScreen = () => {
                             {/* Status */}
                             <View style={styles.formGroup}>
                                 <Text style={[styles.label, isRTL && styles.rtlText]}>{t('staffForm.status')}</Text>
-                                <View style={[styles.statusContainer,isRTL&&{flexDirection:'row-reverse'}]}>
+                                <View style={[styles.statusContainer, isRTL && { flexDirection: 'row-reverse' }]}>
                                     <TouchableOpacity
                                         style={[
                                             styles.statusButton,
@@ -1058,10 +1058,10 @@ const styles = StyleSheet.create({
         height: 270,
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 40,
         position: 'absolute',
-        top: 30,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -1074,7 +1074,7 @@ const styles = StyleSheet.create({
     headerTextBlockRtl: {
         left: 'auto',
         right: 20,
-        maxWidth:200
+        maxWidth: 200
     },
     pageTitle: {
         color: '#ffffff',
@@ -1087,14 +1087,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin'
     },
     ghostText: {
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        color:'#ff6633',
-    maxHeight:200,
-    lineHeight:200
+        color: '#ff6633',
+        maxHeight: 200,
+        lineHeight: 200
     },
     ghostTextRtl: {
         right: undefined,
@@ -1184,7 +1184,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
-        gap:10
+        gap: 10
     },
     addItemButton: {
         backgroundColor: '#FF4000',
@@ -1214,14 +1214,14 @@ const styles = StyleSheet.create({
     itemText: {
         marginRight: 8,
         fontFamily: 'Acumin',
-        color:'black'
+        color: 'black'
     },
     teamItem: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 10,
         color: 'black',
-        gap:10
+        gap: 10
     },
     teamCheckbox: {
         marginRight: 10,
@@ -1321,7 +1321,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -1423,7 +1424,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         flexDirection: 'row',
         alignItems: 'center',
-        gap:10
+        gap: 10
     },
     userName: {
         fontFamily: 'Acumin',
@@ -1456,7 +1457,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 8,
         marginTop: 10,
-        gap:10
+        gap: 10
     },
     selectedUserContainerRtl: {
         flexDirection: 'row-reverse',

@@ -305,8 +305,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 50,
-        left: 20,
+top: Platform.OS == 'ios' ? 60 : 40,        left: 20,
         zIndex: 1,
     },
     backButton: {

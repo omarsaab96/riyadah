@@ -154,9 +154,9 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                                 params: { tab: 'Inventory' }
                             })
                         }}
-                            style={[styles.backBtn, isRTL && styles.backBtnRtl]}
+                        style={[styles.backBtn, isRTL && styles.backBtnRtl]}
                     >
-                        <Ionicons name={isRTL?"chevron-forward":"chevron-back"} size={20} color="#ffffff" />
+                        <Ionicons name={isRTL ? "chevron-forward" : "chevron-back"} size={20} color="#ffffff" />
                         <Text style={styles.backBtnText}>{t('inventory.backToInventory')}</Text>
                     </TouchableOpacity>
 
@@ -179,15 +179,15 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                 </View>
 
                 <ScrollView>
-                    {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
-                        <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
+                    {error != '' && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                        <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                         <Text style={styles.errorText}>{error}</Text>
                     </View>}
                     <View style={styles.contentContainer}>
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.itemName')} *</Text>
                             <TextInput
-                                style={[styles.input,isRTL&&{textAlign:'right'}]}
+                                style={[styles.input, isRTL && { textAlign: 'right' }]}
                                 placeholderTextColor={"#888"}
                                 placeholder={t('inventory.enterItemName')}
                                 value={formData.itemName}
@@ -221,7 +221,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.quantity')}</Text>
                             <TextInput
-                                style={[styles.input,isRTL&&{textAlign:'right'}]}
+                                style={[styles.input, isRTL && { textAlign: 'right' }]}
                                 placeholder={t('inventory.enterQuantity')}
                                 placeholderTextColor={"#888"}
                                 keyboardType="numeric"
@@ -232,9 +232,9 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
 
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.unitPrice')}</Text>
-                            <View style={[styles.priceRow,isRTL&&{flexDirection:'row-reverse'}]}>
+                            <View style={[styles.priceRow, isRTL && { flexDirection: 'row-reverse' }]}>
                                 <TextInput
-                                    style={[styles.input, styles.amountInput, isRTL&&{textAlign:'right'}]}
+                                    style={[styles.input, styles.amountInput, isRTL && { textAlign: 'right' }]}
                                     placeholder={t('inventory.amount')}
                                     keyboardType="numeric"
                                     placeholderTextColor={"#888"}
@@ -266,7 +266,7 @@ export default function CreateInventory({ clubId }: CreateInventoryProps) {
 
                         <View style={styles.formGroup}>
                             <Text style={[styles.label, isRTL && styles.rtlText]}>{t('inventory.description')}</Text>
-                            <TextInput style={[styles.textarea,isRTL&&{textAlign:'right'}]}
+                            <TextInput style={[styles.textarea, isRTL && { textAlign: 'right' }]}
                                 placeholder={t('inventory.enterDescription')}
                                 placeholderTextColor="#A8A8A8"
                                 value={formData.description || ""}
@@ -320,10 +320,10 @@ const styles = StyleSheet.create({
         height: 270,
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 40,
         position: 'absolute',
-        top: 30,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -348,14 +348,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin'
     },
     ghostText: {
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        color:'#ff6633',
-    maxHeight:200,
-    lineHeight:200
+        color: '#ff6633',
+        maxHeight: 200,
+        lineHeight: 200
     },
     ghostTextRtl: {
         right: undefined,
@@ -394,7 +394,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -496,9 +497,9 @@ const styles = StyleSheet.create({
     },
     backBtnRtl: {
         flexDirection: 'row-reverse',
-        width:'100%',
-        left:0,
-        right:10
+        width: '100%',
+        left: 0,
+        right: 10
     },
     backBtnText: {
         color: '#FFF',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLanguage } from '../context/language';
 
 const { width } = Dimensions.get('window');
@@ -268,8 +268,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 30,
-        left: 20,
+top: Platform.OS == 'ios' ? 60 : 40,        left: 20,
         zIndex: 1,
     },
     logoRtl: {

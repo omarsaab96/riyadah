@@ -340,8 +340,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 40,
     position: 'absolute',
-    top: 20,
-    left: 20,
+top: Platform.OS == 'ios' ? 60 : 40,    left: 20,
     zIndex: 1,
   },
   headerTextBlock: {

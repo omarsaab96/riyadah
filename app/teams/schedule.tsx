@@ -188,8 +188,8 @@ export default function Schedule() {
                 <ScrollView >
 
                     <View style={styles.contentContainer}>
-                        {error != '' && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
-                            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
+                        {error != '' && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                            <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
@@ -293,7 +293,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.05)',
         marginBottom: 10
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -307,10 +308,10 @@ const styles = StyleSheet.create({
         // marginBottom: 30
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 40,
         position: 'absolute',
-        top: 30,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -318,15 +319,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 60,
         left: 10,
-        width:200,
+        width: 200,
         zIndex: 1,
         flexDirection: 'row',
         alignItems: 'center',
     },
     backBtnText: {
         color: '#FFF',
-        fontSize:18,
-        fontFamily:'Qatar'
+        fontSize: 18,
+        fontFamily: 'Qatar'
     },
     headerTextBlock: {
         position: 'absolute',
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
     headerTextBlockRtl: {
         left: 'auto',
         right: 20,
-        maxWidth:200
+        maxWidth: 200
     },
     pageTitle: {
         color: '#ffffff',
@@ -436,14 +437,14 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     ghostText: {
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        color:'#ff6633',
-    maxHeight:200,
-    lineHeight:200
+        color: '#ff6633',
+        maxHeight: 200,
+        lineHeight: 200
     },
     ghostTextRtl: {
         right: undefined,

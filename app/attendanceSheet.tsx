@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '../context/language';
 const { width } = Dimensions.get('window');
 
@@ -183,13 +183,13 @@ const AttendanceSheet = () => {
 
             {!loading && !submitted && <ScrollView>
                 <View style={styles.contentContainer}>
-                    {lockTime && (
+                    {/* {lockTime && (
                         <View style={styles.lockBanner}>
                             <Text style={styles.lockText}>
                                 {isLocked ? t('attendance.lockedTitle') : t('attendance.editingClosesIn').replace('{time}', formatTime(timeLeft))}
                             </Text>
                         </View>
-                    )}
+                    )} */}
                     <Text style={[styles.label, directionStyle]}>{t('attendance.whoAttended')}</Text>
                     <Text style={[styles.hint, directionStyle]}>{t('attendance.selectedHint')}</Text>
 
@@ -322,9 +322,9 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 120 ,
-        height:30,
+        height:40,
         position: 'absolute',
-        top: 30,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     },
     checkboxContainer: {
         alignItems: 'center',
-        justifyContent: 'space-between',
+        // justifyContent: 'space-between',
         marginBottom: 5,
         backgroundColor: '#F4F4F4',
         padding: 5,

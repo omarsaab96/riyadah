@@ -68,6 +68,13 @@ const CreateEventScreen = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const iosDatePickerProps = Platform.OS === 'ios'
+        ? {
+            textColor: '#111111',
+            themeVariant: 'light' as const,
+            style: styles.iosDatePicker,
+        }
+        : {};
 
     const formatDate = (date) => {
         if (!date) return '';
@@ -589,7 +596,11 @@ const CreateEventScreen = () => {
                                         <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.date')}</Text>
                                         <TouchableOpacity
                                             style={[styles.dateInput, isRTL && styles.dateInputRtl]}
-                                            onPress={() => setShowDatePicker(true)}
+                                            onPress={() => {
+                                                setShowStartTimePicker(false);
+                                                setShowEndTimePicker(false);
+                                                setShowDatePicker(true);
+                                            }}
                                         >
                                             <Text style={[styles.inputText, isRTL ? styles.rtlText : styles.ltrText]}>
                                                 {formatDate(pickedDate)}
@@ -604,7 +615,11 @@ const CreateEventScreen = () => {
                                             <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.from')}</Text>
                                             <TouchableOpacity
                                                 style={[styles.dateInput, isRTL && styles.dateInputRtl]}
-                                                onPress={() => setShowStartTimePicker(true)}
+                                                onPress={() => {
+                                                    setShowDatePicker(false);
+                                                    setShowEndTimePicker(false);
+                                                    setShowStartTimePicker(true);
+                                                }}
                                             >
                                                 <Text style={[styles.inputText, isRTL ? styles.rtlText : styles.ltrText]}>
                                                     {formatTime(pickedStartTime)}
@@ -617,7 +632,11 @@ const CreateEventScreen = () => {
                                             <Text style={[styles.label, isRTL ? styles.rtlText : styles.ltrText]}>{t('scheduleForm.till')}</Text>
                                             <TouchableOpacity
                                                 style={[styles.dateInput, isRTL && styles.dateInputRtl]}
-                                                onPress={() => setShowEndTimePicker(true)}
+                                                onPress={() => {
+                                                    setShowDatePicker(false);
+                                                    setShowStartTimePicker(false);
+                                                    setShowEndTimePicker(true);
+                                                }}
                                             >
                                                 <Text style={[styles.inputText, isRTL ? styles.rtlText : styles.ltrText]}>
                                                     {formatTime(pickedEndTime)}
@@ -628,32 +647,43 @@ const CreateEventScreen = () => {
                                     </View>
 
                                     {/* //show datetime picker */}
-                                    {showDatePicker && <DateTimePicker
-                                        value={pickedDate}
-                                        mode="date"
-                                        is24Hour={true}
-                                        display={'default'}
-                                        onChange={setEventDate}
-                                    />}
+                                    {showDatePicker && (
+                                        <View style={Platform.OS === 'ios' ? styles.iosDatePickerContainer : undefined}>
+                                            <DateTimePicker
+                                                value={pickedDate}
+                                                mode="date"
+                                                is24Hour={true}
+                                                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                                                onChange={setEventDate}
+                                                {...iosDatePickerProps}
+                                            />
+                                        </View>
+                                    )}
 
                                     {showStartTimePicker && (
-                                        <DateTimePicker
-                                            value={pickedStartTime}
-                                            mode="time"
-                                            is24Hour={false}
-                                            display={'spinner'}
-                                            onChange={setEventStartTime}
-                                        />
+                                        <View style={Platform.OS === 'ios' ? styles.iosDatePickerContainer : undefined}>
+                                            <DateTimePicker
+                                                value={pickedStartTime}
+                                                mode="time"
+                                                is24Hour={false}
+                                                display={'spinner'}
+                                                onChange={setEventStartTime}
+                                                {...iosDatePickerProps}
+                                            />
+                                        </View>
                                     )}
 
                                     {showEndTimePicker && (
-                                        <DateTimePicker
-                                            value={pickedEndTime}
-                                            mode="time"
-                                            is24Hour={false}
-                                            display={'spinner'}
-                                            onChange={setEventEndTime}
-                                        />
+                                        <View style={Platform.OS === 'ios' ? styles.iosDatePickerContainer : undefined}>
+                                            <DateTimePicker
+                                                value={pickedEndTime}
+                                                mode="time"
+                                                is24Hour={false}
+                                                display={'spinner'}
+                                                onChange={setEventEndTime}
+                                                {...iosDatePickerProps}
+                                            />
+                                        </View>
                                     )}
 
                                     <View style={styles.formGroup}>
@@ -1096,7 +1126,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 40,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -1230,6 +1260,15 @@ const styles = StyleSheet.create({
     },
     dateInputRtl: {
         flexDirection: 'row-reverse',
+    },
+    iosDatePickerContainer: {
+        backgroundColor: '#F4F4F4',
+        borderRadius: 8,
+        marginBottom: 20,
+        overflow: 'hidden',
+    },
+    iosDatePicker: {
+        backgroundColor: '#F4F4F4',
     },
     // dateInput: {
     //     borderWidth: 1,

@@ -7,21 +7,21 @@ import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Image,
-    Keyboard,
-    Modal,
-    Platform,
-    RefreshControl,
-    SafeAreaView,
-    Share,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  Keyboard,
+  Modal,
+  Platform,
+  RefreshControl,
+  SafeAreaView,
+  Share,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useLanguage } from '../../context/language';
@@ -938,7 +938,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 120,
-    height: 30,
+    height: 40,
     // tintColor: '#111111',
   },
   loadingContainer: {

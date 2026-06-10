@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 120,
-        height: 30,
+        height: 40,
         // tintColor: '#111111',
     },
     loadingContainer: {

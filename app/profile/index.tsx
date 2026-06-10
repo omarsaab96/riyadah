@@ -21,6 +21,7 @@ import {
     Easing,
     Image,
     Linking,
+    Platform,
     ScrollView,
     Share,
     StyleSheet,
@@ -1343,7 +1344,7 @@ export default function Profile() {
 
             {/* Tabs for Athlete */}
             {!loading && user && (userType == "Athlete" && user.role != "Coach") && (
-                <View style={styles.tabs}>
+                <View style={[styles.tabs]}>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -1369,7 +1370,7 @@ export default function Profile() {
 
             {/* Tabs for clubs */}
             {!loading && user?.type === "Club" && (
-                <View style={styles.tabs}>
+                <View style={[styles.tabs]}>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -1396,7 +1397,7 @@ export default function Profile() {
             {/* Tabs for associations */}
             {!loading && user?.type === "Association" && (
 
-                <View style={styles.tabs}>
+                <View style={[styles.tabs]}>
                     {tabsAssociations.map((label, index) => (
                         <TouchableOpacity
                             key={label}
@@ -1416,7 +1417,7 @@ export default function Profile() {
 
             {/* Tabs for Coaches */}
             {!loading && user?.role == "Coach" && (
-                <View style={styles.tabs}>
+                <View style={[styles.tabs]}>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -1461,15 +1462,15 @@ export default function Profile() {
             >
 
                 <View style={styles.contentContainer}>
-                    {userId == user._id && (getProfileProgress() < 100) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress]} onPress={handleEdit}>
-                        <View style={styles.profileProgressPercentage}>
+                    {userId == user._id && (getProfileProgress() < 100) && <TouchableOpacity style={[styles.profileSection, styles.profileProgress,isRTL&&{flexDirection:'row-reverse',borderTopLeftRadius: 15,borderBottomLeftRadius: 15,borderTopRightRadius: 40,borderBottomRightRadius: 40}]} onPress={handleEdit}>
+                        <View style={[styles.profileProgressPercentage, isRTL&&{}]}>
                             <Text style={styles.profileProgressPercentageText}>{getProfileProgress()} %</Text>
                         </View>
-                        <View style={styles.profileProgressTextSection}>
+                        <View style={[styles.profileProgressTextSection,isRTL&&{flexDirection:'row-reverse'}]}>
                             <Text style={[styles.profileProgressText, textDirectionStyle]}>{t('profile.completeProfile')}</Text>
                             <Image
                                 style={styles.profileProgressImg}
-                                source={require('../../assets/rightArrow.png')}
+                                source={isRTL?require('../../assets/leftArrow.png'):require('../../assets/rightArrow.png')}
                                 resizeMode="contain"
                             />
                         </View>
@@ -1530,7 +1531,7 @@ export default function Profile() {
                             || user.contactInfo?.location.longitude != null || user.contactInfo?.description != null) ?
                             (
                                 <View>
-                                    <Text style={[styles.title, styles.contactTitle]}>
+                                    <Text style={[styles.title, styles.contactTitle, isRTL&&{textAlign:'right'}]}>
                                         {t('profile.contact')}
                                     </Text>
                                     <View>
@@ -3491,7 +3492,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 40,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -3529,7 +3530,8 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'flex-start'
+        justifyContent: 'flex-start',
+        gap:20
     },
     profileProgressPercentage: {
         width: 60,
@@ -3539,7 +3541,6 @@ const styles = StyleSheet.create({
         borderColor: '#FF4000',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 20,
     },
     profileProgressPercentageText: {
         color: '#FF4000',
@@ -3733,6 +3734,7 @@ const styles = StyleSheet.create({
     },
     tabsScrollRtl: {
         flexDirection: 'row-reverse',
+        width:'100%'
     },
     tab: {
         padding: 10,

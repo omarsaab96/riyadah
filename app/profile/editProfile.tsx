@@ -158,7 +158,7 @@ export default function EditProfile() {
                         />
 
                         <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
-                            <Text style={[styles.pageTitle, ]}>{t('profileEditor.editProfile')}</Text>
+                            <Text style={[styles.pageTitle, isRTL&&{textAlign:'right'}]}>{t('profileEditor.editProfile')}</Text>
                             {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('profileEditor.changeYourData')}</Text>}
 
                             {loading &&
@@ -260,7 +260,7 @@ export default function EditProfile() {
 
                             {user.type == "Club" &&
                                 <View style={styles.adminDiv}>
-                                    <Text style={styles.title}>
+                                    <Text style={[styles.title,isRTL&&{textAlign:'right'}]}>
                                         {t('profileEditor.admin')}
                                     </Text>
 
@@ -277,14 +277,14 @@ export default function EditProfile() {
 
                             {user.type != "Parent" &&
                                 <View style={styles.entity}>
-                                    <Text style={[styles.title, { marginBottom: 0 }]}>
+                                    <Text style={[styles.title, { marginBottom: 0 },isRTL&&{textAlign:'right'}]}>
                                         {t('profileEditor.contactInfo')}
                                     </Text>
-                                    <Text style={[{ marginBottom: 10, fontSize: 12, color: '#aaa' }]}>
+                                    <Text style={[{ marginBottom: 10, fontSize: 12, color: '#aaa' },isRTL&&{textAlign:'right'}]}>
                                         {t('profileEditor.hiddenEmptyFields')}
                                     </Text>
 
-                                    {user.type == "Club" && <Text style={[styles.subtitle, styles.contactSubTitle]}>
+                                    {user.type == "Club" && <Text style={[styles.subtitle, styles.contactSubTitle,isRTL&&{textAlign:'right'}]}>
                                         {t('profileEditor.description')}
                                     </Text>}
 
@@ -469,7 +469,7 @@ export default function EditProfile() {
 
                             {/* BIO */}
                             {user.type != "Parent" && <View style={styles.entity}>
-                                <Text style={styles.title}>
+                                <Text style={[styles.title,isRTL&&{textAlign:'right'}]}>
                                     {(user.type == "Club" || user.type == "Association") ? t('profileEditor.summary') : t('profileEditor.bio')}
                                 </Text>
                                 <TextInput
@@ -486,7 +486,7 @@ export default function EditProfile() {
 
                             {/* COUNTRY */}
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
+                                <Text style={[styles.title,isRTL&&{textAlign:'right'}]}>
                                     {t('profileEditor.country')}
                                 </Text>
                                 <View style={[[styles.input,isRTL&&{textAlign:'right'}], styles.select]}>
@@ -521,10 +521,10 @@ export default function EditProfile() {
 
                             {/* DOB */}
                             <View style={styles.entity}>
-                                <Text style={styles.title}>
+                                <Text style={[styles.title,isRTL&&{textAlign:'right'}]}>
                                     {(user.type == "Club" || user.type == "Association") ? t('profileEditor.establishmentDate') : t('profileEditor.dateOfBirth')}
                                 </Text>
-                                <View style={styles.dobRow}>
+                                <View style={[styles.dobRow,isRTL&&{flexDirection:'row-reverse'}]}>
                                     {user.type != "Club" && user.type != "Association" && <TextInput
                                         style={[styles.dobInput, Platform.OS === 'ios' && { padding: 15 }]}
                                         placeholder="DD"
@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 30,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },

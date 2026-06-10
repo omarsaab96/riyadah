@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from '../../context/language';
 import { useRegistration } from '../../context/registration';
 
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
         width: 120 ,
         height:30,
         position: 'absolute',
-        top: 40,
+            top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },

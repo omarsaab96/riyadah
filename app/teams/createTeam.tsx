@@ -274,7 +274,7 @@ export default function CreateTeam() {
                     </TouchableOpacity>
 
                     <View style={[styles.headerTextBlock, isRTL && styles.headerTextBlockRtl]}>
-                        <Text style={styles.pageTitle}>{t('teamCreate.newTeam')}</Text>
+                        <Text style={[styles.pageTitle,isRTL&&{textAlign:'right'}]}>{t('teamCreate.newTeam')}</Text>
                         {!loading && <Text style={[styles.pageDesc, isRTL && styles.rtlText]}>{t('teamCreate.newTeamDesc')}</Text>}
 
                         {loading &&
@@ -598,8 +598,8 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 30,
-        left: 20,
+top: Platform.OS == 'ios' ? 60 : 40,
+left: 20,
         zIndex: 1,
     },
     headerTextBlock: {

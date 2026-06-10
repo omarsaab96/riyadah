@@ -185,8 +185,8 @@ export default function SurveyDetailsScreen() {
                 <ScrollView>
                     <View style={styles.contentContainer}>
                         {error ? (
-                            <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
-                                <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
+                            <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                                <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                                 <Text style={styles.errorText}>{error}</Text>
                             </View>
                         ) : null}
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 50,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     headerTextBlockRtl: {
         left: 'auto',
         right: 20,
-        maxWidth:200
+        maxWidth: 200
     },
     pageTitle: {
         color: '#ffffff',

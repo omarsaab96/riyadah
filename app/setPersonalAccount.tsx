@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 30,
     position: 'absolute',
-    top: 40,
+    top: Platform.OS == 'ios' ? 60 : 40,
     left: 20,
     zIndex: 1,
   },

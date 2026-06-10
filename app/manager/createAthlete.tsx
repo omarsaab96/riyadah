@@ -150,7 +150,7 @@ const CreateAthleteScreen = () => {
             return { success: false, msg: 'Server error' };
         }
     };
-    
+
     const handleSubmit = async () => {
         if (!formData.name || !formData.email) {
             setError(t('managerAthlete.requiredFields'));
@@ -185,7 +185,7 @@ const CreateAthleteScreen = () => {
             },
             isStaff: [],
             clubs: selectedClub?._id ? [selectedClub._id] : [],
-            password:null
+            password: null
         };
 
         try {
@@ -299,8 +299,8 @@ const CreateAthleteScreen = () => {
 
                 <ScrollView ref={scrollViewRef}>
                     <View style={styles.contentContainer}>
-                        {error != null && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
-                            <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
+                        {error != null && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                            <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                             <Text style={styles.errorText}>{error}</Text>
                         </View>}
 
@@ -530,60 +530,60 @@ const CreateAthleteScreen = () => {
                             </View>
                         </View>}
 
-                    {showConfirmation &&
-                        <View>
-                            <Text style={styles.confirmationTitle}>
-                                {t('managerAthlete.created')}
-                            </Text>
+                        {showConfirmation &&
+                            <View>
+                                <Text style={styles.confirmationTitle}>
+                                    {t('managerAthlete.created')}
+                                </Text>
 
-                            <Text style={styles.confirmationSubTitle}>
-                                {t('managerAthlete.emailLabel', { email: formData.email })}
-                            </Text>
-                            {/* <Text style={styles.confirmationSubTitle}>
+                                <Text style={styles.confirmationSubTitle}>
+                                    {t('managerAthlete.emailLabel', { email: formData.email })}
+                                </Text>
+                                {/* <Text style={styles.confirmationSubTitle}>
                                 Password: {formData.password}
                             </Text> */}
 
-                            <View style={[styles.profileActions, styles.inlineActions]}>
-                                <TouchableOpacity onPress={handleCopy} style={styles.profileButton}>
-                                    {copied ? (
+                                <View style={[styles.profileActions, styles.inlineActions]}>
+                                    <TouchableOpacity onPress={handleCopy} style={styles.profileButton}>
+                                        {copied ? (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <Feather name="check" size={16} color="black" />
+                                                <Text style={styles.profileButtonText}>{t('managerAthlete.copied')}</Text>
+                                            </View>
+                                        ) : (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                                <Feather name="copy" size={16} color="black" />
+                                                <Text style={styles.profileButtonText}>{t('managerAthlete.copy')}</Text>
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                            <Feather name="check" size={16} color="black" />
-                                            <Text style={styles.profileButtonText}>{t('managerAthlete.copied')}</Text>
+                                            <Feather name="share-2" size={16} color="black" />
+                                            <Text style={styles.profileButtonText}>{t('managerAthlete.share')}</Text>
                                         </View>
-                                    ) : (
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                            <Feather name="copy" size={16} color="black" />
-                                            <Text style={styles.profileButtonText}>{t('managerAthlete.copy')}</Text>
-                                        </View>
-                                    )}
+                                    </TouchableOpacity>
+                                </View>
+
+                                <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }]}>
+                                    {t('managerAthlete.credentialsHint')}
+                                </Text>
+
+                                <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/manager/createAthlete')}>
+                                    <View style={styles.createAccountButton}>
+                                        <Text style={styles.createAccountText}>{t('managerAthlete.addAnother')}</Text>
+                                    </View>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={handleShare} style={[styles.profileButton, styles.savebtn]}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                        <Feather name="share-2" size={16} color="black" />
-                                        <Text style={styles.profileButtonText}>{t('managerAthlete.share')}</Text>
+
+                                <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/manager/dashboard')}>
+                                    <View style={styles.loginButton}>
+                                        <Text style={styles.loginText}>{t('managerAthlete.backToDashboard')}</Text>
                                     </View>
                                 </TouchableOpacity>
                             </View>
-
-                            <Text style={[styles.hint, { marginTop: 30, marginBottom: 50 }]}>
-                                {t('managerAthlete.credentialsHint')}
-                            </Text>
-
-                            <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/manager/createAthlete')}>
-                                <View style={styles.createAccountButton}>
-                                    <Text style={styles.createAccountText}>{t('managerAthlete.addAnother')}</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.fullButtonRow} onPress={() => router.replace('/manager/dashboard')}>
-                                <View style={styles.loginButton}>
-                                    <Text style={styles.loginText}>{t('managerAthlete.backToDashboard')}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    }
-            </View>
-        </ScrollView>
+                        }
+                    </View>
+                </ScrollView>
             </View >
         </KeyboardAvoidingView >
     );
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     headerTextBlockRtl: {
         left: 'auto',
         right: 20,
-        maxWidth:200
+        maxWidth: 200
     },
     pageTitle: {
         color: '#ffffff',
@@ -626,9 +626,9 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 20,
         right: -5,
-        color:'#ff6633',
-    maxHeight:200,
-    lineHeight:200
+        color: '#ff6633',
+        maxHeight: 200,
+        lineHeight: 200
     },
     contentContainer: {
         padding: 20,
@@ -895,7 +895,7 @@ const styles = StyleSheet.create({
         width: 120,
         height: 40,
         position: 'absolute',
-        top: 50,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },

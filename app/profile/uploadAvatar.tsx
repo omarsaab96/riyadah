@@ -179,8 +179,8 @@ export default function UploadAvatar() {
                 {user && !loading && (
                     <ScrollView>
                         <View style={styles.contentContainer}>
-                            {error != null && <View style={[styles.error,isRTL&&{flexDirection:'row-reverse'}]}>
-                                <View style={[styles.errorIcon,isRTL&&{marginRight:0,marginLeft:15}]}></View>
+                            {error != null && <View style={[styles.error, isRTL && { flexDirection: 'row-reverse' }]}>
+                                <View style={[styles.errorIcon, isRTL && { marginRight: 0, marginLeft: 15 }]}></View>
                                 <Text style={styles.errorText}>{error}</Text>
                             </View>}
 
@@ -267,10 +267,10 @@ const styles = StyleSheet.create({
         height: 270,
     },
     logo: {
-        width: 120 ,
-        height:30,
+        width: 120,
+        height: 40,
         position: 'absolute',
-        top: 30,
+        top: Platform.OS == 'ios' ? 60 : 40,
         left: 20,
         zIndex: 1,
     },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     headerTextBlockRtl: {
         left: 'auto',
         right: 20,
-        maxWidth:200
+        maxWidth: 200
     },
     ghostTextRtl: {
         right: undefined,
@@ -300,14 +300,14 @@ const styles = StyleSheet.create({
         fontFamily: 'Acumin',
     },
     ghostText: {
-        fontSize:100,textTransform:'uppercase',
+        fontSize: 100, textTransform: 'uppercase',
         fontFamily: 'Qatar',
         position: 'absolute',
         bottom: 20,
         right: -5,
-        color:'#ff6633',
-    maxHeight:200,
-    lineHeight:200
+        color: '#ff6633',
+        maxHeight: 200,
+        lineHeight: 200
     },
     subtitle: {
         fontSize: 18,
@@ -337,7 +337,8 @@ const styles = StyleSheet.create({
     savebtn: {
         flexDirection: 'row',
     },
-    profileButtonText: {textTransform:'uppercase',
+    profileButtonText: {
+        textTransform: 'uppercase',
         fontSize: 16,
         color: '#150000',
         fontFamily: 'Qatar',
@@ -385,7 +386,7 @@ const styles = StyleSheet.create({
     uploadHint: {
         fontFamily: 'Acumin',
         marginBottom: 10,
-        color:'#111111'
+        color: '#111111'
     },
     rtlText: {
         textAlign: 'right',
